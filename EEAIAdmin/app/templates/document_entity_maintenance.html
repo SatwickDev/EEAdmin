@@ -2417,7 +2417,7 @@
     }
 
     function editCategory(id) {
-        const category = categories.find(c => c.id === id);
+        const category = documentCategories.find(c => c.id === id);
         if (!category) return;
 
         editingCategoryId = id;
@@ -2428,7 +2428,7 @@
     }
 
     async function deleteCategory(id) {
-        const category = categories.find(c => c.id === id);
+        const category = documentCategories.find(c => c.id === id);
         if (!category) return;
 
         const result = await Swal.fire({
@@ -2495,7 +2495,7 @@
         }
 
         // Check for duplicate category name
-        const isDuplicate = categories.some(cat =>
+        const isDuplicate = documentCategories.some(cat =>
             cat.name.toLowerCase() === name.toLowerCase() && cat.id !== editingCategoryId
         );
 
