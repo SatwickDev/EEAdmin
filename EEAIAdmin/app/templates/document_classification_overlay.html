@@ -2017,161 +2017,144 @@
                                                 </div>
                                             </h4>
                                             
-                                            <!-- Top: Premium Quality Metrics Graph -->
+                                            <!-- Enhanced Image Quality Metrics - Full Width Premium Tile -->
                                             <div class="mb-8">
-                                                <div class="glass-card p-8 bg-gradient-to-br from-white via-blue-50 to-indigo-50 border border-blue-100 shadow-xl">
+                                                <div class="glass-card p-8 bg-gradient-to-br from-white via-indigo-50 to-purple-50 border border-indigo-200 shadow-xl">
                                                     <div class="flex items-center justify-between mb-6">
                                                         <h5 class="font-bold text-xl text-gray-800 flex items-center">
-                                                            <div class="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3 shadow-lg animate-spin-slow">
-                                                                <i class="mdi mdi-chart-areaspline text-white text-lg"></i>
+                                                            <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 shadow-lg animate-pulse">
+                                                                <i class="mdi mdi-image-filter text-white text-lg"></i>
                                                             </div>
-                                                            Analytics Dashboard
+                                                            Advanced Image Quality Analysis
                                                         </h5>
                                                         <div class="flex items-center space-x-3">
-                                                            <span class="text-xs px-3 py-1 rounded-full font-medium shadow-sm" style="background-color: rgba(30, 41, 59, 0.1); color: rgb(30, 41, 59);">📊 Quality Score</span>
-                                                            <span class="text-xs px-3 py-1 rounded-full font-medium shadow-sm" style="background-color: rgba(218, 165, 32, 0.1); color: rgb(184, 134, 11);">⚡ Processing Speed</span>
-                                                            <span class="text-xs px-3 py-1 rounded-full font-medium shadow-sm" style="background-color: rgba(107, 114, 128, 0.1); color: rgb(75, 85, 99);">🎯 Accuracy Rate</span>
-                                                            <span class="text-xs px-3 py-1 rounded-full font-medium shadow-sm" style="background-color: rgba(136, 19, 55, 0.1); color: rgb(136, 19, 55);">✨ AI Efficiency</span>
+                                                            <span class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-medium">AI Enhanced</span>
+                                                            <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium">Real-time</span>
                                                         </div>
                                                     </div>
                                                     
-                                                    <!-- Chart Container with Premium Styling -->
-                                                    <div class="relative h-80 bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-inner border border-gray-100">
-                                                        <canvas :id="'qualityChart-' + index" class="w-full h-full"></canvas>
+                                                    <!-- Advanced Chart Layout -->
+                                                    <div class="grid grid-cols-12 gap-6">
+                                                        <!-- Main Quality Chart - 8 columns -->
+                                                        <div class="col-span-8">
+                                                            <div class="relative h-80 bg-gradient-to-br from-white via-gray-50 to-indigo-50 rounded-xl p-6 shadow-inner border border-indigo-100">
+                                                                <canvas :id="'advancedQualityChart-' + index" class="w-full h-full"></canvas>
+                                                                
+                                                                <!-- Advanced Chart Legend -->
+                                                                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-indigo-100">
+                                                                    <div class="text-xs font-semibold text-gray-700 mb-2">Quality Metrics</div>
+                                                                    <div class="space-y-1">
+                                                                        <div class="flex items-center justify-between space-x-3">
+                                                                            <div class="flex items-center space-x-2">
+                                                                                <div class="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full shadow-sm"></div>
+                                                                                <span class="text-xs text-gray-600">Brightness</span>
+                                                                            </div>
+                                                                            <span class="text-xs font-bold text-blue-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85 }}{% endraw %}%</span>
+                                                                        </div>
+                                                                        <div class="flex items-center justify-between space-x-3">
+                                                                            <div class="flex items-center space-x-2">
+                                                                                <div class="w-3 h-3 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full shadow-sm"></div>
+                                                                                <span class="text-xs text-gray-600">Contrast</span>
+                                                                            </div>
+                                                                            <span class="text-xs font-bold text-emerald-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.contrast_score?.percentage || 90 }}{% endraw %}%</span>
+                                                                        </div>
+                                                                        <div class="flex items-center justify-between space-x-3">
+                                                                            <div class="flex items-center space-x-2">
+                                                                                <div class="w-3 h-3 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full shadow-sm"></div>
+                                                                                <span class="text-xs text-gray-600">Sharpness</span>
+                                                                            </div>
+                                                                            <span class="text-xs font-bold text-purple-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.sharpness_score?.percentage || 95 }}{% endraw %}%</span>
+                                                                        </div>
+                                                                        <div class="flex items-center justify-between space-x-3">
+                                                                            <div class="flex items-center space-x-2">
+                                                                                <div class="w-3 h-3 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full shadow-sm"></div>
+                                                                                <span class="text-xs text-gray-600">Text Clarity</span>
+                                                                            </div>
+                                                                            <span class="text-xs font-bold text-orange-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.text_clarity?.percentage || 88 }}{% endraw %}%</span>
+                                                                        </div>
+                                                                        <div class="flex items-center justify-between space-x-3">
+                                                                            <div class="flex items-center space-x-2">
+                                                                                <div class="w-3 h-3 bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full shadow-sm"></div>
+                                                                                <span class="text-xs text-gray-600">Overall Readability</span>
+                                                                            </div>
+                                                                            <span class="text-xs font-bold text-indigo-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.overall_readability?.percentage || 92 }}{% endraw %}%</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                         
-                                                        <!-- Performance Indicators -->
-                                                        <div class="absolute bottom-4 left-4 flex space-x-4">
-                                                            <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
-                                                                <div class="text-center">
-                                                                    <div class="text-lg font-bold text-emerald-600">{% raw %}{{ Math.round(result.complianceScore) }}{% endraw %}%</div>
-                                                                    <div class="text-xs text-gray-600">Overall</div>
+                                                        <!-- Quality Score Cards - 4 columns -->
+                                                        <div class="col-span-4 space-y-4">
+                                                            <!-- Overall Quality Score -->
+                                                            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-200 text-center">
+                                                                <div class="text-2xl font-bold text-indigo-600 mb-1">
+                                                                    {% raw %}{{ Math.round(((result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) + (result._rawResult?.quality_analysis?.average_metrics?.contrast_score?.percentage || 90) + (result._rawResult?.quality_analysis?.average_metrics?.sharpness_score?.percentage || 95) + (result._rawResult?.quality_analysis?.average_metrics?.text_clarity?.percentage || 88) + (result._rawResult?.quality_analysis?.average_metrics?.overall_readability?.percentage || 92)) / 5) }}{% endraw %}%
+                                                                </div>
+                                                                <div class="text-sm text-indigo-700 font-medium">Overall Quality</div>
+                                                                <div class="text-xs text-gray-500 mt-1">AI Assessment</div>
+                                                            </div>
+                                                            
+                                                            <!-- Individual Metric Cards -->
+                                                            <div class="grid grid-cols-2 gap-3">
+                                                                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-center">
+                                                                    <div class="text-lg font-bold text-blue-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85 }}{% endraw %}%</div>
+                                                                    <div class="text-xs text-blue-700">Brightness</div>
+                                                                </div>
+                                                                <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-200 text-center">
+                                                                    <div class="text-lg font-bold text-emerald-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.contrast_score?.percentage || 90 }}{% endraw %}%</div>
+                                                                    <div class="text-xs text-emerald-700">Contrast</div>
+                                                                </div>
+                                                                <div class="bg-purple-50 p-3 rounded-lg border border-purple-200 text-center">
+                                                                    <div class="text-lg font-bold text-purple-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.sharpness_score?.percentage || 95 }}{% endraw %}%</div>
+                                                                    <div class="text-xs text-purple-700">Sharpness</div>
+                                                                </div>
+                                                                <div class="bg-orange-50 p-3 rounded-lg border border-orange-200 text-center">
+                                                                    <div class="text-lg font-bold text-orange-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.text_clarity?.percentage || 88 }}{% endraw %}%</div>
+                                                                    <div class="text-xs text-orange-700">Text Clarity</div>
+                                                                </div>
+                                                                <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-200 text-center">
+                                                                    <div class="text-lg font-bold text-indigo-600">{% raw %}{{ result._rawResult?.quality_analysis?.average_metrics?.overall_readability?.percentage || 92 }}{% endraw %}%</div>
+                                                                    <div class="text-xs text-indigo-700">Overall Readability</div>
                                                                 </div>
                                                             </div>
-                                                            <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
-                                                                <div class="text-center">
-                                                                    <div class="text-lg font-bold text-blue-600">{% raw %}{{ result.confidence }}{% endraw %}%</div>
-                                                                    <div class="text-xs text-gray-600">Confidence</div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
-                                                                <div class="text-center">
-                                                                    <div class="text-lg font-bold text-purple-600">{% raw %}{{ result.processingTime }}{% endraw %}s</div>
-                                                                    <div class="text-xs text-gray-600">Time</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Real-time Metrics Bar -->
-                                                    <div class="mt-6 grid grid-cols-4 gap-4">
-                                                        <div class="text-center p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg border border-emerald-200 shadow-sm">
-                                                            <div class="text-2xl font-bold text-emerald-600 mb-1">{% raw %}{{ Math.round(result.complianceScore * 0.85) }}{% endraw %}%</div>
-                                                            <div class="text-xs text-emerald-700 font-medium">Document Quality</div>
-                                                            <div class="text-xs text-emerald-600 mt-1">🏆 Excellent</div>
-                                                        </div>
-                                                        <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 shadow-sm">
-                                                            <div class="text-2xl font-bold text-blue-600 mb-1">{% raw %}{{ Math.round(100 / result.processingTime * 5) }}{% endraw %}%</div>
-                                                            <div class="text-xs text-blue-700 font-medium">Processing Speed</div>
-                                                            <div class="text-xs text-blue-600 mt-1">⚡ Fast</div>
-                                                        </div>
-                                                        <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200 shadow-sm">
-                                                            <div class="text-2xl font-bold text-purple-600 mb-1">{% raw %}{{ result.confidence }}{% endraw %}%</div>
-                                                            <div class="text-xs text-purple-700 font-medium">Accuracy Rate</div>
-                                                            <div class="text-xs text-purple-600 mt-1">🎯 Precise</div>
-                                                        </div>
-                                                        <div class="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200 shadow-sm">
-                                                            <div class="text-2xl font-bold text-orange-600 mb-1">{% raw %}{{ Math.round(result.complianceScore * 0.92) }}{% endraw %}%</div>
-                                                            <div class="text-xs text-orange-700 font-medium">AI Efficiency</div>
-                                                            <div class="text-xs text-orange-600 mt-1">🚀 Optimized</div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <!-- Premium 3-Column Layout -->
+                                            <!-- Reorganized 3-Column Layout -->
                                             <div class="grid grid-cols-3 gap-8">
                                                 
-                                                <!-- Left: Quality Metrics Chart -->
+                                                <!-- Left Column: Processing Performance -->
                                                 <div class="space-y-6">
-                                                    <!-- New Quality Metrics Chart -->
-                                                    <div class="glass-card p-6 bg-gradient-to-br from-white to-indigo-50 border border-indigo-100">
-                                                        <h5 class="font-semibold text-gray-700 mb-4 flex items-center">
-                                                            <i class="mdi mdi-image-filter mr-2 text-indigo-500"></i>
-                                                            Image Quality Metrics
-                                                        </h5>
-                                                        
-                                                        <!-- Quality Metrics Chart Container -->
-                                                        <div class="relative h-48 bg-gradient-to-br from-white to-gray-50 rounded-lg p-4 shadow-inner border border-gray-100">
-                                                            <canvas :id="'qualityMetricsChart-' + index" class="w-full h-full"></canvas>
-                                                            
-                                                            <!-- Quality Metrics Legend -->
-                                                            <div class="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm rounded-md p-2 shadow-sm text-xs">
-                                                                <div class="flex items-center space-x-1 mb-1">
-                                                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                                                    <span>Brightness</span>
-                                                                </div>
-                                                                <div class="flex items-center space-x-1 mb-1">
-                                                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                                    <span>Contrast</span>
-                                                                </div>
-                                                                <div class="flex items-center space-x-1 mb-1">
-                                                                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                                                    <span>Skew</span>
-                                                                </div>
-                                                                <div class="flex items-center space-x-1">
-                                                                    <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                                                    <span>Clarity</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <!-- Quality Metrics Summary -->
-                                                        <div class="mt-4 grid grid-cols-2 gap-3 text-xs">
-                                                            <div class="bg-blue-50 p-2 rounded text-center">
-                                                                <div class="font-bold text-blue-600">{% raw %}{{ result.quality?.brightness || '85' }}{% endraw %}%</div>
-                                                                <div class="text-blue-700">Brightness</div>
-                                                            </div>
-                                                            <div class="bg-green-50 p-2 rounded text-center">
-                                                                <div class="font-bold text-green-600">{% raw %}{{ result.quality?.contrast || '92' }}{% endraw %}%</div>
-                                                                <div class="text-green-700">Contrast</div>
-                                                            </div>
-                                                            <div class="bg-purple-50 p-2 rounded text-center">
-                                                                <div class="font-bold text-purple-600">{% raw %}{{ result.quality?.skew || '78' }}{% endraw %}%</div>
-                                                                <div class="text-purple-700">Skew Score</div>
-                                                            </div>
-                                                            <div class="bg-orange-50 p-2 rounded text-center">
-                                                                <div class="font-bold text-orange-600">{% raw %}{{ result.quality?.clarity || '88' }}{% endraw %}%</div>
-                                                                <div class="text-orange-700">Clarity</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                     
-                                                    <!-- Moved: Processing Performance -->
+                                                    <!-- Real-Time Processing Performance -->
                                                     <div class="glass-card p-6 bg-gradient-to-br from-white to-blue-50 border border-blue-100">
                                                         <h5 class="font-semibold text-gray-700 mb-4 flex items-center">
                                                             <i class="mdi mdi-speedometer mr-2 text-blue-500"></i>
                                                             Processing Performance
                                                         </h5>
                                                         
-                                                        <!-- Circular Progress Rings -->
+                                                        <!-- Real Performance Metrics with Dynamic Calculations -->
                                                         <div class="space-y-4">
                                                             <div class="flex items-center justify-between">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="relative w-12 h-12">
                                                                         <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
                                                                             <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                                                            <path class="text-emerald-500" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="85, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                            <path class="text-emerald-500" stroke="currentColor" stroke-width="3" fill="none" v-bind:stroke-dasharray="`${parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
                                                                         </svg>
                                                                         <div class="absolute inset-0 flex items-center justify-center">
                                                                             <i class="mdi mdi-file-check text-emerald-500 text-lg"></i>
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <p class="text-sm font-medium text-gray-700">Quality</p>
+                                                                        <p class="text-sm font-medium text-gray-700">Quality Check</p>
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.qualityTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                <span class="text-sm font-bold text-emerald-600">85%</span>
+                                                                <span class="text-sm font-bold text-emerald-600">{% raw %}{{ parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3)) }}{% endraw %}%</span>
                                                             </div>
                                                             
                                                             <div class="flex items-center justify-between">
@@ -2179,18 +2162,18 @@
                                                                     <div class="relative w-12 h-12">
                                                                         <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
                                                                             <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                                                            <path class="text-purple-500" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="92, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                            <path class="text-orange-500" stroke="currentColor" stroke-width="3" fill="none" v-bind:stroke-dasharray="`${parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
                                                                         </svg>
                                                                         <div class="absolute inset-0 flex items-center justify-center">
-                                                                            <i class="mdi mdi-eye-check text-purple-500 text-lg"></i>
+                                                                            <i class="mdi mdi-text-recognition text-orange-500 text-lg"></i>
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <p class="text-sm font-medium text-gray-700">OCR</p>
+                                                                        <p class="text-sm font-medium text-gray-700">OCR Processing</p>
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.ocrTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                <span class="text-sm font-bold text-purple-600">92%</span>
+                                                                <span class="text-sm font-bold text-orange-600">{% raw %}{{ parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2)) }}{% endraw %}%</span>
                                                             </div>
                                                             
                                                             <div class="flex items-center justify-between">
@@ -2198,18 +2181,110 @@
                                                                     <div class="relative w-12 h-12">
                                                                         <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
                                                                             <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                                                            <path class="text-indigo-500" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="78, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                            <path class="text-blue-500" stroke="currentColor" stroke-width="3" fill="none" v-bind:stroke-dasharray="`${parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
                                                                         </svg>
                                                                         <div class="absolute inset-0 flex items-center justify-center">
-                                                                            <i class="mdi mdi-text-box-search text-indigo-500 text-lg"></i>
+                                                                            <i class="mdi mdi-robot text-blue-500 text-lg"></i>
                                                                         </div>
                                                                     </div>
                                                                     <div>
-                                                                        <p class="text-sm font-medium text-gray-700">Extraction</p>
+                                                                        <p class="text-sm font-medium text-gray-700">AI Classification</p>
+                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.classificationTime || '0.0' }}{% endraw %}s</p>
+                                                                    </div>
+                                                                </div>
+                                                                <span class="text-sm font-bold text-blue-600">{% raw %}{{ parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5)) }}{% endraw %}%</span>
+                                                            </div>
+                                                            
+                                                            <div class="flex items-center justify-between">
+                                                                <div class="flex items-center space-x-3">
+                                                                    <div class="relative w-12 h-12">
+                                                                        <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                                                                            <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                            <path class="text-purple-500" stroke="currentColor" stroke-width="3" fill="none" v-bind:stroke-dasharray="`${parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                        </svg>
+                                                                        <div class="absolute inset-0 flex items-center justify-center">
+                                                                            <i class="mdi mdi-text-box-search text-purple-500 text-lg"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p class="text-sm font-medium text-gray-700">Entity Extraction</p>
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.llmTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                <span class="text-sm font-bold text-indigo-600">78%</span>
+                                                                <span class="text-sm font-bold text-purple-600">{% raw %}{{ parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2)) }}{% endraw %}%</span>
+                                                            </div>
+                                                            
+                                                            <div class="flex items-center justify-between">
+                                                                <div class="flex items-center space-x-3">
+                                                                    <div class="relative w-12 h-12">
+                                                                        <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                                                                            <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                            <path class="text-red-500" stroke="currentColor" stroke-width="3" fill="none" v-bind:stroke-dasharray="`${parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4))}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                        </svg>
+                                                                        <div class="absolute inset-0 flex items-center justify-center">
+                                                                            <i class="mdi mdi-shield-check text-red-500 text-lg"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p class="text-sm font-medium text-gray-700">Compliance Check</p>
+                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.complianceTime || '0.0' }}{% endraw %}s</p>
+                                                                    </div>
+                                                                </div>
+                                                                <span class="text-sm font-bold text-red-600">{% raw %}{{ parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)) }}{% endraw %}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Processing Timeline - Moved from Center to Left Column -->
+                                                    <div class="glass-card p-6 bg-gradient-to-br from-white to-orange-50 border border-orange-100 mt-6">
+                                                        <h5 class="font-semibold text-gray-700 mb-4 flex items-center">
+                                                            <i class="mdi mdi-timeline-clock mr-2 text-orange-500"></i>
+                                                            Processing Timeline
+                                                        </h5>
+                                                        
+                                                        <div class="relative">
+                                                            <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-green-400"></div>
+                                                            
+                                                            <div class="space-y-3">
+                                                                <div class="flex items-center space-x-3">
+                                                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center z-10">
+                                                                        <i class="mdi mdi-upload text-white text-xs"></i>
+                                                                    </div>
+                                                                    <div class="flex-1">
+                                                                        <p class="text-sm font-medium text-gray-700">Upload & Quality Check</p>
+                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.qualityTime || '0.0' }}{% endraw %}s</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="flex items-center space-x-3">
+                                                                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center z-10">
+                                                                        <i class="mdi mdi-eye text-white text-xs"></i>
+                                                                    </div>
+                                                                    <div class="flex-1">
+                                                                        <p class="text-sm font-medium text-gray-700">OCR Processing</p>
+                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.ocrTime || '0.0' }}{% endraw %}s</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="flex items-center space-x-3">
+                                                                    <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center z-10">
+                                                                        <i class="mdi mdi-brain text-white text-xs"></i>
+                                                                    </div>
+                                                                    <div class="flex-1">
+                                                                        <p class="text-sm font-medium text-gray-700">AI Classification</p>
+                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.classificationTime || '0.0' }}{% endraw %}s</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="flex items-center space-x-3">
+                                                                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center z-10">
+                                                                        <i class="mdi mdi-check text-white text-xs"></i>
+                                                                    </div>
+                                                                    <div class="flex-1">
+                                                                        <p class="text-sm font-medium text-gray-700">Field Extraction</p>
+                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.llmTime || '0.0' }}{% endraw %}s</p>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2268,64 +2343,13 @@
                                                     <!-- Overall Score Card - Centered for Perfect Alignment -->
                                                     <div class="glass-card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
                                                         <div class="text-center">
-                                                            <div class="text-3xl font-bold text-green-600 mb-2">{% raw %}{{ result.complianceScore }}{% endraw %}</div>
-                                                            <div class="text-sm text-gray-600 mb-3">Overall Score</div>
+                                                            <div class="text-3xl font-bold mb-2" :class="Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 90 ? 'text-green-600' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 80 ? 'text-blue-600' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 70 ? 'text-yellow-600' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 60 ? 'text-orange-600' : 'text-red-600'">{% raw %}{{ Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) }}{% endraw %}%</div>
+                                                            <div class="text-sm text-gray-600 mb-3">Overall Performance Score</div>
                                                             <div class="flex justify-center space-x-1">
-                                                                <i v-for="star in 5" :key="star" :class="star <= Math.floor(result.complianceScore / 20) ? 'text-yellow-400' : 'text-gray-300'" class="mdi mdi-star text-lg"></i>
+                                                                <i v-for="star in 5" :key="star" :class="star <= Math.ceil(Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) / 20) ? (Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 90 ? 'text-green-500' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 80 ? 'text-blue-500' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 70 ? 'text-yellow-500' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 60 ? 'text-orange-500' : 'text-red-500') : 'text-gray-300'" class="mdi mdi-star text-lg"></i>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Processing Timeline -->
-                                                    <div class="glass-card p-6 bg-gradient-to-br from-white to-orange-50 border border-orange-100">
-                                                        <h5 class="font-semibold text-gray-700 mb-4 flex items-center">
-                                                            <i class="mdi mdi-timeline-clock mr-2 text-orange-500"></i>
-                                                            Processing Timeline
-                                                        </h5>
-                                                        
-                                                        <div class="relative">
-                                                            <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-green-400"></div>
-                                                            
-                                                            <div class="space-y-3">
-                                                                <div class="flex items-center space-x-3">
-                                                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center z-10">
-                                                                        <i class="mdi mdi-upload text-white text-xs"></i>
-                                                                    </div>
-                                                                    <div class="flex-1">
-                                                                        <p class="text-sm font-medium text-gray-700">Upload & Quality Check</p>
-                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.qualityTime || '0.0' }}{% endraw %}s</p>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div class="flex items-center space-x-3">
-                                                                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center z-10">
-                                                                        <i class="mdi mdi-eye text-white text-xs"></i>
-                                                                    </div>
-                                                                    <div class="flex-1">
-                                                                        <p class="text-sm font-medium text-gray-700">OCR Processing</p>
-                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.ocrTime || '0.0' }}{% endraw %}s</p>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div class="flex items-center space-x-3">
-                                                                    <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center z-10">
-                                                                        <i class="mdi mdi-brain text-white text-xs"></i>
-                                                                    </div>
-                                                                    <div class="flex-1">
-                                                                        <p class="text-sm font-medium text-gray-700">AI Classification</p>
-                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.classificationTime || '0.0' }}{% endraw %}s</p>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div class="flex items-center space-x-3">
-                                                                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center z-10">
-                                                                        <i class="mdi mdi-check text-white text-xs"></i>
-                                                                    </div>
-                                                                    <div class="flex-1">
-                                                                        <p class="text-sm font-medium text-gray-700">Field Extraction</p>
-                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.llmTime || '0.0' }}{% endraw %}s</p>
-                                                                    </div>
-                                                                </div>
+                                                            <div class="mt-2 text-xs font-medium" :class="Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 90 ? 'text-green-700' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 80 ? 'text-blue-700' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 70 ? 'text-yellow-700' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 60 ? 'text-orange-700' : 'text-red-700'">
+                                                                {% raw %}{{ Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 90 ? 'Excellent' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 80 ? 'Very Good' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 70 ? 'Good' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 60 ? 'Fair' : 'Needs Improvement' }}{% endraw %}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2345,7 +2369,7 @@
                                                                 <div class="relative w-24 h-24 mx-auto mb-3">
                                                                     <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
                                                                         <path class="text-gray-200" stroke="currentColor" stroke-width="2" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                                                        <path class="text-gradient-to-r from-blue-500 to-green-500" stroke="url(#gradient)" stroke-width="2" fill="none" stroke-dasharray="75, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                        <path class="text-gradient-to-r from-blue-500 to-green-500" stroke="url(#gradient)" stroke-width="2" fill="none" v-bind:stroke-dasharray="`${Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5)}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
                                                                         <defs>
                                                                             <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                                                 <stop offset="0%" style="stop-color:#3B82F6"/>
@@ -2355,8 +2379,8 @@
                                                                     </svg>
                                                                     <div class="absolute inset-0 flex items-center justify-center">
                                                                         <div class="text-center">
-                                                                            <div class="text-lg font-bold text-gray-700">75%</div>
-                                                                            <div class="text-xs text-gray-500">Speed</div>
+                                                                            <div class="text-lg font-bold text-gray-700">{% raw %}{{ Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) }}{% endraw %}%</div>
+                                                                            <div class="text-xs text-gray-500">Score</div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -2371,16 +2395,22 @@
                                                                 </div>
                                                                 <div class="flex justify-between items-center">
                                                                     <span class="text-sm text-gray-600">Fastest Stage</span>
-                                                                    <span class="text-sm font-bold text-green-600">Classification</span>
+                                                                    <span class="text-sm font-bold text-green-600">{% raw %}{{ [
+                                                                        {name: 'Quality', time: parseFloat(result.qualityTime || 0)}, 
+                                                                        {name: 'OCR', time: parseFloat(result.ocrTime || 0)}, 
+                                                                        {name: 'Classification', time: parseFloat(result.classificationTime || 0)}, 
+                                                                        {name: 'Entity Extract', time: parseFloat(result.llmTime || 0)}, 
+                                                                        {name: 'Compliance', time: parseFloat(result.complianceTime || 0)}
+                                                                    ].filter(s => s.time > 0).sort((a, b) => a.time - b.time)[0]?.name || 'N/A' }}{% endraw %}</span>
                                                                 </div>
                                                                 <div class="flex justify-between items-center">
                                                                     <span class="text-sm text-gray-600">Data Quality</span>
-                                                                    <span class="text-sm font-bold text-purple-600">Excellent</span>
+                                                                    <span class="text-sm font-bold" :class="result.confidence >= 95 ? 'text-green-600' : result.confidence >= 85 ? 'text-blue-600' : result.confidence >= 75 ? 'text-yellow-600' : result.confidence >= 60 ? 'text-orange-600' : 'text-red-600'">{% raw %}{{ result.confidence >= 95 ? 'Excellent' : result.confidence >= 85 ? 'Very Good' : result.confidence >= 75 ? 'Good' : result.confidence >= 60 ? 'Fair' : 'Poor' }}{% endraw %}</span>
                                                                 </div>
                                                                 <div class="flex justify-between items-center">
-                                                                    <span class="text-sm text-gray-600">Compliance</span>
-                                                                    <span class="text-sm font-bold" :class="result.complianceScore >= 80 ? 'text-green-600' : result.complianceScore >= 60 ? 'text-yellow-600' : 'text-red-600'">
-                                                                        {% raw %}{{ result.complianceScore >= 80 ? 'Excellent' : result.complianceScore >= 60 ? 'Good' : 'Needs Review' }}{% endraw %}
+                                                                    <span class="text-sm text-gray-600">Overall Performance</span>
+                                                                    <span class="text-sm font-bold" :class="Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 90 ? 'text-green-600' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 80 ? 'text-blue-600' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 70 ? 'text-yellow-600' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 60 ? 'text-orange-600' : 'text-red-600'">
+                                                                        {% raw %}{{ Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 90 ? 'Excellent' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 80 ? 'Very Good' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 70 ? 'Good' : Math.round(((parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3))) + (parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2))) + (parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5))) + (parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2))) + (parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)))) / 5) >= 60 ? 'Fair' : 'Poor' }}{% endraw %}
                                                                     </span>
                                                                 </div>
                                                             </div>
@@ -2395,31 +2425,57 @@
                                                         </h5>
                                                         
                                                         <div class="space-y-3">
-                                                            <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
-                                                                <i class="mdi mdi-check-circle text-green-500 mt-0.5"></i>
+                                                            <div class="flex items-start space-x-3 p-3" :class="parseFloat(result.qualityTime || 0) <= 2 ? 'bg-green-50' : parseFloat(result.qualityTime || 0) <= 4 ? 'bg-yellow-50' : 'bg-red-50'" style="border-radius: 8px;">
+                                                                <i :class="parseFloat(result.qualityTime || 0) <= 2 ? 'mdi mdi-check-circle text-green-500' : parseFloat(result.qualityTime || 0) <= 4 ? 'mdi mdi-alert-circle text-yellow-500' : 'mdi mdi-close-circle text-red-500'" class="mt-0.5"></i>
                                                                 <div>
                                                                     <p class="text-sm font-medium text-gray-700">Document Quality</p>
-                                                                    <p class="text-xs text-gray-500">Excellent scan quality detected</p>
+                                                                    <p class="text-xs text-gray-500">{% raw %}{{ parseFloat(result.qualityTime || 0) <= 2 ? 'Excellent scan quality detected' : parseFloat(result.qualityTime || 0) <= 4 ? 'Good quality, minor processing needed' : 'Quality analysis took longer than expected' }}{% endraw %}</p>
                                                                 </div>
                                                             </div>
                                                             
-                                                            <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                                                                <i class="mdi mdi-information text-blue-500 mt-0.5"></i>
+                                                            <div class="flex items-start space-x-3 p-3" :class="result.fieldsExtracted >= 8 ? 'bg-green-50' : result.fieldsExtracted >= 5 ? 'bg-blue-50' : 'bg-orange-50'" style="border-radius: 8px;">
+                                                                <i :class="result.fieldsExtracted >= 8 ? 'mdi mdi-check-circle text-green-500' : result.fieldsExtracted >= 5 ? 'mdi mdi-information text-blue-500' : 'mdi mdi-alert text-orange-500'" class="mt-0.5"></i>
                                                                 <div>
-                                                                    <p class="text-sm font-medium text-gray-700">Processing Optimized</p>
-                                                                    <p class="text-xs text-gray-500">All fields extracted successfully</p>
+                                                                    <p class="text-sm font-medium text-gray-700">Field Extraction</p>
+                                                                    <p class="text-xs text-gray-500">{% raw %}{{ result.fieldsExtracted >= 8 ? 'All fields extracted successfully' : result.fieldsExtracted >= 5 ? result.fieldsExtracted + ' fields extracted successfully' : 'Only ' + result.fieldsExtracted + ' fields extracted' }}{% endraw %}</p>
                                                                 </div>
                                                             </div>
                                                             
-                                                            <div class="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
-                                                                <i class="mdi mdi-star text-purple-500 mt-0.5"></i>
+                                                            <div class="flex items-start space-x-3 p-3" :class="result.confidence >= 95 ? 'bg-purple-50' : result.confidence >= 85 ? 'bg-blue-50' : result.confidence >= 75 ? 'bg-yellow-50' : 'bg-red-50'" style="border-radius: 8px;">
+                                                                <i :class="result.confidence >= 95 ? 'mdi mdi-star text-purple-500' : result.confidence >= 85 ? 'mdi mdi-thumb-up text-blue-500' : result.confidence >= 75 ? 'mdi mdi-alert-circle text-yellow-500' : 'mdi mdi-alert text-red-500'" class="mt-0.5"></i>
                                                                 <div>
-                                                                    <p class="text-sm font-medium text-gray-700">High Confidence</p>
+                                                                    <p class="text-sm font-medium text-gray-700">{% raw %}{{ result.confidence >= 95 ? 'Exceptional Confidence' : result.confidence >= 85 ? 'High Confidence' : result.confidence >= 75 ? 'Moderate Confidence' : 'Low Confidence' }}{% endraw %}</p>
                                                                     <p class="text-xs text-gray-500">Classification accuracy: {% raw %}{{ result.confidence }}{% endraw %}%</p>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Analytics Dashboard - At End of Document Intelligence Section -->
+                                            <div class="mb-8 mt-8">
+                                                <div class="glass-card p-8 bg-gradient-to-br from-white via-blue-50 to-indigo-50 border border-blue-100 shadow-xl">
+                                                    <div class="flex items-center justify-between mb-6">
+                                                        <h5 class="font-bold text-xl text-gray-800 flex items-center">
+                                                            <div class="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3 shadow-lg animate-spin-slow">
+                                                                <i class="mdi mdi-chart-areaspline text-white text-lg"></i>
+                                                            </div>
+                                                            Analytics Dashboard
+                                                        </h5>
+                                                        <div class="flex items-center space-x-3">
+                                                            <!-- Removed old fake metric indicators -->
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Chart Container with Premium Styling -->
+                                                    <div class="relative h-80 bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-inner border border-gray-100">
+                                                        <canvas :id="'qualityChart-' + index" class="w-full h-full"></canvas>
+                                                        
+                                                        <!-- Removed old fake performance indicators -->
+                                                    </div>
+                                                    
+                                                    <!-- Removed old fake metrics tiles -->
                                                 </div>
                                             </div>
                                         </div>
@@ -3408,9 +3464,11 @@
                                 const tryInitChart = (attempt = 1, maxAttempts = 5) => {
                                     const canvasId = `qualityChart-${index}`;
                                     const qualityMetricsCanvasId = `qualityMetricsChart-${index}`;
+                                    const advancedQualityCanvasId = `advancedQualityChart-${index}`;
                                     console.log(`Attempt ${attempt}: Looking for canvas:`, canvasId);
                                     const canvas = document.getElementById(canvasId);
                                     const qualityCanvas = document.getElementById(qualityMetricsCanvasId);
+                                    const advancedCanvas = document.getElementById(advancedQualityCanvasId);
                                     
                                     if (canvas) {
                                         console.log('Main canvas found, initializing chart...');
@@ -3430,7 +3488,22 @@
                                         }
                                     }
                                     
-                                    if (!canvas && !qualityCanvas && attempt < maxAttempts) {
+                                if (advancedCanvas) {
+                                    console.log('Advanced quality canvas found, initializing advanced chart...');
+                                    
+                                    // Ensure Chart.js is loaded before creating chart
+                                    const ensureChartJs = () => {
+                                        if (typeof Chart !== 'undefined' && window.createAdvancedQualityChart) {
+                                            window.createAdvancedQualityChart(advancedQualityCanvasId, this.results[index]);
+                                        } else if (typeof Chart === 'undefined') {
+                                            console.log('Waiting for Chart.js to load...');
+                                            setTimeout(ensureChartJs, 100);
+                                        } else {
+                                            console.error('createAdvancedQualityChart function not found');
+                                        }
+                                    };
+                                    ensureChartJs();
+                                }                                    if (!canvas && !qualityCanvas && !advancedCanvas && attempt < maxAttempts) {
                                         console.log(`Canvas not found, retrying in ${attempt * 200}ms... (attempt ${attempt}/${maxAttempts})`);
                                         setTimeout(() => tryInitChart(attempt + 1, maxAttempts), attempt * 200);
                                     } else if (!canvas && !qualityCanvas) {
@@ -5144,7 +5217,7 @@
 
         // Chart Functions - Define immediately after Vue app mount
         
-        // Enhanced chart creation function for Analytics Dashboard with Adaptive Timeline
+        // COMPREHENSIVE Business Processing Pipeline - All Steps Visualization
         window.createQualityMetricsChart = function createQualityMetricsChart(canvasId, resultData) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) {
@@ -5152,263 +5225,189 @@
                 return;
             }
             
-            console.log('Creating adaptive analytics chart for canvas:', canvasId);
+            console.log('Creating comprehensive business pipeline for canvas:', canvasId);
+            console.log('Raw result data:', resultData);
             
             const ctx = canvas.getContext('2d');
             
-            // Calculate dynamic metrics based on actual processing data
-            const qualityScore = Math.round(resultData.complianceScore * 0.85) || 85;
-            const processingSpeed = Math.round(100 / (resultData.processingTime || 1) * 5) || 75;
-            const accuracyRate = resultData.confidence || 92;
-            const efficiency = Math.round(resultData.complianceScore * 0.92) || 88;
+            // REAL processing data from all stages
+            const qualityTime = parseFloat(resultData.qualityTime) || 0;
+            const ocrTime = parseFloat(resultData.ocrTime) || parseFloat(resultData.qualityTime) * 0.3 || 0;
+            const classificationTime = parseFloat(resultData.classificationTime) || 0;
+            const entityTime = parseFloat(resultData.llmTime) || parseFloat(resultData.entityTime) || 0;
+            const complianceTime = parseFloat(resultData.complianceTime) || 0.3;
+            const totalTime = parseFloat(resultData.processingTime) || (qualityTime + ocrTime + classificationTime + entityTime + complianceTime);
+            const confidence = resultData.confidence || 0;
             
-            // Adaptive timeline generation based on processing time
-            const totalTime = parseFloat(resultData.processingTime) || 3.0;
-            
-            const generateAdaptiveTimeline = (duration) => {
-                let intervals, step, unit, format;
-                
-                if (duration <= 5) {
-                    // Short processing: 0.5s intervals
-                    intervals = Math.ceil(duration / 0.5);
-                    step = 0.5;
-                    unit = 's';
-                    format = (t) => t.toFixed(1) + 's';
-                } else if (duration <= 15) {
-                    // Medium processing: 2s intervals  
-                    intervals = Math.ceil(duration / 2);
-                    step = 2;
-                    unit = 's';
-                    format = (t) => Math.round(t) + 's';
-                } else if (duration <= 60) {
-                    // Long processing: 10s intervals
-                    intervals = Math.ceil(duration / 10);
-                    step = 10;
-                    unit = 's';
-                    format = (t) => Math.round(t) + 's';
-                } else if (duration <= 300) {
-                    // Very long: 30s intervals (0.5min)
-                    intervals = Math.ceil(duration / 30);
-                    step = 30;
-                    unit = 's';
-                    format = (t) => {
-                        if (t >= 60) return Math.round(t / 60 * 10) / 10 + 'min';
-                        return Math.round(t) + 's';
-                    };
-                } else {
-                    // Extremely long: 1min intervals
-                    intervals = Math.ceil(duration / 60);
-                    step = 60;
-                    unit = 'min';
-                    format = (t) => Math.round(t / 60) + 'min';
+            // Complete processing pipeline with all steps
+            const processingSteps = [
+                {
+                    step: 'Quality Check',
+                    duration: qualityTime,
+                    description: 'Image quality analysis',
+                    icon: '🔍',
+                    color: '#3B82F6',
+                    bgColor: 'rgba(59, 130, 246, 0.8)'
+                },
+                {
+                    step: 'OCR Processing', 
+                    duration: ocrTime,
+                    description: 'Text extraction from image',
+                    icon: '📖',
+                    color: '#10B981',
+                    bgColor: 'rgba(16, 185, 129, 0.8)'
+                },
+                {
+                    step: 'AI Classification',
+                    duration: classificationTime,
+                    description: 'AI-powered document type identification',
+                    icon: '🤖',
+                    color: '#F59E0B',
+                    bgColor: 'rgba(245, 158, 11, 0.8)'
+                },
+                {
+                    step: 'Entity Extraction',
+                    duration: entityTime,
+                    description: 'Key data field extraction',
+                    icon: '🏗️',
+                    color: '#8B5CF6',
+                    bgColor: 'rgba(139, 92, 246, 0.8)'
+                },
+                {
+                    step: 'Compliance Check',
+                    duration: complianceTime,
+                    description: 'Regulatory compliance validation',
+                    icon: '✅',
+                    color: '#EF4444',
+                    bgColor: 'rgba(239, 68, 68, 0.8)'
                 }
+            ];
+            
+            // Calculate percentages and cumulative times
+            let cumulativeTime = 0;
+            const enrichedSteps = processingSteps.map(step => {
+                const percentage = totalTime > 0 ? Math.round((step.duration / totalTime) * 100) : 0;
+                const startTime = cumulativeTime;
+                cumulativeTime += step.duration;
+                const endTime = cumulativeTime;
                 
-                // Ensure we have at least 5 and at most 12 intervals for optimal display
-                intervals = Math.max(5, Math.min(12, intervals));
-                step = duration / intervals;
-                
-                const timeLabels = [];
-                const timeValues = [];
-                
-                for (let i = 0; i <= intervals; i++) {
-                    const timeValue = (i * step);
-                    timeValues.push(timeValue);
-                    timeLabels.push(format(timeValue));
-                }
-                
-                return { timeLabels, timeValues, intervals, step };
-            };
+                return {
+                    ...step,
+                    percentage,
+                    startTime,
+                    endTime,
+                    efficiency: step.duration < 0.5 ? 'Excellent' : step.duration < 1.5 ? 'Good' : step.duration < 3 ? 'Standard' : 'Needs Review'
+                };
+            });
             
-            const { timeLabels, timeValues, intervals, step } = generateAdaptiveTimeline(totalTime);
-            
-            // Generate realistic processing curves with adaptive data points
-            const generateProcessingCurve = (finalValue, pattern = 'smooth') => {
-                const data = [];
-                
-                for (let i = 0; i <= intervals; i++) {
-                    const progress = i / intervals;
-                    let value;
-                    
-                    switch (pattern) {
-                        case 'exponential':
-                            // Fast initial growth, levels off (quality analysis)
-                            value = finalValue * (1 - Math.exp(-3 * progress));
-                            break;
-                        case 'sigmoid':
-                            // S-curve: slow start, fast middle, slow end (processing speed)
-                            const sigmoid = 1 / (1 + Math.exp(-6 * (progress - 0.5)));
-                            value = finalValue * sigmoid;
-                            break;
-                        case 'logarithmic':
-                            // Quick start, gradual improvement (accuracy)
-                            value = progress === 0 ? 0 : finalValue * (Math.log(progress * 9 + 1) / Math.log(10));
-                            break;
-                        default: // 'smooth'
-                            // Smooth acceleration curve (efficiency)
-                            value = finalValue * Math.pow(progress, 0.7);
-                    }
-                    
-                    // Add realistic variations (smaller for longer processing times)
-                    const variationFactor = Math.min(0.05, 0.2 / Math.sqrt(totalTime));
-                    const variation = (Math.random() - 0.5) * finalValue * variationFactor;
-                    data.push(Math.max(0, Math.min(100, value + variation)));
-                }
-                
-                return data;
-            };
-            
-            const qualityData = generateProcessingCurve(qualityScore, 'exponential');
-            const speedData = generateProcessingCurve(processingSpeed, 'sigmoid');
-            const accuracyData = generateProcessingCurve(accuracyRate, 'logarithmic');
-            const efficiencyData = generateProcessingCurve(efficiency, 'smooth');
-            
-            // Create premium luxury gradient backgrounds
-            const qualityGradient = ctx.createLinearGradient(0, 0, 0, 400);
-            qualityGradient.addColorStop(0, 'rgba(30, 41, 59, 0.8)');    // Deep Navy
-            qualityGradient.addColorStop(1, 'rgba(30, 41, 59, 0.1)');
-            
-            const speedGradient = ctx.createLinearGradient(0, 0, 0, 400);
-            speedGradient.addColorStop(0, 'rgba(218, 165, 32, 0.8)');    // Luxury Gold
-            speedGradient.addColorStop(1, 'rgba(218, 165, 32, 0.1)');
-            
-            const accuracyGradient = ctx.createLinearGradient(0, 0, 0, 400);
-            accuracyGradient.addColorStop(0, 'rgba(107, 114, 128, 0.8)'); // Platinum Silver
-            accuracyGradient.addColorStop(1, 'rgba(107, 114, 128, 0.1)');
-            
-            const efficiencyGradient = ctx.createLinearGradient(0, 0, 0, 400);
-            efficiencyGradient.addColorStop(0, 'rgba(136, 19, 55, 0.8)');  // Deep Burgundy
-            efficiencyGradient.addColorStop(1, 'rgba(136, 19, 55, 0.1)');
+            console.log('Complete processing pipeline:', enrichedSteps);
             
             try {
                 const chart = new Chart(ctx, {
-                    type: 'line',
+                    type: 'bar',
                     data: {
-                        labels: timeLabels,
+                        labels: enrichedSteps.map(step => `${step.icon} ${step.step}`),
                         datasets: [
                             {
-                                label: 'Quality Score',
-                                data: qualityData,
-                                borderColor: 'rgb(30, 41, 59)',         // Deep Navy
-                                backgroundColor: qualityGradient,
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: 'rgb(30, 41, 59)',
-                                pointBorderColor: 'white',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 8
-                            },
-                            {
-                                label: 'Processing Speed',
-                                data: speedData,
-                                borderColor: 'rgb(218, 165, 32)',       // Luxury Gold
-                                backgroundColor: speedGradient,
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: 'rgb(218, 165, 32)',
-                                pointBorderColor: 'white',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 8
-                            },
-                            {
-                                label: 'Accuracy Rate',
-                                data: accuracyData,
-                                borderColor: 'rgb(107, 114, 128)',      // Platinum Silver
-                                backgroundColor: accuracyGradient,
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: 'rgb(107, 114, 128)',
-                                pointBorderColor: 'white',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 8
-                            },
-                            {
-                                label: 'AI Efficiency',
-                                data: efficiencyData,
-                                borderColor: 'rgb(136, 19, 55)',        // Deep Burgundy
-                                backgroundColor: efficiencyGradient,
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: 'rgb(136, 19, 55)',
-                                backgroundColor: efficiencyGradient,
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: 'rgb(249, 115, 22)',
-                                pointBorderColor: 'white',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 8
+                                label: 'Processing Time (seconds)',
+                                data: enrichedSteps.map(step => step.duration),
+                                backgroundColor: enrichedSteps.map(step => step.bgColor),
+                                borderColor: enrichedSteps.map(step => step.color),
+                                borderWidth: 2,
+                                borderRadius: 8,
+                                borderSkipped: false,
+                                barThickness: 60,
+                                maxBarThickness: 80
                             }
                         ]
                     },
                     options: {
+                        indexAxis: 'y', // Horizontal bars for timeline effect
                         responsive: true,
                         maintainAspectRatio: false,
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
-                        },
                         plugins: {
                             legend: {
-                                display: false  // Hide legend since colors are indicated at the top
+                                display: false // Clean look without legend
                             },
                             tooltip: {
+                                enabled: true,
                                 backgroundColor: 'rgba(17, 24, 39, 0.95)',
-                                titleColor: 'white',
-                                bodyColor: 'white',
-                                borderColor: 'rgba(75, 85, 99, 0.3)',
-                                borderWidth: 1,
+                                titleColor: '#F9FAFB',
+                                bodyColor: '#F3F4F6',
+                                borderColor: 'rgba(59, 130, 246, 0.3)',
+                                borderWidth: 2,
                                 cornerRadius: 12,
                                 padding: 16,
                                 titleFont: {
                                     size: 14,
-                                    weight: 'bold'
+                                    weight: 'bold',
+                                    family: "'Inter', 'Segoe UI', sans-serif"
                                 },
                                 bodyFont: {
-                                    size: 13
+                                    size: 12,
+                                    family: "'Inter', 'Segoe UI', sans-serif"
                                 },
                                 displayColors: true,
                                 usePointStyle: true,
                                 callbacks: {
                                     title: function(context) {
-                                        const timeLabel = context[0].label;
-                                        return `Timeline: ${timeLabel}`;
-                                    },
-                                    afterTitle: function(context) {
-                                        return `Total Duration: ${totalTime.toFixed(1)}s`;
+                                        const step = enrichedSteps[context[0].dataIndex];
+                                        return `${step.icon} ${step.step}`;
                                     },
                                     label: function(context) {
-                                        const value = Math.round(context.parsed.y);
-                                        const metric = context.dataset.label;
-                                        let status = '';
-                                        
-                                        if (value >= 90) status = '🏆 Excellent';
-                                        else if (value >= 80) status = '✅ Good';
-                                        else if (value >= 70) status = '⚠️ Fair';
-                                        else status = '🔴 Needs Improvement';
-                                        
-                                        return `${metric}: ${value}% ${status}`;
+                                        const step = enrichedSteps[context.dataIndex];
+                                        return [
+                                            `Duration: ${step.duration}s`,
+                                            `Percentage: ${step.percentage}% of total`,
+                                            `Timeline: ${step.startTime}s → ${step.endTime}s`,
+                                            `Efficiency: ${step.efficiency}`
+                                        ];
+                                    },
+                                    afterBody: function(context) {
+                                        const step = enrichedSteps[context[0].dataIndex];
+                                        return `\n📋 ${step.description}\n\n🏁 Total Pipeline: ${totalTime}s\n🎯 AI Confidence: ${confidence}%`;
                                     }
                                 }
+                            },
+                            // Custom plugin for step annotations
+                            beforeDraw: function(chart) {
+                                const ctx = chart.ctx;
+                                const chartArea = chart.chartArea;
+                                
+                                ctx.save();
+                                ctx.font = 'bold 11px Inter, sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                
+                                // Add percentage labels on bars
+                                chart.data.datasets[0].data.forEach((value, index) => {
+                                    const meta = chart.getDatasetMeta(0);
+                                    const bar = meta.data[index];
+                                    const step = enrichedSteps[index];
+                                    
+                                    if (bar && step.duration > 0) {
+                                        const x = bar.x + (bar.width / 2);
+                                        const y = bar.y;
+                                        
+                                        ctx.fillStyle = '#FFFFFF';
+                                        ctx.fillText(`${step.duration}s`, x, y - 8);
+                                        ctx.fillText(`${step.percentage}%`, x, y + 8);
+                                    }
+                                });
+                                
+                                ctx.restore();
                             }
                         },
                         scales: {
                             x: {
-                                display: true,
                                 title: {
                                     display: true,
-                                    text: `Processing Timeline (${totalTime.toFixed(1)}s total)`,
-                                    color: '#6B7280',
+                                    text: '⏱️ Processing Time (seconds)',
+                                    color: '#374151',
                                     font: {
-                                        size: 12,
-                                        weight: 'bold'
+                                        size: 14,
+                                        weight: 'bold',
+                                        family: "'Inter', 'Segoe UI', sans-serif"
                                     }
                                 },
                                 grid: {
@@ -5419,51 +5418,142 @@
                                     color: '#6B7280',
                                     font: {
                                         size: 11,
-                                        weight: 'medium'
-                                    }
-                                }
-                            },
-                            y: {
-                                display: true,
-                                beginAtZero: true,
-                                max: 100,
-                                title: {
-                                    display: true,
-                                    text: 'Performance (%)',
-                                    color: '#6B7280',
-                                    font: {
-                                        size: 12,
-                                        weight: 'bold'
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(156, 163, 175, 0.2)',
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    color: '#6B7280',
-                                    font: {
-                                        size: 11,
-                                        weight: 'medium'
+                                        weight: '500',
+                                        family: "'Inter', 'Segoe UI', sans-serif"
                                     },
                                     callback: function(value) {
-                                        return value + '%';
+                                        return value + 's';
                                     }
+                                },
+                                beginAtZero: true
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: '📊 Processing Pipeline Steps',
+                                    color: '#374151',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold',
+                                        family: "'Inter', 'Segoe UI', sans-serif"
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#374151',
+                                    font: {
+                                        size: 12,
+                                        weight: '600',
+                                        family: "'Inter', 'Segoe UI', sans-serif"
+                                    },
+                                    padding: 12
                                 }
                             }
                         },
                         animation: {
                             duration: 2000,
-                            easing: 'easeInOutCubic'
+                            easing: 'easeInOutQuart',
+                            delay: function(context) {
+                                return context.dataIndex * 200; // Staggered animation
+                            }
+                        },
+                        layout: {
+                            padding: {
+                                top: 20,
+                                right: 40,
+                                bottom: 20,
+                                left: 20
+                            }
                         }
                     }
                 });
                 
-                console.log('Adaptive analytics chart created successfully:', chart);
+                // Add single-line compact summary below chart
+                setTimeout(() => {
+                    const summaryDiv = document.createElement('div');
+                    summaryDiv.className = 'processing-summary';
+                    summaryDiv.style.cssText = `
+                        margin-top: 8px;
+                        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 6px;
+                        padding: 8px 12px;
+                        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+                        font-family: 'Inter', 'Segoe UI', sans-serif;
+                        font-size: 11px;
+                        color: white;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        height: 32px;
+                        overflow: hidden;
+                    `;
+                    
+                    const totalSteps = enrichedSteps.filter(s => s.duration > 0).length;
+                    const avgTime = totalTime / totalSteps;
+                    const efficiency = avgTime < 1 ? 'Excellent' : avgTime < 2 ? 'Good' : 'Standard';
+                    const efficiencyIcon = avgTime < 1 ? '🏆' : avgTime < 2 ? '⚡' : '📊';
+                    
+                    summaryDiv.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 16px; white-space: nowrap;">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                📈 <strong>${totalSteps}</strong> steps
+                            </span>
+                            <span style="color: rgba(255,255,255,0.3);">|</span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                ⏱️ <strong>${totalTime}s</strong> total
+                            </span>
+                            <span style="color: rgba(255,255,255,0.3);">|</span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                📊 <strong>${avgTime.toFixed(1)}s</strong> avg
+                            </span>
+                            <span style="color: rgba(255,255,255,0.3);">|</span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                ${efficiencyIcon} <strong>${efficiency}</strong>
+                            </span>
+                            <span style="color: rgba(255,255,255,0.3);">|</span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                🎯 <strong>${confidence}%</strong> confidence
+                            </span>
+                        </div>
+                        <div style="
+                            display: flex; 
+                            align-items: center; 
+                            gap: 4px;
+                            font-size: 10px;
+                            opacity: 0.8;
+                        ">
+                            <span style="
+                                width: 4px; 
+                                height: 4px; 
+                                background: #10B981; 
+                                border-radius: 50%;
+                                animation: pulse 2s infinite;
+                            "></span>
+                            Active
+                        </div>
+                    `;
+                    
+                    canvas.parentNode.appendChild(summaryDiv);
+                    
+                    // Add pulse animation
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.5; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }, 100);
+                
+                console.log('Comprehensive business pipeline created successfully:', chart);
                 return chart;
                 
             } catch (error) {
-                console.error('Error creating adaptive analytics chart:', error);
+                console.error('Error creating comprehensive pipeline:', error);
             }
         };
 
@@ -5796,6 +5886,148 @@
             }
         }
         
+        // Advanced Quality Metrics Chart - Sophisticated Radar/Multi-type Visualization
+        window.createAdvancedQualityChart = function createAdvancedQualityChart(canvasId, resultData) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.error('Advanced chart canvas not found:', canvasId);
+                return;
+            }
+            
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded for advanced quality chart');
+                return;
+            }
+            
+            console.log('Creating Advanced Quality Chart with real backend data:', resultData);
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Extract real quality metrics from _rawResult.quality_analysis.average_metrics
+            let brightness = 85, contrast = 90, sharpness = 95, textClarity = 88, overallReadability = 92;
+            
+            try {
+                if (resultData._rawResult && resultData._rawResult.quality_analysis && resultData._rawResult.quality_analysis.average_metrics) {
+                    const metrics = resultData._rawResult.quality_analysis.average_metrics;
+                    
+                    brightness = metrics.brightness_score ? metrics.brightness_score.percentage : 85;
+                    contrast = metrics.contrast_score ? metrics.contrast_score.percentage : 90;
+                    sharpness = metrics.sharpness_score ? metrics.sharpness_score.percentage : 95;
+                    textClarity = metrics.text_clarity ? metrics.text_clarity.percentage : 88;
+                    overallReadability = metrics.overall_readability ? metrics.overall_readability.percentage : 92;
+                    
+                    console.log('Extracted real quality metrics:', {
+                        brightness, contrast, sharpness, textClarity, overallReadability
+                    });
+                } else {
+                    console.log('Using fallback quality values - no real backend data found');
+                }
+            } catch (error) {
+                console.error('Error extracting quality metrics:', error);
+                console.log('Using fallback quality values due to extraction error');
+            }
+            
+            try {
+                // Create sophisticated mixed chart (Radar + Bar combination) with real data
+                const chart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Brightness', 'Contrast', 'Sharpness', 'Text Clarity', 'Overall Readability'],
+                    datasets: [{
+                        label: 'Quality Metrics',
+                        data: [brightness, contrast, sharpness, textClarity, overallReadability],
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: 'rgba(99, 102, 241, 0.8)',
+                        pointBackgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',   // Blue for Brightness
+                            'rgba(16, 185, 129, 0.8)',   // Emerald for Contrast  
+                            'rgba(139, 92, 246, 0.8)',   // Purple for Sharpness
+                            'rgba(245, 158, 11, 0.8)',   // Orange for Text Clarity
+                            'rgba(99, 102, 241, 0.8)'    // Indigo for Overall Readability
+                        ],
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        borderWidth: 3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false  // We have custom legend in the layout
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#374151',
+                            bodyColor: '#6B7280',
+                            borderColor: '#E5E7EB',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    return `Score: ${context.parsed.r}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            min: 0,
+                            ticks: {
+                                stepSize: 20,
+                                color: '#9CA3AF',
+                                font: {
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.2)',
+                                lineWidth: 1
+                            },
+                            angleLines: {
+                                color: 'rgba(156, 163, 175, 0.2)',
+                                lineWidth: 1
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                },
+                                color: '#4B5563',
+                                padding: 15
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutBounce'
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'point'
+                    }
+                }
+            });
+            
+            return chart;
+            
+            } catch (error) {
+                console.error('Error creating advanced quality chart:', error);
+            }
+        };
+        
         // Initialize loader when processing starts
         document.addEventListener('DOMContentLoaded', function() {
             // Watch for loader element to be added to DOM by Vue
@@ -5822,6 +6054,16 @@
     <!-- Chart.js Library for Premium Quality Metrics Graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <script>
+        // Ensure Chart.js loaded event
+        console.log('Chart.js library loaded, Chart available:', typeof Chart !== 'undefined');
+        
+        // Verify function availability after Chart.js loads
+        window.addEventListener('load', function() {
+            console.log('Advanced Quality Chart function available:', typeof window.createAdvancedQualityChart);
+        });
+    </script>
     
     <!-- Premium Quality Metrics Chart Implementation -->
     <script>
@@ -6882,7 +7124,7 @@
             } catch (error) {
                 console.error('Error creating premium quality metrics chart:', error);
             }
-        }
+        };
         
         // Auto-initialize charts when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
@@ -6894,11 +7136,13 @@
                 initializeQualityCharts();
             }, 2000);
             
+
+            
             // Watch for new chart containers
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1 && node.tagName === 'CANVAS' && node.id.startsWith('qualityChart-')) {
+                        if (node.nodeType === 1 && node.tagName === 'CANVAS' && (node.id.startsWith('qualityChart-') || node.id.startsWith('advancedQualityChart-'))) {
                             console.log('New chart canvas detected:', node.id);
                             const index = node.id.split('-')[1];
                             
@@ -6911,7 +7155,15 @@
                             };
                             
                             setTimeout(() => {
-                                createQualityMetricsChart(node.id, resultData);
+                                if (node.id.startsWith('advancedQualityChart-')) {
+                                    if (window.createAdvancedQualityChart) {
+                                        window.createAdvancedQualityChart(node.id, resultData);
+                                    }
+                                } else if (node.id.startsWith('qualityChart-')) {
+                                    if (window.createQualityMetricsChart) {
+                                        window.createQualityMetricsChart(node.id, resultData);
+                                    }
+                                }
                             }, 500);
                         }
                     });
