@@ -1,0 +1,56 @@
+{
+    "Shipping Bill": {
+        "Document Details": [
+            "Shipping Bill Number",
+            "Date of Issue",
+            "Port Code",
+            "Type of Shipping Bill (FOB/Export Promotion Scheme etc.)"
+        ],
+        "Exporter & Importer Information": [
+            "Exporter Name and Address",
+            "IEC Code",
+            "GSTIN",
+            "Consignee Name and Address",
+            "Buyer Country"
+        ],
+        "Shipping & Transport": [
+            "Port of Loading",
+            "Port of Discharge",
+            "Mode of Transport",
+            "Vessel/Flight Number",
+            "Customs House Agent (CHA) Name and Code"
+        ],
+        "Invoice & Order Details": [
+            "Invoice Number",
+            "Invoice Date",
+            "Purchase Order Number",
+            "Purchase Order Date",
+            "Currency",
+            "Invoice Value"
+        ],
+        "Goods Details": [
+            "Item Number",
+            "Product Description",
+            "HS Code",
+            "Quantity",
+            "Unit of Measure",
+            "FOB Value",
+            "Drawback Amount",
+            "Gross Weight",
+            "Net Weight",
+            "Marks and Numbers",
+            "Nature of Payment"
+        ],
+        "Duty & Certification": [
+            "Duty Drawback Claimed",
+            "IGST on Export",
+            "MEIS/RODTEP Claimed",
+            "Inspection Certification (if applicable)"
+        ],
+        "Signatures & Stamps": [
+            "Signature of Exporter/CHA",
+            "Customs Signature",
+            "Customs Seal"
+        ]
+    }
+}

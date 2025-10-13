@@ -1,0 +1,48 @@
+{
+    "GR Form": {
+        "Form Details": [
+            "GR Form Number",
+            "Date of Issue",
+            "Reserve Bank Approval Number (if any)"
+        ],
+        "Exporter & Buyer Information": [
+            "Exporter Name and Address",
+            "IEC Code",
+            "AD Code",
+            "Buyer Name and Address",
+            "Country of Destination"
+        ],
+        "Shipping & Transport": [
+            "Shipping Bill Number",
+            "Date of Shipment",
+            "Port of Shipment",
+            "Mode of Transport",
+            "Vessel/Flight Number"
+        ],
+        "Invoice & Payment Details": [
+            "Invoice Number",
+            "Invoice Date",
+            "Currency",
+            "FOB Value",
+            "Freight",
+            "Insurance",
+            "Total Invoice Value",
+            "Terms of Payment (e.g., LC, DA, DP)"
+        ],
+        "Banking & Certification": [
+            "Authorized Dealer Bank Name",
+            "Bank Branch Code",
+            "FIRC Number",
+            "Date of Realization",
+            "Bank Certification",
+            "Remittance Amount",
+            "Country of Remittance"
+        ],
+        "Declaration & Verification": [
+            "Exporter Declaration",
+            "Authorized Signatory",
+            "Customs Verification",
+            "Customs Seal and Signature"
+        ]
+    }
+}

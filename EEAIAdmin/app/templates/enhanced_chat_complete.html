@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - Enhanced Chat</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-chat.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Enhanced Header with Export Actions -->
+        <div class="chat-header">
+            <div class="header-actions">
+                <div class="chat-title">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">
+                        <i class="fas fa-robot" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                        AI Assistant
+                    </h2>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn export-btn" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Excel</span>
+                    </button>
+                    <button class="action-btn pdf-btn" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF</span>
+                    </button>
+                    <button class="action-btn report-btn" onclick="generateReport()">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Report</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleTheme()">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                        <span id="theme-text">Dark</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-area" id="messages-container">
+            <!-- Welcome Message -->
+            <div class="message assistant">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-role">AI Assistant</div>
+                    <div class="message-text">
+                        Hello! I'm your AI assistant. I can help you with document analysis, data processing, and answering your questions. How can I assist you today?
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Input Area -->
+        <div class="input-area">
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <button class="attach-btn" onclick="attachFile()">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <textarea 
+                        class="message-input" 
+                        id="message-input" 
+                        placeholder="Message AI Assistant..." 
+                        rows="1" 
+                        style="height: 32px;"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button class="voice-btn" id="voice-btn" onclick="toggleVoiceRecording()">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="fab-container">
+            <button class="fab-btn" onclick="toggleFabMenu()">
+                <i class="fas fa-plus"></i>
+            </button>
+            <div class="fab-menu" id="fab-menu">
+                <div class="fab-menu-item" onclick="startNewChat()">
+                    <i class="fas fa-comments"></i>
+                    <span>New Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="clearChat()">
+                    <i class="fas fa-broom"></i>
+                    <span>Clear Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="exportChat()">
+                    <i class="fas fa-download"></i>
+                    <span>Export Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the enhanced JavaScript -->
+    <script src="{{ url_for('static', filename='js/enhanced-chat.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(grep:*)",
+      "Bash(for file in *.json)",
+      "Bash(do echo \"File: $file\")",
+      "Bash(head:*)",
+      "Bash(done)",
+      "Bash(python:*)",
+      "Bash(python:*)",
+      "Bash(touch:*)",
+      "Bash(curl:*)",
+      "Bash(pip3 install:*)",
+      "Bash(.venv/Scripts/python.exe test_azure_openai.py:*)",
+      "Bash(.venv/Scripts/python.exe test_chatbot_azure.py:*)",
+      "Bash(.venv/Scripts/python.exe test_llm_intent.py:*)",
+      "Bash(source:*)",
+      "Bash(.venv/Scripts/python.exe run.py:*)",
+      "Bash(.venv/Scripts/python.exe test_forms_navigation.py:*)",
+      "Bash(ss:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(sed:*)",
+      "Bash(mv:*)",
+      "Bash(sed:*)",
+      "Bash(.venv/Scripts/python.exe test_transaction_flow.py:*)",
+      "Bash(.venv/Scripts/python.exe test_handler_direct.py:*)",
+      "Bash(mkdir:*)",
+      "Bash(.venv/Scripts/python.exe -c \"from jinja2 import Environment, FileSystemLoader; env = Environment(loader=FileSystemLoader(''app/templates'')); template = env.get_template(''components/floating_header.html''); print(''Template loads OK'')\")",
+      "Bash(test:*)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(for:*)",
+      "Bash(do if ! grep -q \"floating_header.html\" \"$file\")"
+    ],
+    "deny": []
+  }
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Sessions</title>
+    <script>
+        // Set a test user ID
+        localStorage.setItem('user_id', 'test_user_123');
+        
+        function testSessionsAPI() {
+            const userId = localStorage.getItem('user_id');
+            const url = `/api/sessions?user_id=${userId}`;
+            
+            console.log('Testing sessions API...');
+            console.log('User ID:', userId);
+            console.log('URL:', url);
+            
+            fetch(url)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Sessions data:', data);
+                    document.getElementById('result').innerHTML = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('result').innerHTML = 'Error: ' + error.message;
+                });
+        }
+        
+        function checkSessionsContainer() {
+            const container = document.getElementById('sessions-container');
+            console.log('Sessions container exists:', !!container);
+            if (container) {
+                console.log('Container HTML:', container.innerHTML);
+            }
+        }
+        
+        window.onload = function() {
+            console.log('Page loaded');
+            checkSessionsContainer();
+        };
+    </script>
+</head>
+<body>
+    <h1>Sessions Test Page</h1>
+    
+    <button onclick="testSessionsAPI()">Test Sessions API</button>
+    <button onclick="checkSessionsContainer()">Check Container</button>
+    
+    <h2>Sessions Container:</h2>
+    <div id="sessions-container" style="border: 1px solid #ccc; padding: 10px; min-height: 100px;">
+        Sessions will appear here...
+    </div>
+    
+    <h2>API Result:</h2>
+    <pre id="result" style="background: #f0f0f0; padding: 10px;"></pre>
+    
+    <h2>Console:</h2>
+    <p>Open browser console (F12) to see detailed logs</p>
+</body>
+</html>

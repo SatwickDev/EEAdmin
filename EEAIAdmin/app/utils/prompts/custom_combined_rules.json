@@ -1,0 +1,10 @@
+[
+  {
+    "id": "CR001",
+    "description": "Ensure expiry date is explicitly mentioned."
+  },
+  {
+    "id": "CR002",
+    "description": "Expiry place should not be Central Africa."
+  }
+]

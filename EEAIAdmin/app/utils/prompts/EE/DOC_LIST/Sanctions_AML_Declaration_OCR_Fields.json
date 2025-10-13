@@ -1,0 +1,41 @@
+{
+    "Sanctions/AML Declaration": {
+        "Declaration Details": [
+            "Declaration ID/Reference Number",
+            "Date of Declaration",
+            "Declaration Type (Sanctions/AML/Both)"
+        ],
+        "Entity Information": [
+            "Declaring Company Name and Address",
+            "Authorized Representative Name",
+            "Contact Information",
+            "Entity Type (Importer, Exporter, Freight Forwarder, etc.)"
+        ],
+        "Transaction Information": [
+            "Transaction Description",
+            "Involved Countries",
+            "Goods/Services Involved",
+            "Value of Transaction",
+            "Currency"
+        ],
+        "Sanctions & AML Compliance": [
+            "Screening Confirmation (Denied Party Lists)",
+            "PEP Screening Result",
+            "End-Use and End-User Screening",
+            "Funding Source Disclosure",
+            "Confirmation of Compliance with Relevant Regulations"
+        ],
+        "Statements & Declarations": [
+            "No Dealings with Sanctioned Entities",
+            "No Use of Prohibited Goods",
+            "Declaration of Lawful Use",
+            "Signature of Compliance Officer"
+        ],
+        "Authentication": [
+            "Authorized Signatory",
+            "Designation",
+            "Date",
+            "Company Stamp/Seal"
+        ]
+    }
+}

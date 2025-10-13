@@ -1,0 +1,3022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Document Entity Maintenance - Finstack</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .mappings-container {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .mappings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .mappings-table th {
+      background: #f9fafb;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .mappings-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #1f2937;
+    }
+
+    .mappings-table tr:hover {
+      background: #f9fafb;
+    }
+
+    .document-row {
+      cursor: pointer;
+      background: #f9fafb;
+      font-weight: 600;
+    }
+
+    .document-row:hover {
+      background: #f3f4f6;
+    }
+
+    .document-row td {
+      border-bottom: 2px solid #d1d5db;
+    }
+
+    .expand-icon {
+      transition: transform 0.2s;
+      display: inline-block;
+      margin-right: 8px;
+      color: #6b7280;
+    }
+
+    .expand-icon.expanded {
+      transform: rotate(90deg);
+      color: #1f2937;
+    }
+
+    .field-rows {
+      display: none;
+    }
+
+    .field-rows.show {
+      display: table-row;
+    }
+
+    .field-row td {
+      padding-left: 40px;
+      background: #ffffff;
+    }
+
+    .field-count {
+      display: inline-block;
+      background: #e5e7eb;
+      color: #374151;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-mandatory {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .badge-optional {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+
+    .badge-conditional {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: #4b5563;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #374151;
+    }
+
+    .btn-icon {
+      padding: 6px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 32px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+      color: #1f2937;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #4b5563;
+      box-shadow: 0 0 0 3px rgba(75, 85, 99, 0.1);
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .radio-option input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .radio-option label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #ffffff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #374151;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s;
+      z-index: 999;
+    }
+
+    .back-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: #64748b;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 48px;
+      color: #6b7280;
+    }
+
+    .spinner {
+      border: 3px solid #e5e7eb;
+      border-top-color: #4b5563;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Tab Styles */
+    .tabs-container {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      font-weight: 600;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      background: #f9fafb;
+      color: #374151;
+    }
+
+    .tab-btn.active {
+      background: #4b5563;
+      color: #ffffff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .category-card {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 12px;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s;
+    }
+
+    .category-card:hover {
+      border-color: #4b5563;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .category-info-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .category-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #4b5563;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .category-details {
+      flex: 1;
+    }
+
+    .category-name-display {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .category-id-display {
+      font-size: 12px;
+      color: #9ca3af;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+
+    .categories-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    /* Function Card Styles */
+    .function-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: all 0.15s;
+    }
+
+    .function-card:hover {
+      border-color: #4b5563;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .function-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .function-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .function-category {
+      display: inline-block;
+      background: #f3f4f6;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .function-description {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .function-docs {
+      margin-bottom: 16px;
+    }
+
+    .doc-requirement {
+      display: inline-flex;
+      align-items: center;
+      background: #f9fafb;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      color: #374151;
+      gap: 4px;
+    }
+
+    .doc-requirement.mandatory {
+      border-left: 3px solid #ef4444;
+    }
+
+    .doc-requirement.optional {
+      border-left: 3px solid #3b82f6;
+    }
+
+    .function-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+
+    .status-inactive {
+      background: rgba(107, 114, 128, 0.1);
+      color: #6b7280;
+    }
+
+    /* Entity Card Styles */
+    .entity-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+
+    .entity-card:hover {
+      border-color: #d1d5db;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .entity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 8px;
+    }
+
+    .entity-name {
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 15px;
+      flex: 1;
+      padding-right: 8px;
+    }
+
+    .entity-description {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .entity-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Data Category Card Styles */
+    .data-category-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 18px;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .data-category-card:hover {
+      border-color: #4b5563;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .data-category-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .data-category-icon {
+      width: 40px;
+      height: 40px;
+      background: #4b5563;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .data-category-value {
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 15px;
+      flex: 1;
+    }
+
+    .data-category-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .data-category-id {
+      font-size: 12px;
+      color: #9ca3af;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+
+    .data-category-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* View Toggle Styles */
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: #f3f4f6;
+      padding: 4px;
+      border-radius: 6px;
+    }
+
+    .view-toggle-btn {
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      font-weight: 600;
+      font-size: 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .view-toggle-btn:hover {
+      color: #374151;
+    }
+
+    .view-toggle-btn.active {
+      background: #ffffff;
+      color: #1f2937;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* List View Styles */
+    .list-view {
+      display: none;
+    }
+
+    .list-view.active {
+      display: block;
+    }
+
+    .tiles-view {
+      display: none;
+    }
+
+    .tiles-view.active {
+      display: grid;
+    }
+
+    .list-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .list-table thead {
+      background: #f9fafb;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .list-table th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .list-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #1f2937;
+      font-size: 14px;
+    }
+
+    .list-table tbody tr:hover {
+      background: #f9fafb;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-btn">
+    <i class="mdi mdi-arrow-left"></i>
+    Back to Home
+  </a>
+
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Document Entity Maintenance</h1>
+        <p>Manage categories, document types, and field mappings</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <button class="tab-btn active" onclick="switchTab('categories')">
+        <i class="mdi mdi-folder-multiple"></i>
+        Categories
+      </button>
+      <button class="tab-btn" onclick="switchTab('documentCategories')">
+        <i class="mdi mdi-file-document"></i>
+        Documents
+      </button>
+      <button class="tab-btn" onclick="switchTab('entities')">
+        <i class="mdi mdi-tag-text"></i>
+        Entities
+      </button>
+      <button class="tab-btn" onclick="switchTab('dataCategories')">
+        <i class="mdi mdi-tag-multiple"></i>
+        Data
+      </button>
+      <button class="tab-btn" onclick="switchTab('mappings')">
+        <i class="mdi mdi-link-variant"></i>
+        Mappings
+      </button>
+      <button class="tab-btn" onclick="switchTab('customFunctions')">
+        <i class="mdi mdi-function-variant"></i>
+        Functions
+      </button>
+      <button class="tab-btn" onclick="switchTab('promptConfig')">
+        <i class="mdi mdi-brain"></i>
+        Prompts
+      </button>
+    </div>
+
+    <!-- Process Categories Tab -->
+    <div id="categoriesTab" class="tab-content active">
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div class="categories-header">
+          <h2 style="font-size: 20px; font-weight: 700; color: #1f2937;">Process Categories</h2>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="view-toggle">
+              <button class="view-toggle-btn" onclick="toggleCategoriesView('list')" id="categoriesListBtn">
+                <i class="mdi mdi-format-list-bulleted"></i>
+                List
+              </button>
+              <button class="view-toggle-btn active" onclick="toggleCategoriesView('tiles')" id="categoriesTilesBtn">
+                <i class="mdi mdi-view-grid"></i>
+                Tiles
+              </button>
+            </div>
+            <button class="btn btn-primary" onclick="addCategory()">
+              <i class="mdi mdi-plus"></i>
+              Add Category
+            </button>
+          </div>
+        </div>
+
+        <!-- List View -->
+        <div id="categoriesListView" class="list-view">
+          <table class="list-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">Number</th>
+                <th style="width: 45%;">Name</th>
+                <th style="width: 20%;">ID</th>
+                <th style="width: 20%;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="categoriesListTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Tiles View -->
+        <div id="categoriesTilesView" class="tiles-view active"></div>
+      </div>
+    </div>
+
+    <!-- Document Types Tab -->
+    <div id="documentCategoriesTab" class="tab-content">
+      <!-- Header Section -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">Document Types</h2>
+            <p style="font-size: 14px; color: #6b7280;">Manage the 36 document types across all process categories</p>
+          </div>
+          <button class="btn btn-primary" onclick="addDocumentCategory()">
+            <i class="mdi mdi-plus"></i>
+            Add Document Type
+          </button>
+        </div>
+
+        <!-- Stats Bar -->
+        <div style="display: flex; gap: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-file-document-multiple" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="totalDocumentTypes" style="color: #1f2937; font-weight: 600;">0</strong> Total Types
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-eye" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="visibleDocumentTypes" style="color: #1f2937; font-weight: 600;">0</strong> Visible
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-sitemap" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="processTypeCount" style="color: #1f2937; font-weight: 600;">0</strong> Process Types
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filter -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-filter" style="margin-right: 4px;"></i>Filter by Process Type
+            </label>
+            <select id="processTypeFilter" class="form-control" onchange="filterDocumentTypes()">
+              <option value="">All Process Types</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-magnify" style="margin-right: 4px;"></i>Search
+            </label>
+            <input type="text" id="documentTypeSearchInput" class="form-control" placeholder="Search by name, code, or ID..." oninput="filterDocumentTypes()">
+          </div>
+          <button class="btn btn-secondary" onclick="clearDocumentTypeFilters()" style="height: 44px;">
+            <i class="mdi mdi-close"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Document Types Table -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <table class="mappings-table">
+          <thead>
+            <tr>
+              <th style="width: 8%;">ID</th>
+              <th style="width: 12%;">Code</th>
+              <th style="width: 28%;">Document Name</th>
+              <th style="width: 22%;">Process Type</th>
+              <th style="width: 20%;">Sender</th>
+              <th style="width: 10%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="documentTypesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Entities Tab -->
+    <div id="entitiesTab" class="tab-content">
+      <!-- Header Section -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">Entities</h2>
+            <p style="font-size: 14px; color: #6b7280;">Manage trade finance entities and their descriptions</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="view-toggle">
+              <button class="view-toggle-btn" onclick="toggleEntitiesView('list')" id="entitiesListBtn">
+                <i class="mdi mdi-format-list-bulleted"></i>
+                List
+              </button>
+              <button class="view-toggle-btn active" onclick="toggleEntitiesView('tiles')" id="entitiesTilesBtn">
+                <i class="mdi mdi-view-grid"></i>
+                Tiles
+              </button>
+            </div>
+            <button class="btn btn-primary" onclick="addEntityTab()">
+              <i class="mdi mdi-plus"></i>
+              Add Entity
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div style="display: flex; gap: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-tag-text" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="totalEntities" style="color: #1f2937; font-weight: 600;">0</strong> Total Entities
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-eye" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="visibleEntities" style="color: #1f2937; font-weight: 600;">0</strong> Visible
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-magnify" style="margin-right: 4px;"></i>Search
+            </label>
+            <input type="text" id="entitySearchInput" class="form-control" placeholder="Search entities..." oninput="filterEntitiesTab()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Entities Views Container -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <!-- List View -->
+        <div id="entitiesListView" class="list-view">
+          <table class="list-table">
+            <thead>
+              <tr>
+                <th style="width: 30%;">Name</th>
+                <th style="width: 50%;">Description</th>
+                <th style="width: 20%;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="entitiesListTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Tiles View -->
+        <div id="entitiesTilesView" class="tiles-view active" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;"></div>
+      </div>
+    </div>
+    <!-- End Entities Tab -->
+
+    <!-- Data Categories Tab -->
+    <div id="dataCategoriesTab" class="tab-content">
+      <!-- Header Section -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">Data Categories</h2>
+            <p style="font-size: 14px; color: #6b7280;">Manage your data category values</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="view-toggle">
+              <button class="view-toggle-btn" onclick="toggleDataCategoriesView('list')" id="dataCategoriesListBtn">
+                <i class="mdi mdi-format-list-bulleted"></i>
+                List
+              </button>
+              <button class="view-toggle-btn active" onclick="toggleDataCategoriesView('tiles')" id="dataCategoriesTilesBtn">
+                <i class="mdi mdi-view-grid"></i>
+                Tiles
+              </button>
+            </div>
+            <button class="btn btn-primary" onclick="addDataCategoryTab()">
+              <i class="mdi mdi-plus"></i>
+              Add Category
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div style="display: flex; gap: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-tag-multiple" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="totalDataCategories" style="color: #1f2937; font-weight: 600;">0</strong> Total Categories
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-eye" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="visibleDataCategories" style="color: #1f2937; font-weight: 600;">0</strong> Visible
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-magnify" style="margin-right: 4px;"></i>Search
+            </label>
+            <input type="text" id="dataCategorySearchInput" class="form-control" placeholder="Search categories..." oninput="filterDataCategoriesTab()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Categories Views Container -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <!-- List View -->
+        <div id="dataCategoriesListView" class="list-view">
+          <table class="list-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">ID</th>
+                <th style="width: 65%;">Category Value</th>
+                <th style="width: 20%;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dataCategoriesListTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Tiles View -->
+        <div id="dataCategoriesTilesView" class="tiles-view active" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+      </div>
+    </div>
+    <!-- End Data Categories Tab -->
+
+    <!-- Mappings Tab -->
+    <div id="mappingsTab" class="tab-content">
+      <!-- Header Section -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">Document Types & Mappings</h2>
+            <p style="font-size: 14px; color: #6b7280;">Manage field mappings for each document type</p>
+          </div>
+          <button class="btn btn-primary" onclick="addMapping()">
+            <i class="mdi mdi-plus"></i>
+            Add Mapping
+          </button>
+        </div>
+
+        <!-- Stats Bar -->
+        <div style="display: flex; gap: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-file-document-multiple" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="totalMappings" style="color: #1f2937; font-weight: 600;">0</strong> Total Mappings
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-eye" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="visibleMappings" style="color: #1f2937; font-weight: 600;">0</strong> Visible
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-folder-multiple" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="documentCount" style="color: #1f2937; font-weight: 600;">0</strong> Documents
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Section -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-filter" style="margin-right: 4px;"></i>Filter by Document
+            </label>
+            <select id="documentFilter" class="form-control" onchange="filterMappings()">
+              <option value="">All Documents</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-magnify" style="margin-right: 4px;"></i>Search
+            </label>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by entity, category, or field type..." oninput="filterMappings()">
+          </div>
+          <button class="btn btn-secondary" onclick="clearFilters()" style="height: 44px;">
+            <i class="mdi mdi-close"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading mappings...</p>
+    </div>
+
+      <div id="mappingsContainer" class="mappings-container" style="display: none;">
+        <table class="mappings-table" id="mappingsTable">
+          <thead>
+            <tr>
+              <th style="width: 25%;">
+                <i class="mdi mdi-tag" style="margin-right: 6px; color: #6b7280;"></i>
+                Entity / Field Name
+              </th>
+              <th style="width: 18%;">
+                <i class="mdi mdi-sitemap" style="margin-right: 6px; color: #6b7280;"></i>
+                Process Category
+              </th>
+              <th style="width: 18%;">
+                <i class="mdi mdi-form-textbox" style="margin-right: 6px; color: #6b7280;"></i>
+                Form Field
+              </th>
+              <th style="width: 15%;">
+                <i class="mdi mdi-folder" style="margin-right: 6px; color: #6b7280;"></i>
+                Data Category
+              </th>
+              <th style="width: 12%;">
+                <i class="mdi mdi-flag" style="margin-right: 6px; color: #6b7280;"></i>
+                Requirement
+              </th>
+              <th style="width: 12%;">
+                <i class="mdi mdi-cog" style="margin-right: 6px; color: #6b7280;"></i>
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody id="mappingsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- End Mappings Tab -->
+
+    <!-- Custom Functions Tab -->
+    <div id="customFunctionsTab" class="tab-content">
+      <!-- Header Section -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">Custom Functions</h2>
+            <p style="font-size: 14px; color: #6b7280;">Create and manage custom business functions with AI-powered document processing</p>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="view-toggle">
+              <button class="view-toggle-btn" onclick="toggleFunctionsView('list')" id="functionsListBtn">
+                <i class="mdi mdi-format-list-bulleted"></i>
+                List
+              </button>
+              <button class="view-toggle-btn active" onclick="toggleFunctionsView('tiles')" id="functionsTilesBtn">
+                <i class="mdi mdi-view-grid"></i>
+                Tiles
+              </button>
+            </div>
+            <a href="/custom_function_builder" class="btn btn-primary" style="text-decoration: none;">
+              <i class="mdi mdi-plus"></i>
+              Create New Function
+            </a>
+          </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div style="display: flex; gap: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-function-variant" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="totalFunctions" style="color: #1f2937; font-weight: 600;">0</strong> Total Functions
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-eye" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="visibleFunctions" style="color: #1f2937; font-weight: 600;">0</strong> Visible
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-check-circle" style="font-size: 20px; color: #6b7280;"></i>
+            <span style="font-size: 14px; color: #6b7280;">
+              <strong id="activeFunctions" style="color: #1f2937; font-weight: 600;">0</strong> Active
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filter -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; gap: 16px; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-filter" style="margin-right: 4px;"></i>Filter by Category
+            </label>
+            <select id="functionCategoryFilter" class="form-control" onchange="filterFunctions()">
+              <option value="">All Categories</option>
+              <option value="Trade Finance">Trade Finance</option>
+              <option value="Treasury">Treasury</option>
+              <option value="Cash Management">Cash Management</option>
+              <option value="Compliance">Compliance</option>
+              <option value="Operations">Operations</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">
+              <i class="mdi mdi-magnify" style="margin-right: 4px;"></i>Search
+            </label>
+            <input type="text" id="functionSearchInput" class="form-control" placeholder="Search by name or description..." oninput="filterFunctions()">
+          </div>
+          <button class="btn btn-secondary" onclick="clearFunctionFilters()" style="height: 44px;">
+            <i class="mdi mdi-close"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Functions Views Container -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <!-- List View -->
+        <div id="functionsListView" class="list-view">
+          <table class="list-table">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Name</th>
+                <th style="width: 15%;">Category</th>
+                <th style="width: 10%;">Status</th>
+                <th style="width: 30%;">Documents</th>
+                <th style="width: 20%;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="functionsListTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Tiles View -->
+        <div id="functionsTilesView" class="tiles-view active" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px;"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="functionsEmptyState" style="display: none; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 64px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <i class="mdi mdi-function-variant" style="font-size: 64px; color: #9ca3af; opacity: 0.3; margin-bottom: 16px;"></i>
+        <h3 style="font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">No Functions Yet</h3>
+        <p style="color: #64748b; margin-bottom: 24px;">Create your first custom function to automate document processing workflows</p>
+        <a href="/custom_function_builder" class="btn btn-primary" style="text-decoration: none;">
+          <i class="mdi mdi-plus"></i>
+          Create Function
+        </a>
+      </div>
+    </div>
+    <!-- End Custom Functions Tab -->
+
+    <!-- Prompt Config Tab -->
+    <div id="promptConfigTab" class="tab-content">
+      <!-- Sub-tabs for Unified Prompt and Settings -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06); display: flex; gap: 8px;">
+        <button class="tab-btn active" style="flex: 0 0 auto;" onclick="switchPromptSubTab('unified')" id="unifiedPromptSubBtn">
+          <i class="mdi mdi-brain"></i>
+          Unified Prompt
+        </button>
+        <button class="tab-btn" style="flex: 0 0 auto;" onclick="switchPromptSubTab('settings')" id="settingsSubBtn">
+          <i class="mdi mdi-cog"></i>
+          Settings
+        </button>
+      </div>
+
+      <!-- Unified Prompt Sub-Tab -->
+      <div id="unifiedPromptSubTab" class="prompt-sub-tab active">
+        <!-- Section 1: System Prompt -->
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+          <h3 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;">
+            Section 1: System Prompt Configuration
+            <span class="badge badge-mandatory" style="display: inline-block; font-size: 11px; margin-left: 8px; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 4px 12px; border-radius: 6px;">Required</span>
+          </h3>
+          <div style="background: #f9fafb; padding: 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+            <div style="color: #374151; font-size: 13px; line-height: 1.6;">
+              <strong style="color: #1f2937;">Purpose:</strong> Standard instructions for AI model - Document classification and extraction rules, entity weighting rules (M/O/C), metadata format specifications.
+            </div>
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+              <strong style="color: #1f2937; font-size: 13px;">Dynamic Placeholder:</strong>
+              <div style="margin-top: 8px;">
+                <code style="background: #ffffff; padding: 6px 12px; border-radius: 4px; color: #1f2937; font-size: 12px; border: 1px solid #e5e7eb; display: inline-block;">{{comprehensive_list_of_documents}}</code>
+                <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">→ retrieves from document_categories.json</span>
+              </div>
+            </div>
+          </div>
+          <textarea id="system-prompt-config" class="form-control" style="min-height: 350px; font-size: 13px; line-height: 1.7;" placeholder="Enter system prompt config..."></textarea>
+        </div>
+
+        <!-- Section 2: Functionality Prompt -->
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+          <h3 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;">Section 2: Functionality Prompt</h3>
+          <div style="background: #f9fafb; padding: 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+            <div style="color: #374151; font-size: 13px; line-height: 1.6;">
+              <strong style="color: #1f2937;">Purpose:</strong> Function-specific context for custom functions.
+            </div>
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+              <strong style="color: #1f2937; font-size: 13px;">Dynamic Placeholders:</strong>
+              <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <code style="background: #ffffff; padding: 6px 12px; border-radius: 4px; color: #1f2937; font-size: 12px; border: 1px solid #e5e7eb; display: inline-block;">{{function_description}}</code>
+                  <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">→ retrieves from selected custom function</span>
+                </div>
+                <div>
+                  <code style="background: #ffffff; padding: 6px 12px; border-radius: 4px; color: #1f2937; font-size: 12px; border: 1px solid #e5e7eb; display: inline-block;">{{function_and_document_json}}</code>
+                  <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">→ combines custom_functions.json + document_entities</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <textarea id="functionality-prompt" class="form-control" style="min-height: 250px; font-size: 13px; line-height: 1.7;" placeholder="Enter functionality prompt..."></textarea>
+        </div>
+
+        <!-- Section 3: Response Prompt -->
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+          <h3 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;">Section 3: Response Prompt</h3>
+          <div style="background: #f9fafb; padding: 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+            <div style="color: #374151; font-size: 13px; line-height: 1.6;">
+              <strong style="color: #1f2937;">Purpose:</strong> Defines expected JSON output structure with classification_results array and summary_notes.
+            </div>
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 13px;">
+              Specify the exact JSON schema format the AI should return.
+            </div>
+          </div>
+          <textarea id="response-prompt" class="form-control" style="min-height: 350px; font-size: 13px; line-height: 1.7; font-family: 'Monaco', 'Menlo', 'Courier New', monospace;" placeholder="Enter response prompt..."></textarea>
+        </div>
+
+        <!-- Model Configuration -->
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+          <h3 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;">Model Configuration</h3>
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Model</label>
+              <select id="unified-model" class="form-control">
+                <option value="gpt-4o">GPT-4o (Recommended)</option>
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Temperature</label>
+              <input type="number" id="unified-temperature" class="form-control" step="0.1" min="0" max="2" placeholder="0.1">
+              <div style="margin-top: 6px; font-size: 12px; color: #6b7280;">Lower = more focused</div>
+            </div>
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Max Tokens</label>
+              <input type="number" id="unified-max-tokens" class="form-control" min="1" max="128000" placeholder="4000">
+              <div style="margin-top: 6px; font-size: 12px; color: #6b7280;">Maximum response length</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Sub-Tab -->
+      <div id="settingsSubTab" class="prompt-sub-tab" style="display: none;">
+        <!-- Performance Settings -->
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+          <h3 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;">Performance Settings</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Classification Timeout (seconds)</label>
+              <input type="number" id="class-timeout" class="form-control" placeholder="30">
+            </div>
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Extraction Timeout (seconds)</label>
+              <input type="number" id="extract-timeout" class="form-control" placeholder="60">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Compliance Timeout (seconds)</label>
+              <input type="number" id="compliance-timeout" class="form-control" placeholder="30">
+            </div>
+            <div class="form-group">
+              <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 14px;">Max Retries</label>
+              <input type="number" id="max-retries" class="form-control" placeholder="3">
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature Flags -->
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+          <h3 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;">Feature Flags</h3>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="enable-enhanced-classification" style="width: 18px; height: 18px;">
+              <span style="color: #374151; font-weight: 500;">Enable Enhanced Classification</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="enable-entity-extraction" style="width: 18px; height: 18px;">
+              <span style="color: #374151; font-weight: 500;">Enable Entity Extraction</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="enable-compliance-checking" style="width: 18px; height: 18px;">
+              <span style="color: #374151; font-weight: 500;">Enable Compliance Checking</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="enable-progress-tracking" style="width: 18px; height: 18px;">
+              <span style="color: #374151; font-weight: 500;">Enable Progress Tracking</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);">
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary" onclick="savePromptConfiguration()">
+            <i class="mdi mdi-content-save"></i>
+            Save Configuration
+          </button>
+          <button class="btn btn-secondary" onclick="resetPromptToDefaults()">
+            <i class="mdi mdi-refresh"></i>
+            Reset to Defaults
+          </button>
+          <button class="btn btn-secondary" onclick="exportPromptConfiguration()">
+            <i class="mdi mdi-download"></i>
+            Export YAML
+          </button>
+        </div>
+      </div>
+
+      <!-- Alert Message -->
+      <div id="promptAlert" style="display: none; padding: 16px 20px; border-radius: 8px; margin-top: 16px;"></div>
+    </div>
+    <!-- End Prompt Config Tab -->
+
+  </div>
+  <!-- End Container -->
+
+  <!-- Category Add/Edit Modal -->
+  <div id="categoryModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="categoryModalTitle">Add Category</h2>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editCategoryId">
+        <div class="form-group">
+          <label for="categoryName">Category Name *</label>
+          <input type="text" id="categoryName" class="form-control" placeholder="e.g., Commercial Processes" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeCategoryModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveCategory()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Mapping Modal -->
+  <div id="mappingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Mapping</h2>
+      </div>
+      <form id="mappingForm">
+        <input type="hidden" id="mappingId">
+
+        <div class="form-group">
+          <label for="documentId">Document *</label>
+          <select id="documentId" class="form-control" required>
+            <option value="">Select document...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="documentCategoryId">Document Category * <span style="font-size: 12px; color: #64748b; font-weight: 400;">(Auto-filled from document)</span></label>
+          <select id="documentCategoryId" class="form-control" required style="background-color: #f1f5f9; cursor: not-allowed;" disabled>
+            <option value="">Select document first...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="entityId">Entity *</label>
+          <select id="entityId" class="form-control" required>
+            <option value="">Select entity...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="dataCategoryId">Data Category * <span style="font-size: 12px; color: #64748b; font-weight: 400;">(Auto-filled from entity)</span></label>
+          <select id="dataCategoryId" class="form-control" required style="background-color: #f1f5f9; cursor: not-allowed;" disabled>
+            <option value="">Select entity first...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Field Type *</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="fieldTypeMandatory" name="fieldType" value="mandatory" required>
+              <label for="fieldTypeMandatory">Mandatory</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="fieldTypeOptional" name="fieldType" value="optional">
+              <label for="fieldTypeOptional">Optional</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="fieldTypeConditional" name="fieldType" value="conditional">
+              <label for="fieldTypeConditional">Conditional</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let mappings = [];
+    let filteredMappings = [];
+    let documents = [];
+    let documentCategories = [];
+    let entities = [];
+    let dataCategories = [];
+    let categories = [];
+    let editingCategoryId = null;
+    let documentTypes = [];
+    let filteredDocumentTypes = [];
+    let customFunctions = [];
+    let filteredCustomFunctions = [];
+    let entitiesTab = [];
+    let filteredEntitiesTab = [];
+    let dataCategoriesTab = [];
+    let filteredDataCategoriesTab = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadAllData();
+      await loadCategories();
+      await loadDocumentTypes();
+      await loadMappings();
+      await loadCustomFunctions();
+      await loadEntitiesTab();
+      await loadDataCategoriesTab();
+    });
+
+    // ===== TAB SWITCHING =====
+    function switchTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      if (tab === 'categories') {
+        document.getElementById('categoriesTab').classList.add('active');
+      } else if (tab === 'documentCategories') {
+        document.getElementById('documentCategoriesTab').classList.add('active');
+      } else if (tab === 'entities') {
+        document.getElementById('entitiesTab').classList.add('active');
+      } else if (tab === 'dataCategories') {
+        document.getElementById('dataCategoriesTab').classList.add('active');
+      } else if (tab === 'mappings') {
+        document.getElementById('mappingsTab').classList.add('active');
+      } else if (tab === 'customFunctions') {
+        document.getElementById('customFunctionsTab').classList.add('active');
+      } else if (tab === 'promptConfig') {
+        document.getElementById('promptConfigTab').classList.add('active');
+        // Load prompt configuration when tab is opened
+        if (!window.promptConfigLoaded) {
+          loadPromptConfiguration();
+          window.promptConfigLoaded = true;
+        }
+      }
+    }
+
+    // ===== PROMPT CONFIG SUB-TAB SWITCHING =====
+    function switchPromptSubTab(subTab) {
+      // Update sub-tab buttons
+      document.getElementById('unifiedPromptSubBtn').classList.remove('active');
+      document.getElementById('settingsSubBtn').classList.remove('active');
+
+      if (subTab === 'unified') {
+        document.getElementById('unifiedPromptSubBtn').classList.add('active');
+        document.getElementById('unifiedPromptSubTab').style.display = 'block';
+        document.getElementById('settingsSubTab').style.display = 'none';
+      } else if (subTab === 'settings') {
+        document.getElementById('settingsSubBtn').classList.add('active');
+        document.getElementById('unifiedPromptSubTab').style.display = 'none';
+        document.getElementById('settingsSubTab').style.display = 'block';
+      }
+    }
+
+    // ===== PROMPT CONFIG MANAGEMENT =====
+    async function loadPromptConfiguration() {
+      try {
+        const response = await fetch('/api/prompt-config');
+        const data = await response.json();
+
+        if (data.success) {
+          populatePromptForm(data.config);
+        } else {
+          showPromptAlert('Failed to load configuration: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error loading prompt configuration:', error);
+        showPromptAlert('Error loading configuration: ' + error.message, 'error');
+      }
+    }
+
+    function populatePromptForm(config) {
+      // Model Configuration
+      document.getElementById('unified-model').value = config.classification?.model || 'gpt-4o';
+      document.getElementById('unified-temperature').value = config.classification?.temperature ?? 0.1;
+      document.getElementById('unified-max-tokens').value = config.classification?.max_tokens || 4000;
+
+      // Unified Prompt Sections
+      document.getElementById('system-prompt-config').value = config.prompts?.unified?.system_prompt_config || '';
+      document.getElementById('functionality-prompt').value = config.prompts?.unified?.functionality_prompt || '';
+      document.getElementById('response-prompt').value = config.prompts?.unified?.response_prompt || '';
+
+      // Settings
+      document.getElementById('class-timeout').value = config.performance?.classification_timeout || 30;
+      document.getElementById('extract-timeout').value = config.performance?.extraction_timeout || 60;
+      document.getElementById('compliance-timeout').value = config.performance?.compliance_timeout || 30;
+      document.getElementById('max-retries').value = config.error_handling?.max_retries || 3;
+
+      // Feature flags
+      document.getElementById('enable-enhanced-classification').checked = config.features?.enable_enhanced_classification !== false;
+      document.getElementById('enable-entity-extraction').checked = config.features?.enable_entity_extraction !== false;
+      document.getElementById('enable-compliance-checking').checked = config.features?.enable_compliance_checking !== false;
+      document.getElementById('enable-progress-tracking').checked = config.features?.enable_progress_tracking !== false;
+    }
+
+    async function savePromptConfiguration() {
+      const config = {
+        classification: {
+          model: document.getElementById('unified-model').value,
+          temperature: parseFloat(document.getElementById('unified-temperature').value),
+          max_tokens: parseInt(document.getElementById('unified-max-tokens').value)
+        },
+        prompts: {
+          unified: {
+            system_prompt_config: document.getElementById('system-prompt-config').value,
+            functionality_prompt: document.getElementById('functionality-prompt').value,
+            response_prompt: document.getElementById('response-prompt').value
+          }
+        },
+        performance: {
+          classification_timeout: parseInt(document.getElementById('class-timeout').value),
+          extraction_timeout: parseInt(document.getElementById('extract-timeout').value),
+          compliance_timeout: parseInt(document.getElementById('compliance-timeout').value)
+        },
+        error_handling: {
+          max_retries: parseInt(document.getElementById('max-retries').value)
+        },
+        features: {
+          enable_enhanced_classification: document.getElementById('enable-enhanced-classification').checked,
+          enable_entity_extraction: document.getElementById('enable-entity-extraction').checked,
+          enable_compliance_checking: document.getElementById('enable-compliance-checking').checked,
+          enable_progress_tracking: document.getElementById('enable-progress-tracking').checked
+        }
+      };
+
+      try {
+        const response = await fetch('/api/prompt-config', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(config)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showPromptAlert('Configuration saved successfully!', 'success');
+        } else {
+          showPromptAlert('Failed to save configuration: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error saving configuration:', error);
+        showPromptAlert('Error saving configuration: ' + error.message, 'error');
+      }
+    }
+
+    async function resetPromptToDefaults() {
+      if (!confirm('Are you sure you want to reset to default configuration? This will overwrite all current settings.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/prompt-config/reset', {
+          method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadPromptConfiguration();
+          showPromptAlert('Configuration reset to defaults successfully!', 'success');
+        } else {
+          showPromptAlert('Failed to reset configuration: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error resetting configuration:', error);
+        showPromptAlert('Error resetting configuration: ' + error.message, 'error');
+      }
+    }
+
+    async function exportPromptConfiguration() {
+      try {
+        const response = await fetch('/api/prompt-config/export');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'document_classification_config.yaml';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showPromptAlert('Configuration exported successfully!', 'success');
+      } catch (error) {
+        console.error('Error exporting configuration:', error);
+        showPromptAlert('Error exporting configuration: ' + error.message, 'error');
+      }
+    }
+
+    function showPromptAlert(message, type) {
+      const alert = document.getElementById('promptAlert');
+      alert.textContent = message;
+      alert.style.display = 'block';
+
+      if (type === 'success') {
+        alert.style.background = 'rgba(16, 185, 129, 0.1)';
+        alert.style.color = '#059669';
+        alert.style.borderLeft = '4px solid #10b981';
+      } else {
+        alert.style.background = 'rgba(239, 68, 68, 0.1)';
+        alert.style.color = '#dc2626';
+        alert.style.borderLeft = '4px solid #ef4444';
+      }
+
+      setTimeout(() => {
+        alert.style.display = 'none';
+      }, 5000);
+    }
+
+    // ===== CATEGORY MANAGEMENT =====
+    async function loadCategories() {
+      try {
+        const response = await fetch('/api/document-types/categories');
+        const data = await response.json();
+
+        if (data.success) {
+          categories = data.categories || [];
+          renderCategories();
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        showError('Failed to load categories');
+      }
+    }
+
+    function renderCategories() {
+      const tilesContainer = document.getElementById('categoriesTilesView');
+      const listTableBody = document.getElementById('categoriesListTableBody');
+
+      if (categories.length === 0) {
+        tilesContainer.innerHTML = `
+          <div class="empty-state">
+            <i class="mdi mdi-folder-open-outline"></i>
+            <p>No categories found. Click "Add Category" to create one.</p>
+          </div>
+        `;
+        listTableBody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="mdi mdi-inbox"></i><p>No categories found.</p></td></tr>';
+        return;
+      }
+
+      // Render Tiles View
+      tilesContainer.innerHTML = categories.map((cat, index) => `
+        <div class="category-card">
+          <div class="category-info-wrapper">
+            <div class="category-number">${index + 1}</div>
+            <div class="category-details">
+              <div class="category-name-display">${cat.name}</div>
+              <div class="category-id-display">ID: ${cat.id}</div>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <button class="btn btn-icon btn-secondary" onclick="editCategory(${cat.id})" title="Edit">
+              <i class="mdi mdi-pencil"></i>
+            </button>
+            <button class="btn btn-icon btn-danger" onclick="deleteCategory(${cat.id})" title="Delete">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // Render List View
+      listTableBody.innerHTML = categories.map((cat, index) => `
+        <tr>
+          <td><div class="category-number" style="display: inline-flex;">${index + 1}</div></td>
+          <td><strong>${cat.name}</strong></td>
+          <td><span style="font-weight: 600; color: #4b5563;">#${cat.id}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-icon btn-secondary" onclick="editCategory(${cat.id})" title="Edit">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" onclick="deleteCategory(${cat.id})" title="Delete">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleCategoriesView(view) {
+      const listView = document.getElementById('categoriesListView');
+      const tilesView = document.getElementById('categoriesTilesView');
+      const listBtn = document.getElementById('categoriesListBtn');
+      const tilesBtn = document.getElementById('categoriesTilesBtn');
+
+      if (view === 'list') {
+        listView.classList.add('active');
+        tilesView.classList.remove('active');
+        listBtn.classList.add('active');
+        tilesBtn.classList.remove('active');
+      } else {
+        listView.classList.remove('active');
+        tilesView.classList.add('active');
+        listBtn.classList.remove('active');
+        tilesBtn.classList.add('active');
+      }
+    }
+
+    function addCategory() {
+      editingCategoryId = null;
+      document.getElementById('categoryModalTitle').textContent = 'Add Category';
+      document.getElementById('editCategoryId').value = '';
+      document.getElementById('categoryName').value = '';
+      document.getElementById('categoryModal').classList.add('active');
+    }
+
+    function editCategory(id) {
+      const category = categories.find(c => c.id === id);
+      if (!category) return;
+
+      editingCategoryId = id;
+      document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+      document.getElementById('editCategoryId').value = id;
+      document.getElementById('categoryName').value = category.name;
+      document.getElementById('categoryModal').classList.add('active');
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/document-categories/${id}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showSuccess('Category deleted successfully');
+          await loadCategories();
+        } else {
+          showError(data.message || 'Failed to delete category');
+        }
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        showError('Failed to delete category');
+      }
+    }
+
+    async function saveCategory() {
+      const name = document.getElementById('categoryName').value.trim();
+
+      if (!name) {
+        showError('Please enter a category name');
+        return;
+      }
+
+      try {
+        let response;
+
+        if (editingCategoryId) {
+          // Update
+          response = await fetch(`/api/document-categories/${editingCategoryId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+        } else {
+          // Create
+          response = await fetch('/api/document-categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          showSuccess(editingCategoryId ? 'Category updated successfully' : 'Category created successfully');
+          closeCategoryModal();
+          await loadCategories();
+        } else {
+          showError(data.message || 'Failed to save category');
+        }
+      } catch (error) {
+        console.error('Error saving category:', error);
+        showError('Failed to save category');
+      }
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('categoryModal').classList.remove('active');
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', (e) => {
+      if (e.target.id === 'categoryModal') {
+        closeCategoryModal();
+      }
+    });
+
+    // ===== DOCUMENT TYPES MANAGEMENT =====
+    async function loadDocumentTypes() {
+      try {
+        const response = await fetch('/api/document_categories');
+        const data = await response.json();
+
+        if (data.success) {
+          documentTypes = data.categories || [];
+          filteredDocumentTypes = documentTypes;
+          renderDocumentTypes();
+          populateProcessTypeFilter();
+        }
+      } catch (error) {
+        console.error('Error loading document types:', error);
+        showError('Failed to load document types');
+      }
+    }
+
+    function populateProcessTypeFilter() {
+      const select = document.getElementById('processTypeFilter');
+      const uniqueProcessTypes = [...new Set(documentTypes.map(dt => dt.processType))];
+
+      uniqueProcessTypes.forEach(pt => {
+        const option = document.createElement('option');
+        option.value = pt;
+        option.textContent = pt;
+        select.appendChild(option);
+      });
+    }
+
+    function filterDocumentTypes() {
+      const processTypeFilter = document.getElementById('processTypeFilter').value;
+      const searchTerm = document.getElementById('documentTypeSearchInput').value.toLowerCase();
+
+      filteredDocumentTypes = documentTypes.filter(dt => {
+        const matchesProcessType = !processTypeFilter || dt.processType === processTypeFilter;
+        const matchesSearch = !searchTerm ||
+          dt.name?.toLowerCase().includes(searchTerm) ||
+          dt.code?.toLowerCase().includes(searchTerm) ||
+          dt.id?.toString().includes(searchTerm) ||
+          dt.sender?.toLowerCase().includes(searchTerm);
+
+        return matchesProcessType && matchesSearch;
+      });
+
+      renderDocumentTypes();
+    }
+
+    function clearDocumentTypeFilters() {
+      document.getElementById('processTypeFilter').value = '';
+      document.getElementById('documentTypeSearchInput').value = '';
+      filterDocumentTypes();
+    }
+
+    function renderDocumentTypes() {
+      const tbody = document.getElementById('documentTypesTableBody');
+
+      // Update stats
+      document.getElementById('totalDocumentTypes').textContent = documentTypes.length;
+      document.getElementById('visibleDocumentTypes').textContent = filteredDocumentTypes.length;
+      const uniqueProcessTypes = new Set(filteredDocumentTypes.map(dt => dt.processType)).size;
+      document.getElementById('processTypeCount').textContent = uniqueProcessTypes;
+
+      if (filteredDocumentTypes.length === 0) {
+        const message = documentTypes.length === 0 ?
+          'No document types yet. Click "Add Document Type" to create one.' :
+          'No document types match your filter criteria.';
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="mdi mdi-inbox"></i><p>${message}</p></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredDocumentTypes.map(dt => `
+        <tr>
+          <td><span style="font-weight: 600; color: #4b5563;">#${dt.id}</span></td>
+          <td><span class="field-count">${escapeHtml(dt.code)}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="mdi mdi-file-document" style="color: #6b7280;"></i>
+              <span style="font-weight: 600; color: #1f2937;">${escapeHtml(dt.name)}</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-optional">${escapeHtml(dt.processType)}</span>
+          </td>
+          <td style="font-size: 13px; color: #6b7280;">${escapeHtml(dt.sender || '-')}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-icon btn-secondary" onclick="editDocumentCategory('${dt.id}')" title="Edit">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" onclick="deleteDocumentCategory('${dt.id}')" title="Delete">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function addDocumentCategory() {
+      alert('Add Document Type functionality - Coming soon!');
+    }
+
+    function editDocumentCategory(id) {
+      alert('Edit Document Type: ' + id + ' - Coming soon!');
+    }
+
+    async function deleteDocumentCategory(id) {
+      if (!confirm('Are you sure you want to delete this document type?')) {
+        return;
+      }
+      alert('Delete functionality - Coming soon!');
+    }
+
+    async function loadAllData() {
+      try {
+        // Load documents
+        const docsResponse = await fetch('/api/documents');
+        const docsData = await docsResponse.json();
+        if (docsData.success) {
+          documents = docsData.documents || [];
+          populateDocuments();
+        }
+
+        // Load document categories (the 5 high-level categories)
+        const docCatResponse = await fetch('/api/document-types/categories');
+        const docCatData = await docCatResponse.json();
+        if (docCatData.success) {
+          documentCategories = docCatData.categories || [];
+          populateDocumentCategories();
+        }
+
+        // Load entities
+        const entitiesResponse = await fetch('/api/entities');
+        const entitiesData = await entitiesResponse.json();
+        if (entitiesData.success) {
+          entities = entitiesData.entities || [];
+          populateEntities();
+        }
+
+        // Load data categories
+        const dataCatResponse = await fetch('/api/data_categories');
+        const dataCatData = await dataCatResponse.json();
+        if (dataCatData.success) {
+          dataCategories = dataCatData.categories || [];
+          populateDataCategories();
+        }
+      } catch (error) {
+        console.error('Error loading dropdown data:', error);
+      }
+    }
+
+    function populateDocuments() {
+      const select = document.getElementById('documentId');
+      select.innerHTML = '<option value="">Select document...</option>';
+      documents.forEach(doc => {
+        const option = document.createElement('option');
+        option.value = doc.id;
+        option.textContent = doc.name;
+        option.setAttribute('data-category-id', doc.categoryId || '');
+        option.setAttribute('data-category-name', doc.categoryName || '');
+        select.appendChild(option);
+      });
+
+      // Also populate the filter dropdown
+      const filterSelect = document.getElementById('documentFilter');
+      filterSelect.innerHTML = '<option value="">All Documents</option>';
+      documents.forEach(doc => {
+        const option = document.createElement('option');
+        option.value = doc.id;
+        option.textContent = doc.name;
+        filterSelect.appendChild(option);
+      });
+
+      // Add event listener to auto-fill document category
+      select.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const categoryId = selectedOption.getAttribute('data-category-id');
+
+        const documentCategorySelect = document.getElementById('documentCategoryId');
+        if (categoryId) {
+          documentCategorySelect.value = categoryId;
+          documentCategorySelect.disabled = false;
+          documentCategorySelect.style.backgroundColor = '#f1f5f9';
+          documentCategorySelect.style.cursor = 'not-allowed';
+        } else {
+          documentCategorySelect.value = '';
+          documentCategorySelect.disabled = true;
+        }
+      });
+    }
+
+    function populateDocumentCategories() {
+      const select = document.getElementById('documentCategoryId');
+      select.innerHTML = '<option value="">Select document category...</option>';
+      documentCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        select.appendChild(option);
+      });
+    }
+
+    function populateEntities() {
+      const select = document.getElementById('entityId');
+      select.innerHTML = '<option value="">Select entity...</option>';
+      entities.forEach(entity => {
+        const option = document.createElement('option');
+        option.value = entity.id;
+        option.textContent = entity.name;
+        option.setAttribute('data-category-id', entity.dataCategoryId || '');
+        option.setAttribute('data-category-value', entity.dataCategoryValue || '');
+        select.appendChild(option);
+      });
+    }
+
+    // Auto-fill data category when entity is selected
+    document.addEventListener('DOMContentLoaded', () => {
+      const entitySelect = document.getElementById('entityId');
+      if (entitySelect) {
+        entitySelect.addEventListener('change', function() {
+          const selectedOption = this.options[this.selectedIndex];
+          const categoryId = selectedOption.getAttribute('data-category-id');
+          const categoryValue = selectedOption.getAttribute('data-category-value');
+
+          const dataCategorySelect = document.getElementById('dataCategoryId');
+
+          if (categoryId) {
+            // Enable and populate the field
+            dataCategorySelect.disabled = false;
+            dataCategorySelect.style.backgroundColor = '#f1f5f9';
+            dataCategorySelect.style.cursor = 'not-allowed';
+            dataCategorySelect.value = categoryId;
+          } else {
+            // Keep disabled if no category
+            dataCategorySelect.disabled = true;
+            dataCategorySelect.value = '';
+          }
+        });
+      }
+    });
+
+    function populateDataCategories() {
+      const select = document.getElementById('dataCategoryId');
+      select.innerHTML = '<option value="">Select data category...</option>';
+      dataCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.value;
+        select.appendChild(option);
+      });
+    }
+
+    async function loadMappings() {
+      try {
+        const response = await fetch('/api/document_entity_maintenance');
+        const data = await response.json();
+
+        if (data.success) {
+          mappings = data.mappings || [];
+          filteredMappings = mappings;
+          renderMappings();
+        } else {
+          showError('Failed to load mappings');
+        }
+      } catch (error) {
+        console.error('Error loading mappings:', error);
+        showError('Error loading mappings');
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('mappingsContainer').style.display = 'block';
+      }
+    }
+
+    function filterMappings() {
+      const documentFilter = document.getElementById('documentFilter').value.toLowerCase();
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+      filteredMappings = mappings.filter(mapping => {
+        const matchesDocument = !documentFilter || mapping.documentId?.toLowerCase() === documentFilter;
+        const matchesSearch = !searchTerm ||
+          mapping.documentName?.toLowerCase().includes(searchTerm) ||
+          mapping.documentCategoryName?.toLowerCase().includes(searchTerm) ||
+          mapping.entityName?.toLowerCase().includes(searchTerm) ||
+          mapping.dataCategoryValue?.toLowerCase().includes(searchTerm) ||
+          mapping.fieldType?.toLowerCase().includes(searchTerm);
+
+        return matchesDocument && matchesSearch;
+      });
+
+      renderMappings();
+    }
+
+    function clearFilters() {
+      document.getElementById('documentFilter').value = '';
+      document.getElementById('searchInput').value = '';
+      filterMappings();
+    }
+
+    function renderMappings() {
+      const tbody = document.getElementById('mappingsTableBody');
+
+      // Update stats
+      document.getElementById('totalMappings').textContent = mappings.length;
+      document.getElementById('visibleMappings').textContent = filteredMappings.length;
+
+      // Count unique documents in filtered mappings
+      const uniqueDocuments = new Set(filteredMappings.map(m => m.documentId)).size;
+      document.getElementById('documentCount').textContent = uniqueDocuments;
+
+      if (filteredMappings.length === 0) {
+        const message = mappings.length === 0 ?
+          'No mappings yet. Click "Add Mapping" to create one.' :
+          'No mappings match your filter criteria. Try adjusting your search or filter.';
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="mdi mdi-inbox"></i><p>${message}</p></td></tr>`;
+        return;
+      }
+
+      // Group mappings by document
+      const grouped = {};
+      filteredMappings.forEach(mapping => {
+        const docId = mapping.documentId || 'unknown';
+        if (!grouped[docId]) {
+          grouped[docId] = {
+            documentId: docId,
+            documentName: mapping.documentName || 'Unknown',
+            fields: []
+          };
+        }
+        grouped[docId].fields.push(mapping);
+      });
+
+      // Render grouped rows
+      let html = '';
+      Object.values(grouped).forEach((group, index) => {
+        const groupId = `group-${index}`;
+        html += `
+          <tr class="document-row" onclick="toggleGroup('${groupId}')">
+            <td>
+              <i class="mdi mdi-chevron-right expand-icon" id="icon-${groupId}"></i>
+              <i class="mdi mdi-file-document" style="margin-right: 8px; color: #6b7280;"></i>
+              ${escapeHtml(group.documentName)}
+              <span class="field-count">${group.fields.length} field${group.fields.length > 1 ? 's' : ''}</span>
+            </td>
+            <td colspan="5"></td>
+          </tr>
+        `;
+
+        // Add field rows
+        group.fields.forEach(mapping => {
+          html += `
+            <tr class="field-rows field-row" data-group="${groupId}">
+              <td>${escapeHtml(mapping.entityName || '')}</td>
+              <td>${escapeHtml(mapping.documentCategoryName || '')}</td>
+              <td>
+                <div>${escapeHtml(mapping.mappingFormField || '-')}</div>
+                <div style="font-size: 12px; color: #64748b;">${escapeHtml(mapping.mappingFormDescription || '')}</div>
+              </td>
+              <td>${escapeHtml(mapping.dataCategoryValue || '')}</td>
+              <td><span class="badge badge-${mapping.fieldType}">${mapping.fieldType}</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-icon btn-secondary" onclick="editMapping('${mapping.id}')" title="Edit">
+                    <i class="mdi mdi-pencil"></i>
+                  </button>
+                  <button class="btn btn-icon btn-danger" onclick="deleteMapping('${mapping.id}')" title="Delete">
+                    <i class="mdi mdi-delete"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function toggleGroup(groupId) {
+      const icon = document.getElementById(`icon-${groupId}`);
+      const rows = document.querySelectorAll(`[data-group="${groupId}"]`);
+
+      icon.classList.toggle('expanded');
+      rows.forEach(row => {
+        row.classList.toggle('show');
+      });
+    }
+
+    function addMapping() {
+      document.getElementById('modalTitle').textContent = 'Add Mapping';
+      document.getElementById('mappingForm').reset();
+      document.getElementById('mappingId').value = '';
+
+      // Reset document category to disabled state
+      const documentCategorySelect = document.getElementById('documentCategoryId');
+      documentCategorySelect.disabled = true;
+      documentCategorySelect.style.backgroundColor = '#f1f5f9';
+      documentCategorySelect.style.cursor = 'not-allowed';
+
+      // Reset data category to disabled state
+      const dataCategorySelect = document.getElementById('dataCategoryId');
+      dataCategorySelect.disabled = true;
+      dataCategorySelect.style.backgroundColor = '#f1f5f9';
+      dataCategorySelect.style.cursor = 'not-allowed';
+
+      document.getElementById('mappingModal').classList.add('active');
+    }
+
+    function editMapping(mappingId) {
+      const mapping = mappings.find(m => m.id === mappingId);
+
+      if (mapping) {
+        document.getElementById('modalTitle').textContent = 'Edit Mapping';
+        document.getElementById('mappingId').value = mappingId;
+        document.getElementById('documentId').value = mapping.documentId || '';
+
+        // Enable and populate document category (auto-filled from document)
+        const documentCategorySelect = document.getElementById('documentCategoryId');
+        documentCategorySelect.value = mapping.documentCategoryId;
+        documentCategorySelect.disabled = false;
+        documentCategorySelect.style.backgroundColor = '#f1f5f9';
+        documentCategorySelect.style.cursor = 'not-allowed';
+
+        document.getElementById('entityId').value = mapping.entityId;
+
+        // Enable and populate data category (auto-filled from entity)
+        const dataCategorySelect = document.getElementById('dataCategoryId');
+        dataCategorySelect.value = mapping.dataCategoryId;
+        dataCategorySelect.disabled = false;
+        dataCategorySelect.style.backgroundColor = '#f1f5f9';
+        dataCategorySelect.style.cursor = 'not-allowed';
+
+        // Set radio button
+        document.querySelector(`input[name="fieldType"][value="${mapping.fieldType}"]`).checked = true;
+
+        document.getElementById('mappingModal').classList.add('active');
+      }
+    }
+
+    async function deleteMapping(mappingId) {
+      if (!confirm('Are you sure you want to delete this mapping?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/document_entity_maintenance/${mappingId}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadMappings();
+          showSuccess('Mapping deleted successfully');
+        } else {
+          showError(data.message || 'Failed to delete mapping');
+        }
+      } catch (error) {
+        console.error('Error deleting mapping:', error);
+        showError('Error deleting mapping');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('mappingModal').classList.remove('active');
+    }
+
+    document.getElementById('mappingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Temporarily enable the data category and document category fields for form submission
+      const dataCategorySelect = document.getElementById('dataCategoryId');
+      const documentCategorySelect = document.getElementById('documentCategoryId');
+      const wasDataCategoryDisabled = dataCategorySelect.disabled;
+      const wasDocumentCategoryDisabled = documentCategorySelect.disabled;
+      dataCategorySelect.disabled = false;
+      documentCategorySelect.disabled = false;
+
+      const mappingId = document.getElementById('mappingId').value;
+      const documentId = document.getElementById('documentId').value;
+      const documentCategoryId = documentCategorySelect.value;
+      const entityId = document.getElementById('entityId').value;
+      const dataCategoryId = dataCategorySelect.value;
+      const fieldType = document.querySelector('input[name="fieldType"]:checked').value;
+
+      // Get names for display
+      const selectedDocument = documents.find(d => d.id === documentId);
+      const documentCategory = documentCategories.find(c => c.id === documentCategoryId);
+      const entity = entities.find(e => e.id === entityId);
+      const dataCategory = dataCategories.find(c => c.id === dataCategoryId);
+
+      const mappingData = {
+        documentId,
+        documentName: selectedDocument?.name || '',
+        documentCategoryId,
+        documentCategoryName: documentCategory?.name || '',
+        entityId,
+        entityName: entity?.name || '',
+        mappingFormField: entity?.mappingFormField || '',
+        mappingFormDescription: entity?.mappingFormDescription || '',
+        dataCategoryId,
+        dataCategoryValue: dataCategory?.value || '',
+        fieldType
+      };
+
+      try {
+        let response;
+
+        if (mappingId) {
+          // Update existing mapping
+          response = await fetch(`/api/document_entity_maintenance/${mappingId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(mappingData)
+          });
+        } else {
+          // Add new mapping
+          response = await fetch('/api/document_entity_maintenance', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(mappingData)
+          });
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          closeModal();
+          await loadMappings();
+          showSuccess(mappingId ? 'Mapping updated successfully' : 'Mapping added successfully');
+        } else {
+          showError(data.message || 'Failed to save mapping');
+        }
+      } catch (error) {
+        console.error('Error saving mapping:', error);
+        showError('Error saving mapping');
+      }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('mappingModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        closeModal();
+      }
+    });
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showSuccess(message) {
+      alert(message);
+    }
+
+    function showError(message) {
+      alert('Error: ' + message);
+    }
+
+    // ===== CUSTOM FUNCTIONS MANAGEMENT =====
+    async function loadCustomFunctions() {
+      try {
+        const response = await fetch('/api/custom_functions');
+        const data = await response.json();
+
+        if (data.success) {
+          customFunctions = data.functions || [];
+          filteredCustomFunctions = customFunctions;
+          renderCustomFunctions();
+        }
+      } catch (error) {
+        console.error('Error loading custom functions:', error);
+        showError('Failed to load custom functions');
+      }
+    }
+
+    function filterFunctions() {
+      const categoryFilter = document.getElementById('functionCategoryFilter').value;
+      const searchTerm = document.getElementById('functionSearchInput').value.toLowerCase();
+
+      filteredCustomFunctions = customFunctions.filter(func => {
+        const matchesCategory = !categoryFilter || func.category === categoryFilter;
+        const matchesSearch = !searchTerm ||
+          func.name?.toLowerCase().includes(searchTerm) ||
+          func.description?.toLowerCase().includes(searchTerm);
+
+        return matchesCategory && matchesSearch;
+      });
+
+      renderCustomFunctions();
+    }
+
+    function clearFunctionFilters() {
+      document.getElementById('functionCategoryFilter').value = '';
+      document.getElementById('functionSearchInput').value = '';
+      filterFunctions();
+    }
+
+    function renderCustomFunctions() {
+      const tilesContainer = document.getElementById('functionsTilesView');
+      const listTableBody = document.getElementById('functionsListTableBody');
+      const emptyState = document.getElementById('functionsEmptyState');
+
+      // Update stats
+      document.getElementById('totalFunctions').textContent = customFunctions.length;
+      document.getElementById('visibleFunctions').textContent = filteredCustomFunctions.length;
+      const activeFunctions = filteredCustomFunctions.filter(f => f.isActive).length;
+      document.getElementById('activeFunctions').textContent = activeFunctions;
+
+      if (filteredCustomFunctions.length === 0) {
+        tilesContainer.innerHTML = '';
+        listTableBody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="mdi mdi-inbox"></i><p>No functions found.</p></td></tr>';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      // Render Tiles View
+      tilesContainer.innerHTML = filteredCustomFunctions.map(func => `
+        <div class="function-card">
+          <div class="function-header">
+            <div>
+              <div class="function-name">${escapeHtml(func.name)}</div>
+              <span class="function-category">${escapeHtml(func.category)}</span>
+            </div>
+            <span class="status-badge ${func.isActive ? 'status-active' : 'status-inactive'}">
+              ${func.isActive ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+
+          <div class="function-description">
+            ${escapeHtml(func.description)}
+          </div>
+
+          <div class="function-docs">
+            <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px;">Required Documents:</div>
+            ${(func.documentRequirements || []).map(req => `
+              <span class="doc-requirement ${req.requirementType}">
+                <i class="mdi ${req.requirementType === 'mandatory' ? 'mdi-alert-circle' : 'mdi-information'}"></i>
+                ${escapeHtml(req.documentName)}
+              </span>
+            `).join('')}
+          </div>
+
+          <div class="function-actions">
+            <button class="btn btn-icon btn-secondary" onclick="viewCustomFunction('${func.id}')" title="View Details">
+              <i class="mdi mdi-eye"></i>
+            </button>
+            <button class="btn btn-icon btn-secondary" onclick="editCustomFunction('${func.id}')" title="Edit">
+              <i class="mdi mdi-pencil"></i>
+            </button>
+            <button class="btn btn-icon btn-secondary" onclick="toggleCustomFunction('${func.id}')" title="${func.isActive ? 'Deactivate' : 'Activate'}">
+              <i class="mdi ${func.isActive ? 'mdi-pause' : 'mdi-play'}"></i>
+            </button>
+            <button class="btn btn-icon btn-danger" onclick="deleteCustomFunction('${func.id}')" title="Delete">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // Render List View
+      listTableBody.innerHTML = filteredCustomFunctions.map(func => {
+        const docs = (func.documentRequirements || []).map(req => req.documentName).join(', ');
+        return `
+        <tr>
+          <td><strong>${escapeHtml(func.name)}</strong></td>
+          <td><span class="function-category">${escapeHtml(func.category)}</span></td>
+          <td><span class="status-badge ${func.isActive ? 'status-active' : 'status-inactive'}">${func.isActive ? 'Active' : 'Inactive'}</span></td>
+          <td style="font-size: 12px;">${escapeHtml(docs) || '-'}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-icon btn-secondary" onclick="viewCustomFunction('${func.id}')" title="View Details">
+                <i class="mdi mdi-eye"></i>
+              </button>
+              <button class="btn btn-icon btn-secondary" onclick="editCustomFunction('${func.id}')" title="Edit">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-secondary" onclick="toggleCustomFunction('${func.id}')" title="${func.isActive ? 'Deactivate' : 'Activate'}">
+                <i class="mdi ${func.isActive ? 'mdi-pause' : 'mdi-play'}"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" onclick="deleteCustomFunction('${func.id}')" title="Delete">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `}).join('');
+    }
+
+    function toggleFunctionsView(view) {
+      const listView = document.getElementById('functionsListView');
+      const tilesView = document.getElementById('functionsTilesView');
+      const listBtn = document.getElementById('functionsListBtn');
+      const tilesBtn = document.getElementById('functionsTilesBtn');
+
+      if (view === 'list') {
+        listView.classList.add('active');
+        tilesView.classList.remove('active');
+        listBtn.classList.add('active');
+        tilesBtn.classList.remove('active');
+      } else {
+        listView.classList.remove('active');
+        tilesView.classList.add('active');
+        listBtn.classList.remove('active');
+        tilesBtn.classList.add('active');
+      }
+    }
+
+    function viewCustomFunction(id) {
+      window.location.href = `/custom_function_builder?id=${id}&mode=view`;
+    }
+
+    function editCustomFunction(id) {
+      window.location.href = `/custom_function_builder?id=${id}`;
+    }
+
+    async function toggleCustomFunction(id) {
+      try {
+        const response = await fetch(`/api/custom_functions/${id}/toggle`, {
+          method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadCustomFunctions();
+          showSuccess('Function status updated successfully');
+        } else {
+          showError(data.message || 'Failed to toggle function');
+        }
+      } catch (error) {
+        console.error('Error toggling function:', error);
+        showError('Error toggling function');
+      }
+    }
+
+    async function deleteCustomFunction(id) {
+      if (!confirm('Are you sure you want to delete this function? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/custom_functions/${id}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadCustomFunctions();
+          showSuccess('Function deleted successfully');
+        } else {
+          showError(data.message || 'Failed to delete function');
+        }
+      } catch (error) {
+        console.error('Error deleting function:', error);
+        showError('Error deleting function');
+      }
+    }
+
+    // ===== ENTITIES TAB MANAGEMENT =====
+    async function loadEntitiesTab() {
+      try {
+        const response = await fetch('/api/entities');
+        const data = await response.json();
+
+        if (data.success) {
+          entitiesTab = data.entities || [];
+          filteredEntitiesTab = entitiesTab;
+          renderEntitiesTab();
+        }
+      } catch (error) {
+        console.error('Error loading entities:', error);
+      }
+    }
+
+    function filterEntitiesTab() {
+      const searchTerm = document.getElementById('entitySearchInput').value.toLowerCase();
+
+      filteredEntitiesTab = entitiesTab.filter(entity =>
+        entity.name?.toLowerCase().includes(searchTerm) ||
+        entity.description?.toLowerCase().includes(searchTerm)
+      );
+
+      renderEntitiesTab();
+    }
+
+    function renderEntitiesTab() {
+      const tilesContainer = document.getElementById('entitiesTilesView');
+      const listTableBody = document.getElementById('entitiesListTableBody');
+
+      // Update stats
+      document.getElementById('totalEntities').textContent = entitiesTab.length;
+      document.getElementById('visibleEntities').textContent = filteredEntitiesTab.length;
+
+      if (filteredEntitiesTab.length === 0) {
+        tilesContainer.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><i class="mdi mdi-inbox"></i><p>No entities found.</p></div>';
+        listTableBody.innerHTML = '<tr><td colspan="3" class="empty-state"><i class="mdi mdi-inbox"></i><p>No entities found.</p></td></tr>';
+        return;
+      }
+
+      // Render Tiles View
+      tilesContainer.innerHTML = filteredEntitiesTab.map(entity => `
+        <div class="entity-card">
+          <div class="entity-header">
+            <div style="flex: 1;">
+              <div class="entity-name">${escapeHtml(entity.name)}</div>
+              <div class="entity-description">${escapeHtml(entity.description)}</div>
+            </div>
+            <div class="entity-actions">
+              <button class="btn btn-icon btn-secondary" onclick="editEntityTab('${entity.id}')" title="Edit">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" onclick="deleteEntityTab('${entity.id}')" title="Delete">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Render List View
+      listTableBody.innerHTML = filteredEntitiesTab.map(entity => `
+        <tr>
+          <td><strong>${escapeHtml(entity.name)}</strong></td>
+          <td>${escapeHtml(entity.description)}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-icon btn-secondary" onclick="editEntityTab('${entity.id}')" title="Edit">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" onclick="deleteEntityTab('${entity.id}')" title="Delete">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleEntitiesView(view) {
+      const listView = document.getElementById('entitiesListView');
+      const tilesView = document.getElementById('entitiesTilesView');
+      const listBtn = document.getElementById('entitiesListBtn');
+      const tilesBtn = document.getElementById('entitiesTilesBtn');
+
+      if (view === 'list') {
+        listView.classList.add('active');
+        tilesView.classList.remove('active');
+        listBtn.classList.add('active');
+        tilesBtn.classList.remove('active');
+      } else {
+        listView.classList.remove('active');
+        tilesView.classList.add('active');
+        listBtn.classList.remove('active');
+        tilesBtn.classList.add('active');
+      }
+    }
+
+    function addEntityTab() {
+      alert('Add Entity functionality - Please use the standalone Entities page for full functionality.');
+    }
+
+    function editEntityTab(id) {
+      alert('Edit Entity: ' + id + ' - Please use the standalone Entities page for full functionality.');
+    }
+
+    async function deleteEntityTab(id) {
+      if (!confirm('Are you sure you want to delete this entity?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/entities/${id}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadEntitiesTab();
+          showSuccess('Entity deleted successfully');
+        } else {
+          showError(data.message || 'Failed to delete entity');
+        }
+      } catch (error) {
+        console.error('Error deleting entity:', error);
+        showError('Error deleting entity');
+      }
+    }
+
+    // ===== DATA CATEGORIES TAB MANAGEMENT =====
+    async function loadDataCategoriesTab() {
+      try {
+        const response = await fetch('/api/data_categories');
+        const data = await response.json();
+
+        if (data.success) {
+          dataCategoriesTab = data.categories || [];
+          filteredDataCategoriesTab = dataCategoriesTab;
+          renderDataCategoriesTab();
+        }
+      } catch (error) {
+        console.error('Error loading data categories:', error);
+      }
+    }
+
+    function filterDataCategoriesTab() {
+      const searchTerm = document.getElementById('dataCategorySearchInput').value.toLowerCase();
+
+      filteredDataCategoriesTab = dataCategoriesTab.filter(category =>
+        category.value?.toLowerCase().includes(searchTerm)
+      );
+
+      renderDataCategoriesTab();
+    }
+
+    function renderDataCategoriesTab() {
+      const tilesContainer = document.getElementById('dataCategoriesTilesView');
+      const listTableBody = document.getElementById('dataCategoriesListTableBody');
+
+      // Update stats
+      document.getElementById('totalDataCategories').textContent = dataCategoriesTab.length;
+      document.getElementById('visibleDataCategories').textContent = filteredDataCategoriesTab.length;
+
+      if (filteredDataCategoriesTab.length === 0) {
+        tilesContainer.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;"><i class="mdi mdi-inbox"></i><p>No categories found.</p></div>';
+        listTableBody.innerHTML = '<tr><td colspan="3" class="empty-state"><i class="mdi mdi-inbox"></i><p>No categories found.</p></td></tr>';
+        return;
+      }
+
+      // Render Tiles View
+      tilesContainer.innerHTML = filteredDataCategoriesTab.map(category => `
+        <div class="data-category-card">
+          <div class="data-category-header">
+            <div class="data-category-icon">
+              <i class="mdi mdi-tag"></i>
+            </div>
+            <span class="data-category-value">${escapeHtml(category.value)}</span>
+          </div>
+          <div class="data-category-meta">
+            <span class="data-category-id">ID: ${category.id}</span>
+            <div class="data-category-actions">
+              <button class="btn btn-icon btn-secondary" onclick="editDataCategoryTab('${category.id}')" title="Edit">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" onclick="deleteDataCategoryTab('${category.id}')" title="Delete">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Render List View
+      listTableBody.innerHTML = filteredDataCategoriesTab.map(category => `
+        <tr>
+          <td><span style="font-weight: 600; color: #4b5563;">#${category.id}</span></td>
+          <td><strong>${escapeHtml(category.value)}</strong></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-icon btn-secondary" onclick="editDataCategoryTab('${category.id}')" title="Edit">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-icon btn-danger" onclick="deleteDataCategoryTab('${category.id}')" title="Delete">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleDataCategoriesView(view) {
+      const listView = document.getElementById('dataCategoriesListView');
+      const tilesView = document.getElementById('dataCategoriesTilesView');
+      const listBtn = document.getElementById('dataCategoriesListBtn');
+      const tilesBtn = document.getElementById('dataCategoriesTilesBtn');
+
+      if (view === 'list') {
+        listView.classList.add('active');
+        tilesView.classList.remove('active');
+        listBtn.classList.add('active');
+        tilesBtn.classList.remove('active');
+      } else {
+        listView.classList.remove('active');
+        tilesView.classList.add('active');
+        listBtn.classList.remove('active');
+        tilesBtn.classList.add('active');
+      }
+    }
+
+    function addDataCategoryTab() {
+      alert('Add Data Category functionality - Please use the standalone Data Categories page for full functionality.');
+    }
+
+    function editDataCategoryTab(id) {
+      alert('Edit Data Category: ' + id + ' - Please use the standalone Data Categories page for full functionality.');
+    }
+
+    async function deleteDataCategoryTab(id) {
+      if (!confirm('Are you sure you want to delete this category?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/data_categories/${id}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadDataCategoriesTab();
+          showSuccess('Category deleted successfully');
+        } else {
+          showError(data.message || 'Failed to delete category');
+        }
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        showError('Error deleting category');
+      }
+    }
+  </script>
+</body>
+</html>

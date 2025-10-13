@@ -1,0 +1,50 @@
+{
+    "Credit Application Form": {
+        "Application Details": [
+            "Application Number",
+            "Date of Application",
+            "Type of Credit Requested (LC, Bank Guarantee, OD, etc.)"
+        ],
+        "Applicant Information": [
+            "Company Name",
+            "Registered Address",
+            "Business Type",
+            "Year of Establishment",
+            "Contact Person",
+            "Phone Number",
+            "Email Address",
+            "PAN Number",
+            "GSTIN",
+            "IEC Code"
+        ],
+        "Banking & Financial Information": [
+            "Bank Name",
+            "Branch Address",
+            "Account Number",
+            "Credit Limit Requested",
+            "Currency",
+            "Purpose of Credit",
+            "Payment Terms",
+            "Tenure of Credit"
+        ],
+        "Supporting Documentation": [
+            "Audited Financial Statements",
+            "Bank Statements",
+            "Trade References",
+            "Credit Report",
+            "Board Resolution (if applicable)"
+        ],
+        "Declaration & Undertaking": [
+            "Statement of Accuracy of Information",
+            "Consent to Credit Checks",
+            "Acceptance of Terms and Conditions"
+        ],
+        "Authorization": [
+            "Authorized Signatory Name",
+            "Designation",
+            "Signature",
+            "Date",
+            "Company Stamp/Seal"
+        ]
+    }
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fin AI - Chat</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/finstack-master.css') }}">
+  <link href="{{ url_for('static', filename='css/global-components.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pdfviewer.css') }}">
+  <style>
+    .drawing-cursor {
+      cursor: crosshair !important;
+    }
+  </style>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Socket.IO for real-time communication -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <!-- WebSocket client and Progress Loader for real-time updates -->
+  <script src="{{ url_for('static', filename='js/websocket_client.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/progress_loader.js') }}"></script>
+  <!-- Placeholder for PdfReviewDialog and ImagePageViewer components -->
+  <!-- Include these scripts if available -->
+  <!-- <script src="{{ url_for('static', filename='js/pdf-review-dialog.js') }}"></script> -->
+  <script src="{{ url_for('static', filename='js/enhanced-pdf-viewer.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</head>
+<body>
+  <div id="chat-app">
+    <v-progress-circular indeterminate color="primary" size="32" class="my-4 mx-auto"></v-progress-circular>
+    <p>Loading chat interface...</p>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.createChatApp) {
+        const chatApp = window.createChatApp();
+        chatApp.mount('#chat-app');
+      } else {
+        console.error('createChatApp not defined');
+        document.getElementById('chat-app').innerHTML = `
+          <div class="text-center p-6">
+            <h1 class="text-2xl font-bold text-red-600">Error</h1>
+            <p class="text-gray-600">Failed to load chat application. Please try again.</p>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

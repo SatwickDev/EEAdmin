@@ -1,0 +1,62 @@
+[
+  {
+    "name": "LC Number",
+    "type": "text",
+    "required": true,
+    "description": "Letter of Credit number"
+  },
+  {
+    "name": "Issue Date",
+    "type": "date",
+    "required": true,
+    "description": "Date of LC issuance"
+  },
+  {
+    "name": "Expiry Date",
+    "type": "date",
+    "required": true,
+    "description": "Date of LC expiry"
+  },
+  {
+    "name": "Applicant",
+    "type": "text",
+    "required": true,
+    "description": "Party applying for LC"
+  },
+  {
+    "name": "Beneficiary",
+    "type": "text",
+    "required": true,
+    "description": "Party receiving payment"
+  },
+  {
+    "name": "Issuing Bank",
+    "type": "text",
+    "required": true,
+    "description": "Bank issuing the LC"
+  },
+  {
+    "name": "Advising Bank",
+    "type": "text",
+    "required": false,
+    "description": "Bank advising the LC"
+  },
+  {
+    "name": "Currency",
+    "type": "text",
+    "required": true,
+    "description": "LC currency"
+  },
+  {
+    "name": "Amount",
+    "type": "number",
+    "required": true,
+    "description": "LC amount"
+  },
+  {
+    "name": "Type",
+    "type": "text",
+    "required": true,
+    "description": "LC type (Irrevocable, Confirmed, etc.)"
+  }
+]

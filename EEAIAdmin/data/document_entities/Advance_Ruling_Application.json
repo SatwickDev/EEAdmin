@@ -1,0 +1,90 @@
+{
+  "documentId": "Advance_Ruling_Application",
+  "documentName": "Advance Ruling Application",
+  "mappings": [
+    {
+      "id": "811",
+      "documentId": "Advance_Ruling_Application",
+      "documentName": "Advance Ruling Application",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "1",
+      "entityName": "Document Identifier",
+      "mappingFormField": "doc_index",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "812",
+      "documentId": "Advance_Ruling_Application",
+      "documentName": "Advance Ruling Application",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "124",
+      "entityName": "Issue Date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "813",
+      "documentId": "Advance_Ruling_Application",
+      "documentName": "Advance Ruling Application",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "438",
+      "entityName": "Advance ruling applicant",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "814",
+      "documentId": "Advance_Ruling_Application",
+      "documentName": "Advance Ruling Application",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "439",
+      "entityName": "Advance ruling application recipient",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "815",
+      "documentId": "Advance_Ruling_Application",
+      "documentName": "Advance Ruling Application",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "129",
+      "entityName": "Description of Goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "816",
+      "documentId": "Advance_Ruling_Application",
+      "documentName": "Advance Ruling Application",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "328",
+      "entityName": "HS Code (Commodity Code)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    }
+  ]
+}

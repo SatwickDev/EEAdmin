@@ -1,0 +1,228 @@
+{
+  "documentType": "Purchase Order",
+  "code": "PO",
+  "description": "A commercial document and first official offer issued by a buyer to a seller indicating types, quantities, and agreed prices for products or services",
+  "category": "MANDATORY",
+  "fields": {
+    "mandatory": [
+      {
+        "name": "Purchase Order Number",
+        "fieldId": "po_number",
+        "type": "text",
+        "required": true,
+        "description": "Unique identifier for the purchase order",
+        "validation": "^PO-\\d{6,10}$",
+        "placeholder": "PO-123456",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Order Date",
+        "fieldId": "order_date",
+        "type": "date",
+        "required": true,
+        "description": "Date when the purchase order was issued",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Delivery Date",
+        "fieldId": "delivery_date",
+        "type": "date",
+        "required": true,
+        "description": "Expected delivery date for the goods",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Buyer Name",
+        "fieldId": "buyer_name",
+        "type": "text",
+        "required": true,
+        "description": "Name of the purchasing organization",
+        "validation": null,
+        "placeholder": "Enter buyer company name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Buyer Address",
+        "fieldId": "buyer_address",
+        "type": "textarea",
+        "required": true,
+        "description": "Complete address of the buyer",
+        "validation": null,
+        "placeholder": "Enter complete buyer address",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Seller Name",
+        "fieldId": "seller_name",
+        "type": "text",
+        "required": true,
+        "description": "Name of the selling organization",
+        "validation": null,
+        "placeholder": "Enter seller company name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Seller Address",
+        "fieldId": "seller_address",
+        "type": "textarea",
+        "required": true,
+        "description": "Complete address of the seller",
+        "validation": null,
+        "placeholder": "Enter complete seller address",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Place of Delivery",
+        "fieldId": "place_of_delivery",
+        "type": "text",
+        "required": true,
+        "description": "Location where goods will be delivered by the carrier",
+        "validation": null,
+        "placeholder": "Enter delivery location",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Quantity Ordered",
+        "fieldId": "quantity_ordered",
+        "type": "number",
+        "required": true,
+        "description": "Total quantity of goods ordered",
+        "validation": "^[1-9]\\d*$",
+        "placeholder": "Enter quantity",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Product Identifier",
+        "fieldId": "product_identifier",
+        "type": "text",
+        "required": true,
+        "description": "Unique code or SKU for the product",
+        "validation": null,
+        "placeholder": "Enter product code/SKU",
+        "category": "MANDATORY"
+      }
+    ],
+    "optional": [
+      {
+        "name": "Invoicee",
+        "fieldId": "invoicee",
+        "type": "text",
+        "required": false,
+        "description": "Party to whom the invoice will be sent",
+        "validation": null,
+        "placeholder": "Enter invoicee name (if different from buyer)",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Ship To/Delivery Party",
+        "fieldId": "ship_to_party",
+        "type": "text",
+        "required": false,
+        "description": "Final destination or party receiving the goods",
+        "validation": null,
+        "placeholder": "Enter ship-to party name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Origin Country",
+        "fieldId": "origin_country",
+        "type": "select",
+        "required": false,
+        "description": "Country where goods originate",
+        "validation": null,
+        "placeholder": "Select origin country",
+        "options": ["United States", "China", "Germany", "Japan", "India", "United Kingdom"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Payment Terms",
+        "fieldId": "payment_terms",
+        "type": "select",
+        "required": false,
+        "description": "Agreed payment conditions",
+        "validation": null,
+        "placeholder": "Select payment terms",
+        "options": ["Net 30", "Net 60", "Net 90", "Due on Receipt", "2/10 Net 30", "COD", "CIA"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Payment Method",
+        "fieldId": "payment_method",
+        "type": "select",
+        "required": false,
+        "description": "Method of payment to be used",
+        "validation": null,
+        "placeholder": "Select payment method",
+        "options": ["Wire Transfer", "Letter of Credit", "Check", "Credit Card", "PayPal", "Bank Draft"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Unit Price",
+        "fieldId": "unit_price",
+        "type": "number",
+        "required": false,
+        "description": "Price per unit of product",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Allowance/Charge",
+        "fieldId": "allowance_charge",
+        "type": "number",
+        "required": false,
+        "description": "Any discounts or additional charges",
+        "validation": "^-?\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Tax Amount",
+        "fieldId": "tax_amount",
+        "type": "number",
+        "required": false,
+        "description": "Total tax amount applicable",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Contract Number",
+        "fieldId": "contract_number",
+        "type": "text",
+        "required": false,
+        "description": "Reference to underlying contract if applicable",
+        "validation": null,
+        "placeholder": "Enter contract number",
+        "condition": "Required when purchase order is based on existing contract",
+        "category": "CONDITIONAL"
+      }
+    ]
+  },
+  "validationRules": {
+    "crossFieldValidation": [
+      {
+        "rule": "delivery_date must be after order_date",
+        "fields": ["order_date", "delivery_date"]
+      },
+      {
+        "rule": "total_amount must equal (quantity * unit_price) + allowance_charge + tax_amount",
+        "fields": ["quantity_ordered", "unit_price", "allowance_charge", "tax_amount"]
+      }
+    ],
+    "businessRules": [
+      "Purchase order number must be unique",
+      "Buyer and seller cannot be the same entity",
+      "Delivery date must be reasonable (not more than 365 days from order date)"
+    ]
+  }
+}

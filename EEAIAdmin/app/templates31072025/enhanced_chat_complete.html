@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - Enhanced Chat</title>
+    
+    <!-- Font Awesome -->
+    
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/floating-header-unified.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <style>
+    body {
+      padding-top: 100px;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding-top: 80px;
+      }
+    }
+  </style>
+</head>
+<body class="with-floating-header">
+    <!-- Unified Floating Header -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg width="28" height="28" viewBox="0 0 48 48">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#logoGradient)">
+                                <rect x="8" y="8" width="8" height="32" rx="3"/>
+                                <rect x="8" y="8" width="24" height="8" rx="3"/>
+                                <rect x="8" y="20" width="20" height="8" rx="3"/>
+                            </g>
+                            <g fill="url(#logoGradient)" opacity="0.6">
+                                <rect x="20" y="32" width="20" height="2" rx="1"/>
+                                <rect x="20" y="36" width="20" height="2" rx="1"/>
+                            </g>
+                        </svg>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">Finstack</h1>
+                    <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+                </div>
+            </div>
+
+            <!-- Navigation Pills -->
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill ">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-pill ">
+                    <i class="mdi mdi-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/ai-chat-pro" class="nav-pill active">
+                    <i class="mdi mdi-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+                <a href="/compliance-results" class="nav-pill ">
+                    <i class="mdi mdi-shield-check"></i>
+                    <span>Vetting</span>
+                </a>
+                <a href="/document-classification" class="nav-pill ">
+                    <i class="mdi mdi-file-document-multiple"></i>
+                    <span>Documents</span>
+                </a>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <a href="/ai-chat-pro" class="action-button">
+                    <i class="mdi mdi-plus"></i>
+                    <span>New Session</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <!-- Enhanced Header with Export Actions -->
+        <div class="chat-header">
+            <div class="header-actions">
+                <div class="chat-title">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">
+                        <i class="fas fa-robot" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                        AI Assistant
+                    </h2>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn export-btn" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Excel</span>
+                    </button>
+                    <button class="action-btn pdf-btn" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF</span>
+                    </button>
+                    <button class="action-btn report-btn" onclick="generateReport()">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Report</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleTheme()">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                        <span id="theme-text">Dark</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-area" id="messages-container">
+            <!-- Welcome Message -->
+            <div class="message assistant">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-role">AI Assistant</div>
+                    <div class="message-text">
+                        Hello! I'm your AI assistant. I can help you with document analysis, data processing, and answering your questions. How can I assist you today?
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Input Area -->
+        <div class="input-area">
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <button class="attach-btn" onclick="attachFile()">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <textarea 
+                        class="message-input" 
+                        id="message-input" 
+                        placeholder="Message AI Assistant..." 
+                        rows="1" 
+                        style="height: 32px;"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button class="voice-btn" id="voice-btn" onclick="toggleVoiceRecording()">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="fab-container">
+            <button class="fab-btn" onclick="toggleFabMenu()">
+                <i class="fas fa-plus"></i>
+            </button>
+            <div class="fab-menu" id="fab-menu">
+                <div class="fab-menu-item" onclick="startNewChat()">
+                    <i class="fas fa-comments"></i>
+                    <span>New Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="clearChat()">
+                    <i class="fas fa-broom"></i>
+                    <span>Clear Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="exportChat()">
+                    <i class="fas fa-download"></i>
+                    <span>Export Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the enhanced JavaScript -->
+    <script src="{{ url_for('static', filename='js/enhanced-chat.js') }}"></script>
+</body>
+</html>

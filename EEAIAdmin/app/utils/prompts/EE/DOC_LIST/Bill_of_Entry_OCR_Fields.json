@@ -1,0 +1,65 @@
+{
+    "Bill of Entry": {
+        "Document Information": [
+            "Bill of Entry Number",
+            "Date of Entry",
+            "Customs House/Location",
+            "Assessment Group",
+            "Type (Home Consumption, Warehousing, Ex-bond, Re-import, etc.)"
+        ],
+        "Importer & Agent Details": [
+            "Importer Name and Address",
+            "IEC Code",
+            "GSTIN",
+            "CHA Name and Code",
+            "Contact Person",
+            "Phone",
+            "Email"
+        ],
+        "Consignment Details": [
+            "Invoice Number",
+            "Invoice Date",
+            "Supplier Name",
+            "Country of Origin",
+            "Country of Shipment",
+            "Port of Loading",
+            "Port of Discharge",
+            "Place of Delivery"
+        ],
+        "Goods Information": [
+            "Description of Goods",
+            "HS Code",
+            "Quantity",
+            "UOM",
+            "Gross Weight",
+            "Net Weight",
+            "Unit Price",
+            "Total Invoice Value",
+            "Currency"
+        ],
+        "Duty Details": [
+            "Assessable Value",
+            "Basic Customs Duty",
+            "IGST",
+            "CESS",
+            "Additional Duty",
+            "Exemptions Claimed",
+            "Total Duty Payable"
+        ],
+        "Transport & Container": [
+            "Mode of Transport",
+            "Vessel/Flight/Vehicle Number",
+            "Container Number(s)",
+            "Seal Number(s)",
+            "Bill of Lading/AWB Number"
+        ],
+        "Approval & Clearance": [
+            "Signature of Importer/CHA",
+            "Date",
+            "Customs Officer Signature",
+            "Assessment Status",
+            "Date of Clearance",
+            "Remarks"
+        ]
+    }
+}

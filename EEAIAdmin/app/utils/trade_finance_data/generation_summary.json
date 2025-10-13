@@ -1,0 +1,40 @@
+{
+  "generation_date": "2025-07-05 09:31:59",
+  "total_modules": 14,
+  "embedding_model": "text-embedding-3-large",
+  "chat_model": "gpt-4o",
+  "base_directory": "trade_finance_data",
+  "folders": {
+    "buyer_credit": "Buyer Credit",
+    "user_management": "User Management",
+    "import_lc": "Import LC",
+    "import_collection": "Import Collection",
+    "forward_contracts": "Forward Contracts",
+    "foreign_guarantees": "Foreign Bank Guarantees",
+    "inland_guarantees": "Inland Bank Guarantees",
+    "inland_lc": "Inland LC",
+    "inland_collection": "Inland Collection",
+    "inland_bills": "Inland Bills",
+    "remittances": "Remittances",
+    "sfms": "SFMS",
+    "interest_recovery": "Interest Recovery",
+    "period_reports": "Period Reports"
+  },
+  "modules_generated": [
+    "Buyer Credit",
+    "TF Users",
+    "Import LC",
+    "Import Collection",
+    "Forward Contract",
+    "Foreign Bank Guarantee",
+    "Inland Bank Guarantee",
+    "Inland LC",
+    "Inland Collection",
+    "Inland Outward Bills",
+    "Import Outward Remittance",
+    "SFMS",
+    "Interest Recovery",
+    "Period Reports"
+  ],
+  "chromadb_collection": "trade_finance_records"
+}

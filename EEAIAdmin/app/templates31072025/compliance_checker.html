@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Compliance Checker - Trade Finance</title>
+  
+  <!-- Enhanced CSS Framework -->
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/floating-header-unified.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+
+<body class="compliance-dashboard with-floating-header">
+    <!-- Unified Floating Header -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg width="28" height="28" viewBox="0 0 48 48">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#logoGradient)">
+                                <rect x="8" y="8" width="8" height="32" rx="3"/>
+                                <rect x="8" y="8" width="24" height="8" rx="3"/>
+                                <rect x="8" y="20" width="20" height="8" rx="3"/>
+                            </g>
+                            <g fill="url(#logoGradient)" opacity="0.6">
+                                <rect x="20" y="32" width="20" height="2" rx="1"/>
+                                <rect x="20" y="36" width="20" height="2" rx="1"/>
+                            </g>
+                        </svg>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">Finstack</h1>
+                    <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+                </div>
+            </div>
+
+            <!-- Navigation Pills -->
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill ">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-pill ">
+                    <i class="mdi mdi-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/ai-chat-pro" class="nav-pill ">
+                    <i class="mdi mdi-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+                <a href="/compliance-results" class="nav-pill active">
+                    <i class="mdi mdi-shield-check"></i>
+                    <span>Vetting</span>
+                </a>
+                <a href="/document-classification" class="nav-pill ">
+                    <i class="mdi mdi-file-document-multiple"></i>
+                    <span>Documents</span>
+                </a>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <a href="/ai-chat-pro" class="action-button">
+                    <i class="mdi mdi-plus"></i>
+                    <span>New Session</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+  <header class="floating-nav">
+    <div class="w-full px-6">
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <h1 class="nav-brand">
+            <i class="mdi mdi-shield-check"></i>
+            Document Compliance Checker
+          </h1>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="nav-status">
+            <div class="status-dot"></div>
+            <span>System Ready</span>
+          </div>
+          <button class="glass-button" onclick="goHome()">
+            <i class="mdi mdi-home"></i>
+            Dashboard
+          </button>
+          <button class="glass-button" style="background: var(--error-gradient);" onclick="logout()">
+            <i class="mdi mdi-logout"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step">
+        <div id="step1" class="step-circle active">1</div>
+        <div class="step-line" id="line1"></div>
+      </div>
+      <div class="step">
+        <div id="step2" class="step-circle pending">2</div>
+        <div class="step-line" id="line2"></div>
+      </div>
+      <div class="step">
+        <div id="step3" class="step-circle pending">3</div>
+      </div>
+    </div>
+
+    <!-- Step 1: SWIFT Message Input -->
+    <div id="swiftStep" class="glass-card animate-fade-in">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold gradient-text">
+          <i class="mdi mdi-file-document"></i>
+          Step 1: SWIFT Message Input
+        </h2>
+        <button class="glass-button-outline" onclick="loadSampleSwift()">
+          <i class="mdi mdi-file-plus"></i>
+          Load Sample
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- SWIFT Text Input -->
+        <div>
+          <label class="form-label mb-4">
+            <i class="mdi mdi-code-braces"></i>
+            SWIFT Message Text (MT700, MT701, etc.)
+          </label>
+          <textarea 
+            id="swiftText" 
+            class="swift-editor w-full"
+            placeholder="Paste your SWIFT message here...
+
+Example:
+{1:F01ABCDUS33AXXX0000000000}
+{2:I700XYZYGB2LXXXXN}
+{3:{108:MT700}}
+{4:
+:20:LC123456789
+:31C:250315
+:32B:USD100000,00
+:50:ACME CORPORATION
+123 MAIN STREET
+NEW YORK NY 10001
+:59:XYZ TRADING LTD
+456 HIGH STREET
+LONDON EC1A 1AA
+:45A:WIDGETS 1000 PCS
+:46A:COMMERCIAL INVOICE
+PACKING LIST
+BILL OF LADING
+:47A:CIF LONDON
+:48:LATEST SHIPMENT DATE: 15/04/2025
+-}"></textarea>
+          
+          <div class="mt-4 flex gap-3">
+            <button class="glass-button" onclick="parseSwiftMessage()">
+              <i class="mdi mdi-cog"></i>
+              Parse Message
+            </button>
+            <button class="glass-button-outline" onclick="clearSwiftText()">
+              <i class="mdi mdi-delete"></i>
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Parsed SWIFT Data -->
+        <div>
+          <label class="form-label mb-4">
+            <i class="mdi mdi-code-json"></i>
+            Parsed SWIFT Data
+          </label>
+          <div id="parsedSwift" class="glass-card p-6 min-h-[300px] bg-gray-50">
+            <div class="text-center text-gray-500">
+              <i class="mdi mdi-file-search text-4xl mb-4"></i>
+              <p>Parse SWIFT message to see structured data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-8">
+        <button class="glass-button" onclick="proceedToDocuments()" disabled id="nextToDocuments">
+          <span>Next: Upload Documents</span>
+          <i class="mdi mdi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Document Upload -->
+    <div id="documentsStep" class="glass-card animate-fade-in hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold gradient-text">
+          <i class="mdi mdi-file-multiple"></i>
+          Step 2: Upload Related Documents
+        </h2>
+        <button class="glass-button-outline" onclick="clearAllDocuments()">
+          <i class="mdi mdi-delete-sweep"></i>
+          Clear All
+        </button>
+      </div>
+
+      <!-- Document Upload Areas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Invoice Upload -->
+        <div class="document-card glass-card p-6 text-center cursor-pointer" 
+             onclick="triggerFileUpload('invoice')"
+             ondrop="handleDrop(event, 'invoice')"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)">
+          <i class="mdi mdi-receipt text-4xl text-primary-500 mb-4"></i>
+          <h3 class="font-semibold mb-2">Invoice</h3>
+          <p class="text-sm text-gray-600 mb-4">Commercial invoice or bill</p>
+          <div id="invoiceStatus" class="text-xs text-gray-500">Click to upload or drag & drop</div>
+          <input type="file" id="invoiceFile" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx" onchange="handleFileSelect(event, 'invoice')">
+        </div>
+
+        <!-- Purchase Order Upload -->
+        <div class="document-card glass-card p-6 text-center cursor-pointer"
+             onclick="triggerFileUpload('purchase_order')"
+             ondrop="handleDrop(event, 'purchase_order')"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)">
+          <i class="mdi mdi-cart text-4xl text-primary-500 mb-4"></i>
+          <h3 class="font-semibold mb-2">Purchase Order</h3>
+          <p class="text-sm text-gray-600 mb-4">Original purchase order</p>
+          <div id="purchase_orderStatus" class="text-xs text-gray-500">Click to upload or drag & drop</div>
+          <input type="file" id="purchase_orderFile" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx" onchange="handleFileSelect(event, 'purchase_order')">
+        </div>
+
+        <!-- Shipping Document Upload -->
+        <div class="document-card glass-card p-6 text-center cursor-pointer"
+             onclick="triggerFileUpload('shipping_document')"
+             ondrop="handleDrop(event, 'shipping_document')"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)">
+          <i class="mdi mdi-ship text-4xl text-primary-500 mb-4"></i>
+          <h3 class="font-semibold mb-2">Shipping Document</h3>
+          <p class="text-sm text-gray-600 mb-4">Bill of lading, AWB, etc.</p>
+          <div id="shipping_documentStatus" class="text-xs text-gray-500">Click to upload or drag & drop</div>
+          <input type="file" id="shipping_documentFile" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx" onchange="handleFileSelect(event, 'shipping_document')">
+        </div>
+
+        <!-- Sales Contract Upload -->
+        <div class="document-card glass-card p-6 text-center cursor-pointer"
+             onclick="triggerFileUpload('sales_contract')"
+             ondrop="handleDrop(event, 'sales_contract')"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)">
+          <i class="mdi mdi-handshake text-4xl text-primary-500 mb-4"></i>
+          <h3 class="font-semibold mb-2">Sales Contract</h3>
+          <p class="text-sm text-gray-600 mb-4">Sales agreement document</p>
+          <div id="sales_contractStatus" class="text-xs text-gray-500">Click to upload or drag & drop</div>
+          <input type="file" id="sales_contractFile" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx" onchange="handleFileSelect(event, 'sales_contract')">
+        </div>
+
+        <!-- Packing List Upload -->
+        <div class="document-card glass-card p-6 text-center cursor-pointer"
+             onclick="triggerFileUpload('packing_list')"
+             ondrop="handleDrop(event, 'packing_list')"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)">
+          <i class="mdi mdi-package-variant text-4xl text-primary-500 mb-4"></i>
+          <h3 class="font-semibold mb-2">Packing List</h3>
+          <p class="text-sm text-gray-600 mb-4">Detailed packing information</p>
+          <div id="packing_listStatus" class="text-xs text-gray-500">Click to upload or drag & drop</div>
+          <input type="file" id="packing_listFile" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx" onchange="handleFileSelect(event, 'packing_list')">
+        </div>
+
+        <!-- Certificate Upload -->
+        <div class="document-card glass-card p-6 text-center cursor-pointer"
+             onclick="triggerFileUpload('certificate')"
+             ondrop="handleDrop(event, 'certificate')"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)">
+          <i class="mdi mdi-certificate text-4xl text-primary-500 mb-4"></i>
+          <h3 class="font-semibold mb-2">Certificate</h3>
+          <p class="text-sm text-gray-600 mb-4">Origin, quality certificates</p>
+          <div id="certificateStatus" class="text-xs text-gray-500">Click to upload or drag & drop</div>
+          <input type="file" id="certificateFile" class="hidden" accept=".pdf,.jpg,.png,.doc,.docx" onchange="handleFileSelect(event, 'certificate')">
+        </div>
+      </div>
+
+      <!-- Uploaded Documents Summary -->
+      <div id="uploadedDocuments" class="hidden">
+        <h3 class="text-lg font-semibold mb-4">Uploaded Documents</h3>
+        <div id="documentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <!-- Dynamic document cards will be inserted here -->
+        </div>
+      </div>
+
+      <div class="flex justify-between mt-8">
+        <button class="glass-button-outline" onclick="backToSwift()">
+          <i class="mdi mdi-arrow-left"></i>
+          Back: SWIFT Message
+        </button>
+        <button class="glass-button" onclick="startValidation()" disabled id="startValidationBtn">
+          <span>Start Compliance Check</span>
+          <i class="mdi mdi-shield-check"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Validation Results -->
+    <div id="resultsStep" class="glass-card animate-fade-in hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold gradient-text">
+          <i class="mdi mdi-clipboard-check"></i>
+          Step 3: Compliance Results
+        </h2>
+        <div class="flex gap-3">
+          <button class="glass-button-outline" onclick="downloadReport()">
+            <i class="mdi mdi-download"></i>
+            Download Report
+          </button>
+          <button class="glass-button-outline" onclick="startNewCheck()">
+            <i class="mdi mdi-refresh"></i>
+            New Check
+          </button>
+        </div>
+      </div>
+
+      <!-- Overall Compliance Score -->
+      <div class="glass-card p-8 mb-8 text-center">
+        <h3 class="text-xl font-semibold mb-4">Overall Compliance Score</h3>
+        <div id="complianceScore" class="compliance-score">--%</div>
+        <div id="complianceStatus" class="mt-4">
+          <span class="document-type-badge">Calculating...</span>
+        </div>
+        
+        <!-- Export and Analytics Controls -->
+        <div class="flex justify-center gap-3 mt-6" id="resultActions" style="display: none;">
+          <button class="glass-button" onclick="exportReport('pdf')">
+            <i class="mdi mdi-file-pdf-box"></i>
+            Export PDF
+          </button>
+          <button class="glass-button" onclick="exportReport('excel')">
+            <i class="mdi mdi-file-excel-box"></i>
+            Export Excel
+          </button>
+          <button class="glass-button" onclick="exportReport('csv')">
+            <i class="mdi mdi-file-table-outline"></i>
+            Export CSV
+          </button>
+          <button class="glass-button" onclick="showAnalytics()">
+            <i class="mdi mdi-chart-line"></i>
+            Analytics
+          </button>
+          <button class="glass-button" onclick="showDashboard()">
+            <i class="mdi mdi-view-dashboard"></i>
+            Dashboard
+          </button>
+        </div>
+      </div>
+
+      <!-- Detailed Results -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Validation Summary -->
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Validation Summary</h3>
+          
+          <div id="validationSummary" class="space-y-4">
+            <!-- Dynamic validation results will be inserted here -->
+          </div>
+        </div>
+
+        <!-- Issues and Warnings -->
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Issues & Recommendations</h3>
+          
+          <div id="issuesWarnings" class="space-y-4">
+            <!-- Dynamic issues and warnings will be inserted here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Cross-Document Analysis -->
+      <div id="crossDocumentAnalysis" class="mt-8">
+        <h3 class="text-lg font-semibold mb-4">Cross-Document Analysis</h3>
+        <div class="glass-card p-6">
+          <div id="crossAnalysisContent">
+            <!-- Dynamic cross-analysis results will be inserted here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline Analysis -->
+      <div id="timelineAnalysis" class="mt-8 hidden">
+        <h3 class="text-lg font-semibold mb-4">Timeline Analysis</h3>
+        <div class="glass-card p-6">
+          <div id="timelineContent">
+            <!-- Dynamic timeline will be inserted here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loader-overlay hidden">
+    <div class="glass-card p-8 text-center">
+      <div class="loading-spinner mx-auto mb-6"></div>
+      <div class="loading-text mb-2">Processing Documents...</div>
+      <small class="text-gray-500" id="loadingStatus">Validating compliance requirements</small>
+    </div>
+  </div>
+
+  <!-- Enhanced JavaScript -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.js"></script>
+
+  <script>
+    // Application State
+    let appState = {
+      currentStep: 1,
+      swiftMessage: null,
+      uploadedDocuments: {},
+      validationResults: null,
+      isProcessing: false
+    };
+
+    // Step Management
+    function updateStepIndicator(activeStep) {
+      for (let i = 1; i <= 3; i++) {
+        const step = document.getElementById(`step${i}`);
+        const line = document.getElementById(`line${i}`);
+        
+        if (i < activeStep) {
+          step.className = 'step-circle completed';
+          step.innerHTML = '<i class="mdi mdi-check"></i>';
+          if (line) line.className = 'step-line completed';
+        } else if (i === activeStep) {
+          step.className = 'step-circle active';
+          step.innerHTML = i;
+          if (line) line.className = 'step-line';
+        } else {
+          step.className = 'step-circle pending';
+          step.innerHTML = i;
+          if (line) line.className = 'step-line';
+        }
+      }
+    }
+
+    function showStep(stepNumber) {
+      // Hide all steps
+      document.getElementById('swiftStep').classList.add('hidden');
+      document.getElementById('documentsStep').classList.add('hidden');
+      document.getElementById('resultsStep').classList.add('hidden');
+      
+      // Show target step
+      const stepIds = ['', 'swiftStep', 'documentsStep', 'resultsStep'];
+      document.getElementById(stepIds[stepNumber]).classList.remove('hidden');
+      
+      updateStepIndicator(stepNumber);
+      appState.currentStep = stepNumber;
+    }
+
+    // SWIFT Message Handling
+    async function parseSwiftMessage() {
+      const swiftText = document.getElementById('swiftText').value.trim();
+      
+      if (!swiftText) {
+        showNotification('Please enter SWIFT message text', 'error');
+        return;
+      }
+
+      showLoading('Parsing SWIFT message...');
+
+      try {
+        const response = await fetch('/api/compliance/swift/parse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ swift_text: swiftText })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          appState.swiftMessage = data.parsed_swift;
+          displayParsedSwift(data.parsed_swift);
+          document.getElementById('nextToDocuments').disabled = false;
+          showNotification('SWIFT message parsed successfully', 'success');
+        } else {
+          showNotification(data.error || 'Failed to parse SWIFT message', 'error');
+        }
+      } catch (error) {
+        showNotification('Error parsing SWIFT message: ' + error.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function displayParsedSwift(parsedSwift) {
+      const container = document.getElementById('parsedSwift');
+      
+      const html = `
+        <div class="space-y-4">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="document-type-badge">${parsedSwift.message_type || 'Unknown'}</span>
+            <span class="text-sm text-gray-600">Reference: ${parsedSwift.reference_number || 'N/A'}</span>
+          </div>
+          
+          <div class="grid grid-cols-1 gap-3">
+            ${Object.entries(parsedSwift.fields || {}).map(([field, value]) => `
+              <div class="flex justify-between p-3 bg-white rounded-lg border">
+                <span class="font-medium text-gray-700">Field ${field}:</span>
+                <span class="text-gray-900 text-right max-w-xs truncate" title="${value}">${value}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    }
+
+    function loadSampleSwift() {
+      const sampleSwift = `{1:F01ABCDUS33AXXX0000000000}
+{2:I700XYZYGB2LXXXXN}
+{3:{108:MT700}}
+{4:
+:20:LC123456789
+:31C:250315
+:32B:USD100000,00
+:50:ACME CORPORATION
+123 MAIN STREET
+NEW YORK NY 10001
+:59:XYZ TRADING LTD
+456 HIGH STREET
+LONDON EC1A 1AA
+:45A:WIDGETS 1000 PCS
+AT USD 100 PER PC
+:46A:COMMERCIAL INVOICE
+PACKING LIST
+BILL OF LADING
+:47A:CIF LONDON
+:48:LATEST SHIPMENT DATE: 15/04/2025
+GOODS TO BE SHIPPED FROM NEW YORK TO LONDON
+-}`;
+      
+      document.getElementById('swiftText').value = sampleSwift;
+      parseSwiftMessage();
+    }
+
+    function clearSwiftText() {
+      document.getElementById('swiftText').value = '';
+      document.getElementById('parsedSwift').innerHTML = `
+        <div class="text-center text-gray-500">
+          <i class="mdi mdi-file-search text-4xl mb-4"></i>
+          <p>Parse SWIFT message to see structured data</p>
+        </div>
+      `;
+      document.getElementById('nextToDocuments').disabled = true;
+      appState.swiftMessage = null;
+    }
+
+    // Document Upload Handling
+    function triggerFileUpload(docType) {
+      document.getElementById(docType + 'File').click();
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+      event.currentTarget.classList.add('dragover');
+    }
+
+    function handleDragLeave(event) {
+      event.preventDefault();
+      event.currentTarget.classList.remove('dragover');
+    }
+
+    function handleDrop(event, docType) {
+      event.preventDefault();
+      event.currentTarget.classList.remove('dragover');
+      
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        processFile(files[0], docType);
+      }
+    }
+
+    function handleFileSelect(event, docType) {
+      const file = event.target.files[0];
+      if (file) {
+        processFile(file, docType);
+      }
+    }
+
+    async function processFile(file, docType) {
+      const statusElement = document.getElementById(docType + 'Status');
+      const cardElement = statusElement.closest('.document-card');
+      
+      statusElement.textContent = 'Processing...';
+      showLoading(`Processing ${docType.replace('_', ' ')}...`);
+
+      try {
+        const formData = new FormData();
+        formData.append('files', file);
+
+        const response = await fetch('/api/compliance/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.processed_documents.length > 0) {
+          const processedDoc = data.processed_documents[0];
+          processedDoc.document_type = docType; // Ensure correct type
+          
+          appState.uploadedDocuments[docType] = processedDoc;
+          
+          statusElement.innerHTML = `<i class="mdi mdi-check text-green-600"></i> Uploaded`;
+          cardElement.classList.add('uploaded');
+          
+          updateDocumentsList();
+          updateStartValidationButton();
+          
+          showNotification(`${docType.replace('_', ' ')} uploaded successfully`, 'success');
+        } else {
+          statusElement.textContent = 'Upload failed';
+          showNotification(data.error || 'Failed to process document', 'error');
+        }
+      } catch (error) {
+        statusElement.textContent = 'Upload failed';
+        showNotification('Error uploading document: ' + error.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function updateDocumentsList() {
+      const container = document.getElementById('documentsList');
+      const uploadedContainer = document.getElementById('uploadedDocuments');
+      
+      if (Object.keys(appState.uploadedDocuments).length === 0) {
+        uploadedContainer.classList.add('hidden');
+        return;
+      }
+      
+      uploadedContainer.classList.remove('hidden');
+      
+      const html = Object.entries(appState.uploadedDocuments).map(([docType, doc]) => `
+        <div class="glass-card p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i class="mdi mdi-file-check text-green-600 text-2xl"></i>
+              <div>
+                <h4 class="font-semibold">${docType.replace('_', ' ')}</h4>
+                <p class="text-sm text-gray-600">${doc.filename}</p>
+              </div>
+            </div>
+            <button class="glass-button-outline text-red-600" onclick="removeDocument('${docType}')">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </div>
+          
+          ${doc.extracted_data && Object.keys(doc.extracted_data).length > 0 ? `
+            <div class="mt-3 pt-3 border-t border-gray-200">
+              <h5 class="text-xs font-semibold text-gray-500 mb-2">Extracted Data:</h5>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                ${Object.entries(doc.extracted_data).map(([key, value]) => `
+                  <div><span class="font-medium">${key}:</span> ${value}</div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+      
+      container.innerHTML = html;
+    }
+
+    function removeDocument(docType) {
+      delete appState.uploadedDocuments[docType];
+      
+      const statusElement = document.getElementById(docType + 'Status');
+      const cardElement = statusElement.closest('.document-card');
+      
+      statusElement.textContent = 'Click to upload or drag & drop';
+      cardElement.classList.remove('uploaded');
+      
+      updateDocumentsList();
+      updateStartValidationButton();
+      
+      showNotification(`${docType.replace('_', ' ')} removed`, 'info');
+    }
+
+    function clearAllDocuments() {
+      appState.uploadedDocuments = {};
+      
+      // Reset all upload areas
+      const docTypes = ['invoice', 'purchase_order', 'shipping_document', 'sales_contract', 'packing_list', 'certificate'];
+      docTypes.forEach(docType => {
+        const statusElement = document.getElementById(docType + 'Status');
+        const cardElement = statusElement.closest('.document-card');
+        
+        statusElement.textContent = 'Click to upload or drag & drop';
+        cardElement.classList.remove('uploaded');
+      });
+      
+      updateDocumentsList();
+      updateStartValidationButton();
+      
+      showNotification('All documents cleared', 'info');
+    }
+
+    function updateStartValidationButton() {
+      const hasDocuments = Object.keys(appState.uploadedDocuments).length > 0;
+      const hasSwift = appState.swiftMessage !== null;
+      
+      document.getElementById('startValidationBtn').disabled = !(hasDocuments && hasSwift);
+    }
+
+    // Compliance Validation
+    async function startValidation() {
+      if (!appState.swiftMessage) {
+        showNotification('SWIFT message is required', 'error');
+        return;
+      }
+
+      if (Object.keys(appState.uploadedDocuments).length === 0) {
+        showNotification('At least one document is required', 'error');
+        return;
+      }
+
+      showLoading('Validating document compliance...');
+      updateLoadingStatus('Analyzing SWIFT message fields...');
+
+      try {
+        const relatedDocuments = Object.values(appState.uploadedDocuments);
+
+        setTimeout(() => updateLoadingStatus('Cross-referencing document data...'), 1000);
+        setTimeout(() => updateLoadingStatus('Checking compliance rules...'), 2000);
+        setTimeout(() => updateLoadingStatus('Generating compliance report...'), 3000);
+
+        const response = await fetch('/api/compliance/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            swift_message: appState.swiftMessage,
+            related_documents: relatedDocuments
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          appState.validationResults = data.validation_results;
+          displayValidationResults(data.validation_results);
+          showStep(3);
+          showNotification('Compliance validation completed', 'success');
+        } else {
+          showNotification(data.error || 'Validation failed', 'error');
+        }
+      } catch (error) {
+        showNotification('Error during validation: ' + error.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function displayValidationResults(results) {
+      // Update compliance score
+      const score = Math.round(results.compliance_score || 0);
+      document.getElementById('complianceScore').textContent = score + '%';
+      
+      const statusElement = document.getElementById('complianceStatus');
+      if (score >= 90) {
+        statusElement.innerHTML = '<span class="success-card p-2 rounded">Excellent Compliance</span>';
+      } else if (score >= 80) {
+        statusElement.innerHTML = '<span class="document-type-badge">Good Compliance</span>';
+      } else if (score >= 60) {
+        statusElement.innerHTML = '<span class="warning-card p-2 rounded">Needs Attention</span>';
+      } else {
+        statusElement.innerHTML = '<span class="issue-card p-2 rounded">Critical Issues</span>';
+      }
+
+      // Display validation summary
+      displayValidationSummary(results);
+
+      // Display issues and warnings
+      displayIssuesWarnings(results);
+
+      // Display cross-document analysis
+      displayCrossDocumentAnalysis(results);
+
+      // Display timeline if available
+      if (results.cross_document_analysis?.timeline_analysis) {
+        displayTimelineAnalysis(results.cross_document_analysis.timeline_analysis);
+      }
+      
+      // Show export and analytics actions
+      document.getElementById('resultActions').style.display = 'flex';
+    }
+
+    function displayValidationSummary(results) {
+      const container = document.getElementById('validationSummary');
+      
+      const summary = Object.entries(results.detailed_results || {}).map(([docType, docResult]) => {
+        const score = Math.round((docResult.passed_checks / Math.max(docResult.total_checks, 1)) * 100);
+        const statusClass = score >= 80 ? 'success-card' : score >= 60 ? 'warning-card' : 'issue-card';
+        
+        return `
+          <div class="validation-result ${statusClass} p-4 rounded-lg">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-semibold">${docType.replace('_', ' ')}</h4>
+              <span class="font-bold">${score}%</span>
+            </div>
+            <div class="text-sm">
+              <p>✅ ${docResult.passed_checks} passed • ❌ ${docResult.failed_checks} failed • ⚠️ ${docResult.warnings} warnings</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = summary || '<p class="text-gray-500">No validation data available</p>';
+    }
+
+    function displayIssuesWarnings(results) {
+      const container = document.getElementById('issuesWarnings');
+      
+      let html = '';
+
+      // Critical issues
+      if (results.critical_issues && results.critical_issues.length > 0) {
+        html += '<h4 class="font-semibold text-red-600 mb-3">Critical Issues</h4>';
+        html += results.critical_issues.map(issue => `
+          <div class="issue-card p-4 rounded-lg mb-3">
+            <div class="flex items-start gap-3">
+              <i class="mdi mdi-alert-circle text-red-600 text-xl mt-1"></i>
+              <div>
+                <h5 class="font-semibold">${issue.field}</h5>
+                <p class="text-sm">${issue.issue}</p>
+                ${issue.difference ? `<p class="text-xs mt-1 text-gray-600">Difference: ${issue.difference}</p>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Warnings
+      if (results.warnings_list && results.warnings_list.length > 0) {
+        html += '<h4 class="font-semibold text-yellow-600 mb-3 mt-6">Warnings</h4>';
+        html += results.warnings_list.map(warning => `
+          <div class="warning-card p-4 rounded-lg mb-3">
+            <div class="flex items-start gap-3">
+              <i class="mdi mdi-alert text-yellow-600 text-xl mt-1"></i>
+              <div>
+                <h5 class="font-semibold">${warning.field}</h5>
+                <p class="text-sm">${warning.issue}</p>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Recommendation
+      if (results.recommendation) {
+        html += '<h4 class="font-semibold text-blue-600 mb-3 mt-6">Recommendations</h4>';
+        html += `
+          <div class="glass-card p-4 rounded-lg">
+            <p class="text-sm">${results.recommendation}</p>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html || '<p class="text-gray-500">No issues or warnings found</p>';
+    }
+
+    function displayCrossDocumentAnalysis(results) {
+      const container = document.getElementById('crossAnalysisContent');
+      const crossAnalysis = results.cross_document_analysis || {};
+      
+      let html = '<div class="grid grid-cols-1 md:grid-cols-3 gap-4">';
+      
+      // Amount consistency
+      html += `
+        <div class="text-center">
+          <div class="text-2xl mb-2">
+            ${crossAnalysis.consistent_amounts ? 
+              '<i class="mdi mdi-check-circle text-green-600"></i>' : 
+              '<i class="mdi mdi-close-circle text-red-600"></i>'}
+          </div>
+          <h4 class="font-semibold">Amount Consistency</h4>
+          <p class="text-sm text-gray-600">${crossAnalysis.consistent_amounts ? 'All amounts match' : 'Amount discrepancies found'}</p>
+        </div>
+      `;
+      
+      // Party consistency
+      html += `
+        <div class="text-center">
+          <div class="text-2xl mb-2">
+            ${crossAnalysis.consistent_parties ? 
+              '<i class="mdi mdi-check-circle text-green-600"></i>' : 
+              '<i class="mdi mdi-close-circle text-red-600"></i>'}
+          </div>
+          <h4 class="font-semibold">Party Information</h4>
+          <p class="text-sm text-gray-600">${crossAnalysis.consistent_parties ? 'Party details consistent' : 'Party information issues'}</p>
+        </div>
+      `;
+      
+      // Goods consistency
+      html += `
+        <div class="text-center">
+          <div class="text-2xl mb-2">
+            ${crossAnalysis.consistent_goods ? 
+              '<i class="mdi mdi-check-circle text-green-600"></i>' : 
+              '<i class="mdi mdi-close-circle text-red-600"></i>'}
+          </div>
+          <h4 class="font-semibold">Goods Description</h4>
+          <p class="text-sm text-gray-600">${crossAnalysis.consistent_goods ? 'Descriptions match' : 'Description inconsistencies'}</p>
+        </div>
+      `;
+      
+      html += '</div>';
+
+      // Discrepancies
+      if (crossAnalysis.discrepancies && crossAnalysis.discrepancies.length > 0) {
+        html += '<div class="mt-6"><h4 class="font-semibold mb-3">Cross-Document Discrepancies</h4>';
+        html += crossAnalysis.discrepancies.map(disc => `
+          <div class="warning-card p-3 rounded mb-2">
+            <p class="text-sm"><strong>${disc.type}:</strong> ${disc.documents?.join(' vs ') || 'Multiple documents'}</p>
+            ${disc.difference ? `<p class="text-xs text-gray-600">Difference: ${disc.difference}</p>` : ''}
+          </div>
+        `).join('');
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    function displayTimelineAnalysis(timelineData) {
+      const container = document.getElementById('timelineContent');
+      const timelineElement = document.getElementById('timelineAnalysis');
+      
+      if (!timelineData.critical_path || timelineData.critical_path.length === 0) {
+        timelineElement.classList.add('hidden');
+        return;
+      }
+      
+      timelineElement.classList.remove('hidden');
+      
+      let html = '<div class="space-y-4">';
+      
+      timelineData.critical_path.forEach((event, index) => {
+        const date = new Date(event.date).toLocaleDateString();
+        html += `
+          <div class="timeline-item">
+            <h5 class="font-semibold">${event.event.replace('_', ' ')}</h5>
+            <p class="text-sm text-gray-600">${date}</p>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      
+      // Timeline issues
+      if (timelineData.timeline_issues && timelineData.timeline_issues.length > 0) {
+        html += '<div class="mt-6"><h4 class="font-semibold mb-3 text-red-600">Timeline Issues</h4>';
+        html += timelineData.timeline_issues.map(issue => `
+          <div class="issue-card p-3 rounded mb-2">
+            <p class="text-sm">${issue.issue}</p>
+          </div>
+        `).join('');
+        html += '</div>';
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // Navigation Functions
+    function proceedToDocuments() {
+      if (!appState.swiftMessage) {
+        showNotification('Please parse SWIFT message first', 'error');
+        return;
+      }
+      showStep(2);
+    }
+
+    function backToSwift() {
+      showStep(1);
+    }
+
+    function startNewCheck() {
+      // Reset application state
+      appState = {
+        currentStep: 1,
+        swiftMessage: null,
+        uploadedDocuments: {},
+        validationResults: null,
+        isProcessing: false
+      };
+      
+      // Clear UI elements
+      clearSwiftText();
+      clearAllDocuments();
+      
+      // Reset step indicator and show first step
+      showStep(1);
+      
+      showNotification('Started new compliance check', 'info');
+    }
+
+    async function downloadReport() {
+      if (!appState.validationResults) {
+        showNotification('No validation results to download', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/compliance/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            validation_results: appState.validationResults
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Create and download report
+          const reportData = JSON.stringify(data.report, null, 2);
+          const blob = new Blob([reportData], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `compliance-report-${new Date().toISOString().slice(0, 10)}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          showNotification('Report downloaded successfully', 'success');
+        } else {
+          showNotification(data.error || 'Failed to generate report', 'error');
+        }
+      } catch (error) {
+        showNotification('Error downloading report: ' + error.message, 'error');
+      }
+    }
+
+    // Utility Functions
+    function showLoading(message = 'Processing...') {
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+      document.querySelector('.loading-text').textContent = message;
+      appState.isProcessing = true;
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      appState.isProcessing = false;
+    }
+
+    function updateLoadingStatus(status) {
+      document.getElementById('loadingStatus').textContent = status;
+    }
+
+    function showNotification(message, type = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500',
+      };
+      
+      const icons = {
+        success: 'mdi-check-circle',
+        error: 'mdi-alert-circle',
+        warning: 'mdi-alert',
+        info: 'mdi-information',
+      };
+      
+      notification.className = `fixed top-6 right-6 z-50 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-sm transform translate-x-full transition-transform`;
+      notification.innerHTML = `
+        <i class="mdi ${icons[type]} text-xl"></i>
+        <span class="font-medium">${message}</span>
+        <button onclick="this.parentElement.remove()" class="ml-auto">
+          <i class="mdi mdi-close text-lg hover:bg-white/20 rounded p-1 transition-colors"></i>
+        </button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Auto remove
+      const timeout = type === 'error' ? 5000 : 3000;
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => notification.remove(), 300);
+      }, timeout);
+    }
+
+    function goHome() {
+      window.location.href = '/';
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }).finally(() => {
+          localStorage.removeItem('user_id');
+          localStorage.removeItem('user_data');
+          localStorage.removeItem('remember_me');
+          window.location.href = '/';
+        });
+      }
+    }
+
+    // Export and Analytics Functions
+    async function exportReport(format) {
+      if (!appState.validationResults) {
+        showNotification('No validation results to export', 'error');
+        return;
+      }
+
+      try {
+        showLoading(`Generating ${format.toUpperCase()} report...`);
+        
+        // First generate the detailed report
+        const reportResponse = await fetch('/api/compliance/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            validation_results: appState.validationResults
+          })
+        });
+
+        const reportData = await reportResponse.json();
+        
+        if (!reportData.success) {
+          throw new Error(reportData.error || 'Failed to generate report');
+        }
+
+        // Export the report in requested format
+        const exportResponse = await fetch('/api/compliance/report/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            report_data: reportData.report,
+            format: format
+          })
+        });
+
+        if (exportResponse.ok) {
+          const blob = await exportResponse.blob();
+          const url = window.URL.createObjectURL(blob);
+          
+          const link = document.createElement('a');
+          link.href = url;
+          
+          const extension = format === 'excel' ? 'xlsx' : format;
+          link.download = `compliance_report_${new Date().toISOString().slice(0, 10)}.${extension}`;
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          showNotification(`${format.toUpperCase()} report exported successfully`, 'success');
+        } else {
+          const errorData = await exportResponse.json();
+          throw new Error(errorData.error || 'Export failed');
+        }
+      } catch (error) {
+        showNotification('Export error: ' + error.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function showAnalytics() {
+      try {
+        showLoading('Loading analytics...');
+        
+        const response = await fetch('/api/compliance/analytics?date_range=30');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayAnalyticsModal(data.analytics);
+        } else {
+          throw new Error(data.error || 'Failed to load analytics');
+        }
+      } catch (error) {
+        showNotification('Analytics error: ' + error.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function showDashboard() {
+      try {
+        showLoading('Loading dashboard...');
+        
+        const response = await fetch('/api/compliance/dashboard');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayDashboardModal(data.dashboard);
+        } else {
+          throw new Error(data.error || 'Failed to load dashboard');
+        }
+      } catch (error) {
+        showNotification('Dashboard error: ' + error.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function displayAnalyticsModal(analytics) {
+      const modalHTML = `
+        <div id="analyticsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div class="glass-card max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-6 border-b">
+              <h2 class="text-2xl font-bold gradient-text">Compliance Analytics</h2>
+              <button onclick="closeModal('analyticsModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="mdi mdi-close text-2xl"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <!-- Key Metrics -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="text-center p-4 glass-card rounded-lg">
+                  <div class="text-3xl font-bold text-blue-600">${analytics.total_checks_performed}</div>
+                  <div class="text-sm text-gray-600">Total Checks</div>
+                </div>
+                <div class="text-center p-4 glass-card rounded-lg">
+                  <div class="text-3xl font-bold text-green-600">${analytics.average_compliance_score}%</div>
+                  <div class="text-sm text-gray-600">Avg Score</div>
+                </div>
+                <div class="text-center p-4 glass-card rounded-lg">
+                  <div class="text-3xl font-bold text-purple-600">${analytics.total_documents_processed}</div>
+                  <div class="text-sm text-gray-600">Documents</div>
+                </div>
+                <div class="text-center p-4 glass-card rounded-lg">
+                  <div class="text-3xl font-bold text-orange-600">${analytics.risk_distribution.high}%</div>
+                  <div class="text-sm text-gray-600">High Risk</div>
+                </div>
+              </div>
+              
+              <!-- Document Type Distribution -->
+              <div class="mb-8">
+                <h3 class="text-lg font-semibold mb-4">Document Type Distribution</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  ${Object.entries(analytics.document_type_distribution).map(([type, count]) => `
+                    <div class="glass-card p-3 rounded-lg text-center">
+                      <div class="font-bold text-lg">${count}</div>
+                      <div class="text-sm text-gray-600">${type.replace('_', ' ')}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <!-- Common Issues -->
+              <div class="mb-8">
+                <h3 class="text-lg font-semibold mb-4">Common Issues</h3>
+                <div class="space-y-3">
+                  ${analytics.common_issues.map(issue => `
+                    <div class="flex justify-between items-center p-3 glass-card rounded-lg">
+                      <span>${issue.issue}</span>
+                      <span class="font-bold text-red-600">${issue.count}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <!-- Risk Distribution -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4">Risk Distribution</h3>
+                <div class="grid grid-cols-3 gap-4">
+                  <div class="glass-card p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-green-600">${analytics.risk_distribution.low}%</div>
+                    <div class="text-sm text-gray-600">Low Risk</div>
+                  </div>
+                  <div class="glass-card p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-yellow-600">${analytics.risk_distribution.medium}%</div>
+                    <div class="text-sm text-gray-600">Medium Risk</div>
+                  </div>
+                  <div class="glass-card p-4 rounded-lg text-center">
+                    <div class="text-2xl font-bold text-red-600">${analytics.risk_distribution.high}%</div>
+                    <div class="text-sm text-gray-600">High Risk</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function displayDashboardModal(dashboard) {
+      const modalHTML = `
+        <div id="dashboardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div class="glass-card max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-6 border-b">
+              <h2 class="text-2xl font-bold gradient-text">Compliance Dashboard</h2>
+              <button onclick="closeModal('dashboardModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="mdi mdi-close text-2xl"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <!-- Today's Summary -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="glass-card p-4 rounded-lg text-center">
+                  <div class="text-2xl font-bold text-blue-600">${dashboard.summary_stats.total_checks_today}</div>
+                  <div class="text-sm text-gray-600">Checks Today</div>
+                </div>
+                <div class="glass-card p-4 rounded-lg text-center">
+                  <div class="text-2xl font-bold text-green-600">${dashboard.summary_stats.average_score_today}%</div>
+                  <div class="text-sm text-gray-600">Avg Score Today</div>
+                </div>
+                <div class="glass-card p-4 rounded-lg text-center">
+                  <div class="text-2xl font-bold text-red-600">${dashboard.summary_stats.critical_issues_today}</div>
+                  <div class="text-sm text-gray-600">Critical Issues</div>
+                </div>
+                <div class="glass-card p-4 rounded-lg text-center">
+                  <div class="text-2xl font-bold text-purple-600">${dashboard.summary_stats.documents_processed_today}</div>
+                  <div class="text-sm text-gray-600">Documents Today</div>
+                </div>
+              </div>
+              
+              <!-- Recent Checks -->
+              <div class="mb-8">
+                <h3 class="text-lg font-semibold mb-4">Recent Checks</h3>
+                <div class="space-y-3">
+                  ${dashboard.recent_checks.map(check => `
+                    <div class="glass-card p-4 rounded-lg flex justify-between items-center">
+                      <div>
+                        <div class="font-semibold">${check.swift_type}</div>
+                        <div class="text-sm text-gray-600">${new Date(check.timestamp).toLocaleString()}</div>
+                      </div>
+                      <div class="text-right">
+                        <div class="font-bold ${check.status === 'PASS' ? 'text-green-600' : 'text-red-600'}">${check.score}%</div>
+                        <div class="text-sm ${check.status === 'PASS' ? 'text-green-600' : 'text-red-600'}">${check.status}</div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <!-- System Health -->
+              <div class="mb-8">
+                <h3 class="text-lg font-semibold mb-4">System Health</h3>
+                <div class="glass-card p-4 rounded-lg">
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center">
+                      <div class="text-green-600 font-semibold">${dashboard.system_health.api_status}</div>
+                      <div class="text-sm text-gray-600">API Status</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="text-green-600 font-semibold">${dashboard.system_health.database_status}</div>
+                      <div class="text-sm text-gray-600">Database</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="font-semibold">${dashboard.system_health.processing_queue}</div>
+                      <div class="text-sm text-gray-600">Queue Size</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="font-semibold">${dashboard.system_health.average_response_time}s</div>
+                      <div class="text-sm text-gray-600">Avg Response</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Alerts -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4">System Alerts</h3>
+                <div class="space-y-3">
+                  ${dashboard.alerts.map(alert => `
+                    <div class="p-3 rounded-lg ${alert.type === 'warning' ? 'bg-yellow-50 border-l-4 border-yellow-400' : 'bg-blue-50 border-l-4 border-blue-400'}">
+                      <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                          <div class="font-semibold ${alert.type === 'warning' ? 'text-yellow-800' : 'text-blue-800'}">${alert.message}</div>
+                          <div class="text-sm text-gray-600">${new Date(alert.timestamp).toLocaleString()}</div>
+                        </div>
+                        <i class="mdi ${alert.type === 'warning' ? 'mdi-alert text-yellow-600' : 'mdi-information text-blue-600'}"></i>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // Initialize application
+    document.addEventListener('DOMContentLoaded', function() {
+      updateStepIndicator(1);
+      updateStartValidationButton();
+      
+      // Check authentication
+      const userData = localStorage.getItem('user_data');
+      if (!userData) {
+        window.location.href = '/';
+      }
+    });
+  </script>
+</body>
+</html>

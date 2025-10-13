@@ -1,0 +1,46 @@
+{
+    "Softex Form": {
+        "Document Details": [
+            "Softex Form Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Form Type (Manual/Electronic)"
+        ],
+        "Exporter & Buyer Information": [
+            "Exporter Name and Address",
+            "IEC Code",
+            "STPI/SEZ Unit Details",
+            "Buyer Name and Address",
+            "Country of Import"
+        ],
+        "Contract & Invoice Details": [
+            "Contract/Order Number",
+            "Contract/Order Date",
+            "Invoice Number",
+            "Invoice Date",
+            "Currency",
+            "Invoice Value",
+            "Nature of Software Export"
+        ],
+        "Software Details": [
+            "Description of Software",
+            "Mode of Export (Physical/FTP/Online Delivery)",
+            "Project/Service Name",
+            "Type of Service/Product Exported"
+        ],
+        "Banking & Certification": [
+            "Authorized Dealer Bank Name",
+            "FIRC Number",
+            "FIRC Date",
+            "Bank Certificate",
+            "Remittance Amount",
+            "Date of Realization"
+        ],
+        "Declarations & Signatures": [
+            "Exporter Declaration",
+            "Authorized Signature of Exporter",
+            "STPI/SEZ Certification",
+            "Signature and Seal of Certifying Authority"
+        ]
+    }
+}

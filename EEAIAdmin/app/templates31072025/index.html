@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Finstack - Innovation Partners for the Future of Finance</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/floating-header-unified.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="with-floating-header">
+    <!-- Unified Floating Header -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg width="28" height="28" viewBox="0 0 48 48">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#logoGradient)">
+                                <rect x="8" y="8" width="8" height="32" rx="3"/>
+                                <rect x="8" y="8" width="24" height="8" rx="3"/>
+                                <rect x="8" y="20" width="20" height="8" rx="3"/>
+                            </g>
+                            <g fill="url(#logoGradient)" opacity="0.6">
+                                <rect x="20" y="32" width="20" height="2" rx="1"/>
+                                <rect x="20" y="36" width="20" height="2" rx="1"/>
+                            </g>
+                        </svg>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">Finstack</h1>
+                    <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+                </div>
+            </div>
+
+            <!-- Navigation Pills -->
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill active">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-pill ">
+                    <i class="mdi mdi-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/ai-chat-pro" class="nav-pill ">
+                    <i class="mdi mdi-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+                <a href="/compliance-results" class="nav-pill ">
+                    <i class="mdi mdi-shield-check"></i>
+                    <span>Vetting</span>
+                </a>
+                <a href="/document-classification" class="nav-pill ">
+                    <i class="mdi mdi-file-document-multiple"></i>
+                    <span>Documents</span>
+                </a>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <a href="/ai-chat-pro" class="action-button">
+                    <i class="mdi mdi-plus"></i>
+                    <span>New Session</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+  <div id="dashboard-app">
+    <!-- Login Form -->
+    <v-container v-if="currentView === 'login'" fluid class="login-container">
+      <v-row justify="center" align="center" class="fill-height">
+        <v-col cols="12" sm="8" md="6" lg="4">
+          <v-card class="login-card" elevation="8">
+            <v-card-title class="text-center pa-6">
+              <div class="logo-section">
+                <!-- Finstack Logo -->
+                <svg width="48" height="48" viewBox="0 0 48 48" class="mb-2">
+                  <defs>
+                    <linearGradient id="finstack-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <g fill="url(#finstack-gradient)">
+                    <!-- F Letter stylized as stacked blocks -->
+                    <rect x="8" y="8" width="8" height="32" rx="2"/>
+                    <rect x="8" y="8" width="24" height="8" rx="2"/>
+                    <rect x="8" y="20" width="20" height="8" rx="2"/>
+                  </g>
+                  <g fill="#E5E7EB" opacity="0.9">
+                    <!-- Stack lines representing finance layers -->
+                    <rect x="20" y="32" width="20" height="2" rx="1"/>
+                    <rect x="20" y="36" width="20" height="2" rx="1"/>
+                  </g>
+                </svg>
+                <h2 class="text-h4 font-weight-bold">Finstack</h2>
+                <p class="text-subtitle-1 text-medium-emphasis">Sign in to your account</p>
+              </div>
+            </v-card-title>
+            <v-card-text class="pa-6">
+              <v-form ref="loginForm" v-model="loginValid" @submit.prevent="login">
+                <v-text-field
+                  v-model="loginData.email"
+                  :rules="emailRules"
+                  label="Email"
+                  prepend-inner-icon="mdi-email"
+                  type="email"
+                  variant="outlined"
+                  class="mb-3"
+                  :error-messages="loginError"
+                ></v-text-field>
+                <v-text-field
+                  v-model="loginData.password"
+                  :rules="passwordRules"
+                  label="Password"
+                  prepend-inner-icon="mdi-lock"
+                  :type="showPassword ? 'text' : 'password'"
+                  :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                  @click:append-inner="showPassword = !showPassword"
+                  variant="outlined"
+                  class="mb-3"
+                ></v-text-field>
+                <v-checkbox
+                  v-model="loginData.rememberMe"
+                  label="Remember me"
+                  color="primary"
+                ></v-checkbox>
+                <v-btn
+                  type="submit"
+                  :loading="loading"
+                  :disabled="!loginValid"
+                  color="primary"
+                  size="large"
+                  block
+                  class="mb-3"
+                >
+                  Sign In
+                </v-btn>
+                <div class="text-center">
+                  <a href="#" @click="currentView = 'register'" class="text-primary">
+                    Don't have an account? Sign up
+                  </a>
+                </div>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <!-- Register Form -->
+    <v-container v-if="currentView === 'register'" fluid class="login-container">
+      <v-row justify="center" align="center" class="fill-height">
+        <v-col cols="12" sm="8" md="6" lg="4">
+          <v-card class="login-card" elevation="8">
+            <v-card-title class="text-center pa-6">
+              <div class="logo-section">
+                <!-- Finstack Logo -->
+                <svg width="48" height="48" viewBox="0 0 48 48" class="mb-2">
+                  <defs>
+                    <linearGradient id="finstack-gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <g fill="url(#finstack-gradient2)">
+                    <!-- F Letter stylized as stacked blocks -->
+                    <rect x="8" y="8" width="8" height="32" rx="2"/>
+                    <rect x="8" y="8" width="24" height="8" rx="2"/>
+                    <rect x="8" y="20" width="20" height="8" rx="2"/>
+                  </g>
+                  <g fill="#E5E7EB" opacity="0.9">
+                    <!-- Stack lines representing finance layers -->
+                    <rect x="20" y="32" width="20" height="2" rx="1"/>
+                    <rect x="20" y="36" width="20" height="2" rx="1"/>
+                  </g>
+                </svg>
+                <h2 class="text-h4 font-weight-bold">Create Account</h2>
+                <p class="text-subtitle-1 text-medium-emphasis">Join Finstack</p>
+              </div>
+            </v-card-title>
+            <v-card-text class="pa-6">
+              <v-form ref="registerForm" v-model="registerValid" @submit.prevent="register">
+                <v-text-field
+                  v-model="registerData.firstName"
+                  :rules="nameRules"
+                  label="First Name"
+                  prepend-inner-icon="mdi-account"
+                  variant="outlined"
+                  class="mb-3"
+                ></v-text-field>
+                <v-text-field
+                  v-model="registerData.lastName"
+                  :rules="nameRules"
+                  label="Last Name"
+                  prepend-inner-icon="mdi-account"
+                  variant="outlined"
+                  class="mb-3"
+                ></v-text-field>
+                <v-text-field
+                  v-model="registerData.email"
+                  :rules="emailRules"
+                  label="Email"
+                  prepend-inner-icon="mdi-email"
+                  type="email"
+                  variant="outlined"
+                  class="mb-3"
+                  :error-messages="registerError"
+                ></v-text-field>
+                <v-text-field
+                  v-model="registerData.password"
+                  :rules="passwordRules"
+                  label="Password"
+                  prepend-inner-icon="mdi-lock"
+                  :type="showPassword ? 'text' : 'password'"
+                  :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                  @click:append-inner="showPassword = !showPassword"
+                  variant="outlined"
+                  class="mb-3"
+                ></v-text-field>
+                <v-text-field
+                  v-model="registerData.confirmPassword"
+                  :rules="confirmPasswordRules"
+                  label="Confirm Password"
+                  prepend-inner-icon="mdi-lock-check"
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  :append-inner-icon="showConfirmPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                  @click:append-inner="showConfirmPassword = !showConfirmPassword"
+                  variant="outlined"
+                  class="mb-3"
+                ></v-text-field>
+                <v-checkbox
+                  v-model="registerData.acceptTerms"
+                  :rules="termsRules"
+                  label="I agree to the Terms of Service and Privacy Policy"
+                  color="primary"
+                ></v-checkbox>
+                <v-btn
+                  type="submit"
+                  :loading="loading"
+                  :disabled="!registerValid"
+                  color="primary"
+                  size="large"
+                  block
+                  class="mb-3"
+                >
+                  Create Account
+                </v-btn>
+                <div class="text-center">
+                  <a href="#" @click="currentView = 'login'" class="text-primary">
+                    Already have an account? Sign in
+                  </a>
+                </div>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <!-- Dashboard Content -->
+    <div v-if="currentView === 'dashboard'">
+
+      <!-- Main Content -->
+      <div class="pt-40 pb-12 px-6">
+        <!-- Enhanced Welcome Section -->
+        <div class="max-w-7xl mx-auto mb-16">
+          <div class="glass-card p-10 welcome-section">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+              <div class="lg:col-span-2">
+                <div class="space-y-4">
+                  <h2 class="text-5xl font-black leading-tight heading-gradient">
+                    Welcome back, <span class="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">{% raw %}{{ userData.firstName || 'User' }}{% endraw %}</span>!
+                  </h2>
+                  <p class="text-muted-pro text-xl font-medium leading-relaxed">
+                    Your AI-powered workspace is ready. Choose from our advanced tools to enhance your workflow and boost productivity.
+                  </p>
+                  <div class="flex items-center space-x-6 pt-4">
+                    <div class="status-indicator-pro">
+                      <div class="status-dot-online"></div>
+                      <span class="text-muted-pro text-sm font-medium">All systems operational</span>
+                    </div>
+                    <div class="status-indicator-pro">
+                      <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span class="text-muted-pro text-sm font-medium">Real-time sync active</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hidden lg:block">
+                <div class="relative">
+                  <svg class="progress-ring w-32 h-32" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6"/>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="url(#progressGradient)" stroke-width="6" stroke-linecap="round"/>
+                    <defs>
+                      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#4facfe"/>
+                        <stop offset="50%" style="stop-color:#00f2fe"/>
+                        <stop offset="100%" style="stop-color:#43e97b"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-white font-black text-2xl">92%</span>
+                    <span class="text-white/70 text-sm font-medium">Efficiency</span>
+                  </div>
+                </div>
+                <p class="text-white/70 text-sm text-center mt-4 font-medium">System Performance</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Feature Grid -->
+        <div class="max-w-7xl mx-auto mb-16">
+          <div class="text-center mb-12">
+            <h3 class="text-3xl font-black mb-4 heading-gradient">AI-Powered Tools</h3>
+            <p class="text-muted-pro text-lg font-medium">Choose your next action from our comprehensive suite of AI tools</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- AI Help Bot -->
+            <div class="feature-tile p-8" @click="navigateToChat">
+              <div class="content">
+                <div class="flex items-start justify-between mb-6">
+                  <div class="w-16 h-16 rounded-2xl icon-gradient-1 flex items-center justify-center shadow-lg">
+                    <i class="mdi mdi-chat-processing text-white text-3xl"></i>
+                  </div>
+                  <div class="badge">Popular</div>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">AI Help Bot</h3>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                  Intelligent conversational AI assistant powered by advanced language models. Get instant answers, document analysis, and smart recommendations.
+                </p>
+
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span class="text-sm text-gray-500 font-medium">Active 24/7</span>
+                  </div>
+                  <i class="mdi mdi-arrow-right-circle text-purple-600 text-2xl"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                  <div class="text-center">
+                    <div class="metric-number">99.9%</div>
+                    <div class="text-xs text-gray-500 font-medium">Uptime</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="metric-number"><1s</div>
+                    <div class="text-xs text-gray-500 font-medium">Response</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Document Classification -->
+            <div class="feature-tile p-8" @click="navigateToDocClass">
+              <div class="content">
+                <div class="flex items-start justify-between mb-6">
+                  <div class="w-16 h-16 rounded-2xl icon-gradient-2 flex items-center justify-center shadow-lg">
+                    <i class="mdi mdi-file-document-multiple text-white text-3xl"></i>
+                  </div>
+                  <div class="badge new">New</div>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">Document Classification & Compliance</h3>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                  Advanced ML-powered document categorization system. Automatically classify, extract data, and organize your documents with high precision.
+                </p>
+
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-pink-500 rounded-full"></div>
+                    <span class="text-sm text-gray-500 font-medium">AI Powered</span>
+                  </div>
+                  <i class="mdi mdi-arrow-right-circle text-pink-600 text-2xl"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                  <div class="text-center">
+                    <div class="metric-number">95%</div>
+                    <div class="text-xs text-gray-500 font-medium">Accuracy</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="metric-number">50+</div>
+                    <div class="text-xs text-gray-500 font-medium">Doc Types</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guarantee Vetting -->
+            <div class="feature-tile p-8" @click="navigateToGuarantee">
+              <div class="content">
+                <div class="flex items-start justify-between mb-6">
+                  <div class="w-16 h-16 rounded-2xl icon-gradient-3 flex items-center justify-center shadow-lg">
+                    <i class="mdi mdi-shield-check text-white text-3xl"></i>
+                  </div>
+                  <div class="badge premium">Premium</div>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">Guarantee Vetting</h3>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                  Comprehensive financial guarantee analysis and risk assessment. Validate documents, check compliance, and ensure regulatory adherence.
+                </p>
+
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span class="text-sm text-gray-500 font-medium">Bank Grade</span>
+                  </div>
+                  <i class="mdi mdi-arrow-right-circle text-blue-600 text-2xl"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                  <div class="text-center">
+                    <div class="metric-number">100%</div>
+                    <div class="text-xs text-gray-500 font-medium">Compliance</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="metric-number">24h</div>
+                    <div class="text-xs text-gray-500 font-medium">Processing</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Analytics & Reports -->
+            <div class="feature-tile p-8" @click="navigateToAnalytics">
+              <div class="content">
+                <div class="flex items-start justify-between mb-6">
+                  <div class="w-16 h-16 rounded-2xl icon-gradient-4 flex items-center justify-center shadow-lg">
+                    <i class="mdi mdi-chart-line text-white text-3xl"></i>
+                  </div>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">Analytics & Reports</h3>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                  Advanced business intelligence and reporting tools. Generate insights, track performance, and make data-driven decisions.
+                </p>
+
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span class="text-sm text-gray-500 font-medium">Real-time</span>
+                  </div>
+                  <i class="mdi mdi-arrow-right-circle text-green-600 text-2xl"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                  <div class="text-center">
+                    <div class="metric-number">15+</div>
+                    <div class="text-xs text-gray-500 font-medium">Report Types</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="metric-number">Live</div>
+                    <div class="text-xs text-gray-500 font-medium">Data Sync</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Settings & Profile -->
+            <!--div class="feature-tile p-8" @click="navigateToSettings">
+              <div class="content">
+                <div class="flex items-start justify-between mb-6">
+                  <div class="w-16 h-16 rounded-2xl icon-gradient-6 flex items-center justify-center shadow-lg">
+                    <i class="mdi mdi-cog text-white text-3xl"></i>
+                  </div>
+                </div>
+
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">Settings & Profile</h3>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                  Manage your account settings, preferences, security options, and customize your dashboard experience.
+                </p>
+
+                <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    <span class="text-sm text-gray-500 font-medium">Customizable</span>
+                  </div>
+                  <i class="mdi mdi-arrow-right-circle text-gray-600 text-2xl"></i>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                  <div class="text-center">
+                    <div class="metric-number">256-bit</div>
+                    <div class="text-xs text-gray-500 font-medium">Encryption</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="metric-number">GDPR</div>
+                    <div class="text-xs text-gray-500 font-medium">Compliant</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div-->
+
+      </div>
+
+      <!-- Enhanced notification system -->
+      <div id="notification-container" class="fixed top-6 right-6 z-50 space-y-3"></div>
+      
+      <!-- Profile Modal -->
+      <div v-if="showProfileModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeProfileModal">
+        <div class="glass-card p-8 max-w-md w-full mx-4 relative">
+          <button @click="closeProfileModal" class="absolute top-4 right-4 text-white/70 hover:text-white">
+            <i class="mdi mdi-close text-2xl"></i>
+          </button>
+          
+          <h2 class="text-2xl font-bold text-white mb-6">User Profile</h2>
+          
+          <div v-if="!profileEditMode" class="space-y-4">
+            <div class="flex items-center space-x-4 mb-6">
+              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <span class="text-white text-3xl font-bold">{% raw %}{{ userData.firstName ? userData.firstName[0].toUpperCase() : 'U' }}{{ userData.lastName ? userData.lastName[0].toUpperCase() : '' }}{% endraw %}</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-semibold text-white">{% raw %}{{ userData.firstName }} {{ userData.lastName }}{% endraw %}</h3>
+                <p class="text-white/70">{% raw %}{{ userData.email }}{% endraw %}</p>
+              </div>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="glass-card p-4">
+                <label class="text-white/70 text-sm">First Name</label>
+                <p class="text-white font-medium">{% raw %}{{ userData.firstName }}{% endraw %}</p>
+              </div>
+              <div class="glass-card p-4">
+                <label class="text-white/70 text-sm">Last Name</label>
+                <p class="text-white font-medium">{% raw %}{{ userData.lastName }}{% endraw %}</p>
+              </div>
+              <div class="glass-card p-4">
+                <label class="text-white/70 text-sm">Email</label>
+                <p class="text-white font-medium">{% raw %}{{ userData.email }}{% endraw %}</p>
+              </div>
+              <div class="glass-card p-4">
+                <label class="text-white/70 text-sm">Account Status</label>
+                <p class="text-green-400 font-medium">Active</p>
+              </div>
+            </div>
+            
+            <div class="pt-4">
+              <button @click="toggleEditMode" class="btn-primary w-full py-3 text-sm font-medium">
+                <i class="mdi mdi-pencil mr-2"></i>Edit Profile
+              </button>
+            </div>
+          </div>
+          
+          <div v-else class="space-y-4">
+            <form @submit.prevent="saveProfile">
+              <div class="space-y-3">
+                <div>
+                  <label class="text-white/70 text-sm mb-1 block">First Name</label>
+                  <input v-model="editedProfile.firstName" type="text" class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-blue-400 focus:outline-none">
+                </div>
+                <div>
+                  <label class="text-white/70 text-sm mb-1 block">Last Name</label>
+                  <input v-model="editedProfile.lastName" type="text" class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-blue-400 focus:outline-none">
+                </div>
+                <div>
+                  <label class="text-white/70 text-sm mb-1 block">Email</label>
+                  <input v-model="editedProfile.email" type="email" class="w-full px-4 py-2 bg-white/10 text-white rounded-lg border border-white/20 focus:border-blue-400 focus:outline-none">
+                </div>
+              </div>
+              
+              <div class="flex space-x-3 pt-6">
+                <button type="submit" :disabled="loading" class="btn-primary flex-1 py-3 text-sm font-medium">
+                  <i class="mdi mdi-check mr-2"></i>Save Changes
+                </button>
+                <button type="button" @click="toggleEditMode" class="bg-white/10 hover:bg-white/20 text-white flex-1 py-3 rounded-lg text-sm font-medium transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.js"></script>
+  <script>
+    // Pass the main.js URL to JavaScript to avoid Jinja2 parsing issues in app.js
+    window.chatScriptUrl = "{{ url_for('static', filename='js/main.js') }}";
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

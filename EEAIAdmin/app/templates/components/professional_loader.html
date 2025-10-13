@@ -1,0 +1,189 @@
+<!-- Professional Document Processing Loader Component -->
+<!-- Include the CSS: <link rel="stylesheet" href="/static/css/professional-loader.css"> -->
+
+<div class="processing-card text-center animate-slide-in" data-progress="100%">
+    <!-- Animated Icon Section -->
+    <div class="processing-brain">
+        <div class="processing-brain-bg"></div>
+        <div class="processing-brain-inner">
+            <i class="mdi mdi-file-document-check"></i>
+        </div>
+    </div>
+    
+    <!-- Title Section -->
+    <h3>Processing Documents</h3>
+    <p>AI-Powered Compliance Verification</p>
+    
+    <!-- Step Indicators -->
+    <div class="space-y-3">
+        <!-- Step 1: Upload -->
+        <div class="step-indicator active" data-step="1">
+            <div class="step-number">
+                <i class="mdi mdi-check"></i>
+            </div>
+            <div class="flex-1 text-left">
+                <span>Uploading Documents</span>
+            </div>
+            <div class="text-green-500">
+                <i class="mdi mdi-check-circle"></i>
+            </div>
+        </div>
+        
+        <!-- Step 2: Extract -->
+        <div class="step-indicator active" data-step="2">
+            <div class="step-number">
+                <i class="mdi mdi-check"></i>
+            </div>
+            <div class="flex-1 text-left">
+                <span>Extracting Content</span>
+            </div>
+            <div class="text-green-500">
+                <i class="mdi mdi-check-circle"></i>
+            </div>
+        </div>
+        
+        <!-- Step 3: AI Classification -->
+        <div class="step-indicator active" data-step="3">
+            <div class="step-number">
+                <i class="mdi mdi-check"></i>
+            </div>
+            <div class="flex-1 text-left">
+                <span>AI Classification</span>
+            </div>
+            <div class="text-green-500">
+                <i class="mdi mdi-check-circle"></i>
+            </div>
+        </div>
+        
+        <!-- Step 4: Compliance Check -->
+        <div class="step-indicator active" data-step="4">
+            <div class="step-number">
+                <i class="mdi mdi-check"></i>
+            </div>
+            <div class="flex-1 text-left">
+                <span>Compliance Verification</span>
+            </div>
+            <div class="text-green-500">
+                <i class="mdi mdi-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="mt-8">
+        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500" style="width: 100%;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Dynamic Progress Updates -->
+<script>
+// Professional Loader Controller
+class ProcessingLoader {
+    constructor(container) {
+        this.container = container;
+        this.steps = container.querySelectorAll('.step-indicator');
+        this.progressBar = container.querySelector('.h-full');
+        this.currentStep = 0;
+        this.totalSteps = this.steps.length;
+    }
+    
+    // Update to a specific step
+    updateStep(stepIndex) {
+        if (stepIndex < 0 || stepIndex > this.totalSteps) return;
+        
+        this.currentStep = stepIndex;
+        
+        this.steps.forEach((step, index) => {
+            step.classList.remove('active', 'processing');
+            const stepNumber = step.querySelector('.step-number');
+            const statusIcon = step.querySelector('div:last-child i');
+            
+            if (index < stepIndex) {
+                // Completed
+                step.classList.add('active');
+                stepNumber.innerHTML = '<i class="mdi mdi-check"></i>';
+                statusIcon.className = 'mdi mdi-check-circle';
+                statusIcon.parentElement.className = 'text-green-500';
+            } else if (index === stepIndex) {
+                // Processing
+                step.classList.add('processing');
+                stepNumber.innerHTML = '<i class="mdi mdi-loading"></i>';
+                statusIcon.className = 'mdi mdi-loading';
+                statusIcon.parentElement.className = 'text-blue-500';
+            } else {
+                // Pending
+                stepNumber.innerHTML = `<span>${index + 1}</span>`;
+                statusIcon.className = 'mdi mdi-circle-outline';
+                statusIcon.parentElement.className = 'text-gray-400';
+            }
+        });
+        
+        // Update progress bar
+        const progress = (stepIndex / this.totalSteps) * 100;
+        this.progressBar.style.width = `${progress}%`;
+        this.container.setAttribute('data-progress', `${Math.round(progress)}%`);
+    }
+    
+    // Complete all steps
+    complete() {
+        this.steps.forEach((step, index) => {
+            step.classList.add('active');
+            step.classList.remove('processing');
+            const stepNumber = step.querySelector('.step-number');
+            const statusIcon = step.querySelector('div:last-child i');
+            
+            stepNumber.innerHTML = '<i class="mdi mdi-check"></i>';
+            statusIcon.className = 'mdi mdi-check-circle';
+            statusIcon.parentElement.className = 'text-green-500';
+        });
+        
+        this.progressBar.style.width = '100%';
+        this.container.setAttribute('data-progress', '100%');
+        
+        // Change icon to success
+        const mainIcon = this.container.querySelector('.processing-brain-inner i');
+        mainIcon.className = 'mdi mdi-check-decagram';
+    }
+    
+    // Reset loader
+    reset() {
+        this.updateStep(0);
+        const mainIcon = this.container.querySelector('.processing-brain-inner i');
+        mainIcon.className = 'mdi mdi-file-document-check';
+    }
+    
+    // Simulate processing
+    simulateProcessing(duration = 8000) {
+        const stepDuration = duration / this.totalSteps;
+        let currentStep = 0;
+        
+        const interval = setInterval(() => {
+            if (currentStep >= this.totalSteps) {
+                this.complete();
+                clearInterval(interval);
+                return;
+            }
+            
+            this.updateStep(currentStep);
+            currentStep++;
+        }, stepDuration);
+        
+        return interval;
+    }
+}
+
+// Initialize loader if element exists
+document.addEventListener('DOMContentLoaded', function() {
+    const loaderElement = document.querySelector('.processing-card');
+    if (loaderElement) {
+        const loader = new ProcessingLoader(loaderElement);
+        // Example: Start simulation
+        // loader.simulateProcessing(10000);
+        
+        // Make loader available globally
+        window.documentLoader = loader;
+    }
+});
+</script>

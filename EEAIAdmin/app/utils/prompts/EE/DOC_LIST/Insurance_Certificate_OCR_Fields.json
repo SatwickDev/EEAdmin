@@ -1,0 +1,47 @@
+{
+    "Insurance Certificate": {
+        "Certificate Details": [
+            "Certificate Number",
+            "Policy Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Type of Insurance (Marine, Cargo, etc.)"
+        ],
+        "Parties Involved": [
+            "Insured Party Name and Address",
+            "Consignee Name and Address",
+            "Insurer Name and Address",
+            "Broker/Agent Details (if any)"
+        ],
+        "Shipment Information": [
+            "Invoice Number",
+            "Date of Shipment",
+            "Vessel/Flight Number",
+            "Port of Loading",
+            "Port of Discharge",
+            "Final Destination"
+        ],
+        "Coverage Details": [
+            "Description of Goods",
+            "Quantity",
+            "Weight",
+            "Package Type",
+            "Insured Value",
+            "Currency",
+            "Sum Insured",
+            "Insurance Premium",
+            "Coverage Terms (e.g., ICC A/B/C)"
+        ],
+        "Terms & Conditions": [
+            "Policy Terms and Conditions",
+            "Exclusions",
+            "Claim Procedures",
+            "Jurisdiction Clause"
+        ],
+        "Authentication": [
+            "Authorized Signature of Insurer",
+            "Stamp/Seal",
+            "Date of Expiry"
+        ]
+    }
+}

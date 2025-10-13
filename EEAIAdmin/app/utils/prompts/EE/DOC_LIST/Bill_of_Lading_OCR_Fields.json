@@ -1,0 +1,50 @@
+{
+    "Bill of Lading": {
+        "Document Details": [
+            "B/L Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Original/Copy Status"
+        ],
+        "Parties Involved": [
+            "Shipper Name and Address",
+            "Consignee Name and Address",
+            "Notify Party Name and Address"
+        ],
+        "Shipping & Transport": [
+            "Carrier Name",
+            "Vessel Name / Voyage Number",
+            "Port of Loading",
+            "Port of Discharge",
+            "Place of Receipt",
+            "Place of Delivery",
+            "Transshipment Details"
+        ],
+        "Cargo Details": [
+            "Marks and Numbers",
+            "Number and Kind of Packages",
+            "Goods Description",
+            "HS Code",
+            "Gross Weight",
+            "Net Weight",
+            "Measurement (CBM)",
+            "Container Number",
+            "Seal Number"
+        ],
+        "Freight & Charges": [
+            "Freight Terms (Prepaid/Collect)",
+            "Freight Amount",
+            "Additional Charges"
+        ],
+        "Clauses & Notes": [
+            "Special Clauses",
+            "Terms and Conditions",
+            "Governing Law"
+        ],
+        "Signatures & Endorsement": [
+            "Signed by Carrier or Agent",
+            "Stamp/Seal",
+            "Endorsement (if any)"
+        ]
+    }
+}

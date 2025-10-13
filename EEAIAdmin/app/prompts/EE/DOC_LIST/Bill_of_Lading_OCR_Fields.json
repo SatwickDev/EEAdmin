@@ -1,0 +1,62 @@
+[
+  {
+    "name": "B/L Number",
+    "type": "text",
+    "required": true,
+    "description": "Bill of Lading number"
+  },
+  {
+    "name": "Shipper",
+    "type": "text",
+    "required": true,
+    "description": "Party shipping the goods"
+  },
+  {
+    "name": "Consignee",
+    "type": "text",
+    "required": true,
+    "description": "Party receiving the goods"
+  },
+  {
+    "name": "Notify Party",
+    "type": "text",
+    "required": false,
+    "description": "Party to be notified"
+  },
+  {
+    "name": "Vessel Name",
+    "type": "text",
+    "required": true,
+    "description": "Name of the ship"
+  },
+  {
+    "name": "Voyage Number",
+    "type": "text",
+    "required": false,
+    "description": "Voyage identification"
+  },
+  {
+    "name": "Port of Loading",
+    "type": "text",
+    "required": true,
+    "description": "Port where goods are loaded"
+  },
+  {
+    "name": "Port of Discharge",
+    "type": "text",
+    "required": true,
+    "description": "Port where goods are unloaded"
+  },
+  {
+    "name": "Container Number",
+    "type": "text",
+    "required": false,
+    "description": "Container identification"
+  },
+  {
+    "name": "Seal Number",
+    "type": "text",
+    "required": false,
+    "description": "Security seal number"
+  }
+]

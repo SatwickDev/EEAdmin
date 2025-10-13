@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Function Builder - Finstack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 24px 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+    }
+
+    .form-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+    }
+
+    .document-selector {
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .document-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(102, 126, 234, 0.05);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .document-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 12px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #667eea;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      z-index: 999;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .doc-requirement-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .doc-requirement-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-mandatory {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .badge-optional {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+
+    .actions-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 24px;
+      border-top: 2px solid rgba(102, 126, 234, 0.1);
+      margin-top: 32px;
+    }
+
+  </style>
+</head>
+<body>
+  <a href="/custom_functions" class="back-btn">
+    <i class="mdi mdi-arrow-left"></i>
+    Back to Functions
+  </a>
+
+  <div class="container">
+    <div class="header">
+      <h1 id="pageTitle">Create Custom Function</h1>
+      <p>Define document requirements and configure AI prompts for your business process</p>
+    </div>
+
+    <!-- Basic Information -->
+    <div class="form-card">
+      <div class="section-title">Basic Information</div>
+
+      <div class="form-group">
+        <label class="form-label">Function Name *</label>
+        <input type="text" id="functionName" class="form-input" placeholder="e.g., Register LC, Process Invoice">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea id="functionDescription" class="form-textarea" style="min-height: 80px;" placeholder="Describe what this function does..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select id="functionCategory" class="form-select">
+          <option value="">Select a category</option>
+          <option value="Trade Finance">Trade Finance</option>
+          <option value="Treasury">Treasury</option>
+          <option value="Cash Management">Cash Management</option>
+          <option value="Compliance">Compliance</option>
+          <option value="Operations">Operations</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Document Requirements -->
+    <div class="form-card">
+      <div class="section-title">Document Requirements</div>
+
+      <div class="form-group">
+        <label class="form-label">Add Document Type</label>
+        <div style="display: flex; gap: 12px;">
+          <select id="documentTypeSelect" class="form-select" style="flex: 1;">
+            <option value="">Select a document type...</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addDocumentRequirement()">
+            <i class="mdi mdi-plus"></i>
+            Add Document
+          </button>
+        </div>
+      </div>
+
+      <div id="documentRequirements" style="margin-top: 24px;">
+        <!-- Document requirements will be added here -->
+      </div>
+    </div>
+
+    <!-- LLM Prompt -->
+    <div class="form-card">
+      <div class="section-title">AI Prompt Configuration</div>
+
+      <div class="form-group">
+        <label class="form-label">Custom Prompt</label>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+          Define the AI instruction for processing documents in this function. The prompt should guide the AI on how to analyze, extract, and validate data from the selected document types.
+        </p>
+        <textarea id="customPromptText" class="form-textarea" style="min-height: 200px;" placeholder="Enter your custom AI prompt for this function..."></textarea>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-card">
+      <div class="actions-bar">
+        <button class="btn btn-secondary" onclick="window.location.href='/custom_functions'">
+          <i class="mdi mdi-close"></i>
+          Cancel
+        </button>
+        <button class="btn btn-success" onclick="saveFunction()">
+          <i class="mdi mdi-content-save"></i>
+          Save Function
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let documentRequirements = [];
+    let documentTypes = [];
+    let functionId = null;
+    let mode = 'create'; // create or edit
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check if we're editing an existing function
+      const urlParams = new URLSearchParams(window.location.search);
+      functionId = urlParams.get('id');
+      mode = functionId ? 'edit' : 'create';
+
+      // Load document types
+      await loadDocumentTypes();
+
+      // If editing, load the function data
+      if (functionId) {
+        await loadFunctionData(functionId);
+        document.getElementById('pageTitle').textContent = 'Edit Custom Function';
+      }
+    });
+
+    async function loadDocumentTypes() {
+      try {
+        const response = await fetch('/api/document_types_list');
+        const data = await response.json();
+
+        if (data.success) {
+          documentTypes = data.documentTypes || [];
+          const select = document.getElementById('documentTypeSelect');
+
+          documentTypes.forEach(docType => {
+            const option = document.createElement('option');
+            option.value = docType.documentId;
+            option.textContent = `${docType.documentName} (${docType.fieldCount} fields)`;
+            select.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading document types:', error);
+        showError('Failed to load document types');
+      }
+    }
+
+    async function loadFunctionData(id) {
+      try {
+        const response = await fetch(`/api/custom_functions/${id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          const func = data.function;
+
+          // Populate basic info
+          document.getElementById('functionName').value = func.name || '';
+          document.getElementById('functionDescription').value = func.description || '';
+          document.getElementById('functionCategory').value = func.category || '';
+
+          // Populate document requirements
+          documentRequirements = func.documentRequirements || [];
+          renderDocumentRequirements();
+
+          // Populate custom prompt
+          const prompts = func.llmPrompts || {};
+          document.getElementById('customPromptText').value = prompts.customPrompt || '';
+        }
+      } catch (error) {
+        console.error('Error loading function data:', error);
+        showError('Failed to load function data');
+      }
+    }
+
+    function addDocumentRequirement() {
+      const select = document.getElementById('documentTypeSelect');
+      const selectedDocId = select.value;
+
+      if (!selectedDocId) {
+        showError('Please select a document type');
+        return;
+      }
+
+      // Check if already added
+      if (documentRequirements.find(req => req.documentType === selectedDocId)) {
+        showError('This document type is already added');
+        return;
+      }
+
+      const docType = documentTypes.find(dt => dt.documentId === selectedDocId);
+
+      documentRequirements.push({
+        documentType: selectedDocId,
+        documentName: docType.documentName,
+        requirementType: 'mandatory',
+        minCount: 1,
+        maxCount: 1
+      });
+
+      renderDocumentRequirements();
+      select.value = '';
+    }
+
+    function renderDocumentRequirements() {
+      const container = document.getElementById('documentRequirements');
+
+      if (documentRequirements.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; text-align: center; padding: 32px;">No documents added yet. Add document types above.</p>';
+        return;
+      }
+
+      container.innerHTML = documentRequirements.map((req, index) => `
+        <div class="doc-requirement-card">
+          <div class="doc-requirement-header">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 4px;">${escapeHtml(req.documentName)}</h3>
+              <p style="font-size: 13px; color: #64748b;">${escapeHtml(req.documentType)}</p>
+            </div>
+            <button class="btn btn-secondary" style="padding: 8px 12px;" onclick="removeDocumentRequirement(${index})">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="form-label">Requirement Type</label>
+              <select class="form-select" onchange="updateDocumentRequirement(${index}, 'requirementType', this.value)">
+                <option value="mandatory" ${req.requirementType === 'mandatory' ? 'selected' : ''}>Mandatory</option>
+                <option value="optional" ${req.requirementType === 'optional' ? 'selected' : ''}>Optional</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label">Min Count</label>
+              <input type="number" class="form-input" min="0" value="${req.minCount}"
+                     onchange="updateDocumentRequirement(${index}, 'minCount', parseInt(this.value))">
+            </div>
+
+            <div>
+              <label class="form-label">Max Count</label>
+              <input type="number" class="form-input" min="1" value="${req.maxCount}"
+                     onchange="updateDocumentRequirement(${index}, 'maxCount', parseInt(this.value))">
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateDocumentRequirement(index, field, value) {
+      documentRequirements[index][field] = value;
+    }
+
+    function removeDocumentRequirement(index) {
+      documentRequirements.splice(index, 1);
+      renderDocumentRequirements();
+    }
+
+    async function saveFunction() {
+      // Validate required fields
+      const name = document.getElementById('functionName').value.trim();
+      const description = document.getElementById('functionDescription').value.trim();
+      const category = document.getElementById('functionCategory').value;
+
+      if (!name || !description || !category) {
+        showError('Please fill in all required fields (Name, Description, Category)');
+        return;
+      }
+
+      const functionData = {
+        name,
+        description,
+        category,
+        documentRequirements,
+        llmPrompts: {
+          customPrompt: document.getElementById('customPromptText').value.trim()
+        },
+        isActive: true
+      };
+
+      try {
+        const url = mode === 'edit' ? `/api/custom_functions/${functionId}` : '/api/custom_functions';
+        const method = mode === 'edit' ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(functionData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert(`Function ${mode === 'edit' ? 'updated' : 'created'} successfully!`);
+          window.location.href = '/custom_functions';
+        } else {
+          showError(data.message || 'Failed to save function');
+        }
+      } catch (error) {
+        console.error('Error saving function:', error);
+        showError('Error saving function');
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showError(message) {
+      alert('Error: ' + message);
+    }
+  </script>
+</body>
+</html>

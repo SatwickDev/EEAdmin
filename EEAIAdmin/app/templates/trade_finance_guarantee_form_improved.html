@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Guarantee - Finstack Trade Finance</title>
+    
+    <!-- CSS Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CKEditor 5 for rich text editing -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        /* Modern Floating Header - Matching index.html */
+        .floating-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .floating-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Brand Section */
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .modern-logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-2px); }
+        }
+
+        .modern-logo:hover {
+            transform: scale(1.05) rotate(2deg);
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .status-pulse {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .brand-info h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-info p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Navigation Pills */
+        .nav-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 4px;
+        }
+
+        .nav-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .nav-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .nav-pill.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1e293b;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 20px 40px;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Card Header */
+        .card-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            padding: 30px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .card-subtitle {
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        /* Form Container */
+        .form-container {
+            padding: 30px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            margin-top: 32px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .section-header:first-child {
+            margin-top: 0;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6366f1;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        /* Form Groups */
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Editor Container */
+        .editor-wrapper {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .editor-wrapper.focused {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .editor-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* Sample Data Button */
+        .sample-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sample-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Compliance Section */
+        .compliance-section {
+            margin-top: 32px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 2px solid rgba(99, 102, 241, 0.1);
+            border-radius: 16px;
+        }
+
+        .compliance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .compliance-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .compliance-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .compliance-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .compliance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            margin-top: 32px;
+            padding: 24px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.1);
+        }
+
+        .metric-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        /* Loading Modal */
+        .loader-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-content {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .spinner {
+            font-size: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .floating-header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .nav-pills {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modern Floating Header -->
+    <header class="floating-header">
+        <div class="floating-header-content">
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <i class="mdi mdi-shield-check" style="font-size: 24px; color: white;"></i>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1>Finstack</h1>
+                    <p>Trade Finance Platform</p>
+                </div>
+            </div>
+
+            <nav class="nav-pills">
+                <button class="nav-pill" onclick="window.location.href='/'">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-pill active">
+                    <i class="mdi mdi-file-document-edit"></i>
+                    <span>Guarantee Form</span>
+                </button>
+                <button class="nav-pill" onclick="window.location.href='/guarantee'">
+                    <i class="mdi mdi-shield-check"></i>
+                    <span>Vetting Portal</span>
+                </button>
+            </nav>
+
+            <div class="header-actions">
+                <button class="action-btn secondary" onclick="saveDraft()">
+                    <i class="mdi mdi-content-save"></i>
+                    <span>Save Draft</span>
+                </button>
+                <button class="action-btn primary" onclick="loadSampleData()">
+                    <i class="mdi mdi-file-import"></i>
+                    <span>Load Sample</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="glass-card">
+            <!-- Card Header -->
+            <div class="card-header">
+                <h1 class="card-title">Bank Guarantee Application</h1>
+                <p class="card-subtitle">Complete the form below and run AI-powered compliance vetting before submission</p>
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container">
+                <form id="guaranteeForm">
+                    <!-- Basic Information Section -->
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="mdi mdi-information"></i>
+                        </div>
+                        <h2 class="section-title">Basic Information</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="guaranteeNumber">Guarantee Number</label>
+                            <input type="text" class="form-control" id="guaranteeNumber" name="guaranteeNumber" placeholder="Auto-generated">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="issueDate">Issue Date</label>
+                            <input type="date" class="form-control" id="issueDate" name="issueDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="expiryDate">Expiry Date</label>
+                            <input type="date" class="form-control" id="expiryDate" name="expiryDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="amount">Guarantee Amount</label>
+                            <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="currency">Currency</label>
+                            <select class="form-control" id="currency" name="currency" required>
+                                <option value="">Select Currency</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="JPY">JPY - Japanese Yen</option>
+                                <option value="INR">INR - Indian Rupee</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="guaranteeType">Guarantee Type</label>
+                            <select class="form-control" id="guaranteeType" name="guaranteeType" required>
+                                <option value="">Select Type</option>
+                                <option value="performance">Performance Guarantee</option>
+                                <option value="advance_payment">Advance Payment Guarantee</option>
+                                <option value="bid_bond">Bid Bond</option>
+                                <option value="retention">Retention Money Guarantee</option>
+                                <option value="financial">Financial Guarantee</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Parties Information Section -->
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="mdi mdi-account-group"></i>
+                        </div>
+                        <h2 class="section-title">Parties Information</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="applicant">Applicant Name</label>
+                            <input type="text" class="form-control" id="applicant" name="applicant" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="applicantAddress">Applicant Address</label>
+                            <input type="text" class="form-control" id="applicantAddress" name="applicantAddress" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="beneficiary">Beneficiary Name</label>
+                            <input type="text" class="form-control" id="beneficiary" name="beneficiary" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="beneficiaryAddress">Beneficiary Address</label>
+                            <input type="text" class="form-control" id="beneficiaryAddress" name="beneficiaryAddress" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="issuingBank">Issuing Bank</label>
+                            <input type="text" class="form-control" id="issuingBank" name="issuingBank" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="advisingBank">Advising Bank (Optional)</label>
+                            <input type="text" class="form-control" id="advisingBank" name="advisingBank">
+                        </div>
+                    </div>
+
+                    <!-- Guarantee Terms Section -->
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="mdi mdi-file-document-edit"></i>
+                        </div>
+                        <h2 class="section-title">Guarantee Terms and Conditions</h2>
+                    </div>
+                    
+                    <div class="editor-wrapper">
+                        <div class="editor-header">
+                            <div class="editor-title">
+                                <i class="mdi mdi-text"></i>
+                                Guarantee Wording
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="sample-btn" onclick="loadSampleTerms()">
+                                    <i class="mdi mdi-file-import"></i>
+                                    Load Sample Terms
+                                </button>
+                                <button type="button" class="btn btn-secondary" style="padding: 8px 16px;" onclick="clearEditor()">
+                                    <i class="mdi mdi-delete"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="guaranteeEditor"></div>
+                        <input type="hidden" id="guaranteeTerms" name="guaranteeTerms">
+                    </div>
+
+                    <!-- Compliance Vetting Section -->
+                    <div class="compliance-section">
+                        <div class="compliance-header">
+                            <div class="compliance-title">
+                                <div class="compliance-icon">
+                                    <i class="mdi mdi-robot"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0;">AI-Powered Compliance Vetting</h3>
+                                    <p style="margin: 0; font-size: 14px; font-weight: 400; color: #64748b;">
+                                        Analyze your guarantee text against URDG 758 and custom rules
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="compliance-btn" onclick="runComplianceCheck()">
+                            <i class="mdi mdi-magnify-scan"></i>
+                            Run Compliance Analysis
+                        </button>
+                    </div>
+
+                    <!-- Results Section (Initially Hidden) -->
+                    <div id="resultsSection" class="results-section">
+                        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 24px;">
+                            <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; flex: 1;">
+                                <i class="mdi mdi-chart-box" style="color: #6366f1;"></i>
+                                Compliance Analysis Results
+                            </h3>
+                            <button type="button" class="btn btn-secondary" onclick="hideResults()">
+                                <i class="mdi mdi-close"></i>
+                                Close
+                            </button>
+                        </div>
+
+                        <!-- Metrics -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <i class="mdi mdi-shield-check metric-icon" style="color: #6366f1;"></i>
+                                <div id="complianceScore" class="metric-value">-</div>
+                                <div class="metric-label">Compliance Score</div>
+                            </div>
+                            <div class="metric-card">
+                                <i class="mdi mdi-alert-circle metric-icon" style="color: #ef4444;"></i>
+                                <div id="highRiskCount" class="metric-value">-</div>
+                                <div class="metric-label">High Risk</div>
+                            </div>
+                            <div class="metric-card">
+                                <i class="mdi mdi-alert metric-icon" style="color: #f59e0b;"></i>
+                                <div id="mediumRiskCount" class="metric-value">-</div>
+                                <div class="metric-label">Medium Risk</div>
+                            </div>
+                            <div class="metric-card">
+                                <i class="mdi mdi-check-circle metric-icon" style="color: #10b981;"></i>
+                                <div id="lowRiskCount" class="metric-value">-</div>
+                                <div class="metric-label">Low Risk</div>
+                            </div>
+                        </div>
+
+                        <!-- Results Content -->
+                        <div id="resultsContent" style="margin-top: 24px;">
+                            <!-- Results will be dynamically inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="mdi mdi-refresh"></i>
+                            Reset Form
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="mdi mdi-send"></i>
+                            Submit Guarantee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loader" class="loader-modal">
+        <div class="loader-content">
+            <i class="mdi mdi-loading spinner"></i>
+            <h3 id="loadingText" style="margin-top: 20px; color: #1e293b;">Analyzing compliance...</h3>
+            <p id="loadingSubtext" style="color: #64748b; font-size: 14px; margin-top: 10px;">AI is processing your document</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" style="position: fixed; top: 100px; right: 20px; z-index: 1001;"></div>
+
+    <script>
+        let editorInstance = null;
+        let currentComplianceData = null;
+
+        // Sample Data
+        const sampleData = {
+            guaranteeNumber: "BG-2024-001234",
+            issueDate: "2024-01-15",
+            expiryDate: "2025-01-15",
+            amount: "500000",
+            currency: "USD",
+            guaranteeType: "performance",
+            applicant: "ABC Construction Ltd.",
+            applicantAddress: "123 Business Park, Dubai, UAE",
+            beneficiary: "XYZ Infrastructure Corp.",
+            beneficiaryAddress: "456 Tower Plaza, Singapore",
+            issuingBank: "Emirates NBD Bank",
+            advisingBank: "DBS Bank Singapore",
+            guaranteeTerms: `<p><strong>PERFORMANCE GUARANTEE</strong></p>
+<p>We, Emirates NBD Bank, hereby irrevocably undertake to pay you, XYZ Infrastructure Corp., on your first written demand, any sum or sums not exceeding in total USD 500,000.00 (United States Dollars Five Hundred Thousand Only).</p>
+<p><strong>This guarantee is subject to the following conditions:</strong></p>
+<ul>
+<li>This guarantee shall come into force on the date of issue and shall remain valid until January 15, 2025.</li>
+<li>Any claim under this guarantee must be received by us at our office on or before the expiry date.</li>
+<li>This guarantee shall be governed by URDG 758 (Uniform Rules for Demand Guarantees, 2010 Revision, ICC Publication No. 758).</li>
+<li>Any demand for payment must be accompanied by your written statement that the applicant has failed to perform their contractual obligations.</li>
+<li>The maximum aggregate amount payable under this guarantee shall not exceed USD 500,000.00.</li>
+<li>This guarantee shall automatically expire on the expiry date, and no claim received after such date shall be honored.</li>
+</ul>
+<p>This guarantee is issued subject to the laws of the United Arab Emirates and the exclusive jurisdiction of the courts of Dubai.</p>`
+        };
+
+        // Initialize CKEditor
+        ClassicEditor.create(document.querySelector('#guaranteeEditor'), {
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'link', 'blockQuote', '|',
+                    'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+                    'insertTable', '|',
+                    'undo', 'redo'
+                ]
+            },
+            placeholder: 'Enter your guarantee text here for AI-powered compliance analysis...',
+            language: 'en'
+        })
+        .then(editor => {
+            editorInstance = editor;
+            
+            // Update hidden field when editor content changes
+            editor.model.document.on('change:data', () => {
+                document.getElementById('guaranteeTerms').value = editor.getData();
+            });
+
+            // Add focus effects
+            editor.editing.view.document.on('focus', () => {
+                document.querySelector('.editor-wrapper').classList.add('focused');
+            });
+
+            editor.editing.view.document.on('blur', () => {
+                document.querySelector('.editor-wrapper').classList.remove('focused');
+            });
+
+            // Load draft if exists
+            loadDraft();
+        })
+        .catch(error => {
+            console.error('Error initializing editor:', error);
+            showToast('Failed to initialize editor. Please refresh the page.', 'error');
+        });
+
+        // Load Sample Data
+        function loadSampleData() {
+            if (confirm('This will replace all current form data with sample data. Continue?')) {
+                // Fill form fields
+                Object.keys(sampleData).forEach(key => {
+                    if (key === 'guaranteeTerms') {
+                        if (editorInstance) {
+                            editorInstance.setData(sampleData[key]);
+                        }
+                    } else {
+                        const field = document.getElementById(key);
+                        if (field) {
+                            field.value = sampleData[key];
+                        }
+                    }
+                });
+                
+                showToast('Sample data loaded successfully!', 'success');
+            }
+        }
+
+        // Load Sample Terms
+        function loadSampleTerms() {
+            if (editorInstance) {
+                if (!editorInstance.getData() || confirm('This will replace current guarantee terms. Continue?')) {
+                    editorInstance.setData(sampleData.guaranteeTerms);
+                    showToast('Sample terms loaded!', 'success');
+                }
+            }
+        }
+
+        // Clear Editor
+        function clearEditor() {
+            if (editorInstance && confirm('Are you sure you want to clear all content?')) {
+                editorInstance.setData('');
+            }
+        }
+
+        // Run Compliance Check
+        async function runComplianceCheck() {
+            if (!editorInstance) {
+                showToast('Editor not initialized. Please refresh the page.', 'error');
+                return;
+            }
+
+            const guaranteeText = editorInstance.getData().replace(/<[^>]+>/g, '').trim();
+            
+            if (!guaranteeText) {
+                showToast('Please enter guarantee terms before running compliance check', 'warning');
+                return;
+            }
+
+            // Show loader
+            showLoader('Analyzing compliance requirements...');
+
+            try {
+                // Prepare data for compliance check
+                const data = {
+                    fields: [{
+                        label: "guarantee_wording",
+                        value: guaranteeText,
+                        description: "Full guarantee text"
+                    }]
+                };
+
+                // Submit for AI compliance check
+                const response = await fetch('/AICheck', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Compliance check failed');
+                }
+
+                const result = await response.json();
+                currentComplianceData = result;
+
+                hideLoader();
+                
+                // Display results inline
+                displayComplianceResults(result);
+                
+                // Show results section
+                document.getElementById('resultsSection').style.display = 'block';
+                
+                // Scroll to results
+                document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                showToast('Compliance analysis completed successfully', 'success');
+            } catch (error) {
+                hideLoader();
+                console.error('Compliance check error:', error);
+                showToast('Compliance check failed. Please try again.', 'error');
+            }
+        }
+
+        // Display Compliance Results
+        function displayComplianceResults(data) {
+            const { summary, fields, applicable_framework } = data;
+            
+            // Calculate metrics
+            let highCount = 0, mediumCount = 0, lowCount = 0;
+            if (fields) {
+                Object.values(fields).forEach(field => {
+                    if (field.severity === 'high') highCount++;
+                    else if (field.severity === 'medium') mediumCount++;
+                    else if (field.severity === 'low') lowCount++;
+                });
+            }
+
+            // Update metrics
+            document.getElementById('highRiskCount').textContent = highCount;
+            document.getElementById('mediumRiskCount').textContent = mediumCount;
+            document.getElementById('lowRiskCount').textContent = lowCount;
+
+            // Calculate compliance score
+            const totalIssues = highCount + mediumCount + lowCount;
+            let score = 100;
+            if (totalIssues > 0) {
+                score = Math.max(0, 100 - (highCount * 20 + mediumCount * 10 + lowCount * 5));
+            }
+            document.getElementById('complianceScore').textContent = score + '%';
+
+            // Display detailed results
+            const resultsContent = document.getElementById('resultsContent');
+            resultsContent.innerHTML = `
+                <div style="padding: 20px; background: ${score >= 80 ? '#d1fae5' : score >= 50 ? '#fef3c7' : '#fee2e2'}; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 8px 0; color: ${score >= 80 ? '#059669' : score >= 50 ? '#d97706' : '#dc2626'};">
+                        <i class="mdi mdi-information-outline"></i> Executive Summary
+                    </h4>
+                    <p style="margin: 0; color: ${score >= 80 ? '#059669' : score >= 50 ? '#d97706' : '#dc2626'};">
+                        ${summary || 'Compliance analysis complete.'}
+                    </p>
+                    <small style="color: ${score >= 80 ? '#047857' : score >= 50 ? '#b45309' : '#b91c1c'};">
+                        Framework: ${applicable_framework || 'URDG 758'}
+                    </small>
+                </div>
+            `;
+        }
+
+        // Hide Results
+        function hideResults() {
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        // Save Draft
+        function saveDraft() {
+            const formData = new FormData(document.getElementById('guaranteeForm'));
+            const data = Object.fromEntries(formData);
+            data.guaranteeTerms = editorInstance ? editorInstance.getData() : '';
+            
+            localStorage.setItem('guaranteeDraft', JSON.stringify(data));
+            showToast('Draft saved successfully!', 'success');
+        }
+
+        // Load Draft
+        function loadDraft() {
+            const draft = localStorage.getItem('guaranteeDraft');
+            if (draft) {
+                try {
+                    const data = JSON.parse(draft);
+                    Object.keys(data).forEach(key => {
+                        if (key === 'guaranteeTerms') {
+                            if (editorInstance && data[key]) {
+                                editorInstance.setData(data[key]);
+                            }
+                        } else {
+                            const field = document.getElementById(key);
+                            if (field) {
+                                field.value = data[key];
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading draft:', error);
+                }
+            }
+        }
+
+        // Reset Form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form?')) {
+                document.getElementById('guaranteeForm').reset();
+                if (editorInstance) {
+                    editorInstance.setData('');
+                }
+                currentComplianceData = null;
+                hideResults();
+                showToast('Form reset successfully', 'info');
+            }
+        }
+
+        // Form Submission
+        document.getElementById('guaranteeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Check if compliance has been run
+            if (!currentComplianceData) {
+                if (!confirm('You have not run compliance analysis. Do you want to submit anyway?')) {
+                    return;
+                }
+            }
+            
+            // Get form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            data.guaranteeTerms = editorInstance ? editorInstance.getData() : '';
+            
+            // Add compliance results if available
+            if (currentComplianceData) {
+                data.complianceResults = currentComplianceData;
+            }
+            
+            try {
+                showLoader('Submitting guarantee...');
+                
+                const response = await fetch('/api/guarantee/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                hideLoader();
+                
+                if (response.ok) {
+                    showToast('Guarantee submitted successfully!', 'success');
+                    setTimeout(() => {
+                        resetForm();
+                    }, 2000);
+                } else {
+                    showToast(result.error || 'Failed to submit guarantee', 'error');
+                }
+            } catch (error) {
+                hideLoader();
+                showToast('Error submitting guarantee: ' + error.message, 'error');
+            }
+        });
+
+        // Show Toast Notification
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 
+                             type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' :
+                             type === 'warning' ? 'linear-gradient(135deg, #f59e0b, #d97706)' :
+                             'linear-gradient(135deg, #6366f1, #8b5cf6)'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            const icon = type === 'success' ? 'check-circle' : 
+                         type === 'error' ? 'alert-circle' :
+                         type === 'warning' ? 'alert' : 'information';
+            
+            toast.innerHTML = `
+                <i class="mdi mdi-${icon}" style="font-size: 20px;"></i>
+                <span style="font-weight: 500;">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Show/Hide Loader
+        function showLoader(message = 'Processing...') {
+            const loader = document.getElementById('loader');
+            document.getElementById('loadingText').textContent = message;
+            loader.style.display = 'flex';
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        // Auto-save draft every 30 seconds
+        setInterval(() => {
+            if (editorInstance && editorInstance.getData()) {
+                saveDraft();
+            }
+        }, 30000);
+
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

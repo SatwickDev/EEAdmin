@@ -1,0 +1,62 @@
+{
+    "Documents Checklist": {
+        "Checklist Details": [
+            "Checklist ID/Reference Number",
+            "Date of Checklist",
+            "Prepared By",
+            "Reviewed By"
+        ],
+        "Parties Involved": [
+            "Exporter Name and Address",
+            "Importer Name and Address",
+            "Freight Forwarder/CHA Name"
+        ],
+        "Commercial Documents": [
+            "Commercial Invoice",
+            "Proforma Invoice",
+            "Packing List",
+            "Certificate of Origin"
+        ],
+        "Transport Documents": [
+            "Bill of Lading",
+            "Air Waybill",
+            "CMR",
+            "Multimodal Transport Document"
+        ],
+        "Insurance Documents": [
+            "Insurance Policy",
+            "Insurance Certificate"
+        ],
+        "Financial Documents": [
+            "Letter of Credit",
+            "Bill of Exchange",
+            "Promissory Note",
+            "Bank Guarantee"
+        ],
+        "Regulatory and Compliance": [
+            "Import/Export License",
+            "Customs Declaration",
+            "Sanctions/AML Declaration"
+        ],
+        "Certificates and Others": [
+            "Inspection Certificate",
+            "Health/Phytosanitary Certificate",
+            "GR FORM",
+            "Certificate of Analysis and Quality",
+            "Shipping Bill",
+            "Softex Form"
+        ],
+        "Checklist Status": [
+            "Document Received",
+            "Verified",
+            "Missing/Incomplete",
+            "Remarks"
+        ],
+        "Authorization": [
+            "Signature of Preparer",
+            "Signature of Approver",
+            "Company Stamp/Seal",
+            "Date of Approval"
+        ]
+    }
+}

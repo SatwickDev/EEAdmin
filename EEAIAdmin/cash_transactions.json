@@ -1,0 +1,452 @@
+[
+  {
+    "transaction_id": "TXN20230101001",
+    "date": "2023-01-01",
+    "type": "INCOMING_WIRE",
+    "amount": 2500,
+    "currency": "USD",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "TRADE_RECEIPTS"
+  },
+  {
+    "transaction_id": "TXN20230115002",
+    "date": "2023-01-15",
+    "type": "OUTGOING_ACH",
+    "amount": 1500,
+    "currency": "EUR",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20230203003",
+    "date": "2023-02-03",
+    "type": "CHECK_DEPOSIT",
+    "amount": 1800,
+    "currency": "GBP",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20230220004",
+    "date": "2023-02-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3000,
+    "currency": "USD",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20230310005",
+    "date": "2023-03-10",
+    "type": "INCOMING_WIRE",
+    "amount": 2800,
+    "currency": "EUR",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "PAYROLL"
+  },
+  {
+    "transaction_id": "TXN20230325006",
+    "date": "2023-03-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1200,
+    "currency": "AED",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20230405007",
+    "date": "2023-04-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2100,
+    "currency": "USD",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20230420008",
+    "date": "2023-04-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3200,
+    "currency": "GBP",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20230510009",
+    "date": "2023-05-10",
+    "type": "INCOMING_WIRE",
+    "amount": 2600,
+    "currency": "JPY",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "TRADE_RECEIPTS"
+  },
+  {
+    "transaction_id": "TXN20230525010",
+    "date": "2023-05-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1300,
+    "currency": "USD",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20230605011",
+    "date": "2023-06-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 1900,
+    "currency": "EUR",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20230620012",
+    "date": "2023-06-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3100,
+    "currency": "GBP",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20230710013",
+    "date": "2023-07-10",
+    "type": "INCOMING_WIRE",
+    "amount": 2700,
+    "currency": "USD",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "PAYROLL"
+  },
+  {
+    "transaction_id": "TXN20230725014",
+    "date": "2023-07-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1400,
+    "currency": "AED",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20230805015",
+    "date": "2023-08-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2200,
+    "currency": "USD",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20230820016",
+    "date": "2023-08-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3300,
+    "currency": "EUR",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20230910017",
+    "date": "2023-09-10",
+    "type": "INCOMING_WIRE",
+    "amount": 2900,
+    "currency": "GBP",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "TRADE_RECEIPTS"
+  },
+  {
+    "transaction_id": "TXN20230925018",
+    "date": "2023-09-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1500,
+    "currency": "USD",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20231005019",
+    "date": "2023-10-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2000,
+    "currency": "JPY",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20231020020",
+    "date": "2023-10-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3400,
+    "currency": "USD",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20231110021",
+    "date": "2023-11-10",
+    "type": "INCOMING_WIRE",
+    "amount": 2800,
+    "currency": "EUR",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "PAYROLL"
+  },
+  {
+    "transaction_id": "TXN20231125022",
+    "date": "2023-11-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1600,
+    "currency": "AED",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20231205023",
+    "date": "2023-12-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2300,
+    "currency": "USD",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20231220024",
+    "date": "2023-12-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3500,
+    "currency": "GBP",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20240110025",
+    "date": "2024-01-10",
+    "type": "INCOMING_WIRE",
+    "amount": 3000,
+    "currency": "USD",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "TRADE_RECEIPTS"
+  },
+  {
+    "transaction_id": "TXN20240125026",
+    "date": "2024-01-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1700,
+    "currency": "EUR",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20240205027",
+    "date": "2024-02-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2400,
+    "currency": "GBP",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20240220028",
+    "date": "2024-02-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3600,
+    "currency": "USD",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20240310029",
+    "date": "2024-03-10",
+    "type": "INCOMING_WIRE",
+    "amount": 3100,
+    "currency": "JPY",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "PAYROLL"
+  },
+  {
+    "transaction_id": "TXN20240325030",
+    "date": "2024-03-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1800,
+    "currency": "USD",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20240405031",
+    "date": "2024-04-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2500,
+    "currency": "EUR",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20240420032",
+    "date": "2024-04-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3700,
+    "currency": "GBP",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20240510033",
+    "date": "2024-05-10",
+    "type": "INCOMING_WIRE",
+    "amount": 3200,
+    "currency": "USD",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "TRADE_RECEIPTS"
+  },
+  {
+    "transaction_id": "TXN20240525034",
+    "date": "2024-05-25",
+    "type": "OUTGOING_ACH",
+    "amount": 1900,
+    "currency": "AED",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20240605035",
+    "date": "2024-06-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2600,
+    "currency": "USD",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20240620036",
+    "date": "2024-06-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3800,
+    "currency": "EUR",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20240710037",
+    "date": "2024-07-10",
+    "type": "INCOMING_WIRE",
+    "amount": 3300,
+    "currency": "GBP",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "PAYROLL"
+  },
+  {
+    "transaction_id": "TXN20240725038",
+    "date": "2024-07-25",
+    "type": "OUTGOING_ACH",
+    "amount": 2000,
+    "currency": "USD",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20240805039",
+    "date": "2024-08-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2700,
+    "currency": "JPY",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20240820040",
+    "date": "2024-08-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 3900,
+    "currency": "USD",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20240910041",
+    "date": "2024-09-10",
+    "type": "INCOMING_WIRE",
+    "amount": 3400,
+    "currency": "EUR",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "TRADE_RECEIPTS"
+  },
+  {
+    "transaction_id": "TXN20240925042",
+    "date": "2024-09-25",
+    "type": "OUTGOING_ACH",
+    "amount": 2100,
+    "currency": "USD",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20241005043",
+    "date": "2024-10-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2800,
+    "currency": "GBP",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20241020044",
+    "date": "2024-10-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 4000,
+    "currency": "USD",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20241110045",
+    "date": "2024-11-10",
+    "type": "INCOMING_WIRE",
+    "amount": 3500,
+    "currency": "JPY",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "PAYROLL"
+  },
+  {
+    "transaction_id": "TXN20241125046",
+    "date": "2024-11-25",
+    "type": "OUTGOING_ACH",
+    "amount": 2200,
+    "currency": "EUR",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  },
+  {
+    "transaction_id": "TXN20241205047",
+    "date": "2024-12-05",
+    "type": "CHECK_DEPOSIT",
+    "amount": 2900,
+    "currency": "USD",
+    "payment_method": "CHECK",
+    "category": "COLLECTIONS"
+  },
+  {
+    "transaction_id": "TXN20241220048",
+    "date": "2024-12-20",
+    "type": "INTERNAL_TRANSFER",
+    "amount": 4100,
+    "currency": "GBP",
+    "payment_method": "INTERNAL",
+    "category": "INVESTMENTS"
+  },
+  {
+    "transaction_id": "TXN20250110049",
+    "date": "2025-01-10",
+    "type": "INCOMING_WIRE",
+    "amount": 3600,
+    "currency": "USD",
+    "payment_method": "WIRE_TRANSFER",
+    "category": "TRADE_RECEIPTS"
+  },
+  {
+    "transaction_id": "TXN20250125050",
+    "date": "2025-01-25",
+    "type": "OUTGOING_ACH",
+    "amount": 2300,
+    "currency": "AED",
+    "payment_method": "ACH",
+    "category": "OPERATIONS"
+  }
+]

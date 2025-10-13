@@ -1,0 +1,270 @@
+{
+  "documentType": "Invoice",
+  "code": "INV",
+  "description": "A commercial document issued by a seller to a buyer relating to a sale transaction and indicating products, quantities, and agreed prices",
+  "category": "MANDATORY",
+  "fields": {
+    "mandatory": [
+      {
+        "name": "Invoice Number",
+        "fieldId": "invoice_number",
+        "type": "text",
+        "required": true,
+        "description": "Unique identifier for the invoice",
+        "validation": "^INV-\\d{6,10}$",
+        "placeholder": "INV-123456",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Issue Date",
+        "fieldId": "issue_date",
+        "type": "date",
+        "required": true,
+        "description": "Date when the invoice was issued",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Invoice Date",
+        "fieldId": "invoice_date",
+        "type": "date",
+        "required": true,
+        "description": "Date of the invoice for accounting purposes",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Payment Due Date",
+        "fieldId": "payment_due_date",
+        "type": "date",
+        "required": true,
+        "description": "Date by which payment must be received",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Buyer",
+        "fieldId": "buyer",
+        "type": "text",
+        "required": true,
+        "description": "Name of the purchasing party",
+        "validation": null,
+        "placeholder": "Enter buyer name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Invoicee",
+        "fieldId": "invoicee",
+        "type": "text",
+        "required": true,
+        "description": "Party to whom invoice is addressed",
+        "validation": null,
+        "placeholder": "Enter invoicee name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Seller",
+        "fieldId": "seller",
+        "type": "text",
+        "required": true,
+        "description": "Name of the selling party",
+        "validation": null,
+        "placeholder": "Enter seller name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Seller's Bank",
+        "fieldId": "sellers_bank",
+        "type": "text",
+        "required": true,
+        "description": "Bank details of the seller",
+        "validation": null,
+        "placeholder": "Enter seller's bank name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Seller's Bank Account Number",
+        "fieldId": "sellers_bank_account",
+        "type": "text",
+        "required": true,
+        "description": "Account number for payment",
+        "validation": "^[A-Z0-9]{10,34}$",
+        "placeholder": "Enter account number",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Total Invoice Amount",
+        "fieldId": "total_invoice_amount",
+        "type": "number",
+        "required": true,
+        "description": "Total amount to be paid",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "MANDATORY"
+      }
+    ],
+    "optional": [
+      {
+        "name": "Purchase Order Number",
+        "fieldId": "po_number",
+        "type": "text",
+        "required": false,
+        "description": "Reference to related purchase order",
+        "validation": null,
+        "placeholder": "PO-123456",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Contract Number",
+        "fieldId": "contract_number",
+        "type": "text",
+        "required": false,
+        "description": "Reference to underlying contract",
+        "validation": null,
+        "placeholder": "Enter contract number",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Documentary Credit Applicant",
+        "fieldId": "dc_applicant",
+        "type": "text",
+        "required": false,
+        "description": "Party applying for letter of credit",
+        "validation": null,
+        "placeholder": "Enter DC applicant name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Original Loading Location",
+        "fieldId": "loading_location",
+        "type": "text",
+        "required": false,
+        "description": "Place where goods were loaded",
+        "validation": null,
+        "placeholder": "Enter loading location",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Origin Country",
+        "fieldId": "origin_country",
+        "type": "select",
+        "required": false,
+        "description": "Country of origin for goods",
+        "validation": null,
+        "placeholder": "Select country",
+        "options": ["United States", "China", "Germany", "Japan", "India", "United Kingdom"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Baseport Unloading Location",
+        "fieldId": "unloading_location",
+        "type": "text",
+        "required": false,
+        "description": "Port where goods will be unloaded",
+        "validation": null,
+        "placeholder": "Enter unloading port",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Trade Terms Conditions Description",
+        "fieldId": "trade_terms_desc",
+        "type": "text",
+        "required": false,
+        "description": "Description of trade terms",
+        "validation": null,
+        "placeholder": "e.g., FOB, CIF, EXW",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Trade Terms Conditions Code",
+        "fieldId": "trade_terms_code",
+        "type": "select",
+        "required": false,
+        "description": "Incoterms code",
+        "validation": null,
+        "placeholder": "Select Incoterm",
+        "options": ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP", "FAS", "FOB", "CFR", "CIF"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Payment Terms",
+        "fieldId": "payment_terms",
+        "type": "select",
+        "required": false,
+        "description": "Terms of payment",
+        "validation": null,
+        "placeholder": "Select payment terms",
+        "options": ["Net 30", "Net 60", "Net 90", "Due on Receipt", "2/10 Net 30"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Payment Method",
+        "fieldId": "payment_method",
+        "type": "select",
+        "required": false,
+        "description": "Method of payment",
+        "validation": null,
+        "placeholder": "Select payment method",
+        "options": ["Wire Transfer", "Letter of Credit", "Check", "Bank Draft"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Documentary Credit Amount",
+        "fieldId": "dc_amount",
+        "type": "number",
+        "required": false,
+        "description": "Amount covered by letter of credit",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Humidity Percentage",
+        "fieldId": "humidity_percentage",
+        "type": "number",
+        "required": false,
+        "description": "Humidity level for goods",
+        "validation": "^(100|[1-9]?[0-9])$",
+        "placeholder": "0-100",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Net Weight",
+        "fieldId": "net_weight",
+        "type": "number",
+        "required": false,
+        "description": "Net weight of goods",
+        "validation": "^\\d+(\\.\\d{1,3})?$",
+        "placeholder": "0.000",
+        "step": "0.001",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Description of Goods",
+        "fieldId": "goods_description",
+        "type": "textarea",
+        "required": false,
+        "description": "Detailed description of products",
+        "validation": null,
+        "placeholder": "Enter goods description",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "HS Code (Commodity Code)",
+        "fieldId": "hs_code",
+        "type": "text",
+        "required": false,
+        "description": "Harmonized System code",
+        "validation": "^\\d{6,10}$",
+        "placeholder": "Enter HS code",
+        "category": "OPTIONAL"
+      }
+    ],
+    "conditional": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+    "Shipping Instructions": {
+        "Document Details": [
+            "Instruction Reference Number",
+            "Date of Issue",
+            "Shipping Agent/Forwarder Name",
+            "Type of Shipment (FCL/LCL/Air/Road)"
+        ],
+        "Exporter & Consignee Information": [
+            "Exporter Name and Address",
+            "Consignee Name and Address",
+            "Notify Party Details"
+        ],
+        "Cargo Details": [
+            "Description of Goods",
+            "HS Code",
+            "Quantity",
+            "Weight (Gross/Net)",
+            "Number and Type of Packages",
+            "Marks and Numbers",
+            "Dangerous Goods Declaration (if applicable)"
+        ],
+        "Shipment & Transport Info": [
+            "Port of Loading",
+            "Port of Discharge",
+            "Place of Receipt",
+            "Place of Delivery",
+            "Preferred Carrier/Shipping Line",
+            "Mode of Transport",
+            "Requested Sailing/Flight Date"
+        ],
+        "Container Details": [
+            "Container Number(s)",
+            "Seal Number(s)",
+            "Container Type",
+            "Stuffing Location and Date"
+        ],
+        "Documentation Instructions": [
+            "Required Shipping Documents",
+            "Original/Copy Document Instructions",
+            "Freight Terms (FOB/CIF/etc.)",
+            "Payment Terms",
+            "Special Handling Instructions"
+        ],
+        "Authorization": [
+            "Authorized Signature",
+            "Date",
+            "Company Stamp/Seal"
+        ]
+    }
+}

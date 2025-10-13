@@ -1,0 +1,82 @@
+[
+  {
+    "investment_type": "TERM_DEPOSIT",
+    "status": "active",
+    "start_date": "01/01/2023",
+    "maturity_date": "01/07/2025",
+    "yield": 2.5,
+    "value": 10000
+  },
+  {
+    "investment_type": "MONEY_MARKET",
+    "status": "matured",
+    "start_date": "15/03/2024",
+    "maturity_date": "15/07/2025",
+    "yield": 3.2,
+    "value": 15000
+  },
+  {
+    "investment_type": "TREASURY_BILLS",
+    "status": "early_redemption",
+    "start_date": "10/06/2024",
+    "maturity_date": "10/08/2025",
+    "yield": 2.8,
+    "value": 20000
+  },
+  {
+    "investment_type": "COMMERCIAL_PAPER",
+    "status": "active",
+    "start_date": "20/09/2024",
+    "maturity_date": "20/12/2025",
+    "yield": 4.1,
+    "value": 12000
+  },
+  {
+    "investment_type": "TERM_DEPOSIT",
+    "status": "matured",
+    "start_date": "05/02/2023",
+    "maturity_date": "05/08/2025",
+    "yield": 2.3,
+    "value": 18000
+  },
+  {
+    "investment_type": "MONEY_MARKET",
+    "status": "active",
+    "start_date": "10/04/2024",
+    "maturity_date": "10/08/2025",
+    "yield": 3.5,
+    "value": 22000
+  },
+  {
+    "investment_type": "TREASURY_BILLS",
+    "status": "early_redemption",
+    "start_date": "15/07/2024",
+    "maturity_date": "15/09/2025",
+    "yield": 2.6,
+    "value": 25000
+  },
+  {
+    "investment_type": "COMMERCIAL_PAPER",
+    "status": "active",
+    "start_date": "20/10/2024",
+    "maturity_date": "20/01/2026",
+    "yield": 4.3,
+    "value": 13000
+  },
+  {
+    "investment_type": "TERM_DEPOSIT",
+    "status": "matured",
+    "start_date": "10/03/2023",
+    "maturity_date": "10/09/2025",
+    "yield": 2.7,
+    "value": 16000
+  },
+  {
+    "investment_type": "MONEY_MARKET",
+    "status": "active",
+    "start_date": "15/05/2024",
+    "maturity_date": "15/09/2025",
+    "yield": 3.8,
+    "value": 20000
+  }
+]

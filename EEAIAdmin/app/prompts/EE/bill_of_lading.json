@@ -1,0 +1,598 @@
+{
+  "documentType": "Bill of Lading",
+  "code": "BoL",
+  "description": "A document issued by a carrier to acknowledge receipt of cargo for shipment",
+  "category": "MANDATORY",
+  "fields": {
+    "mandatory": [
+      {
+        "name": "Document Identifier",
+        "fieldId": "document_id",
+        "type": "text",
+        "required": true,
+        "description": "Unique B/L number",
+        "validation": "^BL-\\d{6,12}$",
+        "placeholder": "BL-123456",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Contract Number",
+        "fieldId": "contract_number",
+        "type": "text",
+        "required": true,
+        "description": "Shipping contract reference",
+        "validation": null,
+        "placeholder": "Enter contract number",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Issue Date",
+        "fieldId": "issue_date",
+        "type": "date",
+        "required": true,
+        "description": "Date B/L was issued",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Consignment Loading Date",
+        "fieldId": "loading_date",
+        "type": "date",
+        "required": true,
+        "description": "Date cargo was loaded",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Carrier (Transport Services Provider)",
+        "fieldId": "carrier",
+        "type": "text",
+        "required": true,
+        "description": "Name of shipping line/carrier",
+        "validation": null,
+        "placeholder": "Enter carrier name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Consignor",
+        "fieldId": "consignor",
+        "type": "text",
+        "required": true,
+        "description": "Party shipping the goods",
+        "validation": null,
+        "placeholder": "Enter consignor name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Freight Payer",
+        "fieldId": "freight_payer",
+        "type": "text",
+        "required": true,
+        "description": "Party responsible for freight payment",
+        "validation": null,
+        "placeholder": "Enter freight payer name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Baseport Unloading Location",
+        "fieldId": "unloading_location",
+        "type": "text",
+        "required": true,
+        "description": "Port of discharge",
+        "validation": null,
+        "placeholder": "Enter port of discharge",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Transport Contract Document Conditions",
+        "fieldId": "transport_conditions",
+        "type": "textarea",
+        "required": true,
+        "description": "Terms and conditions of carriage",
+        "validation": null,
+        "placeholder": "Enter transport conditions",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Gross Weight",
+        "fieldId": "gross_weight",
+        "type": "number",
+        "required": true,
+        "description": "Total weight including packaging (kg)",
+        "validation": "^\\d+(\\.\\d{1,3})?$",
+        "placeholder": "0.000",
+        "step": "0.001",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Volume (Cube)",
+        "fieldId": "volume",
+        "type": "number",
+        "required": true,
+        "description": "Total volume in cubic meters",
+        "validation": "^\\d+(\\.\\d{1,3})?$",
+        "placeholder": "0.000",
+        "step": "0.001",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Description of Goods",
+        "fieldId": "goods_description",
+        "type": "textarea",
+        "required": true,
+        "description": "Description of cargo",
+        "validation": null,
+        "placeholder": "Enter goods description",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Number of Packages",
+        "fieldId": "num_packages",
+        "type": "number",
+        "required": true,
+        "description": "Total number of packages",
+        "validation": "^[1-9]\\d*$",
+        "placeholder": "Enter number of packages",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Container Size and Type",
+        "fieldId": "container_size_type",
+        "type": "select",
+        "required": true,
+        "description": "Container specifications",
+        "validation": null,
+        "placeholder": "Select container type",
+        "options": ["20' Standard", "40' Standard", "40' High Cube", "20' Refrigerated", "40' Refrigerated"],
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Full or Empty Container",
+        "fieldId": "container_status",
+        "type": "select",
+        "required": true,
+        "description": "Container load status",
+        "validation": null,
+        "placeholder": "Select status",
+        "options": ["FCL (Full Container Load)", "LCL (Less than Container Load)", "Empty"],
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Transport Means Identifier",
+        "fieldId": "transport_means_id",
+        "type": "text",
+        "required": true,
+        "description": "Vessel name or transport ID",
+        "validation": null,
+        "placeholder": "Enter vessel name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Vehicle Registration Number",
+        "fieldId": "vehicle_reg_number",
+        "type": "text",
+        "required": true,
+        "description": "IMO number or vessel registration",
+        "validation": "^IMO\\d{7}$",
+        "placeholder": "IMO1234567",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Seal Identifier",
+        "fieldId": "seal_id",
+        "type": "text",
+        "required": true,
+        "description": "Container seal number",
+        "validation": null,
+        "placeholder": "Enter seal number",
+        "category": "MANDATORY"
+      }
+    ],
+    "optional": [
+      {
+        "name": "Booking Reference Number",
+        "fieldId": "booking_ref",
+        "type": "text",
+        "required": false,
+        "description": "Booking confirmation number",
+        "validation": null,
+        "placeholder": "Enter booking reference",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "House Waybill Document Identifier",
+        "fieldId": "house_waybill_id",
+        "type": "text",
+        "required": false,
+        "description": "House B/L number if applicable",
+        "validation": null,
+        "placeholder": "Enter house B/L number",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Transport Contract Document / Bill of Lading Number",
+        "fieldId": "bl_number",
+        "type": "text",
+        "required": false,
+        "description": "Master B/L number",
+        "validation": null,
+        "placeholder": "Enter master B/L number",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Freight Forwarder Reference Number",
+        "fieldId": "ff_ref_number",
+        "type": "text",
+        "required": false,
+        "description": "Forwarder's reference",
+        "validation": null,
+        "placeholder": "Enter FF reference",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Actual Arrival Date",
+        "fieldId": "actual_arrival_date",
+        "type": "date",
+        "required": false,
+        "description": "Actual date of arrival",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Estimated Time of Departure",
+        "fieldId": "etd",
+        "type": "datetime-local",
+        "required": false,
+        "description": "Expected departure time",
+        "validation": null,
+        "placeholder": "Select date and time",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Actual Departure Date",
+        "fieldId": "actual_departure_date",
+        "type": "date",
+        "required": false,
+        "description": "Actual date of departure",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Estimated Time of Arrival",
+        "fieldId": "eta",
+        "type": "datetime-local",
+        "required": false,
+        "description": "Expected arrival time",
+        "validation": null,
+        "placeholder": "Select date and time",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Buyer",
+        "fieldId": "buyer",
+        "type": "text",
+        "required": false,
+        "description": "Purchasing party",
+        "validation": null,
+        "placeholder": "Enter buyer name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Importer",
+        "fieldId": "importer",
+        "type": "text",
+        "required": false,
+        "description": "Party importing the goods",
+        "validation": null,
+        "placeholder": "Enter importer name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Exporter",
+        "fieldId": "exporter",
+        "type": "text",
+        "required": false,
+        "description": "Party exporting the goods",
+        "validation": null,
+        "placeholder": "Enter exporter name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Freight Forwarder",
+        "fieldId": "freight_forwarder",
+        "type": "text",
+        "required": false,
+        "description": "Forwarding agent",
+        "validation": null,
+        "placeholder": "Enter freight forwarder name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Despatch/Pick-up Party",
+        "fieldId": "despatch_party",
+        "type": "text",
+        "required": false,
+        "description": "Party from whom goods are collected",
+        "validation": null,
+        "placeholder": "Enter despatch party",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Payment Location",
+        "fieldId": "payment_location",
+        "type": "text",
+        "required": false,
+        "description": "Place where freight is payable",
+        "validation": null,
+        "placeholder": "Enter payment location",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Despatch",
+        "fieldId": "despatch",
+        "type": "text",
+        "required": false,
+        "description": "Place of despatch",
+        "validation": null,
+        "placeholder": "Enter despatch location",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Exportation Country",
+        "fieldId": "export_country",
+        "type": "select",
+        "required": false,
+        "description": "Country of export",
+        "validation": null,
+        "placeholder": "Select country",
+        "options": ["United States", "China", "Germany", "Japan", "India", "United Kingdom"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Origin Country",
+        "fieldId": "origin_country",
+        "type": "select",
+        "required": false,
+        "description": "Country of origin",
+        "validation": null,
+        "placeholder": "Select country",
+        "options": ["United States", "China", "Germany", "Japan", "India", "United Kingdom"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Trade Terms Conditions Description",
+        "fieldId": "trade_terms_desc",
+        "type": "text",
+        "required": false,
+        "description": "Incoterms description",
+        "validation": null,
+        "placeholder": "e.g., FOB Singapore",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Trade Terms Conditions Code",
+        "fieldId": "trade_terms_code",
+        "type": "select",
+        "required": false,
+        "description": "Incoterms code",
+        "validation": null,
+        "placeholder": "Select Incoterm",
+        "options": ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP", "FAS", "FOB", "CFR", "CIF"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Prepaid Amount",
+        "fieldId": "prepaid_amount",
+        "type": "number",
+        "required": false,
+        "description": "Freight prepaid amount",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Total Collect Charges",
+        "fieldId": "collect_charges",
+        "type": "number",
+        "required": false,
+        "description": "Freight collect amount",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Net Weight",
+        "fieldId": "net_weight",
+        "type": "number",
+        "required": false,
+        "description": "Weight excluding packaging (kg)",
+        "validation": "^\\d+(\\.\\d{1,3})?$",
+        "placeholder": "0.000",
+        "step": "0.001",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Transport Means",
+        "fieldId": "transport_means",
+        "type": "select",
+        "required": false,
+        "description": "Mode of transport",
+        "validation": null,
+        "placeholder": "Select transport mode",
+        "options": ["Sea", "Air", "Road", "Rail", "Multimodal"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Type of Packaging and Shipping Marks",
+        "fieldId": "packaging_type",
+        "type": "text",
+        "required": false,
+        "description": "Package type and marks",
+        "validation": null,
+        "placeholder": "e.g., Carton boxes with marks",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Product Identifier",
+        "fieldId": "product_id",
+        "type": "text",
+        "required": false,
+        "description": "Product code or SKU",
+        "validation": null,
+        "placeholder": "Enter product identifier",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Dangerous Goods Technical Name",
+        "fieldId": "dg_technical_name",
+        "type": "text",
+        "required": false,
+        "description": "Technical name for DG",
+        "validation": null,
+        "placeholder": "Enter DG technical name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Packaging Danger Level Code",
+        "fieldId": "danger_level_code",
+        "type": "select",
+        "required": false,
+        "description": "Packing group",
+        "validation": null,
+        "placeholder": "Select packing group",
+        "options": ["I - Great Danger", "II - Medium Danger", "III - Minor Danger"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Dangerous Goods Class Number",
+        "fieldId": "dg_class",
+        "type": "select",
+        "required": false,
+        "description": "IMO dangerous goods class",
+        "validation": null,
+        "placeholder": "Select DG class",
+        "options": ["1 - Explosives", "2 - Gases", "3 - Flammable Liquids", "4 - Flammable Solids", "5 - Oxidizing", "6 - Toxic", "7 - Radioactive", "8 - Corrosive", "9 - Miscellaneous"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Conveyance Reference Number/Journey Identifier",
+        "fieldId": "conveyance_ref",
+        "type": "text",
+        "required": false,
+        "description": "Voyage number",
+        "validation": null,
+        "placeholder": "Enter voyage number",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Transport Equipment Identifier",
+        "fieldId": "transport_equipment_id",
+        "type": "text",
+        "required": false,
+        "description": "Container number",
+        "validation": null,
+        "placeholder": "Enter container number",
+        "category": "OPTIONAL"
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Consignee",
+        "fieldId": "consignee",
+        "type": "text",
+        "required": false,
+        "description": "Party to whom goods are consigned",
+        "validation": null,
+        "placeholder": "Enter consignee name",
+        "condition": "Required for straight B/L, optional for order B/L",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Notify Party",
+        "fieldId": "notify_party",
+        "type": "text",
+        "required": false,
+        "description": "Party to be notified of arrival",
+        "validation": null,
+        "placeholder": "Enter notify party",
+        "condition": "Required when consignee is 'To Order'",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Place of Delivery",
+        "fieldId": "place_of_delivery",
+        "type": "text",
+        "required": false,
+        "description": "Final delivery location",
+        "validation": null,
+        "placeholder": "Enter delivery place",
+        "condition": "Required for door-to-door or multimodal transport",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Customs Value",
+        "fieldId": "customs_value",
+        "type": "number",
+        "required": false,
+        "description": "Value for customs purposes",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "condition": "Required when goods cross international borders",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Freight and Charges Amount",
+        "fieldId": "freight_charges",
+        "type": "number",
+        "required": false,
+        "description": "Total freight charges",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "condition": "Required unless freight prepaid",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Humidity Percentage",
+        "fieldId": "humidity_percentage",
+        "type": "number",
+        "required": false,
+        "description": "Required humidity level",
+        "validation": "^(100|[1-9]?[0-9])$",
+        "placeholder": "0-100",
+        "condition": "Required for humidity-sensitive cargo",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Transport Temperature",
+        "fieldId": "transport_temperature",
+        "type": "number",
+        "required": false,
+        "description": "Required temperature (°C)",
+        "validation": "^-?\\d+(\\.\\d)?$",
+        "placeholder": "e.g., -18, 2, 25",
+        "step": "0.1",
+        "condition": "Required for temperature-controlled cargo",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "HS Code (Commodity Code)",
+        "fieldId": "hs_code",
+        "type": "text",
+        "required": false,
+        "description": "Harmonized System code",
+        "validation": "^\\d{6,10}$",
+        "placeholder": "Enter HS code",
+        "condition": "Required for customs clearance",
+        "category": "CONDITIONAL"
+      }
+    ]
+  }
+}

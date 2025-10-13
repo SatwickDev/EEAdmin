@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Loader Comparison</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="/static/css/professional-loader.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .comparison-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .version-label {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="comparison-container">
+        <h1 class="text-4xl font-bold text-white text-center mb-12">Document Processing Loader Comparison</h1>
+        
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Enhanced Professional Version -->
+            <div>
+                <div class="version-label">✨ Enhanced Professional Version</div>
+                <div class="processing-card text-center animate-slide-in" data-progress="75%">
+                    <!-- Animated Icon Section -->
+                    <div class="processing-brain">
+                        <div class="processing-brain-bg"></div>
+                        <div class="processing-brain-inner">
+                            <i class="mdi mdi-file-document-check"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Title Section -->
+                    <h3>Processing Documents</h3>
+                    <p>AI-Powered Compliance Verification</p>
+                    
+                    <!-- Step Indicators -->
+                    <div class="space-y-3">
+                        <!-- Step 1: Upload - Completed -->
+                        <div class="step-indicator active" data-step="1">
+                            <div class="step-number">
+                                <i class="mdi mdi-check"></i>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span>Uploading Documents</span>
+                            </div>
+                            <div class="text-green-500">
+                                <i class="mdi mdi-check-circle"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Extract - Completed -->
+                        <div class="step-indicator active" data-step="2">
+                            <div class="step-number">
+                                <i class="mdi mdi-check"></i>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span>Extracting Content</span>
+                            </div>
+                            <div class="text-green-500">
+                                <i class="mdi mdi-check-circle"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: AI Classification - Processing -->
+                        <div class="step-indicator processing" data-step="3">
+                            <div class="step-number">
+                                <i class="mdi mdi-loading"></i>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span>AI Classification</span>
+                            </div>
+                            <div class="text-blue-500">
+                                <i class="mdi mdi-loading"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 4: Compliance Check - Pending -->
+                        <div class="step-indicator" data-step="4">
+                            <div class="step-number">
+                                <span>4</span>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <span>Compliance Verification</span>
+                            </div>
+                            <div class="text-gray-400">
+                                <i class="mdi mdi-circle-outline"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-8">
+                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Original Version -->
+            <div>
+                <div class="version-label">Original Version</div>
+                <div class="bg-white rounded-2xl p-8">
+                    <div class="processing-card text-center animate-slide-in">
+                        <div class="processing-brain">
+                            <div class="processing-brain-bg"></div>
+                            <div class="processing-brain-inner">
+                                <i class="mdi mdi-brain text-3xl text-purple-600 animate-pulse"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Processing Documents</h3>
+                        <p class="text-gray-600 mb-8">Compliance check</p>
+                        <div class="space-y-3">
+                            <div class="step-indicator active">
+                                <div class="step-number bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                                    <i class="mdi mdi-check"></i>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <span class="text-gray-800 font-medium">Uploading documents</span>
+                                </div>
+                                <div class="text-green-500">
+                                    <i class="mdi mdi-check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="step-indicator active">
+                                <div class="step-number bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                                    <i class="mdi mdi-check"></i>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <span class="text-gray-800 font-medium">Extracting content</span>
+                                </div>
+                                <div class="text-green-500">
+                                    <i class="mdi mdi-check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="step-indicator active">
+                                <div class="step-number bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                                    <i class="mdi mdi-check"></i>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <span class="text-gray-800 font-medium">AI classification</span>
+                                </div>
+                                <div class="text-green-500">
+                                    <i class="mdi mdi-check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="step-indicator active">
+                                <div class="step-number bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                                    <i class="mdi mdi-check"></i>
+                                </div>
+                                <div class="flex-1 text-left">
+                                    <span class="text-gray-800 font-medium">Compliance check</span>
+                                </div>
+                                <div class="text-green-500">
+                                    <i class="mdi mdi-check-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features List -->
+        <div class="mt-12 bg-white/10 backdrop-blur-md rounded-2xl p-8">
+            <h2 class="text-2xl font-bold text-white mb-6">Enhanced Features</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="flex items-start space-x-3 text-white">
+                    <i class="mdi mdi-check-circle text-green-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold">Glass Morphism Design</div>
+                        <div class="text-sm opacity-80">Modern blur and transparency effects</div>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3 text-white">
+                    <i class="mdi mdi-check-circle text-green-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold">Animated Progress States</div>
+                        <div class="text-sm opacity-80">Smooth transitions between steps</div>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3 text-white">
+                    <i class="mdi mdi-check-circle text-green-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold">Dynamic Icon System</div>
+                        <div class="text-sm opacity-80">Context-aware icon changes</div>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3 text-white">
+                    <i class="mdi mdi-check-circle text-green-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold">Professional Gradients</div>
+                        <div class="text-sm opacity-80">Consistent brand colors</div>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3 text-white">
+                    <i class="mdi mdi-check-circle text-green-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold">Micro-interactions</div>
+                        <div class="text-sm opacity-80">Hover and active states</div>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3 text-white">
+                    <i class="mdi mdi-check-circle text-green-400 text-xl"></i>
+                    <div>
+                        <div class="font-semibold">Responsive Design</div>
+                        <div class="text-sm opacity-80">Optimized for all devices</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Control Buttons -->
+        <div class="mt-8 flex justify-center space-x-4">
+            <button onclick="simulateProcessing()" class="px-6 py-3 bg-white/20 backdrop-blur-md text-white font-semibold rounded-xl hover:bg-white/30 transition">
+                <i class="mdi mdi-play"></i> Simulate Processing
+            </button>
+            <button onclick="resetLoader()" class="px-6 py-3 bg-white/20 backdrop-blur-md text-white font-semibold rounded-xl hover:bg-white/30 transition">
+                <i class="mdi mdi-refresh"></i> Reset
+            </button>
+            <button onclick="completeLoader()" class="px-6 py-3 bg-white/20 backdrop-blur-md text-white font-semibold rounded-xl hover:bg-white/30 transition">
+                <i class="mdi mdi-check-all"></i> Complete All
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Professional Loader Controller
+        class ProcessingLoader {
+            constructor(container) {
+                this.container = container;
+                this.steps = container.querySelectorAll('.step-indicator');
+                this.progressBar = container.querySelector('.h-full');
+                this.currentStep = 0;
+                this.totalSteps = this.steps.length;
+            }
+            
+            updateStep(stepIndex) {
+                if (stepIndex < 0 || stepIndex > this.totalSteps) return;
+                
+                this.currentStep = stepIndex;
+                
+                this.steps.forEach((step, index) => {
+                    step.classList.remove('active', 'processing');
+                    const stepNumber = step.querySelector('.step-number');
+                    const statusIcon = step.querySelector('div:last-child i');
+                    
+                    if (index < stepIndex) {
+                        step.classList.add('active');
+                        stepNumber.innerHTML = '<i class="mdi mdi-check"></i>';
+                        statusIcon.className = 'mdi mdi-check-circle';
+                        statusIcon.parentElement.className = 'text-green-500';
+                    } else if (index === stepIndex) {
+                        step.classList.add('processing');
+                        stepNumber.innerHTML = '<i class="mdi mdi-loading"></i>';
+                        statusIcon.className = 'mdi mdi-loading';
+                        statusIcon.parentElement.className = 'text-blue-500';
+                    } else {
+                        stepNumber.innerHTML = `<span>${index + 1}</span>`;
+                        statusIcon.className = 'mdi mdi-circle-outline';
+                        statusIcon.parentElement.className = 'text-gray-400';
+                    }
+                });
+                
+                const progress = (stepIndex / this.totalSteps) * 100;
+                this.progressBar.style.width = `${progress}%`;
+                this.container.setAttribute('data-progress', `${Math.round(progress)}%`);
+            }
+            
+            complete() {
+                this.steps.forEach((step) => {
+                    step.classList.add('active');
+                    step.classList.remove('processing');
+                    const stepNumber = step.querySelector('.step-number');
+                    const statusIcon = step.querySelector('div:last-child i');
+                    
+                    stepNumber.innerHTML = '<i class="mdi mdi-check"></i>';
+                    statusIcon.className = 'mdi mdi-check-circle';
+                    statusIcon.parentElement.className = 'text-green-500';
+                });
+                
+                this.progressBar.style.width = '100%';
+                this.container.setAttribute('data-progress', '100%');
+            }
+            
+            reset() {
+                this.updateStep(0);
+            }
+            
+            simulateProcessing(duration = 8000) {
+                const stepDuration = duration / this.totalSteps;
+                let currentStep = 0;
+                
+                const interval = setInterval(() => {
+                    if (currentStep >= this.totalSteps) {
+                        this.complete();
+                        clearInterval(interval);
+                        return;
+                    }
+                    
+                    this.updateStep(currentStep);
+                    currentStep++;
+                }, stepDuration);
+                
+                return interval;
+            }
+        }
+        
+        // Initialize loader
+        const loaderElement = document.querySelectorAll('.processing-card')[0];
+        const loader = new ProcessingLoader(loaderElement);
+        
+        // Control functions
+        function simulateProcessing() {
+            loader.reset();
+            loader.simulateProcessing(6000);
+        }
+        
+        function resetLoader() {
+            loader.reset();
+        }
+        
+        function completeLoader() {
+            loader.complete();
+        }
+        
+        // Start simulation on load
+        setTimeout(() => {
+            loader.updateStep(2);
+        }, 1000);
+    </script>
+</body>
+</html>

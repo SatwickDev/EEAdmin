@@ -1,0 +1,76 @@
+{
+  "documentId": "Rail_Consignment_Note",
+  "documentName": "Rail Consignment Note",
+  "mappings": [
+    {
+      "id": "336",
+      "documentId": "Rail_Consignment_Note",
+      "documentName": "Rail Consignment Note",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "124",
+      "entityName": "Issue Date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "337",
+      "documentId": "Rail_Consignment_Note",
+      "documentName": "Rail Consignment Note",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "136",
+      "entityName": "Consignee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "338",
+      "documentId": "Rail_Consignment_Note",
+      "documentName": "Rail Consignment Note",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "135",
+      "entityName": "Consignor",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "339",
+      "documentId": "Rail_Consignment_Note",
+      "documentName": "Rail Consignment Note",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "50",
+      "entityName": "Gross Weight",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "340",
+      "documentId": "Rail_Consignment_Note",
+      "documentName": "Rail Consignment Note",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "129",
+      "entityName": "Description of Goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    }
+  ]
+}

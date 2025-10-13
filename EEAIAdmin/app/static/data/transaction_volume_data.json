@@ -1,0 +1,72 @@
+{
+    "1D": {
+        "data": [
+            {"name": "IMCO", "y": 45, "value": 8500000, "drilldown": "IMCO"},
+            {"name": "IMLC", "y": 72, "value": 15200000, "drilldown": "IMLC"},
+            {"name": "INFI", "y": 12, "value": 3400000, "drilldown": "INFI"},
+            {"name": "MESG", "y": 28, "value": 6700000, "drilldown": "MESG"},
+            {"name": "OWGT", "y": 35, "value": 9100000, "drilldown": "OWGT"},
+            {"name": "SHGT", "y": 18, "value": 4200000, "drilldown": "SHGT"}
+        ],
+        "period": {
+            "start": "2024-01-30",
+            "end": "2024-01-31"
+        }
+    },
+    "1W": {
+        "data": [
+            {"name": "IMCO", "y": 187, "value": 41465111, "drilldown": "IMCO"},
+            {"name": "IMLC", "y": 362, "value": 95000000, "drilldown": "IMLC"},
+            {"name": "INFI", "y": 98, "value": 25600000, "drilldown": "INFI"},
+            {"name": "MESG", "y": 156, "value": 38900000, "drilldown": "MESG"},
+            {"name": "OWGT", "y": 145, "value": 32100000, "drilldown": "OWGT"},
+            {"name": "SHGT", "y": 89, "value": 19800000, "drilldown": "SHGT"}
+        ],
+        "period": {
+            "start": "2024-01-24",
+            "end": "2024-01-31"
+        }
+    },
+    "1M": {
+        "data": [
+            {"name": "IMCO", "y": 789, "value": 185000000, "drilldown": "IMCO"},
+            {"name": "IMLC", "y": 1456, "value": 5000036735852, "drilldown": "IMLC"},
+            {"name": "INFI", "y": 423, "value": 98700000, "drilldown": "INFI"},
+            {"name": "MESG", "y": 678, "value": 156800000, "drilldown": "MESG"},
+            {"name": "OWGT", "y": 567, "value": 134500000, "drilldown": "OWGT"},
+            {"name": "SHGT", "y": 345, "value": 87600000, "drilldown": "SHGT"}
+        ],
+        "period": {
+            "start": "2024-01-01",
+            "end": "2024-01-31"
+        }
+    },
+    "3M": {
+        "data": [
+            {"name": "IMCO", "y": 2145, "value": 567000000, "drilldown": "IMCO"},
+            {"name": "IMLC", "y": 3892, "value": 15000000000, "drilldown": "IMLC"},
+            {"name": "INFI", "y": 1234, "value": 298000000, "drilldown": "INFI"},
+            {"name": "MESG", "y": 1987, "value": 478000000, "drilldown": "MESG"},
+            {"name": "OWGT", "y": 1678, "value": 398000000, "drilldown": "OWGT"},
+            {"name": "SHGT", "y": 1023, "value": 256000000, "drilldown": "SHGT"}
+        ],
+        "period": {
+            "start": "2023-11-01",
+            "end": "2024-01-31"
+        }
+    },
+    "1Y": {
+        "data": [
+            {"name": "IMCO", "y": 8456, "value": 2340000000, "drilldown": "IMCO"},
+            {"name": "IMLC", "y": 15234, "value": 58000000000, "drilldown": "IMLC"},
+            {"name": "INFI", "y": 4567, "value": 1234000000, "drilldown": "INFI"},
+            {"name": "MESG", "y": 7890, "value": 1987000000, "drilldown": "MESG"},
+            {"name": "OWGT", "y": 6543, "value": 1678000000, "drilldown": "OWGT"},
+            {"name": "SHGT", "y": 4321, "value": 1098000000, "drilldown": "SHGT"}
+        ],
+        "period": {
+            "start": "2023-02-01",
+            "end": "2024-01-31"
+        }
+    }
+}

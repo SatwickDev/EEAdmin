@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finstack AI - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%);
+            --treasury-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --cash-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            --bg-color: #ffffff;
+            --text-color: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(255, 255, 255, 0.18);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+            padding-top: 120px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top, #f0f9ff 0%, transparent 70%),
+                        radial-gradient(ellipse at bottom, #fef3c7 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        /* Modern Floating Header styles are imported from floating-header.css */
+        
+        /* Animation keyframes are imported from floating-header.css */
+
+
+
+
+        /* Brand Section */
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-container {
+            position: relative;
+        }
+
+        .modern-logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        .modern-logo:hover {
+            transform: scale(1.05) rotate(2deg);
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .status-pulse {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .brand-info h1 {
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            margin: 0 !important;
+            background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-info p {
+            font-size: 13px !important;
+            color: rgba(100, 116, 139, 0.8) !important;
+            margin: 0 !important;
+            font-weight: 500 !important;
+        }
+
+        .brand-title {
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            margin: 0 !important;
+            background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+            font-size: 13px !important;
+            color: rgba(100, 116, 139, 0.8) !important;
+            margin: 0 !important;
+            font-weight: 500 !important;
+        }
+
+        /* Navigation Pills */
+        .nav-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 4px;
+        }
+
+        .nav-pill {
+            display: flex !important;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none !important;
+            color: rgba(100, 116, 139, 0.8) !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(30, 41, 59, 0.9) !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-pill.active {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #1e293b !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-pill i {
+            font-size: 16px;
+        }
+
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-indicator-modern {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #10b981;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .action-button {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 10px 18px !important;
+            border-radius: 12px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-button.primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+        }
+
+        .action-button.secondary {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #374151 !important;
+            border: 1px solid rgba(229, 231, 235, 0.8) !important;
+        }
+
+        .action-button.secondary:hover {
+            background: rgba(255, 255, 255, 1) !important;
+            color: #1f2937 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            max-width: 1400px;
+            margin: 120px auto 0;
+            padding: 40px 30px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .welcome-section h2 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .welcome-section p {
+            font-size: 17px;
+            color: rgba(226, 232, 240, 0.9);
+            font-weight: 500;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Repository Tiles Container */
+        .tiles-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .tiles-container .repo-tile:nth-child(1) {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+        
+        .tiles-container .repo-tile:nth-child(2) {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+        
+        .tiles-container .repo-tile:nth-child(3) {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        /* Repository Tile */
+        .repo-tile {
+            background: #ffffff;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .repo-tile:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+            background: #ffffff;
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .repo-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+        }
+
+        .repo-tile.trade-finance::before {
+            background: var(--primary-gradient);
+        }
+
+        .repo-tile.treasury::before {
+            background: var(--treasury-gradient);
+        }
+
+        .repo-tile.cash-management::before {
+            background: var(--cash-gradient);
+        }
+
+        .tile-header {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .tile-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tile-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+            opacity: 0;
+        }
+        
+        .repo-tile:hover .tile-icon::after {
+            animation: shimmer 0.6s ease;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        .trade-finance .tile-icon {
+            background: var(--primary-gradient);
+        }
+
+        .treasury .tile-icon {
+            background: var(--treasury-gradient);
+        }
+
+        .cash-management .tile-icon {
+            background: var(--cash-gradient);
+        }
+
+        .tile-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .tile-description {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .tile-features {
+            padding: 0 30px 30px;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            color: var(--text-color);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .trade-finance .feature-list i {
+            color: #667eea;
+        }
+
+        .treasury .feature-list i {
+            color: #10b981;
+        }
+
+        .cash-management .feature-list i {
+            color: #3b82f6;
+        }
+
+        .tile-action {
+            padding: 20px 30px;
+            background: #f8fafc;
+            text-align: center;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .action-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .trade-finance .action-btn {
+            background: var(--primary-gradient);
+        }
+
+        .treasury .action-btn {
+            background: var(--treasury-gradient);
+        }
+
+        .cash-management .action-btn {
+            background: var(--cash-gradient);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .action-btn span,
+        .action-btn i {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Statistics Section - Hidden */
+        .stats-section {
+            display: none !important;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            padding: 35px;
+            margin-bottom: 50px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+
+        .stats-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            letter-spacing: -0.3px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Chatbot Icon - Hidden */
+        .chatbot-icon {
+            display: none !important;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            animation: float 3s ease-in-out infinite;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .chatbot-icon:hover {
+            transform: scale(1.15) rotate(10deg);
+            animation: none;
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5);
+        }
+        
+        .chatbot-icon:active {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .chatbot-icon i {
+            color: white;
+            font-size: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .chat-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Chatbot Overlay Container */
+        .chatbot-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chatbot-overlay.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .chatbot-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 450px;
+            height: 650px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            animation: slideUpBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes slideUpBounce {
+            0% {
+                transform: translateY(100px) scale(0.9);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(-10px) scale(1.02);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chatbot-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chatbot-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chatbot-header h3 i {
+            font-size: 20px;
+        }
+
+        .chatbot-close {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chatbot-close:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1) rotate(90deg);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .chatbot-iframe {
+            flex: 1;
+            border: none;
+            border-radius: 0 0 24px 24px;
+            background: transparent;
+        }
+
+        /* Quick Actions - Hidden */
+        .quick-actions {
+            display: none !important;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        .quick-actions h3 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            letter-spacing: -0.3px;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .quick-action-btn {
+            padding: 20px;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quick-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 14px;
+        }
+
+        .quick-action-btn i {
+            font-size: 28px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .quick-action-btn span {
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.15);
+        }
+        
+        .quick-action-btn:hover::before {
+            opacity: 0.05;
+        }
+        
+        .quick-action-btn:hover i {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Trade Finance Sub-tiles Container */
+        .sub-tiles-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1500;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .sub-tiles-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sub-tiles-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 28px;
+            padding: 45px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUpBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+        }
+
+        .sub-tiles-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .sub-tiles-header h2 {
+            font-size: 32px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .sub-tiles-header p {
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .sub-tiles-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sub-tiles-close:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .sub-tiles-close i {
+            font-size: 20px;
+            color: var(--text-color);
+        }
+
+        .sub-tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .sub-tile {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sub-tile:hover {
+            background: rgba(255, 255, 255, 0.98);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .sub-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sub-tile:hover::before {
+            transform: scaleX(1);
+        }
+
+        .sub-tile-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: white;
+            background: var(--primary-gradient);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sub-tile-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+            opacity: 0;
+        }
+        
+        .sub-tile:hover .sub-tile-icon::after {
+            animation: shimmer 0.6s ease;
+        }
+
+        .sub-tile-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .sub-tile-description {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .sub-tile-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .sub-tile-features li {
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sub-tile-features i {
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .sub-tile-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sub-tile-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sub-tile-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .sub-tile-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .sub-tile-btn:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+        
+        .sub-tile-btn span,
+        .sub-tile-btn i {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Responsive Design */
+        /* Mobile Responsiveness from index.html */
+        @media (max-width: 1200px) {
+            .nav-pills {
+                gap: 4px;
+            }
+            
+            .nav-pill {
+                padding: 6px 12px;
+                font-size: 12px !important;
+            }
+            
+            .nav-pill span {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .floating-header {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+            }
+            
+            .floating-header-content {
+                padding: 12px 20px;
+            }
+            
+            .brand-info p,
+            .brand-subtitle {
+                display: none !important;
+            }
+            
+            .nav-pills {
+                display: none;
+            }
+            
+            .header-actions {
+                gap: 8px;
+            }
+            
+            .action-button span {
+                display: none !important;
+            }
+            
+            .action-button {
+                padding: 8px 12px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .status-indicator-modern {
+                display: none;
+            }
+            
+            .brand-info h1,
+            .brand-title {
+                font-size: 20px !important;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .tiles-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chatbot-window {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chatbot-window {
+                height: 80vh;
+                bottom: 10px;
+            }
+            
+            .sub-tiles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sub-tiles-container {
+                width: 95%;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Select Your Service Area</h2>
+            <p>Choose from our comprehensive financial services to get started</p>
+        </div>
+
+        <!-- Repository Tiles -->
+        <div class="tiles-container">
+            <!-- Trade Finance Tile -->
+            <div class="repo-tile trade-finance" onclick="showTradeFinanceOptions()">
+                <div class="tile-header">
+                    <div class="tile-icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <h3 class="tile-title">Trade Finance</h3>
+                    <p class="tile-description">
+                        Comprehensive trade finance solutions for import/export operations
+                    </p>
+                </div>
+                <div class="tile-features">
+                    <ul class="feature-list">
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Import & Export Letters of Credit</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Bank Guarantees & Standby LC</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Documentary Collections</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Trade Document Management</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>SWIFT Messaging & Compliance</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tile-action">
+                    <button class="action-btn">
+                        <span>Open Trade Finance</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Treasury Tile -->
+            <div class="repo-tile treasury" onclick="navigateToForm('treasury')">
+                <div class="tile-header">
+                    <div class="tile-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="tile-title">Treasury Management</h3>
+                    <p class="tile-description">
+                        Advanced treasury and risk management solutions
+                    </p>
+                </div>
+                <div class="tile-features">
+                    <ul class="feature-list">
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Foreign Exchange Trading</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Investment Management</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Derivatives & Hedging</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Risk Assessment & VAR</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Portfolio Analytics</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tile-action">
+                    <button class="action-btn">
+                        <span>Open Treasury</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cash Management Tile -->
+            <div class="repo-tile cash-management" onclick="navigateToForm('cash_management')">
+                <div class="tile-header">
+                    <div class="tile-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3 class="tile-title">Cash Management</h3>
+                    <p class="tile-description">
+                        Optimize liquidity and streamline payment operations
+                    </p>
+                </div>
+                <div class="tile-features">
+                    <ul class="feature-list">
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Payment Processing & Transfers</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Collections & Receivables</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Cash Position & Liquidity</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Cash Pooling & Netting</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <span>Cash Flow Forecasting</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tile-action">
+                    <button class="action-btn">
+                        <span>Open Cash Management</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-section">
+            <h3 class="stats-title">Today's Overview</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTransactions">247</div>
+                    <div class="stat-label">Total Transactions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="activeLC">42</div>
+                    <div class="stat-label">Active LCs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalVolume">$12.5M</div>
+                    <div class="stat-label">Transaction Volume</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="pendingApprovals">8</div>
+                    <div class="stat-label">Pending Approvals</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="openChatbotWithContext('create_transaction')">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>New Transaction</span>
+                </button>
+                <button class="quick-action-btn" onclick="openChatbotWithContext('check_status')">
+                    <i class="fas fa-search"></i>
+                    <span>Check Status</span>
+                </button>
+                <button class="quick-action-btn" onclick="openChatbotWithContext('reports')">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </button>
+                <button class="quick-action-btn" onclick="openChatbotWithContext('help')">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Get Help</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Icon -->
+    <div class="chatbot-icon" onclick="toggleChatbot()">
+        <i class="fas fa-comments"></i>
+        <span class="chat-badge" id="chatBadge" style="display: none;">1</span>
+    </div>
+
+    <!-- Trade Finance Sub-tiles Overlay -->
+    <div id="subTilesOverlay" class="sub-tiles-overlay" onclick="closeSubTilesOnOverlay(event)">
+        <div class="sub-tiles-container" onclick="event.stopPropagation()">
+            <button class="sub-tiles-close" onclick="closeSubTiles()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="sub-tiles-header">
+                <h2>Trade Finance Services</h2>
+                <p>Select the type of trade finance service you need</p>
+            </div>
+            <div class="sub-tiles-grid">
+                <!-- Import Letter of Credit Tile -->
+                <div class="sub-tile" onclick="navigateToForm('import_lc')">
+                    <div class="sub-tile-icon">
+                        <i class="fas fa-file-import"></i>
+                    </div>
+                    <h3 class="sub-tile-title">Import Letter of Credit</h3>
+                    <p class="sub-tile-description">
+                        Secure payment method for importing goods with bank guarantee
+                    </p>
+                    <ul class="sub-tile-features">
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Document verification</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Payment guarantee</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>International compliance</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>SWIFT messaging</span>
+                        </li>
+                    </ul>
+                    <div class="sub-tile-action">
+                        <button class="sub-tile-btn">
+                            <span>Open Import LC</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Guarantee Form Tile -->
+                <div class="sub-tile" onclick="navigateToForm('guarantee_form')">
+                    <div class="sub-tile-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="sub-tile-title">Bank Guarantee Form</h3>
+                    <p class="sub-tile-description">
+                        Provide financial guarantees for various business requirements
+                    </p>
+                    <ul class="sub-tile-features">
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Performance guarantee</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Bid bond guarantee</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Financial guarantee</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Advance payment guarantee</span>
+                        </li>
+                    </ul>
+                    <div class="sub-tile-action">
+                        <button class="sub-tile-btn">
+                            <span>Open Guarantee Form</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Overlay -->
+    <div id="chatbotOverlay" class="chatbot-overlay" onclick="closeChatbotOnOverlay(event)">
+        <div class="chatbot-window" onclick="event.stopPropagation()">
+            <div class="chatbot-header">
+                <h3>
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant</span>
+                </h3>
+                <button class="chatbot-close" onclick="closeChatbot()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <iframe id="chatbotFrame" class="chatbot-iframe" src="/ai_chat_modern"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Show Trade Finance sub-tiles
+        function showTradeFinanceOptions() {
+            const overlay = document.getElementById('subTilesOverlay');
+            overlay.classList.add('active');
+        }
+
+        // Close sub-tiles overlay
+        function closeSubTiles() {
+            const overlay = document.getElementById('subTilesOverlay');
+            overlay.classList.remove('active');
+        }
+
+        // Close sub-tiles when clicking overlay
+        function closeSubTilesOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeSubTiles();
+            }
+        }
+
+        // Navigation to forms
+        function navigateToForm(repository) {
+            // Close sub-tiles if open
+            closeSubTiles();
+            
+            // Store selected repository
+            sessionStorage.setItem('selectedRepository', repository);
+            
+            // Navigate to appropriate form based on repository
+            const formUrls = {
+                'import_lc': '/trade_finance_lc_form',
+                'guarantee_form': '/bank_guarantee_form',
+                'trade_finance': '/trade_finance_lc_form',
+                'treasury': '/treasury_management_form',
+                'cash_management': '/cash_management_form'
+            };
+            
+            const url = formUrls[repository];
+            if (url) {
+                window.location.href = url;
+            }
+        }
+
+        // Toggle chatbot overlay
+        function toggleChatbot() {
+            const overlay = document.getElementById('chatbotOverlay');
+            const isActive = overlay.classList.contains('active');
+            
+            if (isActive) {
+                closeChatbot();
+            } else {
+                openChatbot();
+            }
+        }
+
+        // Open chatbot
+        function openChatbot() {
+            const overlay = document.getElementById('chatbotOverlay');
+            overlay.classList.add('active');
+            
+            // Hide badge when opening
+            const badge = document.getElementById('chatBadge');
+            badge.style.display = 'none';
+            
+            // Send message to iframe about opening
+            const iframe = document.getElementById('chatbotFrame');
+            setTimeout(() => {
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'chatbot_opened',
+                        timestamp: new Date().toISOString()
+                    }, '*');
+                }
+            }, 300);
+        }
+
+        // Close chatbot
+        function closeChatbot() {
+            const overlay = document.getElementById('chatbotOverlay');
+            overlay.classList.remove('active');
+        }
+
+        // Close chatbot when clicking overlay
+        function closeChatbotOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeChatbot();
+            }
+        }
+
+        // Open chatbot with specific context
+        function openChatbotWithContext(context) {
+            openChatbot();
+            
+            // Send context to chatbot
+            setTimeout(() => {
+                const iframe = document.getElementById('chatbotFrame');
+                if (iframe && iframe.contentWindow) {
+                    const contextMessages = {
+                        'create_transaction': 'I want to create a new transaction',
+                        'check_status': 'I want to check transaction status',
+                        'reports': 'I need to generate a report',
+                        'help': 'I need help'
+                    };
+                    
+                    iframe.contentWindow.postMessage({
+                        type: 'set_context',
+                        context: context,
+                        message: contextMessages[context] || 'How can I help you?'
+                    }, '*');
+                }
+            }, 500);
+        }
+
+        // Listen for messages from chatbot
+        window.addEventListener('message', function(event) {
+            if (event.data) {
+                switch(event.data.type) {
+                    case 'show_notification':
+                        // Show badge with notification count
+                        const badge = document.getElementById('chatBadge');
+                        if (event.data.count > 0) {
+                            badge.textContent = event.data.count;
+                            badge.style.display = 'flex';
+                        }
+                        break;
+                        
+                    case 'navigate_to_repository':
+                        // Navigate to specific repository form
+                        navigateToForm(event.data.repository);
+                        break;
+                        
+                    case 'update_stats':
+                        // Update statistics
+                        updateStatistics();
+                        break;
+                }
+            }
+        });
+
+        // Update statistics (mock data for demo)
+        function updateStatistics() {
+            // This would normally fetch from backend
+            const stats = {
+                totalTransactions: Math.floor(Math.random() * 500) + 100,
+                activeLC: Math.floor(Math.random() * 100) + 20,
+                totalVolume: `$${(Math.random() * 50 + 5).toFixed(1)}M`,
+                pendingApprovals: Math.floor(Math.random() * 20) + 1
+            };
+            
+            document.getElementById('totalTransactions').textContent = stats.totalTransactions;
+            document.getElementById('activeLC').textContent = stats.activeLC;
+            document.getElementById('totalVolume').textContent = stats.totalVolume;
+            document.getElementById('pendingApprovals').textContent = stats.pendingApprovals;
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set user name
+            const userName = localStorage.getItem('userName') || 'User';
+            document.getElementById('userName').textContent = `Welcome, ${userName}`;
+            
+            // Update statistics
+            updateStatistics();
+            
+            // Refresh statistics every 30 seconds
+            setInterval(updateStatistics, 30000);
+            
+            // Add keyboard shortcut for chatbot (Ctrl+Shift+C)
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                    e.preventDefault();
+                    toggleChatbot();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+    "Customs Declaration": {
+        "Declaration Details": [
+            "Declaration Number",
+            "Date of Declaration",
+            "Type (Import/Export)",
+            "Customs Office/Port",
+            "Reference Number",
+            "Declaration Status"
+        ],
+        "Declarant & Parties Involved": [
+            "Declarant Name and Address",
+            "IEC Code",
+            "GSTIN",
+            "Consignee Name",
+            "Consignor Name",
+            "Customs Broker/CHA Name and Code"
+        ],
+        "Goods & Shipment Details": [
+            "Invoice Number",
+            "Invoice Date",
+            "Description of Goods",
+            "HS Code",
+            "Country of Origin",
+            "Country of Destination",
+            "Gross Weight",
+            "Net Weight",
+            "Quantity",
+            "UOM",
+            "Packaging Details"
+        ],
+        "Transport & Delivery": [
+            "Mode of Transport",
+            "Vessel/Flight/Vehicle Number",
+            "Port of Loading",
+            "Port of Discharge",
+            "Place of Delivery",
+            "Container Number (if any)"
+        ],
+        "Financial & Duty Information": [
+            "Currency",
+            "Invoice Value",
+            "Assessed Value",
+            "Duty Amount",
+            "Tax Details (IGST, CESS, etc.)",
+            "Exemptions Claimed",
+            "Bank Remittance/FIRC Number"
+        ],
+        "Signatures & Verification": [
+            "Declarant\u2019s Signature",
+            "Authorized CHA Signature",
+            "Customs Officer Signature",
+            "Date and Seal"
+        ]
+    }
+}

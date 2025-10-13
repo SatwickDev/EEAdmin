@@ -1,0 +1,82 @@
+[
+  {
+    "pool_type": "ZERO_BALANCING",
+    "sweep_direction": "TO_HEADER",
+    "currency": "USD",
+    "interest_rate": 0.02,
+    "participants": [
+      {
+        "name": "Company A",
+        "active": true,
+        "balance": 10000
+      },
+      {
+        "name": "Company B",
+        "active": false,
+        "balance": 5000
+      }
+    ],
+    "start_date": "2023-01-01",
+    "end_date": "2025-07-29"
+  },
+  {
+    "pool_type": "TARGET_BALANCING",
+    "sweep_direction": "FROM_HEADER",
+    "currency": "EUR",
+    "interest_rate": 0.015,
+    "participants": [
+      {
+        "name": "Company C",
+        "active": true,
+        "balance": 8000
+      },
+      {
+        "name": "Company D",
+        "active": true,
+        "balance": 12000
+      }
+    ],
+    "start_date": "2023-01-01",
+    "end_date": "2025-07-29"
+  },
+  {
+    "pool_type": "THRESHOLD_POOLING",
+    "sweep_direction": "TO_HEADER",
+    "currency": "JPY",
+    "interest_rate": 0.01,
+    "participants": [
+      {
+        "name": "Company E",
+        "active": false,
+        "balance": 7000
+      },
+      {
+        "name": "Company F",
+        "active": true,
+        "balance": 15000
+      }
+    ],
+    "start_date": "2023-01-01",
+    "end_date": "2025-07-29"
+  },
+  {
+    "pool_type": "ZERO_BALANCING",
+    "sweep_direction": "FROM_HEADER",
+    "currency": "GBP",
+    "interest_rate": 0.025,
+    "participants": [
+      {
+        "name": "Company G",
+        "active": true,
+        "balance": 11000
+      },
+      {
+        "name": "Company H",
+        "active": true,
+        "balance": 9000
+      }
+    ],
+    "start_date": "2023-01-01",
+    "end_date": "2025-07-29"
+  }
+]

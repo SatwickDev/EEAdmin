@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Finance Services</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --bg-color: #f8f9fa;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --card-bg: white;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            min-height: 100vh;
+            padding-top: 120px;
+        }
+
+        /* Removed duplicate header styles - using global floating header */
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        /* Service Tiles Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        /* Service Tile */
+        .service-tile {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .service-tile:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .service-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--primary-gradient);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-gradient);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            font-size: 36px;
+            color: white;
+        }
+
+        .service-tile h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        .service-description {
+            color: #6b7280;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .service-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .service-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .service-features i {
+            color: #10b981;
+            font-size: 16px;
+        }
+
+        .service-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .service-action:hover {
+            gap: 15px;
+        }
+
+        /* Additional Services Section */
+        .additional-services {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            margin-top: 60px;
+        }
+
+        .additional-services h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .service-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .service-card {
+            padding: 25px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .service-card:hover {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            transform: translateY(-5px);
+        }
+
+        .service-card i {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .service-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .service-card p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .service-tile {
+                padding: 30px;
+            }
+
+            .additional-services {
+                padding: 30px;
+            }
+
+            .service-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Main Service Tiles -->
+        <div class="services-grid">
+            <!-- Import LC Tile -->
+            <a href="/trade_finance_lc_form" class="service-tile">
+                <div class="service-icon">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <h2>Import Letter of Credit</h2>
+                <p class="service-description">
+                    Create and manage import LC transactions with complete document processing and SWIFT compliance
+                </p>
+                <ul class="service-features">
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        SWIFT MT700 Format Support
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        UCP600 Compliance Validation
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Document Management & Tracking
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Auto-fill with AI Assistant
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Real-time Status Updates
+                    </li>
+                </ul>
+                <div class="service-action">
+                    Open Import LC Form
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <!-- Bank Guarantee Tile -->
+            <a href="/trade_finance_guarantee_form" class="service-tile">
+                <div class="service-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Bank Guarantee</h2>
+                <p class="service-description">
+                    Issue and manage various types of bank guarantees with complete workflow automation
+                </p>
+                <ul class="service-features">
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Performance & Financial Guarantees
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        URDG758 Compliance
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Risk Assessment & Analysis
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Digital Workflow Management
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Automated Notifications
+                    </li>
+                </ul>
+                <div class="service-action">
+                    Open Guarantee Form
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- Additional Services -->
+        <div class="additional-services">
+            <h2>Additional Trade Finance Services</h2>
+            <div class="service-cards">
+                <a href="/export_lc_form" class="service-card">
+                    <i class="fas fa-file-export"></i>
+                    <h3>Export LC</h3>
+                    <p>Process export letters of credit and manage documentation</p>
+                </a>
+                <a href="/bills_collection" class="service-card">
+                    <i class="fas fa-file-invoice"></i>
+                    <h3>Bills Collection</h3>
+                    <p>Manage documentary and clean collections</p>
+                </a>
+                <a href="/trade_loans" class="service-card">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <h3>Trade Loans</h3>
+                    <p>Pre and post shipment financing solutions</p>
+                </a>
+                <a href="/compliance_check" class="service-card">
+                    <i class="fas fa-clipboard-check"></i>
+                    <h3>Compliance Check</h3>
+                    <p>Verify documents against UCP600 and SWIFT standards</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button for AI Assistant -->
+    <div class="fab-container">
+        <div class="fab" onclick="openAIAssistant()">
+            <i class="fas fa-robot"></i>
+        </div>
+    </div>
+
+    <script>
+        // Open AI Assistant with Trade Finance context
+        function openAIAssistant() {
+            // Open AI chat with trade finance repository context
+            const url = '/ai_chat_modern?repository_id=trade_finance&repository_name=Trade Finance&source=trade_finance_dashboard';
+            window.open(url, 'AI_Assistant', 'width=800,height=600');
+        }
+
+        // Add hover effect for service tiles
+        document.querySelectorAll('.service-tile').forEach(tile => {
+            tile.addEventListener('mouseenter', function() {
+                const icon = this.querySelector('.service-icon');
+                icon.style.transform = 'scale(1.1)';
+            });
+            
+            tile.addEventListener('mouseleave', function() {
+                const icon = this.querySelector('.service-icon');
+                icon.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

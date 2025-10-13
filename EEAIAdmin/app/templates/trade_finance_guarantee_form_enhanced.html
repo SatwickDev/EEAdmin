@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Finance - Bank Guarantee with Compliance Vetting</title>
+    
+    <!-- CSS Dependencies -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CKEditor 5 for rich text editing -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --bg-color: #f8f9fa;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --focus-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 30px;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-brand i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .nav-brand h1 {
+            font-size: 20px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 15px;
+        }
+
+        /* Form Container */
+        .form-container {
+            padding: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--focus-shadow);
+        }
+
+        /* CKEditor Container */
+        .editor-container {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .editor-container.editor-focused {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .editor-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Compliance Section */
+        .compliance-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 10px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .compliance-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .compliance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .results-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .metric-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Severity Badges */
+        .severity-high {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .severity-medium {
+            background: #fef3c7;
+            color: #d97706;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .severity-low {
+            background: #d1fae5;
+            color: #059669;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Loading Modal */
+        .loader-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .spinner {
+            font-size: 48px;
+            color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-color);
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        /* Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            padding: 20px 0;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div class="nav-content">
+            <div class="nav-brand">
+                <i class="fas fa-shield-alt"></i>
+                <h1>Trade Finance - Bank Guarantee with Compliance</h1>
+            </div>
+            <div class="nav-actions">
+                <button class="btn btn-secondary" onclick="saveDraft()">
+                    <i class="fas fa-save"></i> Save Draft
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='/forms_dashboard'">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Bank Guarantee Application</h1>
+                <p>Complete the form below and run compliance vetting before submission</p>
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container">
+                <form id="guaranteeForm">
+                    <!-- Basic Information -->
+                    <h3 class="mb-4">Basic Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="guaranteeNumber">Guarantee Number</label>
+                            <input type="text" class="form-control" id="guaranteeNumber" name="guaranteeNumber" placeholder="Auto-generated">
+                        </div>
+                        <div class="form-group">
+                            <label for="issueDate">Issue Date</label>
+                            <input type="date" class="form-control" id="issueDate" name="issueDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expiryDate">Expiry Date</label>
+                            <input type="date" class="form-control" id="expiryDate" name="expiryDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Guarantee Amount</label>
+                            <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="currency">Currency</label>
+                            <select class="form-control" id="currency" name="currency" required>
+                                <option value="">Select Currency</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="JPY">JPY - Japanese Yen</option>
+                                <option value="INR">INR - Indian Rupee</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="guaranteeType">Guarantee Type</label>
+                            <select class="form-control" id="guaranteeType" name="guaranteeType" required>
+                                <option value="">Select Type</option>
+                                <option value="performance">Performance Guarantee</option>
+                                <option value="advance_payment">Advance Payment Guarantee</option>
+                                <option value="bid_bond">Bid Bond</option>
+                                <option value="retention">Retention Money Guarantee</option>
+                                <option value="financial">Financial Guarantee</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Parties Information -->
+                    <h3 class="mb-4 mt-4">Parties Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="applicant">Applicant Name</label>
+                            <input type="text" class="form-control" id="applicant" name="applicant" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="applicantAddress">Applicant Address</label>
+                            <input type="text" class="form-control" id="applicantAddress" name="applicantAddress" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="beneficiary">Beneficiary Name</label>
+                            <input type="text" class="form-control" id="beneficiary" name="beneficiary" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="beneficiaryAddress">Beneficiary Address</label>
+                            <input type="text" class="form-control" id="beneficiaryAddress" name="beneficiaryAddress" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="issuingBank">Issuing Bank</label>
+                            <input type="text" class="form-control" id="issuingBank" name="issuingBank" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="advisingBank">Advising Bank (if any)</label>
+                            <input type="text" class="form-control" id="advisingBank" name="advisingBank">
+                        </div>
+                    </div>
+
+                    <!-- Guarantee Terms -->
+                    <h3 class="mb-4 mt-4">Guarantee Terms and Conditions</h3>
+                    <div class="editor-container">
+                        <div class="editor-header">
+                            <div class="editor-title">
+                                <i class="mdi mdi-file-document-edit"></i>
+                                Guarantee Wording
+                            </div>
+                            <div class="editor-actions">
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="clearEditor()">
+                                    <i class="mdi mdi-delete"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                        <div id="guaranteeEditor"></div>
+                        <input type="hidden" id="guaranteeTerms" name="guaranteeTerms">
+                    </div>
+
+                    <!-- Compliance Section -->
+                    <div class="compliance-section">
+                        <h3 class="mb-3">
+                            <i class="mdi mdi-shield-check"></i> Compliance Vetting
+                        </h3>
+                        <p class="text-gray-600 mb-4">Run AI-powered compliance analysis on your guarantee text before submission</p>
+                        <button type="button" class="compliance-btn" onclick="runComplianceCheck()">
+                            <i class="mdi mdi-robot"></i>
+                            Run Compliance Analysis
+                        </button>
+                    </div>
+
+                    <!-- Results Section (Initially Hidden) -->
+                    <div id="resultsSection" class="results-section">
+                        <div class="results-header">
+                            <div class="results-title">
+                                <i class="mdi mdi-file-check"></i>
+                                Compliance Analysis Results
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="hideResults()">
+                                <i class="mdi mdi-close"></i> Close
+                            </button>
+                        </div>
+
+                        <!-- Metrics -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <i class="mdi mdi-shield-check metric-icon" style="color: var(--primary-color);"></i>
+                                <div id="complianceScore" class="metric-value">-</div>
+                                <div class="metric-label">Compliance Score</div>
+                            </div>
+                            <div class="metric-card">
+                                <i class="mdi mdi-alert-circle metric-icon" style="color: var(--error-color);"></i>
+                                <div id="highRiskCount" class="metric-value">-</div>
+                                <div class="metric-label">High Risk</div>
+                            </div>
+                            <div class="metric-card">
+                                <i class="mdi mdi-alert metric-icon" style="color: var(--warning-color);"></i>
+                                <div id="mediumRiskCount" class="metric-value">-</div>
+                                <div class="metric-label">Medium Risk</div>
+                            </div>
+                            <div class="metric-card">
+                                <i class="mdi mdi-check-circle metric-icon" style="color: var(--success-color);"></i>
+                                <div id="lowRiskCount" class="metric-value">-</div>
+                                <div class="metric-label">Low Risk</div>
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="alert alert-info" id="complianceSummary">
+                            <!-- Summary will be inserted here -->
+                        </div>
+
+                        <!-- Detailed Results Tabs -->
+                        <div class="nav-tabs" id="resultTabs">
+                            <button class="nav-tab active" onclick="switchTab('findings')">
+                                <i class="mdi mdi-magnify"></i> Findings
+                            </button>
+                            <button class="nav-tab" onclick="switchTab('recommendations')">
+                                <i class="mdi mdi-lightbulb"></i> Recommendations
+                            </button>
+                            <button class="nav-tab" onclick="switchTab('articles')">
+                                <i class="mdi mdi-book-open"></i> Applicable Rules
+                            </button>
+                        </div>
+
+                        <div class="tab-content">
+                            <div id="findingsTab" class="tab-pane active">
+                                <!-- Findings will be inserted here -->
+                            </div>
+                            <div id="recommendationsTab" class="tab-pane">
+                                <!-- Recommendations will be inserted here -->
+                            </div>
+                            <div id="articlesTab" class="tab-pane">
+                                <!-- Articles will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit Guarantee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loader" class="loader-modal">
+        <div class="loader-content">
+            <i class="mdi mdi-loading spinner"></i>
+            <h3 id="loadingText" style="margin-top: 20px; color: var(--text-color);">Analyzing compliance...</h3>
+            <p id="loadingSubtext" style="color: #718096; font-size: 14px; margin-top: 10px;">AI is processing your document</p>
+        </div>
+    </div>
+
+    <!-- Message Container -->
+    <div id="messageContainer" style="position: fixed; top: 80px; right: 20px; z-index: 1000;"></div>
+
+    <script>
+        let editorInstance = null;
+        let currentComplianceData = null;
+
+        // Initialize CKEditor
+        ClassicEditor.create(document.querySelector('#guaranteeEditor'), {
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'link', 'blockQuote', '|',
+                    'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+                    'insertTable', '|',
+                    'undo', 'redo'
+                ]
+            },
+            placeholder: 'Enter your guarantee text here for AI-powered compliance analysis...',
+            language: 'en'
+        })
+        .then(editor => {
+            editorInstance = editor;
+            
+            // Update hidden field when editor content changes
+            editor.model.document.on('change:data', () => {
+                document.getElementById('guaranteeTerms').value = editor.getData();
+            });
+
+            // Add focus effects
+            editor.editing.view.document.on('focus', () => {
+                document.querySelector('.editor-container').classList.add('editor-focused');
+            });
+
+            editor.editing.view.document.on('blur', () => {
+                document.querySelector('.editor-container').classList.remove('editor-focused');
+            });
+
+            // Load draft if exists
+            loadDraft();
+        })
+        .catch(error => {
+            console.error('Error initializing editor:', error);
+            showMessage('Failed to initialize editor. Please refresh the page.', 'error');
+        });
+
+        // Clear Editor
+        function clearEditor() {
+            if (editorInstance && confirm('Are you sure you want to clear all content?')) {
+                editorInstance.setData('');
+            }
+        }
+
+        // Run Compliance Check
+        async function runComplianceCheck() {
+            if (!editorInstance) {
+                showMessage('Editor not initialized. Please refresh the page.', 'error');
+                return;
+            }
+
+            const guaranteeText = editorInstance.getData().replace(/<[^>]+>/g, '').trim();
+            
+            if (!guaranteeText) {
+                showMessage('Please enter guarantee terms before running compliance check', 'warning');
+                return;
+            }
+
+            // Show loader
+            showLoader('Analyzing compliance requirements...');
+
+            try {
+                // First, check against vetting rules
+                const vettingResponse = await fetch('/api/vetting/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        guarantee_text: guaranteeText
+                    })
+                });
+                
+                let vettingResults = null;
+                if (vettingResponse.ok) {
+                    const vettingData = await vettingResponse.json();
+                    if (vettingData.vetting_result) {
+                        vettingResults = vettingData.vetting_result;
+                    }
+                }
+
+                // Prepare data for compliance check
+                const data = {
+                    fields: [{
+                        label: "guarantee_wording",
+                        value: guaranteeText,
+                        description: "Full guarantee text"
+                    }]
+                };
+
+                // Submit for AI compliance check
+                const response = await fetch('/AICheck', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Compliance check failed');
+                }
+
+                const result = await response.json();
+                currentComplianceData = result;
+
+                // Add vetting results if available
+                if (vettingResults) {
+                    currentComplianceData.vettingResults = vettingResults;
+                }
+
+                hideLoader();
+                
+                // Display results inline
+                displayComplianceResults(result);
+                
+                // Show results section
+                document.getElementById('resultsSection').style.display = 'block';
+                
+                // Scroll to results
+                document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+
+                showMessage('Compliance analysis completed successfully', 'success');
+            } catch (error) {
+                hideLoader();
+                console.error('Compliance check error:', error);
+                showMessage('Compliance check failed. Please try again.', 'error');
+            }
+        }
+
+        // Display Compliance Results
+        function displayComplianceResults(data) {
+            const { summary, fields, applicable_framework, applicable_articles } = data;
+            
+            // Calculate metrics
+            let highCount = 0, mediumCount = 0, lowCount = 0;
+            if (fields) {
+                Object.values(fields).forEach(field => {
+                    if (field.severity === 'high') highCount++;
+                    else if (field.severity === 'medium') mediumCount++;
+                    else if (field.severity === 'low') lowCount++;
+                });
+            }
+
+            // Update metrics
+            document.getElementById('highRiskCount').textContent = highCount;
+            document.getElementById('mediumRiskCount').textContent = mediumCount;
+            document.getElementById('lowRiskCount').textContent = lowCount;
+
+            // Calculate compliance score
+            const totalIssues = highCount + mediumCount + lowCount;
+            let score = 100;
+            if (totalIssues > 0) {
+                score = Math.max(0, 100 - (highCount * 20 + mediumCount * 10 + lowCount * 5));
+            }
+            document.getElementById('complianceScore').textContent = score + '%';
+
+            // Update summary
+            const summaryDiv = document.getElementById('complianceSummary');
+            summaryDiv.className = 'alert ' + (score >= 80 ? 'alert-success' : score >= 50 ? 'alert-warning' : 'alert-error');
+            summaryDiv.innerHTML = `
+                <i class="mdi mdi-information-outline"></i>
+                <div>
+                    <strong>Summary:</strong> ${summary || 'Compliance analysis complete.'}
+                    <br><small>Framework: ${applicable_framework || 'URDG 758'}</small>
+                </div>
+            `;
+
+            // Display findings
+            const findingsTab = document.getElementById('findingsTab');
+            findingsTab.innerHTML = '';
+            
+            if (fields && Object.keys(fields).length > 0) {
+                Object.entries(fields).forEach(([fieldName, fieldData]) => {
+                    const finding = document.createElement('div');
+                    finding.className = 'mb-4 p-4 border rounded';
+                    finding.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5>${fieldName.replace(/_/g, ' ').toUpperCase()}</h5>
+                            <span class="severity-${fieldData.severity}">${fieldData.severity.toUpperCase()}</span>
+                        </div>
+                        <p class="text-gray-600 mb-2">${fieldData.analysis || ''}</p>
+                        ${fieldData.issues ? `
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                ${fieldData.issues.map(issue => `<li>${issue}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    `;
+                    findingsTab.appendChild(finding);
+                });
+            } else {
+                findingsTab.innerHTML = '<p class="text-gray-600">No specific compliance issues found.</p>';
+            }
+
+            // Display recommendations
+            const recommendationsTab = document.getElementById('recommendationsTab');
+            recommendationsTab.innerHTML = '';
+            
+            if (fields && Object.keys(fields).length > 0) {
+                Object.entries(fields).forEach(([fieldName, fieldData]) => {
+                    if (fieldData.recommendations && fieldData.recommendations.length > 0) {
+                        const rec = document.createElement('div');
+                        rec.className = 'mb-4 p-4 border rounded';
+                        rec.innerHTML = `
+                            <h5 class="mb-2">${fieldName.replace(/_/g, ' ').toUpperCase()}</h5>
+                            <ul class="list-disc list-inside text-gray-700">
+                                ${fieldData.recommendations.map(r => `<li>${r}</li>`).join('')}
+                            </ul>
+                        `;
+                        recommendationsTab.appendChild(rec);
+                    }
+                });
+            }
+
+            if (recommendationsTab.innerHTML === '') {
+                recommendationsTab.innerHTML = '<p class="text-gray-600">No specific recommendations at this time.</p>';
+            }
+
+            // Display applicable articles
+            const articlesTab = document.getElementById('articlesTab');
+            if (applicable_articles && applicable_articles.length > 0) {
+                articlesTab.innerHTML = `
+                    <h5 class="mb-3">Applicable Rules and Articles</h5>
+                    <ul class="list-disc list-inside text-gray-700">
+                        ${applicable_articles.map(article => `<li>${article}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                articlesTab.innerHTML = '<p class="text-gray-600">No specific articles referenced.</p>';
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to selected tab and pane
+            event.target.closest('.nav-tab').classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Hide Results
+        function hideResults() {
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        // Form Submission
+        document.getElementById('guaranteeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Check if compliance has been run
+            if (!currentComplianceData) {
+                if (!confirm('You have not run compliance analysis. Do you want to submit anyway?')) {
+                    return;
+                }
+            }
+            
+            // Get form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Add editor content
+            data.guaranteeTerms = editorInstance.getData();
+            
+            // Add compliance results if available
+            if (currentComplianceData) {
+                data.complianceResults = currentComplianceData;
+            }
+            
+            try {
+                showLoader('Submitting guarantee...');
+                
+                const response = await fetch('/api/guarantee/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                hideLoader();
+                
+                if (response.ok) {
+                    showMessage('Guarantee submitted successfully!', 'success');
+                    // Reset form after successful submission
+                    setTimeout(() => {
+                        resetForm();
+                    }, 2000);
+                } else {
+                    showMessage(result.error || 'Failed to submit guarantee', 'error');
+                }
+            } catch (error) {
+                hideLoader();
+                showMessage('Error submitting guarantee: ' + error.message, 'error');
+            }
+        });
+
+        // Save Draft
+        function saveDraft() {
+            const formData = new FormData(document.getElementById('guaranteeForm'));
+            const data = Object.fromEntries(formData);
+            data.guaranteeTerms = editorInstance.getData();
+            
+            localStorage.setItem('guaranteeDraft', JSON.stringify(data));
+            showMessage('Draft saved successfully!', 'success');
+        }
+
+        // Load Draft
+        function loadDraft() {
+            const draft = localStorage.getItem('guaranteeDraft');
+            if (draft) {
+                try {
+                    const data = JSON.parse(draft);
+                    Object.keys(data).forEach(key => {
+                        if (key === 'guaranteeTerms') {
+                            if (editorInstance) {
+                                editorInstance.setData(data[key]);
+                            }
+                        } else {
+                            const field = document.querySelector(`[name="${key}"]`);
+                            if (field) {
+                                field.value = data[key];
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading draft:', error);
+                }
+            }
+        }
+
+        // Reset Form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset the form?')) {
+                document.getElementById('guaranteeForm').reset();
+                if (editorInstance) {
+                    editorInstance.setData('');
+                }
+                currentComplianceData = null;
+                hideResults();
+                localStorage.removeItem('guaranteeDraft');
+            }
+        }
+
+        // Show Message
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <i class="mdi mdi-${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'information'}"></i>
+                ${message}
+            `;
+            container.appendChild(alert);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Show Loader
+        function showLoader(message = 'Processing...') {
+            const loader = document.getElementById('loader');
+            document.getElementById('loadingText').textContent = message;
+            
+            // Rotating messages
+            const messages = [
+                { main: "Analyzing guarantee text...", sub: "AI is processing your document" },
+                { main: "Checking compliance rules...", sub: "Reviewing against URDG 758" },
+                { main: "Validating terms...", sub: "Ensuring compliance standards" },
+                { main: "Identifying risks...", sub: "AI-powered risk detection" },
+                { main: "Generating recommendations...", sub: "Almost there..." }
+            ];
+            
+            let messageIndex = 0;
+            loader.style.display = 'flex';
+            
+            // Update message every 2 seconds
+            window.loadingInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % messages.length;
+                document.getElementById('loadingText').textContent = messages[messageIndex].main;
+                document.getElementById('loadingSubtext').textContent = messages[messageIndex].sub;
+            }, 2000);
+        }
+
+        // Hide Loader
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'none';
+            
+            if (window.loadingInterval) {
+                clearInterval(window.loadingInterval);
+                window.loadingInterval = null;
+            }
+        }
+
+        // Auto-save draft every 30 seconds
+        setInterval(() => {
+            if (editorInstance && editorInstance.getData()) {
+                saveDraft();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

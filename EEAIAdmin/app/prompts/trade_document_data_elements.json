@@ -1,0 +1,1223 @@
+{
+  "metadata": {
+    "title": "Trade Document Data Elements Mapping",
+    "description": "Comprehensive mapping of data elements across 36 trade finance and logistics documents",
+    "categories": {
+      "R": "References (UNTDED Group 1: 1000-1699)",
+      "D": "Dates (UNTDED Group 2: 2000-2669)",
+      "P": "Parties, addresses, places, countries (UNTDED Group 3: 3000-3699)",
+      "L": "Locations",
+      "C": "Clauses, conditions, instructions (UNTDED Group 4: 4000-4699)",
+      "Te": "Terms",
+      "A": "Amounts, charges, percentages (UNTDED Group 5: 5000-5699)",
+      "M": "Measure, Quantities (UNTDED Group 6: 6000-6699)",
+      "G": "Goods (UNTDED Group 7: 7000-7699)",
+      "DG": "Dangerous Goods",
+      "Tr": "Transport modes, means and equipments (UNTDED Group 8: 8000-8699)",
+      "O": "Others (UNTDED Group 9: 9000-9699)"
+    },
+    "requirement_codes": {
+      "M": "Mandatory",
+      "O": "Optional",
+      "C": "Conditional"
+    }
+  },
+  "documents": [
+    {"code": "PO", "name": "Purchase Order", "sender": "Seller, Exporter", "receiver": "Buyer, Importer"},
+    {"code": "INV", "name": "Commercial Invoice", "sender": "Seller, Exporter", "receiver": "Buyer, Importer"},
+    {"code": "SLI", "name": "Shipper's Letter of Instructions", "sender": "Shipper, Consignor", "receiver": "Freight Forwarder"},
+    {"code": "PL", "name": "Packing List", "sender": "Seller, Exporter", "receiver": "Buyer, Importer"},
+    {"code": "BoL", "name": "Bill of Lading", "sender": "Carrier, Freight Forwarder", "receiver": "Shipper, Freight Forwarder, Customs, Consignee"},
+    {"code": "SW", "name": "Sea Waybill", "sender": "Carrier, Freight Forwarder", "receiver": "Shipper, Consignor"},
+    {"code": "SDO", "name": "Ship's Delivery Order", "sender": "Carrier", "receiver": "Consignee"},
+    {"code": "AW", "name": "Air Waybill", "sender": "Freight Forwarder, Shipper", "receiver": "Carrier"},
+    {"code": "SCM", "name": "Sea Cargo Manifest", "sender": "Carrier", "receiver": "Customs"},
+    {"code": "ACM", "name": "Air Cargo Manifest", "sender": "Exporter, Freight Forwarder", "receiver": "Customs"},
+    {"code": "CIM", "name": "Rail Consignment Note", "sender": "Shipper, Consignor", "receiver": "Consignee"},
+    {"code": "CMR", "name": "Road Consignment Note", "sender": "Shipper, Consignor", "receiver": "Consignee, Carrier"},
+    {"code": "CID", "name": "Cargo Insurance Document", "sender": "Insurance Company", "receiver": "Shipper, Consignee, Bank, Customs"},
+    {"code": "WR", "name": "Warehouse Receipt", "sender": "Warehouse Keeper, Freight Forwarder", "receiver": "Buyer, Seller"},
+    {"code": "DGD", "name": "Dangerous Goods Declaration", "sender": "Supplier, Shipper, Logistic service provider, Consignor", "receiver": "Buyer, Regulator, Bank, Government agency, Carrier, Customs, Consignee"},
+    {"code": "CSD", "name": "Consignment Security Declaration", "sender": "Consignor, Regulated Agent, Aircraft Operator", "receiver": "Buyer, Regulator, Bank, Government agency, Carrier, Customs, Consignee"},
+    {"code": "EIL", "name": "Export/Import License for agricultural products", "sender": "Government agency", "receiver": "Exporter, Importer, Customs, Bank"},
+    {"code": "CoO", "name": "Non-preferential Certificate of Origin", "sender": "Seller, Exporter, Freight Forwarder, Chamber of Commerce", "receiver": "Bank, Buyer, Importer"},
+    {"code": "PCoO", "name": "Preferential Certificate of Origin", "sender": "Seller, Exporter, Freight Forwarder, Chamber of Commerce", "receiver": "Bank, Buyer, Importer, Customs"},
+    {"code": "CD", "name": "Customs Declaration", "sender": "Exporter, Importer, Freight Forwarder", "receiver": "Customs"},
+    {"code": "CODEX", "name": "CODEX Generic Model Official Certificate", "sender": "Government agency, Exporter", "receiver": "Government agency, Importer"},
+    {"code": "ePhyto", "name": "Phytosanitary certificate", "sender": "Government agency, Exporter", "receiver": "Government agency, Importer"},
+    {"code": "WOAH", "name": "International Veterinary Certificates", "sender": "Government agency, Exporter", "receiver": "Government agency, Importer"},
+    {"code": "CPC", "name": "CITES Permit / Certificate", "sender": "Government agency, Exporter", "receiver": "Government agency, Importer"},
+    {"code": "CIO", "name": "Certificate of Inspection for Organic Products", "sender": "Government agency, Exporter", "receiver": "Government agency, Importer"},
+    {"code": "CB", "name": "Customs Bond", "sender": "Exporter, Importer", "receiver": "Customs"},
+    {"code": "ATA", "name": "ATA Carnet", "sender": "Government agency, Exporter", "receiver": "Customs, Importer, Freight forwarder"},
+    {"code": "TIR", "name": "TIR Carnet", "sender": "Government agency, Exporter", "receiver": "Customs, Carrier, Freight forwarder"},
+    {"code": "TAD", "name": "Transit Accompanying Document", "sender": "Customs, Exporter", "receiver": "Customs, Carrier, Freight forwarder"},
+    {"code": "ARA", "name": "Advance Ruling Application", "sender": "Importer, Exporter", "receiver": "Customs"},
+    {"code": "EG", "name": "Excise Guarantee", "sender": "Importer, Exporter", "receiver": "Customs"},
+    {"code": "EMCS", "name": "Administrative Documents used in the Excise Movement Control System", "sender": "Supplier, Warehouse keeper", "receiver": "Customs, Carrier, Freight forwarder"},
+    {"code": "LC", "name": "Letter of Credit", "sender": "Bank", "receiver": "Seller/Exporter"},
+    {"code": "PC", "name": "Payment Confirmation", "sender": "Bank", "receiver": "Payer"},
+    {"code": "BoE", "name": "Bill of Exchange", "sender": "Payer/Buyer", "receiver": "Payee/Seller"},
+    {"code": "PN", "name": "Promissory Note", "sender": "Payer/Buyer", "receiver": "Payee/Seller"}
+  ],
+  "data_elements": {
+    "references": [
+      {
+        "uid": "1004",
+        "name": "Document Identifier",
+        "description": "Reference number identifying a specific document",
+        "requirements": {"PO": "M", "SDO": "M", "WR": "M", "CoO": "O", "PCoO": "M", "CD": "O", "CODEX": "O", "ePhyto": "C", "CPC": "M", "CB": "M", "ATA": "M", "TIR": "M", "TAD": "M", "EMCS": "M", "LC": "M"}
+      },
+      {
+        "uid": "1016",
+        "name": "Booking reference number",
+        "description": "Reference number assigned by a carrier or its agent to identify a specific consignment",
+        "requirements": {"PL": "O", "BoL": "O", "WR": "O", "PCoO": "C", "ATA": "M", "EMCS": "O", "LC": "O"}
+      },
+      {
+        "uid": "1022",
+        "name": "Purchase Order number",
+        "description": "Identifier assigned by the buyer to an order",
+        "requirements": {"PO": "M", "INV": "O", "CoO": "O", "PCoO": "O", "EMCS": "O", "LC": "O"}
+      },
+      {
+        "uid": "1039",
+        "name": "House waybill document identifier",
+        "description": "Reference number to identify a house waybill",
+        "requirements": {"PL": "O", "SCM": "M", "CIM": "O", "CMR": "O", "CoO": "O", "PCoO": "O", "ATA": "M", "EMCS": "O", "LC": "O"}
+      },
+      {
+        "uid": "1097",
+        "name": "Customs Declaration Document, Trader Assigned",
+        "description": "Reference assigned by a trader to identify a declaration",
+        "requirements": {"ePhyto": "O", "CD": "C", "ATA": "M", "TIR": "M"}
+      },
+      {
+        "uid": "1115",
+        "name": "Dangerous Goods Declaration identifier",
+        "description": "Reference number to identify a Dangerous Goods Declaration",
+        "requirements": {"DGD": "O"}
+      },
+      {
+        "uid": "1172",
+        "name": "Documentary credit identifier",
+        "description": "Reference number to identify a documentary credit",
+        "requirements": {"INV": "O", "CID": "O", "CoO": "O", "PCoO": "O", "LC": "M", "BoE": "C", "PN": "C"}
+      },
+      {
+        "uid": "1188",
+        "name": "Transport Contract Document / Bill of Lading number",
+        "description": "Reference number to identify a document evidencing a transport contract",
+        "requirements": {"PL": "O", "BoL": "M", "SW": "M", "SDO": "M", "AW": "M", "CIM": "O", "CMR": "O", "CoO": "O", "PCoO": "O", "CD": "C", "ATA": "M", "EMCS": "O", "LC": "O"}
+      },
+      {
+        "uid": "1202",
+        "name": "Unique Consignment Reference (UCR)",
+        "description": "Unique reference identifying a particular consignment of goods",
+        "requirements": {"CIM": "O", "CMR": "O", "PCoO": "C", "CB": "O", "EMCS": "O", "LC": "O"}
+      },
+      {
+        "uid": "1296",
+        "name": "Contract number",
+        "description": "Identifier of a contract concluded between parties",
+        "requirements": {"PO": "C", "INV": "O", "PL": "O", "BoL": "M", "SW": "O", "CoO": "O", "PCoO": "O", "EMCS": "O", "LC": "O"}
+      },
+      {
+        "uid": "1334",
+        "name": "Invoice number",
+        "description": "Reference number to identify an invoice",
+        "requirements": {"INV": "M", "PL": "O", "CIM": "O", "CID": "M", "CoO": "O", "PCoO": "O", "CD": "C", "CPC": "M", "ATA": "M", "TAD": "M", "EMCS": "M", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "1426",
+        "name": "Goods declaration number",
+        "description": "Reference number, assigned or accepted by Customs, to identify a goods declaration",
+        "requirements": {"CD": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "1460",
+        "name": "Freight Forwarder reference number",
+        "description": "Reference number assigned by the freight forwarder to identify a particular consignment",
+        "requirements": {"PL": "O", "BoL": "M", "CIM": "O", "CoO": "O", "ATA": "M", "TAD": "M", "EMCS": "O", "LC": "O"}
+      },
+      {
+        "uid": "1496",
+        "name": "Goods Item sequence identifier",
+        "description": "Sequence number differentiating a specific goods item within a consignment",
+        "requirements": {"DGD": "O", "CPC": "M"}
+      },
+      {
+        "uid": "1R01",
+        "name": "EORI number",
+        "description": "Economic Operators Registration and Identification number for EU import/export businesses",
+        "requirements": {"CD": "M"}
+      },
+      {
+        "uid": "1R02",
+        "name": "Approval number",
+        "description": "Approval number of establishments (slaughterhouse, production plant, store)",
+        "requirements": {"CODEX": "M"}
+      },
+      {
+        "uid": "1R03",
+        "name": "Certificate of origin number",
+        "description": "Reference number to identify a certificate of origin",
+        "requirements": {"CID": "O", "CoO": "M", "PCoO": "M"}
+      },
+      {
+        "uid": "1R04",
+        "name": "Insurance policy number",
+        "description": "Reference number to identify an insurance policy",
+        "requirements": {"SW": "M", "CID": "O"}
+      },
+      {
+        "uid": "1R05",
+        "name": "Permit/Certificate/Carnet number",
+        "description": "Unique number allocated to each document by the relevant Issuing Authority",
+        "requirements": {"EIL": "M", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "CPC": "M"}
+      }
+    ],
+    "dates": [
+      {
+        "uid": "2007",
+        "name": "Issue date",
+        "description": "Date that a document was issued and when appropriate, signed or otherwise authenticated",
+        "requirements": {"INV": "M", "SLI": "M", "PL": "M", "BoL": "M", "CID": "M", "WR": "M", "DGD": "M", "CSD": "O", "EIL": "M", "CoO": "M", "PCoO": "M", "CD": "M", "CODEX": "C", "ePhyto": "M", "WOAH": "M", "CPC": "M", "CIO": "M", "ATA": "M", "TIR": "M", "TAD": "M", "EMCS": "M", "LC": "M"}
+      },
+      {
+        "uid": "2011",
+        "name": "Order date",
+        "description": "Date of order",
+        "requirements": {"PO": "M"}
+      },
+      {
+        "uid": "2107",
+        "name": "Actual arrival date",
+        "description": "Date and/or time of the arrival of means of transport",
+        "requirements": {"PL": "O", "SW": "O", "SDO": "O", "AW": "O", "CIM": "O", "PCoO": "C", "ATA": "M"}
+      },
+      {
+        "uid": "2131",
+        "name": "Latest pick-up date",
+        "description": "Latest date and optionally time when a consignment of goods can been picked-up by a carrier",
+        "requirements": {"CIM": "O", "LC": "O"}
+      },
+      {
+        "uid": "2138",
+        "name": "Delivery date",
+        "description": "Date and optionally time by which the merchandise should be delivered to the buyer",
+        "requirements": {"PO": "M", "CID": "M"}
+      },
+      {
+        "uid": "2170",
+        "name": "Despatch date",
+        "description": "Date and optionally time on which goods are, or are expected to be despatched or consigned",
+        "requirements": {"SLI": "M", "PL": "O", "ePhyto": "M", "WOAH": "M"}
+      },
+      {
+        "uid": "2195",
+        "name": "Estimated time of departure",
+        "description": "Date and/or time when a transport means is scheduled to depart",
+        "requirements": {"PL": "O", "SCM": "M", "CIM": "O", "CMR": "M", "PCoO": "C"}
+      },
+      {
+        "uid": "2211",
+        "name": "Documentary credit document effective end date",
+        "description": "Date on which the validity of a documentary credit expires",
+        "requirements": {"LC": "M", "BoE": "C", "PN": "C"}
+      },
+      {
+        "uid": "2237",
+        "name": "Documentary credit document issue date",
+        "description": "Issue date of a documentary credit",
+        "requirements": {"LC": "M", "BoE": "C", "PN": "C"}
+      },
+      {
+        "uid": "2281",
+        "name": "Actual departure date",
+        "description": "Date and/or time of the departure of means of transport",
+        "requirements": {"PL": "O", "CIM": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "2347",
+        "name": "Consignment loading date",
+        "description": "Date and optionally time when a consignment is to be or has been loaded onto a means of transport",
+        "requirements": {"PL": "M", "CID": "M", "PCoO": "C"}
+      },
+      {
+        "uid": "2349",
+        "name": "Estimated time of arrival",
+        "description": "Date and/or time of the estimated arrival of means of transport",
+        "requirements": {"PL": "O", "SCM": "M", "CIM": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "2377",
+        "name": "Invoice date",
+        "description": "Date of issue of an invoice",
+        "requirements": {"INV": "M", "PCoO": "C", "TAD": "M"}
+      },
+      {
+        "uid": "2480",
+        "name": "Payment due date",
+        "description": "Date when an amount due should be made available to the creditor under the terms of payment",
+        "requirements": {"INV": "M", "LC": "O", "PC": "M", "PN": "M"}
+      },
+      {
+        "uid": "2D01",
+        "name": "Permit/Certificate/Carnet expiry date",
+        "description": "Date on which the validity of a Permit/Certificate or Carnet expires",
+        "requirements": {"EIL": "M", "CODEX": "M", "WOAH": "M", "CPC": "M"}
+      }
+    ],
+    "parties_addresses_places_countries": [
+      {
+        "uid": "3002",
+        "name": "Buyer",
+        "description": "Party to which merchandise or services are sold",
+        "requirements": {"PO": "M", "INV": "M", "SLI": "C", "PL": "M", "BoL": "O", "CID": "M", "PCoO": "C", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3004",
+        "name": "Warehouse depositor",
+        "description": "Party depositing goods in a warehouse",
+        "requirements": {"WR": "M"}
+      },
+      {
+        "uid": "3006",
+        "name": "Invoicee",
+        "description": "Party to whom an invoice is issued",
+        "requirements": {"INV": "M", "TAD": "M", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3012",
+        "name": "Seller's bank",
+        "description": "Bank designated by the seller to receive payment",
+        "requirements": {"INV": "M", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3020",
+        "name": "Importer",
+        "description": "Party who makes - or on whose behalf - an import declaration",
+        "requirements": {"PL": "O", "CoO": "O", "PCoO": "O", "CD": "C", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "CPC": "M", "ATA": "M", "TIR": "M", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3022",
+        "name": "Warehouse keeper",
+        "description": "Party taking responsibility for goods entered into a warehouse",
+        "requirements": {"WR": "M"}
+      },
+      {
+        "uid": "3030",
+        "name": "Exporter",
+        "description": "Party who makes, or on whose behalf the export declaration is made",
+        "requirements": {"PL": "O", "CoO": "M", "PCoO": "M", "CD": "C", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "ATA": "M", "TIR": "M", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3050",
+        "name": "Consignment route",
+        "description": "Route to be used for the transport of goods",
+        "requirements": {"CID": "M", "PCoO": "C", "ATA": "M"}
+      },
+      {
+        "uid": "3086",
+        "name": "Customs office of destination",
+        "description": "Customs office at which goods are released from a Customs transit regime",
+        "requirements": {"CD": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "3088",
+        "name": "Customs office of entry",
+        "description": "Customs office at which the goods enter the customs territory of destination",
+        "requirements": {"PCoO": "C", "CD": "M", "TIR": "M"}
+      },
+      {
+        "uid": "3106",
+        "name": "Customs office of transit",
+        "description": "Customs office which is responsible for transit formalities en route",
+        "requirements": {"CD": "M", "TIR": "O", "TAD": "M"}
+      },
+      {
+        "uid": "3126",
+        "name": "Carrier (Transport Services Provider)",
+        "description": "Party providing the transport of goods between named points",
+        "requirements": {"PL": "O", "BoL": "M", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "CoO": "O", "PCoO": "C", "ATA": "M", "TIR": "M"}
+      },
+      {
+        "uid": "3132",
+        "name": "Consignee",
+        "description": "Party to which goods are consigned",
+        "requirements": {"SLI": "M", "PL": "M", "BoL": "C", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "CMR": "M", "CoO": "M", "PCoO": "O", "CD": "O", "CODEX": "C", "ATA": "M", "TIR": "M"}
+      },
+      {
+        "uid": "3136",
+        "name": "Insured party",
+        "description": "Party which benefits from insurance coverage",
+        "requirements": {"SLI": "C", "CID": "M", "CoO": "M"}
+      },
+      {
+        "uid": "3144",
+        "name": "Ship to / Delivery Party",
+        "description": "Party to which goods should be delivered, if not identical with consignee",
+        "requirements": {"PO": "O", "CIM": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "3156",
+        "name": "Warehouse",
+        "description": "Warehouse where a particular consignment has been stored",
+        "requirements": {"WR": "C", "PCoO": "C"}
+      },
+      {
+        "uid": "3170",
+        "name": "Freight Forwarder",
+        "description": "Party undertaking forwarding of goods",
+        "requirements": {"SLI": "M", "BoL": "O", "SCM": "M", "CIM": "O", "CoO": "O", "ATA": "M", "TIR": "M"}
+      },
+      {
+        "uid": "3174",
+        "name": "Transport equipment operator",
+        "description": "Party owning, operating or controlling the transport equipment",
+        "requirements": {"SDO": "M", "SCM": "M", "ATA": "M", "TIR": "M"}
+      },
+      {
+        "uid": "3180",
+        "name": "Notify party",
+        "description": "Party to be notified",
+        "requirements": {"SLI": "C", "PL": "C", "BoL": "M", "SW": "O", "SDO": "M", "CIM": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "3196",
+        "name": "Agent",
+        "description": "Authorized representative",
+        "requirements": {"WOAH": "M"}
+      },
+      {
+        "uid": "3198",
+        "name": "Documentary Credit Applicant",
+        "description": "Name and address of the applicant of a documentary credit",
+        "requirements": {"INV": "O", "LC": "M"}
+      },
+      {
+        "uid": "3234",
+        "name": "Documentary Credit Applicant Agent Bank",
+        "description": "Bank acting on behalf of the applicant of a documentary credit",
+        "requirements": {"LC": "O", "BoE": "O", "PN": "O"}
+      },
+      {
+        "uid": "3242",
+        "name": "Documentary Credit Available Bank",
+        "description": "Bank at which the Documentary credit is available",
+        "requirements": {"LC": "M", "BoE": "O", "PN": "O"}
+      },
+      {
+        "uid": "3260",
+        "name": "Documentary Credit Beneficiary",
+        "description": "Name and address of the beneficiary of a documentary credit",
+        "requirements": {"LC": "M", "BoE": "O", "PN": "O"}
+      },
+      {
+        "uid": "3282",
+        "name": "Despatch/Pick-up Party",
+        "description": "Party where goods are to be, or have been, taken over by a carrier",
+        "requirements": {"PL": "O", "SW": "O", "CIM": "O"}
+      },
+      {
+        "uid": "3290",
+        "name": "Documentary Credit Drawee",
+        "description": "Party on whom any draft is to be drawn from the documentary credit",
+        "requirements": {"LC": "O", "BoE": "O"}
+      },
+      {
+        "uid": "3336",
+        "name": "Consignor",
+        "description": "Party consigning goods as stipulated in the transport contract",
+        "requirements": {"SLI": "M", "PL": "M", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CMR": "M", "CoO": "M", "PCoO": "O", "CODEX": "O", "CD": "O", "CODEX": "C", "ATA": "M", "TIR": "M"}
+      },
+      {
+        "uid": "3346",
+        "name": "Seller",
+        "description": "Party selling merchandise or services to a buyer",
+        "requirements": {"PO": "M", "INV": "M", "PL": "M", "PCoO": "C", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3350",
+        "name": "Documentary Credit Reimbursing Bank",
+        "description": "Bank nominated by the issuing bank to reimburse",
+        "requirements": {"LC": "O", "BoE": "O", "PN": "O"}
+      },
+      {
+        "uid": "3370",
+        "name": "Payee",
+        "description": "Party to which a payment is to be or has been made",
+        "requirements": {"PC": "M", "BoE": "M", "PN": "M"}
+      },
+      {
+        "uid": "3420",
+        "name": "Buyer's bank",
+        "description": "Bank employed by the buyer to make a payment",
+        "requirements": {"LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3470",
+        "name": "Freight payer",
+        "description": "Party responsible for the payment of freight charges",
+        "requirements": {"PL": "M"}
+      },
+      {
+        "uid": "3492",
+        "name": "Seller's bank account number",
+        "description": "Identifier of an account with the bank designated to receive payment",
+        "requirements": {"INV": "M"}
+      },
+      {
+        "uid": "3P01",
+        "name": "Insurance company",
+        "description": "Details related to the company engaged in the business of insurance",
+        "requirements": {"SW": "M", "CID": "C", "WOAH": "M"}
+      },
+      {
+        "uid": "3P02",
+        "name": "Issuer / Drawer",
+        "description": "The entity or person who issues the bill of exchange",
+        "requirements": {"CID": "M", "PC": "M", "BoE": "M"}
+      },
+      {
+        "uid": "3P03",
+        "name": "Permit/Certificate/Carnet issuer",
+        "description": "Name, signature and seal of the party issuing the Permit/Certificate/Carnet",
+        "requirements": {"EIL": "M", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "CPC": "M", "CIO": "M", "ATA": "M"}
+      },
+      {
+        "uid": "3P04",
+        "name": "Management/Competent Authority",
+        "description": "Name, address, national seal/stamp and country of Management/Competent Authority",
+        "requirements": {"EIL": "M", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "CPC": "M", "CIO": "M", "ATA": "M"}
+      },
+      {
+        "uid": "3P05",
+        "name": "Advance ruling applicant",
+        "description": "Importer, exporter, producer or person applying for an advance ruling",
+        "requirements": {"ARA": "M"}
+      },
+      {
+        "uid": "3P06",
+        "name": "Advance ruling application recipient",
+        "description": "Customs administration responsible for the issuance of advance rulings",
+        "requirements": {"ARA": "M"}
+      },
+      {
+        "uid": "3P07",
+        "name": "Drawee",
+        "description": "The entity or person who is obligated to make the payment specified in the bill of exchange",
+        "requirements": {"PC": "M", "PN": "O"}
+      },
+      {
+        "uid": "3P08",
+        "name": "Guarantor",
+        "description": "Financial institution, insurance company, or approved entity acting as the guarantor",
+        "requirements": {"EG": "M", "EMCS": "M", "PC": "M", "PN": "O"}
+      },
+      {
+        "uid": "3P09",
+        "name": "Excise guarantee beneficiary",
+        "description": "Revenue authority responsible for collecting the excise duties",
+        "requirements": {"EG": "M"}
+      }
+    ],
+    "locations": [
+      {
+        "uid": "3000",
+        "name": "Place of the delivery of the goods (by the carrier)",
+        "description": "Location to which a consignment is to be delivered to the final consignee",
+        "requirements": {"PO": "M", "PL": "M", "BoL": "C", "SW": "M", "SDO": "M", "AW": "M", "CIM": "M", "CMR": "M", "CoO": "M", "PCoO": "O", "ATA": "M", "LC": "O"}
+      },
+      {
+        "uid": "3014",
+        "name": "Destination country",
+        "description": "Country to which a consignment of goods is to be or has been delivered",
+        "requirements": {"SDO": "M", "CID": "M", "CoO": "M", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "ATA": "M"}
+      },
+      {
+        "uid": "3058",
+        "name": "Emergency Contact",
+        "description": "The name of the person to be contacted in the event of a dangerous goods emergency",
+        "requirements": {"DGD": "C", "CSD": "C"}
+      },
+      {
+        "uid": "3096",
+        "name": "Consignment. Exit Customs Office",
+        "description": "Customs office at which the goods leave the customs territory of despatch",
+        "requirements": {"PCoO": "C", "CD": "M", "TIR": "M"}
+      },
+      {
+        "uid": "3099",
+        "name": "Original Loading Location",
+        "description": "Location where the goods were first loaded onto the means of transport",
+        "requirements": {"INV": "O", "BoL": "M", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "O", "CMR": "M", "CoO": "O", "CB": "O", "LC": "O"}
+      },
+      {
+        "uid": "3108",
+        "name": "Payment Location",
+        "description": "Name of the place where the payment has been, or should be made",
+        "requirements": {"PL": "O", "BoL": "M", "PCoO": "C", "LC": "O", "PN": "O"}
+      },
+      {
+        "uid": "3110",
+        "name": "Customs office of guarantee",
+        "description": "Customs office at which a security or guarantee is lodged",
+        "requirements": {"TIR": "M"}
+      },
+      {
+        "uid": "3150",
+        "name": "Despatch",
+        "description": "Place, from or at which despatch is to take place",
+        "requirements": {"SLI": "M", "BoL": "O", "CIM": "O", "ePhyto": "M", "LC": "O"}
+      },
+      {
+        "uid": "3192",
+        "name": "Account holder",
+        "description": "Holder of an account",
+        "requirements": {"PC": "M"}
+      },
+      {
+        "uid": "3214",
+        "name": "Place or departure",
+        "description": "Port, airport or other type of location from which a means of transport departs",
+        "requirements": {"SDO": "M", "SCM": "M", "CIM": "O", "CMR": "M", "CoO": "O", "PCoO": "O", "CD": "O"}
+      },
+      {
+        "uid": "3216",
+        "name": "Consignment destination country",
+        "description": "Name of the country to which the goods are to be delivered",
+        "requirements": {"CoO": "M", "PCoO": "M", "CODEX": "M", "ePhyto": "M"}
+      },
+      {
+        "uid": "3220",
+        "name": "Exportation country",
+        "description": "Country from which a consignment of goods was initially exported",
+        "requirements": {"PL": "O", "CoO": "M", "CD": "C", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "CPC": "M", "ATA": "M"}
+      },
+      {
+        "uid": "3238",
+        "name": "Origin country",
+        "description": "Country in which the goods have been produced or manufactured",
+        "requirements": {"PO": "O", "INV": "O", "SLI": "M", "BoL": "O", "CIM": "O", "CoO": "M", "PCoO": "M", "CODEX": "M", "CD": "C", "CODEX": "M", "WOAH": "M", "CPC": "M"}
+      },
+      {
+        "uid": "3258",
+        "name": "Arrival location",
+        "description": "Port, airport or other type of location at which a means of transport arrives",
+        "requirements": {"SDO": "M", "SCM": "M", "CMR": "M", "PCoO": "C", "ATA": "M"}
+      },
+      {
+        "uid": "3348",
+        "name": "Place of taking over of the goods (by the carrier from the consignor or his agent)",
+        "description": "Place where the goods are taken over by the carrier",
+        "requirements": {"CIM": "O", "CMR": "O"}
+      },
+      {
+        "uid": "3356",
+        "name": "Baseport Unloading Location",
+        "description": "The place or port at which the cargo is discharged or unloaded",
+        "requirements": {"INV": "O", "PL": "C", "BoL": "M", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "CMR": "M", "ATA": "M", "LC": "O"}
+      },
+      {
+        "uid": "3360",
+        "name": "Insurance claim adjuster",
+        "description": "Name and address of the insurance claims adjuster",
+        "requirements": {"CID": "M"}
+      },
+      {
+        "uid": "3392",
+        "name": "Name of the destination station",
+        "description": "Place at which goods are unloaded from the means of transport",
+        "requirements": {"AW": "M"}
+      },
+      {
+        "uid": "3410",
+        "name": "Place of issue",
+        "description": "Location where a document was issued and when appropriate, signed",
+        "requirements": {"SLI": "M", "SDO": "M", "PCoO": "C", "CD": "O", "CODEX": "C", "ePhyto": "M", "WOAH": "M", "PC": "M", "BoE": "M"}
+      },
+      {
+        "uid": "3L01",
+        "name": "Specimen country of re-export",
+        "description": "Country from which the specimens were re-exported",
+        "requirements": {"CPC": "M"}
+      },
+      {
+        "uid": "3L02",
+        "name": "Specimen country of origin",
+        "description": "Country in which the specimens were taken from the wild",
+        "requirements": {"CPC": "M"}
+      },
+      {
+        "uid": "3L03",
+        "name": "Transit location",
+        "description": "A transit event for this logistics transport movement",
+        "requirements": {"CIM": "O"}
+      }
+    ],
+    "clauses_conditions_instructions": [
+      {
+        "uid": "4002",
+        "name": "Transport Contract Document Conditions",
+        "description": "Reference to carrier's conditions of carriage",
+        "requirements": {"PL": "O", "BoL": "M", "SDO": "M", "CIM": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "4078",
+        "name": "Handling Instructions",
+        "description": "Free form description of a set of handling instructions",
+        "requirements": {"SLI": "C", "CIM": "C", "DGD": "C"}
+      },
+      {
+        "uid": "4080",
+        "name": "Loading Instructions",
+        "description": "Instructions on where or how specified packages or containers are to be loaded",
+        "requirements": {"BoL": "O", "WR": "C"}
+      },
+      {
+        "uid": "4112",
+        "name": "Insurance condition",
+        "description": "Reference to the general conditions of insurance",
+        "requirements": {"SLI": "C", "CID": "M", "WOAH": "M"}
+      },
+      {
+        "uid": "4192",
+        "name": "Certification",
+        "description": "Text of official certification, legalisation or stamp",
+        "requirements": {"CODEX": "M", "ePhyto": "M"}
+      },
+      {
+        "uid": "4422",
+        "name": "Nature of transaction",
+        "description": "Textual representation of a type of contract",
+        "requirements": {"CODEX": "M", "WOAH": "M"}
+      },
+      {
+        "uid": "4426",
+        "name": "Authentication",
+        "description": "Proof that a document has been authenticated",
+        "requirements": {"SLI": "C", "CID": "M", "PCoO": "C", "ePhyto": "M", "PC": "M", "BoE": "M"}
+      },
+      {
+        "uid": "4492",
+        "name": "Delivery Instructions",
+        "description": "Delivery instructions relating to a consignment",
+        "requirements": {"CIM": "O"}
+      },
+      {
+        "uid": "4C01",
+        "name": "CITES Appendix reference",
+        "description": "Number of the Appendix of the CITES Convention",
+        "requirements": {"CPC": "M"}
+      },
+      {
+        "uid": "4C02",
+        "name": "Security information",
+        "description": "A note of security information related to a consignment",
+        "requirements": {"CIM": "O", "CSD": "M"}
+      },
+      {
+        "uid": "4C03",
+        "name": "Conditions of guarantee",
+        "description": "Circumstances under which the excise guarantee becomes payable",
+        "requirements": {"EG": "M"}
+      }
+    ],
+    "terms": [
+      {
+        "uid": "4052",
+        "name": "Trade terms conditions description",
+        "description": "Free form description of delivery or transport terms (Incoterms)",
+        "requirements": {"INV": "O", "SLI": "M", "BoL": "O", "SW": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "4053",
+        "name": "Trade terms conditions code",
+        "description": "Code specifying the delivery or transport terms (Incoterms)",
+        "requirements": {"INV": "O", "BoL": "O", "SW": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "4277",
+        "name": "Payment term",
+        "description": "Identification of the terms of payment between the parties",
+        "requirements": {"PO": "O", "INV": "O", "LC": "M", "PN": "M"}
+      },
+      {
+        "uid": "4376",
+        "name": "Type of transit guarantee",
+        "description": "Details regarding undertaking given to ensure obligation is fulfilled",
+        "requirements": {"CD": "M", "TIR": "M"}
+      },
+      {
+        "uid": "4428",
+        "name": "Document endorsement",
+        "description": "Proof that a document has been signed",
+        "requirements": {"SDO": "O", "CID": "O", "ePhyto": "M", "PC": "M", "BoE": "M"}
+      },
+      {
+        "uid": "4467",
+        "name": "Payment Method",
+        "description": "Code specifying a method of payment",
+        "requirements": {"PO": "O", "INV": "O", "PCoO": "C", "LC": "O", "PC": "O", "PN": "O"}
+      },
+      {
+        "uid": "4T01",
+        "name": "Purpose of CITES trade transaction",
+        "description": "Purpose codes: commercial, zoo, botanical garden, scientific, etc.",
+        "requirements": {"CPC": "M"}
+      }
+    ],
+    "amounts_charges_percentages": [
+      {
+        "uid": "5004",
+        "name": "Monetary amount",
+        "description": "Monetary amount",
+        "requirements": {"CODEX": "M", "WOAH": "M", "CPC": "M", "EG": "M", "PC": "M", "BoE": "M", "PN": "M"}
+      },
+      {
+        "uid": "5011",
+        "name": "Insured value amount",
+        "description": "Total sum covered by an insurance",
+        "requirements": {"SW": "M", "CID": "M"}
+      },
+      {
+        "uid": "5032",
+        "name": "Customs value",
+        "description": "Amount declared for customs purposes",
+        "requirements": {"PL": "C", "CIM": "O", "PCoO": "C", "CD": "M", "CODEX": "M", "ePhyto": "M", "WOAH": "M"}
+      },
+      {
+        "uid": "5110",
+        "name": "Unit Price",
+        "description": "Price per unit of quantity",
+        "requirements": {"PO": "O", "ePhyto": "M"}
+      },
+      {
+        "uid": "5128",
+        "name": "Goods value",
+        "description": "Value of the goods for the calculation of freight charges",
+        "requirements": {"INV": "O", "CIM": "O", "PCoO": "C", "CD": "M"}
+      },
+      {
+        "uid": "5152",
+        "name": "Tax or fee type",
+        "description": "Type of duty or tax applicable",
+        "requirements": {"PCoO": "C"}
+      },
+      {
+        "uid": "5189",
+        "name": "Allowance / Charge",
+        "description": "Code specifying a type of an adjustment to a monetary amount",
+        "requirements": {"PO": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "5218",
+        "name": "Statistical value",
+        "description": "Value declared for statistical purposes",
+        "requirements": {"PCoO": "C", "CD": "M", "TIR": "M"}
+      },
+      {
+        "uid": "5286",
+        "name": "Tax or fee assessment basis amount",
+        "description": "The amount on which a duty or tax or fee will be assessed",
+        "requirements": {"PCoO": "C", "TIR": "M"}
+      },
+      {
+        "uid": "5290",
+        "name": "Freight and charges amount",
+        "description": "Costs incurred by the shipper in moving goods",
+        "requirements": {"PL": "C", "SW": "O", "CIM": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "5302",
+        "name": "Prepaid amount",
+        "description": "Monetary amount of charges paid in advance",
+        "requirements": {"PL": "O"}
+      },
+      {
+        "uid": "5390",
+        "name": "Order amount",
+        "description": "Total amount of an order",
+        "requirements": {"PO": "O"}
+      },
+      {
+        "uid": "5398",
+        "name": "Total collect charges",
+        "description": "Charges to be collected from the consignee",
+        "requirements": {"PL": "O", "CIM": "O"}
+      },
+      {
+        "uid": "5444",
+        "name": "Total invoice amount",
+        "description": "Total monetary amount charged in one or more invoices",
+        "requirements": {"INV": "M", "PCoO": "C"}
+      },
+      {
+        "uid": "5450",
+        "name": "Documentary credit amount",
+        "description": "Amount of the documentary credit",
+        "requirements": {"INV": "O", "LC": "M"}
+      },
+      {
+        "uid": "5486",
+        "name": "Insurance amount",
+        "description": "Amount of premium payable to the insurance company",
+        "requirements": {"CIM": "O", "CID": "O", "PCoO": "C"}
+      },
+      {
+        "uid": "5490",
+        "name": "Tax amount",
+        "description": "Amount resulting from value added tax",
+        "requirements": {"PO": "O", "PCoO": "C", "CD": "C"}
+      },
+      {
+        "uid": "5A01",
+        "name": "Excise duty amount",
+        "description": "Maximum financial liability undertaken by the guarantor",
+        "requirements": {"EG": "M", "EMCS": "M"}
+      },
+      {
+        "uid": "5A02",
+        "name": "Type of excise duty",
+        "description": "The specific excise duty applicable to the goods",
+        "requirements": {"EG": "M"}
+      }
+    ],
+    "measure_quantities": [
+      {
+        "uid": "6004",
+        "name": "Humidity percentage",
+        "description": "The measurement of the moisture in the air",
+        "requirements": {"INV": "O", "BoL": "C"}
+      },
+      {
+        "uid": "6012",
+        "name": "Gross weight",
+        "description": "Total gross weight of all goods items",
+        "requirements": {"SLI": "M", "PL": "M", "BoL": "M", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "CMR": "M", "CoO": "M", "PCoO": "M", "CD": "C", "ATA": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "6014",
+        "name": "Net weight",
+        "description": "Total net weight of all goods items",
+        "requirements": {"INV": "O", "SLI": "M", "PL": "M", "BoL": "O", "CIM": "O", "CoO": "O", "PCoO": "O", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "ATA": "M"}
+      },
+      {
+        "uid": "6024",
+        "name": "Quantity ordered",
+        "description": "The quantity which has been ordered",
+        "requirements": {"PO": "M", "ePhyto": "M", "WOAH": "M"}
+      },
+      {
+        "uid": "6032",
+        "name": "Customs Tariff Quantity Deduction",
+        "description": "Quantity to be deducted from the tariff quantity",
+        "requirements": {"PCoO": "C"}
+      },
+      {
+        "uid": "6096",
+        "name": "Package length",
+        "description": "Measure of the length of a package",
+        "requirements": {"SLI": "O", "ePhyto": "M", "CPC": "O"}
+      },
+      {
+        "uid": "6098",
+        "name": "Package width",
+        "description": "Measure of the width of a package",
+        "requirements": {"SLI": "O", "PCoO": "C", "ePhyto": "M", "CPC": "O"}
+      },
+      {
+        "uid": "6242",
+        "name": "Transport Temperature",
+        "description": "Instructions regarding the temperature for cargo transport",
+        "requirements": {"PL": "C", "BoL": "C", "SW": "C", "DGD": "C"}
+      },
+      {
+        "uid": "6300",
+        "name": "Transport Means, gross weight",
+        "description": "The measure of the overall size of a vessel",
+        "requirements": {"PL": "O", "SDO": "M", "CIM": "M", "CoO": "O", "PCoO": "O", "ATA": "M"}
+      },
+      {
+        "uid": "6322",
+        "name": "Volume (Cube)",
+        "description": "Measurement arrived at by multiplying length, width and height",
+        "requirements": {"SLI": "O", "PL": "M", "BoL": "M", "SW": "M", "AW": "M", "CIM": "M", "PCoO": "C"}
+      },
+      {
+        "uid": "6350",
+        "name": "Quantity",
+        "description": "Number of units",
+        "requirements": {"CODEX": "M", "ePhyto": "M", "WOAH": "M", "CPC": "M", "CIO": "M", "ATA": "M"}
+      },
+      {
+        "uid": "6M01",
+        "name": "Annual quota",
+        "description": "Current annual quota for the CITES species concerned",
+        "requirements": {"CPC": "M"}
+      },
+      {
+        "uid": "6M02",
+        "name": "Exported quantity",
+        "description": "Total number of CITES specimens exported in the current calendar year",
+        "requirements": {"CPC": "M"}
+      }
+    ],
+    "goods": [
+      {
+        "uid": "7002",
+        "name": "Description of Goods",
+        "description": "Plain language description of the nature of a goods item",
+        "requirements": {"INV": "O", "SLI": "M", "PL": "M", "BoL": "M", "SW": "M", "AW": "M", "SCM": "M", "CIM": "M", "CMR": "M", "WR": "M", "DGD": "M", "CSD": "M", "EIL": "M", "CoO": "M", "PCoO": "M", "CD": "M", "CODEX": "M", "ePhyto": "C", "WOAH": "M", "CPC": "M", "CIO": "M", "ATA": "M", "TIR": "M", "TAD": "M", "EMCS": "M", "PN": "O"}
+      },
+      {
+        "uid": "7004",
+        "name": "Consignment summary description",
+        "description": "Plain language description of a consignment in summary terms",
+        "requirements": {"SDO": "M", "AW": "M", "SCM": "M", "CMR": "M", "PCoO": "C", "ATA": "M", "TIR": "M"}
+      },
+      {
+        "uid": "7012",
+        "name": "Number of Packages",
+        "description": "Number of packages per goods item",
+        "requirements": {"SLI": "M", "PL": "M", "BoL": "M", "SW": "M", "AW": "M", "CIM": "M", "DGD": "C", "CSD": "C", "CoO": "M", "PCoO": "M", "CD": "C", "ATA": "M", "TIR": "M", "TAD": "M", "EMCS": "M"}
+      },
+      {
+        "uid": "7065",
+        "name": "Type of Packaging (UNCEFACT coded) and shipping marks",
+        "description": "Code specifying the type of packaging of an item",
+        "requirements": {"SLI": "M", "PL": "M", "BoL": "O", "SW": "M", "CIM": "O", "CoO": "O", "PCoO": "O", "CD": "C"}
+      },
+      {
+        "uid": "7102",
+        "name": "Shipping Marks",
+        "description": "Free form description of the marks and numbers on a transport unit",
+        "requirements": {"SLI": "C", "SW": "M", "CIM": "M", "CoO": "O", "PCoO": "O", "CD": "C", "ATA": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "7135",
+        "name": "Product identifier",
+        "description": "Reference number identifying a product",
+        "requirements": {"PO": "M", "BoL": "O", "CIM": "C", "WR": "C", "CoO": "M", "PCoO": "O", "CODEX": "O", "ePhyto": "C", "WOAH": "M", "CPC": "M", "CIO": "M", "ATA": "M"}
+      },
+      {
+        "uid": "7176",
+        "name": "Risk object text",
+        "description": "Free form description of the object sub-type of a risk",
+        "requirements": {"CID": "M"}
+      },
+      {
+        "uid": "7357",
+        "name": "HS Code (Commodity Code)",
+        "description": "Code specifying a type of goods for Customs, transport or statistical purposes",
+        "requirements": {"INV": "O", "SLI": "M", "PL": "O", "BoL": "C", "SW": "C", "AW": "M", "CIM": "C", "CoO": "O", "PCoO": "M", "CODEX": "O", "ePhyto": "O", "CD": "C", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "CPC": "M", "CIO": "M", "ATA": "M"}
+      },
+      {
+        "uid": "7G01",
+        "name": "Name of animal or plant",
+        "description": "Scientific name (genus and species) of the animal or plant",
+        "requirements": {"CPC": "M"}
+      },
+      {
+        "uid": "7G02",
+        "name": "Specimen description",
+        "description": "Description of the specimens entering trade",
+        "requirements": {"CPC": "M", "CIO": "M"}
+      }
+    ],
+    "dangerous_goods": [
+      {
+        "uid": "7088",
+        "name": "Flashpoint temperature",
+        "description": "The value of the flashpoint of dangerous goods",
+        "requirements": {"DGD": "C", "CSD": "C"}
+      },
+      {
+        "uid": "7124",
+        "name": "UNDG Number",
+        "description": "United Nations Dangerous Goods Identifier",
+        "requirements": {"PL": "C", "DGD": "C", "CSD": "C", "PCoO": "C"}
+      },
+      {
+        "uid": "7254",
+        "name": "Dangerous Goods Technical Name",
+        "description": "Proper shipping name, supplemented with technical name",
+        "requirements": {"PL": "C", "BoL": "O", "SW": "C", "DGD": "C", "CSD": "C", "PCoO": "C"}
+      },
+      {
+        "uid": "8158",
+        "name": "Upper Orange Hazard Placard ID",
+        "description": "Identity number for the upper part of the orange hazard placard",
+        "requirements": {"WR": "C"}
+      },
+      {
+        "uid": "8186",
+        "name": "Lower Orange Hazard Placard ID",
+        "description": "Identity number for the lower part of the orange hazard placard",
+        "requirements": {"WR": "C"}
+      },
+      {
+        "uid": "8273",
+        "name": "Dangerous Goods Regulation Code",
+        "description": "Code specifying a dangerous goods regulation",
+        "requirements": {"AW": "C", "CIM": "O", "DGD": "C", "PCoO": "C"}
+      },
+      {
+        "uid": "8339",
+        "name": "Packaging. Danger Level.Code",
+        "description": "Code specifying the level of danger for packaging",
+        "requirements": {"PL": "C", "BoL": "O", "SW": "C", "DGD": "C", "CSD": "C"}
+      },
+      {
+        "uid": "8351",
+        "name": "Dangerous goods class number",
+        "description": "Identification of a hazard class applicable to dangerous goods",
+        "requirements": {"PL": "O", "CIM": "M", "DGD": "C", "PCoO": "C"}
+      },
+      {
+        "uid": "7D01",
+        "name": "Explosive Compatibility Group Code",
+        "description": "Code specifying the explosive compatibility group",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D02",
+        "name": "Reportable Quantity",
+        "description": "The reportable quantity for transported dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D03",
+        "name": "Tunnel Restriction Code",
+        "description": "Code specifying the tunnel restriction for dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D04",
+        "name": "Special Provision ID",
+        "description": "Unique identifier of the special provision for dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D05",
+        "name": "All Packed In One Information",
+        "description": "All packed in one information for transported dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D06",
+        "name": "Q-Value Number",
+        "description": "The number of the Q-Value for transported dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D07",
+        "name": "Overpack Information",
+        "description": "Overpack information for transported dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D08",
+        "name": "Aircraft Limitation Information (PAX & CGO or CAO)",
+        "description": "Aircraft limitation information for dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D09",
+        "name": "Shipper DG Declaration Information",
+        "description": "Shipper declaration information for dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D10",
+        "name": "Radioactive Indicator",
+        "description": "Indicator of whether transported dangerous goods are radioactive",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D11",
+        "name": "Radioactive Material Details",
+        "description": "The radioactive material (Class 7) transported as dangerous goods",
+        "requirements": {"DGD": "C"}
+      },
+      {
+        "uid": "7D12",
+        "name": "Dangerous Goods Logistics Package",
+        "description": "A logistics package specified for transported dangerous goods",
+        "requirements": {"DGD": "C"}
+      }
+    ],
+    "transport_modes_means_equipments": [
+      {
+        "uid": "8028",
+        "name": "Conveyance reference number/Journey identifier",
+        "description": "Identifier of a journey of a means of transport",
+        "requirements": {"PL": "M", "BoL": "O", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "DGD": "C", "PCoO": "C", "ATA": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "8067",
+        "name": "Mode of Transport",
+        "description": "Code specifying a mode of transport",
+        "requirements": {"SDO": "M", "CoO": "O", "PCoO": "O", "ATA": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "8155",
+        "name": "Container size and type",
+        "description": "Code specifying the characteristics of a piece of transport equipment",
+        "requirements": {"PL": "M", "BoL": "M", "CoO": "O", "PCoO": "O", "ATA": "M"}
+      },
+      {
+        "uid": "8169",
+        "name": "Full or empty container",
+        "description": "Code specifying how full a piece of transport equipment is",
+        "requirements": {"PL": "M", "BoL": "M", "PCoO": "C"}
+      },
+      {
+        "uid": "8179",
+        "name": "Transport Means Type Code",
+        "description": "Code specifying the type of logistics means of transport",
+        "requirements": {"DGD": "O", "CODEX": "M", "TIR": "M"}
+      },
+      {
+        "uid": "8212",
+        "name": "Transport means identifier",
+        "description": "Name of a specific means of transport such as the vessel name",
+        "requirements": {"SLI": "C", "PL": "M", "BoL": "M", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "CMR": "M", "DGD": "C", "CoO": "O", "PCoO": "O", "CD": "C", "ATA": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "8213",
+        "name": "Vehicle registration number",
+        "description": "Identifier of a specific means of transport",
+        "requirements": {"SLI": "C", "PL": "M", "BoL": "M", "SW": "C", "SDO": "C", "AW": "C", "SCM": "C", "CIM": "M", "CMR": "M", "DGD": "M", "CSD": "C", "CoO": "O", "PCoO": "O", "CODEX": "M", "WOAH": "M", "TIR": "M"}
+      },
+      {
+        "uid": "8260",
+        "name": "Transport Equipment Identifier",
+        "description": "Identifier of a piece of transport equipment",
+        "requirements": {"PL": "C", "BoL": "O", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "CoO": "O", "PCoO": "O", "CD": "C", "ATA": "M", "TIR": "M", "TAD": "M"}
+      },
+      {
+        "uid": "8270",
+        "name": "Transport means at border crossing",
+        "description": "Identifier of the means of transport used in crossing the border",
+        "requirements": {"PCoO": "C", "CD": "M"}
+      }
+    ],
+    "others": [
+      {
+        "uid": "9213",
+        "name": "Tax Regime Type",
+        "description": "Code specifying a regime according to which tax is assessed",
+        "requirements": {"PCoO": "C"}
+      },
+      {
+        "uid": "9308",
+        "name": "Seal Identifier",
+        "description": "The identification number of a seal affixed to transport equipment",
+        "requirements": {"PL": "M", "SW": "M", "CIM": "M", "DGD": "C", "PCoO": "C", "ATA": "M", "TIR": "M"}
+      }
+    ]
+  }
+}

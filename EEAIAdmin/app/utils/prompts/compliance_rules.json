@@ -1,0 +1,42 @@
+{
+  "EE": {
+    "register import letter of credit": {
+      "sanctions": {
+        "BENE_BK_NM": {
+          "required": true,
+          "severity": "high",
+          "error_message": "Beneficiary Bank Name is required for AML compliance."
+        },
+        "BENE_BK_ADD1": {
+          "required": true,
+          "severity": "high",
+          "error_message": "Beneficiary Bank Address is missing. Required for KYC checks."
+        }
+      },
+      "regulatory": {
+        "EXPIRY_PLC": {
+          "not_contains": ["India"],
+          "severity": "medium",
+          "error_message": "Expiry place in importer's country may violate LC terms."
+        },
+        "EXPIRY_DT": {
+          "required": true,
+          "severity": "medium",
+          "error_message": "Expiry Date is mandatory under UCP 600."
+        }
+      },
+      "operational": {
+        "LC_CCY": {
+          "allowed_values": ["USD", "EUR", "GBP"],
+          "severity": "low",
+          "error_message": "Unsupported currency: {value}. Expected: {allowed_values}"
+        },
+        "INCOTERMS": {
+          "allowed_values": ["FOB", "CIF", "CIP", "EXW"],
+          "severity": "low",
+          "error_message": "Invalid Incoterm: {value}"
+        }
+      }
+    }
+  }
+}

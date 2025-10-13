@@ -1,0 +1,43 @@
+{
+    "Inspection Certificate": {
+        "Certificate Details": [
+            "Certificate Number",
+            "Date of Issue",
+            "Inspection Agency Name",
+            "Place of Inspection",
+            "Type of Inspection (Pre-shipment, Quality, Quantity, etc.)"
+        ],
+        "Exporter & Buyer Information": [
+            "Exporter Name and Address",
+            "Consignee/Buyer Name and Address",
+            "Country of Destination"
+        ],
+        "Goods Details": [
+            "Invoice Number",
+            "Description of Goods",
+            "HS Code",
+            "Quantity",
+            "Unit of Measure",
+            "Packaging Details",
+            "Marks and Numbers"
+        ],
+        "Inspection Findings": [
+            "Inspection Method",
+            "Findings/Results",
+            "Compliance Status",
+            "Remarks/Observations",
+            "Applicable Standards (e.g., ISO, BIS)"
+        ],
+        "Transport Information": [
+            "Mode of Transport",
+            "Port of Loading",
+            "Port of Discharge",
+            "Shipping Line/Carrier Name"
+        ],
+        "Certification & Authentication": [
+            "Authorized Signatory of Inspection Agency",
+            "Seal/Stamp",
+            "Date and Place of Certification"
+        ]
+    }
+}

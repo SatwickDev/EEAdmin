@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Guarantee - Finstack Trade Finance</title>
+    
+    <!-- CSS Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
+    <!-- CKEditor 5 for rich text editing -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <!-- Bootstrap Icons for accept/reject buttons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- jQuery for AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            padding-top: 120px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at top left, rgba(79, 70, 229, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at top right, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Form Container */
+        .form-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 32px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .form-card:hover::before {
+            left: 100%;
+        }
+
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 48px rgba(0, 0, 0, 0.15),
+                0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        /* Form Elements */
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Editor Wrapper */
+        .editor-wrapper {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .editor-wrapper.focused {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Submit Button */
+        .submit-button {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Compliance Modal Styles */
+        .compliance-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .compliance-modal.show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .compliance-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .compliance-modal-content {
+            position: relative;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 32px;
+            border: 2px solid rgba(99, 102, 241, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.05),
+                0 4px 25px rgba(99, 102, 241, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .compliance-modal-header {
+            padding: 24px 32px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .compliance-modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 8px 0;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 12px;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #6366f1;
+        }
+
+        .nav-link.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Highlighted Text */
+        .highlight-container {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 16px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .suggestion-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+            border-radius: 8px;
+            border: 1px solid #fbbf24;
+            margin: 2px 4px;
+            transition: all 0.2s ease;
+        }
+
+        .red-strike {
+            text-decoration: line-through;
+            text-decoration-color: #ef4444;
+            color: #6b7280;
+        }
+
+        .suggested-text {
+            color: #059669;
+            font-weight: 600;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 3px 12px;
+            border-radius: 6px;
+            border: 1px solid #86efac;
+        }
+
+        .highlight-btn {
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 13px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            background: white;
+            margin: 0 2px;
+        }
+
+        .btn-right {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-wrong {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        /* Info Cards */
+        .info-card {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .severity-high {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border-left: 4px solid #ef4444;
+        }
+
+        .severity-medium {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .severity-low {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border-left: 4px solid #10b981;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInUp 0.3s ease;
+            z-index: 10001;
+        }
+
+        .toast.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .toast.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .toast.info {
+            border-left: 4px solid #3b82f6;
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+
+        .floating-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Brand Section */
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-container {
+            position: relative;
+        }
+
+        .modern-logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        .modern-logo:hover {
+            transform: scale(1.05) rotate(2deg);
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .status-pulse {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .brand-info h1 {
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            margin: 0 !important;
+            background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-info p {
+            font-size: 13px !important;
+            color: rgba(100, 116, 139, 0.8) !important;
+            margin: 0 !important;
+            font-weight: 500 !important;
+        }
+
+        /* Navigation Pills */
+        .nav-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 4px;
+        }
+
+        .nav-pill {
+            display: flex !important;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none !important;
+            color: rgba(100, 116, 139, 0.8) !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(30, 41, 59, 0.9) !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-pill.active {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #1e293b !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-pill i {
+            font-size: 16px;
+        }
+
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-indicator-modern {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #059669;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .action-button {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 10px 18px !important;
+            border-radius: 12px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-button.primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+        }
+
+        .action-button.secondary {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #374151 !important;
+            border: 1px solid rgba(229, 231, 235, 0.8) !important;
+        }
+
+        .action-button.secondary:hover {
+            background: rgba(255, 255, 255, 1) !important;
+            color: #1f2937 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Floating Header Animations */
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes logoFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-2px);
+            }
+        }
+
+        /* Adjust main content padding */
+        .pt-header {
+            padding-top: 120px !important;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1200px) {
+            .nav-pills {
+                gap: 4px;
+            }
+            
+            .nav-pill {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .nav-pill span {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .floating-header {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+            }
+            
+            .floating-header-content {
+                padding: 12px 20px;
+            }
+            
+            .brand-info p {
+                display: none !important;
+            }
+            
+            .nav-pills {
+                display: none;
+            }
+            
+            .header-actions {
+                gap: 8px;
+            }
+            
+            .action-button span {
+                display: none !important;
+            }
+            
+            .action-button {
+                padding: 8px 12px !important;
+            }
+            
+            .pt-header {
+                padding-top: 100px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .status-indicator-modern {
+                display: none;
+            }
+            
+            .brand-info h1 {
+                font-size: 20px !important;
+            }
+        }
+        /* Smart Capture Section Styles - Premium Card */
+        .smart-capture-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .smart-capture-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4);
+        }
+
+        .smart-capture-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .smart-capture-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .smart-capture-icon i {
+            font-size: 28px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .smart-capture-text h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .smart-capture-text p {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+        }
+        
+        .btn-smart-capture {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-smart-capture::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-smart-capture:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-smart-capture:hover::before {
+            left: 100%;
+        }
+        
+        .btn-smart-capture i {
+            font-size: 20px;
+        }
+
+        /* Smart Capture Modal */
+        .smart-capture-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .smart-capture-modal.active {
+            display: block;
+        }
+        
+        .smart-capture-iframe-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 1200px;
+            height: 85%;
+            max-height: 800px;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        
+        .smart-capture-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            backdrop-filter: blur(24px) saturate(1.2);
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.3);
+        }
+        
+        .smart-capture-header-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+        }
+        
+        .smart-capture-header-title i {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .smart-capture-header-title i::before {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .smart-capture-header-title h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .smart-capture-header-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+        
+        .smart-capture-close {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 20px;
+            color: #64748b;
+        }
+        
+        .smart-capture-close:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+            border-color: transparent;
+        }
+        
+        .smart-capture-iframe {
+            width: 100%;
+            height: calc(100% - 96px);
+            border: none;
+            background: #ffffff;
+        }
+        
+        .smart-capture-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .smart-capture-modal.loading .smart-capture-loading {
+            display: flex;
+        }
+        
+        .smart-capture-modal.loading .smart-capture-iframe {
+            opacity: 0;
+        }
+        
+        .smart-capture-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .smart-capture-loading-text {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Enhanced Chatbot Icon */
+        .chatbot-icon {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); }
+            100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+        }
+
+        @keyframes slideUpChat {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chatbot-icon:hover {
+            transform: scale(1.1);
+            animation: none;
+        }
+
+        .chatbot-icon i {
+            color: white;
+            font-size: 26px;
+        }
+
+        /* Enhanced Chatbot Overlay */
+        .chatbot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chatbot-overlay.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Enhanced Chatbot Window */
+        .chatbot-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            height: 650px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            animation: slideUpChat 0.3s ease;
+        }
+
+        .chatbot-window.maximized {
+            width: 90vw;
+            height: 90vh;
+            max-width: 1200px;
+            max-height: 900px;
+        }
+
+        .chatbot-window.minimized {
+            height: 60px;
+            width: 300px;
+            bottom: 30px;
+            right: 30px;
+            top: auto;
+            left: auto;
+            transform: none;
+        }
+
+        @keyframes slideUpModal {
+            from {
+                transform: translate(-50%, -45%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        /* Enhanced Chatbot Header */
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .chatbot-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chatbot-header-left i {
+            font-size: 20px;
+        }
+
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chatbot-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .chatbot-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chatbot-control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .chatbot-control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Chatbot Body */
+        .chatbot-body {
+            flex: 1;
+            overflow: hidden;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .chatbot-window.minimized .chatbot-body {
+            display: none;
+        }
+
+        .chatbot-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Additional Form Styles */
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, calc(-50% + 20px));
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Global Floating Headerve -->
+    {% include 'components/floating_header.html' %}
+
+    <!-- Main Form Container -->
+    <div class="form-container pt-header">
+        <div class="form-card">
+            <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Bank Guarantee Form
+            </h1>
+            <p style="color: #64748b; margin-bottom: 32px;">Complete the form below and run AI-powered compliance vetting before submission</p>
+
+            <!-- Smart Capture Section -->
+            <div class="form-section">
+                <div class="smart-capture-section">
+                    <div class="smart-capture-info">
+                        <div class="smart-capture-icon">
+                            <i class="mdi mdi-scan-helper"></i>
+                        </div>
+                        <div class="smart-capture-text">
+                            <h3>Smart Document Capture</h3>
+                            <p>Upload and extract data from guarantee documents automatically</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-smart-capture" onclick="openSmartCapture()">
+                        <i class="mdi mdi-scan-helper"></i>
+                        <span>Start Smart Capture</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="form-section">
+                <h3 class="section-title">Basic Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Guarantee Number <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="guaranteeNumber" placeholder="e.g., BG-2024-001234" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Guarantee Type <span class="required">*</span></label>
+                        <select class="form-input" id="guaranteeType" required>
+                            <option value="">Select Type</option>
+                            <option value="bid">Bid Bond</option>
+                            <option value="performance">Performance Guarantee</option>
+                            <option value="advance">Advance Payment Guarantee</option>
+                            <option value="retention">Retention Money Guarantee</option>
+                            <option value="warranty">Warranty Guarantee</option>
+                            <option value="payment">Payment Guarantee</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Issue Date <span class="required">*</span></label>
+                        <input type="date" class="form-input" id="issueDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Expiry Date <span class="required">*</span></label>
+                        <input type="date" class="form-input" id="expiryDate" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Parties Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Applicant Name <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="applicant" placeholder="Enter applicant name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Applicant Address</label>
+                        <textarea class="form-input" id="applicantAddress" placeholder="Enter applicant address" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Beneficiary Name <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="beneficiary" placeholder="Enter beneficiary name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Beneficiary Address</label>
+                        <textarea class="form-input" id="beneficiaryAddress" placeholder="Enter beneficiary address" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Financial Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Currency <span class="required">*</span></label>
+                        <select class="form-input" id="currency" required>
+                            <option value="">Select Currency</option>
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="CHF">CHF - Swiss Franc</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                            <option value="INR">INR - Indian Rupee</option>
+                            <option value="AED">AED - UAE Dirham</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Guarantee Amount <span class="required">*</span></label>
+                        <input type="number" class="form-input" id="amount" placeholder="e.g., 1000000" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contract/Project Number</label>
+                        <input type="text" class="form-input" id="contractNumber" placeholder="Enter contract or project number">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contract Value</label>
+                        <input type="number" class="form-input" id="contractValue" placeholder="Enter total contract value" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Purpose of Guarantee</label>
+                        <textarea class="form-input" id="purpose" placeholder="Describe the purpose of this guarantee" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Underlying Transaction</label>
+                        <input type="text" class="form-input" id="underlyingTransaction" placeholder="e.g., Construction Contract, Supply Agreement">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tolerance (+/- %)</label>
+                        <input type="number" class="form-input" id="tolerancePercent" placeholder="e.g., 10" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Validity Period (Days)</label>
+                        <input type="number" class="form-input" id="validityPeriod" placeholder="e.g., 365" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Terms</label>
+                        <select class="form-input" id="paymentTerms">
+                            <option value="">Select Payment Terms</option>
+                            <option value="on_demand">On Demand</option>
+                            <option value="on_first_demand">On First Demand</option>
+                            <option value="conditional">Conditional</option>
+                            <option value="unconditional">Unconditional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Claim Period</label>
+                        <input type="text" class="form-input" id="claimPeriod" placeholder="e.g., Within 30 days of expiry">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">Additional Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Special Conditions</label>
+                        <textarea class="form-input" id="specialConditions" placeholder="Any special conditions or requirements" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Documents Required for Claim</label>
+                        <textarea class="form-input" id="documentsRequired" placeholder="List documents required for claim" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Project Description</label>
+                        <textarea class="form-input" id="projectDescription" placeholder="Brief description of the project" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Delivery Terms</label>
+                        <select class="form-input" id="deliveryTerms">
+                            <option value="">Select Delivery Terms</option>
+                            <option value="EXW">EXW - Ex Works</option>
+                            <option value="FOB">FOB - Free On Board</option>
+                            <option value="CFR">CFR - Cost and Freight</option>
+                            <option value="CIF">CIF - Cost, Insurance and Freight</option>
+                            <option value="DDP">DDP - Delivered Duty Paid</option>
+                            <option value="DAP">DAP - Delivered At Place</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Bank Details</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Issuing Bank <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="issuingBank" placeholder="Enter issuing bank name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bank Reference</label>
+                        <input type="text" class="form-input" id="bankReference" placeholder="Enter bank reference number">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SWIFT Code</label>
+                        <input type="text" class="form-input" id="swiftCode" placeholder="Enter SWIFT/BIC code">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Advising Bank</label>
+                        <input type="text" class="form-input" id="advisingBank" placeholder="Enter advising bank (if applicable)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Correspondent Bank</label>
+                        <input type="text" class="form-input" id="correspondentBank" placeholder="Enter correspondent bank (if applicable)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bank Charges Borne By</label>
+                        <select class="form-input" id="chargesBorneBy">
+                            <option value="">Select...</option>
+                            <option value="applicant">Applicant</option>
+                            <option value="beneficiary">Beneficiary</option>
+                            <option value="shared">Shared (50/50)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Governing Law</label>
+                        <input type="text" class="form-input" id="governingLaw" placeholder="e.g., English Law, Singapore Law">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Place of Jurisdiction</label>
+                        <input type="text" class="form-input" id="jurisdiction" placeholder="e.g., Courts of Singapore">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guarantee Text Editor -->
+            <div class="form-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <label class="form-label" style="margin: 0;">Guarantee Wording</label>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="loadSampleGuarantee()" style="padding: 8px 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease;">
+                            <i class="mdi mdi-file-document-outline"></i>
+                            Load Sample
+                        </button>
+                        <button type="button" onclick="clearGuaranteeText()" style="padding: 8px 16px; background: white; color: #ef4444; border: 2px solid #ef4444; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease;">
+                            <i class="mdi mdi-close-circle-outline"></i>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <div id="guaranteeEditor"></div>
+                </div>
+                <input type="hidden" id="guaranteeTerms" name="guaranteeTerms">
+            </div>
+
+            <!-- Run Vet Analyze Button -->
+            <div class="form-section">
+                <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); border-radius: 12px; padding: 24px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="mdi mdi-shield-check" style="font-size: 32px; color: #6366f1;"></i>
+                            <div>
+                                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">AI-Powered Vetting Analysis</h3>
+                                <p style="margin: 0; font-size: 14px; color: #64748b;">Analyze your guarantee against URDG 758 and compliance rules</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="runVetAnalyze()" class="submit-button" style="width: 100%;">
+                        <i class="mdi mdi-magnify"></i>
+                        Vet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Submit Buttons -->
+            <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+                <button type="button" onclick="saveDraft()" style="padding: 12px 24px; background: white; color: #6366f1; border: 2px solid #6366f1; border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    Save as Draft
+                </button>
+                <button type="submit" class="submit-button">
+                    <i class="mdi mdi-send"></i>
+                    Submit Guarantee
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3 style="color: #1e293b; margin-bottom: 8px;">Analyzing your guarantee...</h3>
+            <p style="color: #64748b;">This may take a few moments</p>
+        </div>
+    </div>
+
+    <!-- Compliance Results Modal -->
+    <div id="complianceModal" class="compliance-modal">
+        <div class="compliance-modal-overlay" onclick="closeModal()"></div>
+        <div class="compliance-modal-content">
+            <div class="compliance-modal-header">
+                <div>
+                    <h2 style="font-size: 24px; font-weight: 700; margin: 0;">Vetting Analysis Results</h2>
+                    <p style="margin: 4px 0 0 0; opacity: 0.9;">AI-powered compliance analysis based on URDG 758</p>
+                </div>
+                <button onclick="closeModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 24px;">
+                    ×
+                </button>
+            </div>
+            
+            <div class="compliance-modal-body">
+                <!-- Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <i class="mdi mdi-shield-check" style="font-size: 48px; color: #6366f1;"></i>
+                        <div id="complianceScore" class="metric-value">-</div>
+                        <div class="metric-label">Compliance Score</div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="mdi mdi-alert-circle" style="font-size: 48px; color: #ef4444;"></i>
+                        <div id="highRiskCount" class="metric-value">-</div>
+                        <div class="metric-label">High Risk Issues</div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="mdi mdi-alert" style="font-size: 48px; color: #f59e0b;"></i>
+                        <div id="mediumRiskCount" class="metric-value">-</div>
+                        <div class="metric-label">Medium Risk Issues</div>
+                    </div>
+                    <div class="metric-card">
+                        <i class="mdi mdi-check-circle" style="font-size: 48px; color: #10b981;"></i>
+                        <div id="lowRiskCount" class="metric-value">-</div>
+                        <div class="metric-label">Low Risk Issues</div>
+                    </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                    <h3 style="margin: 0 0 12px 0; color: #1e293b;">Executive Summary</h3>
+                    <div id="complianceSummary" style="color: #64748b; line-height: 1.6;"></div>
+                </div>
+
+                <!-- Field Analysis Tabs -->
+                <ul class="nav-tabs" id="fieldTabs" role="tablist"></ul>
+                <div class="tab-content" id="tabContent"></div>
+                
+                <!-- Submit Section -->
+                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.1) 100%); border-radius: 12px; padding: 24px; margin-top: 32px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="mdi mdi-check-all" style="font-size: 32px; color: #10b981;"></i>
+                            <div>
+                                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">Apply Vetting Results</h3>
+                                <p style="margin: 0; font-size: 14px; color: #64748b;">Accept all suggestions and auto-populate form fields</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="applyVettingResults()" class="submit-button" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <i class="mdi mdi-check-all"></i>
+                        Submit & Apply to Form
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Repository Configuration for Trade Finance - Bank Guarantee
+        const REPOSITORY_CONFIG = {
+            repository_id: 'trade_finance',
+            repository_name: 'Trade Finance',
+            repository_type: 'bank_guarantee',
+            form_type: 'bank_guarantee',
+            collection: 'trade_finance_data',
+            selected_from_dashboard: sessionStorage.getItem('selectedRepository') ? true : false
+        };
+        
+        let editorInstance = null;
+        let currentComplianceData = null;
+        let suggestionHistory = {};
+        let originalText = {};
+
+        // Initialize CKEditor
+        ClassicEditor.create(document.querySelector('#guaranteeEditor'), {
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'bold', 'italic', 'underline', '|',
+                    'link', 'blockQuote', '|',
+                    'bulletedList', 'numberedList', '|',
+                    'undo', 'redo'
+                ]
+            },
+            placeholder: 'Enter your guarantee text here for AI-powered compliance analysis...'
+        })
+        .then(editor => {
+            editorInstance = editor;
+            editor.model.document.on('change:data', () => {
+                document.getElementById('guaranteeTerms').value = editor.getData();
+            });
+        })
+        .catch(error => {
+            console.error('Error initializing editor:', error);
+            showToast('Failed to initialize editor', 'error');
+        });
+        
+        // Initialize chatbot and form sync on page load
+        setTimeout(() => {
+            initializeChatbotWithRepository();
+            setupFormSyncWithChatbot();
+        }, 1000);
+
+        // Run Vet Analyze Function
+        async function runVetAnalyze() {
+            if (!editorInstance) {
+                showToast('Editor not initialized', 'error');
+                return;
+            }
+
+            const guaranteeText = editorInstance.getData();
+            if (!guaranteeText || guaranteeText.trim() === '') {
+                showToast('Please enter guarantee text to analyze', 'error');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingOverlay').classList.add('show');
+
+            // Prepare data in the format expected by the server
+            const customRules = sessionStorage.getItem('customRules') || '';
+            const formData = {
+                fields: [{
+                    label: "guarantee_wording",
+                    value: guaranteeText,
+                    description: "Full guarantee text"
+                }],
+                customRules: customRules
+            };
+
+            try {
+                // Call AI Check endpoint
+                const response = await fetch('/AICheck', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+
+                const data = await response.json();
+                currentComplianceData = data;
+                
+                // Hide loading
+                document.getElementById('loadingOverlay').classList.remove('show');
+                
+                // Display results
+                displayComplianceResults(data);
+                
+                // Show modal
+                document.getElementById('complianceModal').classList.add('show');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingOverlay').classList.remove('show');
+                showToast('Failed to analyze guarantee. Please try again.', 'error');
+            }
+        }
+
+        // Display Compliance Results
+        function displayComplianceResults(data) {
+            const { summary, fields, applicable_framework, applicable_articles, entities, rule_type } = data;
+
+            // Calculate metrics
+            let highCount = 0, mediumCount = 0, lowCount = 0;
+            if (fields) {
+                Object.values(fields).forEach(field => {
+                    if (field.severity === 'high') highCount++;
+                    else if (field.severity === 'medium') mediumCount++;
+                    else if (field.severity === 'low') lowCount++;
+                });
+            }
+
+            // Update metric cards
+            document.getElementById('highRiskCount').textContent = highCount;
+            document.getElementById('mediumRiskCount').textContent = mediumCount;
+            document.getElementById('lowRiskCount').textContent = lowCount;
+            
+            // Calculate compliance score
+            const totalIssues = highCount + mediumCount + lowCount;
+            const weightedScore = 100 - (highCount * 15 + mediumCount * 8 + lowCount * 3);
+            const complianceScore = Math.max(0, Math.min(100, weightedScore));
+            document.getElementById('complianceScore').textContent = complianceScore + '%';
+
+            // Update summary
+            document.getElementById('complianceSummary').innerHTML = summary || 'Analysis completed successfully.';
+
+            // Create field tabs
+            const fieldTabs = document.getElementById('fieldTabs');
+            const tabContent = document.getElementById('tabContent');
+            
+            fieldTabs.innerHTML = '';
+            tabContent.innerHTML = '';
+            
+            if (fields) {
+                Object.entries(fields).forEach(([key, field], index) => {
+                    createFieldTab(key, field, fieldTabs, tabContent, index === 0);
+                });
+            }
+            
+            // Add entities tab if available
+            if (entities) {
+                createEntitiesTab(entities, fieldTabs, tabContent);
+            }
+        }
+
+        // Create Field Tab
+        function createFieldTab(key, field, fieldTabs, tabContent, isActive) {
+            // Create tab button
+            const li = document.createElement('li');
+            const button = document.createElement('button');
+            button.className = 'nav-link' + (isActive ? ' active' : '');
+            button.setAttribute('data-field', key);
+            
+            const severityIcon = field.severity === 'high' ? 'alert-circle' : 
+                               field.severity === 'medium' ? 'alert' : 'check-circle';
+            const severityColor = field.severity === 'high' ? '#ef4444' : 
+                                field.severity === 'medium' ? '#f59e0b' : '#10b981';
+            
+            button.innerHTML = `
+                <i class="mdi mdi-${severityIcon}" style="color: ${severityColor}; margin-right: 8px;"></i>
+                ${key.replace(/_/g, ' ')}
+            `;
+            
+            button.onclick = function() {
+                document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show'));
+                this.classList.add('active');
+                document.getElementById(`tab-${key}`).classList.add('show');
+            };
+
+            fieldTabs.appendChild(button);
+
+            // Create tab content
+            const tabPane = document.createElement('div');
+            tabPane.className = 'tab-pane' + (isActive ? ' show' : '');
+            tabPane.id = `tab-${key}`;
+            
+            // Store original text
+            originalText[key] = field.value;
+
+            tabPane.innerHTML = `
+                <div class="info-card severity-${field.severity}">
+                    <h4 style="margin: 0 0 8px 0; font-weight: 600;">
+                        <i class="mdi mdi-${severityIcon}"></i>
+                        Severity: ${field.severity.toUpperCase()}
+                    </h4>
+                    <p style="margin: 0; color: #64748b;">${field.reason}</p>
+                </div>
+                
+                <div class="highlight-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+                        <h4 style="margin: 0; font-weight: 600;">Interactive Text Analysis</h4>
+                        <button onclick="undoAllChanges('${key}')" style="padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                            <i class="mdi mdi-undo"></i> Reset All
+                        </button>
+                    </div>
+                    <div id="highlight-content-${key}"></div>
+                </div>
+            `;
+            
+            tabContent.appendChild(tabPane);
+            
+            // Add highlighted content
+            setTimeout(() => {
+                const container = document.getElementById(`highlight-content-${key}`);
+                if (container) {
+                    container.appendChild(
+                        highlightTextToDOM(
+                            field.value,
+                            field.highlight_spans || [],
+                            field.severity,
+                            field.reason,
+                            key,
+                            field.highlight_suggestions || {}
+                        )
+                    );
+                }
+            }, 100);
+        }
+
+        // Create Entities Tab
+        function createEntitiesTab(entities, fieldTabs, tabContent) {
+            const button = document.createElement('button');
+            button.className = 'nav-link';
+            button.innerHTML = '<i class="mdi mdi-tag-multiple" style="margin-right: 8px;"></i> Extracted Entities';
+            
+            button.onclick = function() {
+                document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show'));
+                this.classList.add('active');
+                document.getElementById('tab-entities').classList.add('show');
+            };
+            
+            fieldTabs.appendChild(button);
+            
+            const tabPane = document.createElement('div');
+            tabPane.className = 'tab-pane';
+            tabPane.id = 'tab-entities';
+            
+            let tableHTML = '<h4 style="margin: 0 0 16px 0; font-weight: 600;">Extracted Entities</h4>';
+            tableHTML += '<table style="width: 100%; border-collapse: collapse;">';
+            
+            Object.entries(entities).forEach(([key, value]) => {
+                tableHTML += `
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <th style="padding: 12px; text-align: left; background: #f9fafb; font-weight: 600;">${key.replace(/_/g, ' ').toUpperCase()}</th>
+                        <td style="padding: 12px;">${value}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</table>';
+            tabPane.innerHTML = tableHTML;
+            tabContent.appendChild(tabPane);
+        }
+
+        // Highlight Text with Interactive Buttons
+        function highlightTextToDOM(text, spans, severity, tooltip, fieldKey, suggestions = {}) {
+            if (!spans || spans.length === 0) return document.createTextNode(text);
+            
+            // Sort spans by length (longest first)
+            spans.sort((a, b) => b.length - a.length);
+            
+            const fragment = document.createDocumentFragment();
+            let processedText = text;
+            
+            // Process each suggestion
+            Object.entries(suggestions).forEach(([phrase, suggestion]) => {
+                const regex = new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                processedText = processedText.replace(regex, (match) => {
+                    return `<span class="suggestion-wrapper">
+                        <span class="red-strike">${match}</span>
+                        <span style="color: #9ca3af; margin: 0 8px;">→</span>
+                        <span class="suggested-text">${suggestion}</span>
+                        <button class="highlight-btn btn-right" onclick="acceptSuggestion('${fieldKey}', '${phrase}', '${suggestion}', this)" title="Accept">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="highlight-btn btn-wrong" onclick="rejectSuggestion('${fieldKey}', '${phrase}', this)" title="Reject">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </span>`;
+                });
+            });
+            
+            // Create a temporary div to hold the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = processedText;
+            
+            return tempDiv;
+        }
+
+        // Accept Suggestion
+        function acceptSuggestion(fieldKey, phrase, suggestion, button) {
+            const wrapper = button.closest('.suggestion-wrapper');
+            wrapper.innerHTML = `<span style="color: #059669; font-weight: 600;">✓ ${suggestion}</span>`;
+            
+            // Track in history
+            if (!suggestionHistory[fieldKey]) suggestionHistory[fieldKey] = [];
+            suggestionHistory[fieldKey].push({
+                original: phrase,
+                suggestion: suggestion,
+                action: 'accepted',
+                timestamp: new Date().toISOString()
+            });
+            
+            showToast('Suggestion accepted', 'success');
+        }
+
+        // Reject Suggestion
+        function rejectSuggestion(fieldKey, phrase, button) {
+            const wrapper = button.closest('.suggestion-wrapper');
+            const originalText = wrapper.querySelector('.red-strike').textContent;
+            wrapper.innerHTML = `<span style="color: #6b7280;">✗ ${originalText}</span>`;
+            
+            // Track in history
+            if (!suggestionHistory[fieldKey]) suggestionHistory[fieldKey] = [];
+            suggestionHistory[fieldKey].push({
+                original: phrase,
+                action: 'rejected',
+                timestamp: new Date().toISOString()
+            });
+            
+            showToast('Suggestion rejected', 'info');
+        }
+
+        // Undo All Changes
+        function undoAllChanges(fieldKey) {
+            const field = currentComplianceData.fields[fieldKey];
+            const container = document.getElementById(`highlight-content-${fieldKey}`);
+            
+            if (container && field) {
+                container.innerHTML = '';
+                container.appendChild(
+                    highlightTextToDOM(
+                        field.value,
+                        field.highlight_spans || [],
+                        field.severity,
+                        field.reason,
+                        fieldKey,
+                        field.highlight_suggestions || {}
+                    )
+                );
+                
+                // Clear history
+                suggestionHistory[fieldKey] = [];
+                showToast('All changes reset', 'info');
+            }
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('complianceModal').classList.remove('show');
+        }
+
+        // Save Draft
+        function saveDraft() {
+            const formData = {
+                guaranteeNumber: document.getElementById('guaranteeNumber').value,
+                applicant: document.getElementById('applicant').value,
+                beneficiary: document.getElementById('beneficiary').value,
+                amount: document.getElementById('amount').value,
+                expiryDate: document.getElementById('expiryDate').value,
+                guaranteeTerms: editorInstance ? editorInstance.getData() : ''
+            };
+            
+            localStorage.setItem('guaranteeDraft', JSON.stringify(formData));
+            showToast('Draft saved successfully', 'success');
+        }
+
+        // Show Toast Notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'error' ? 'alert-circle' : 'information';
+            
+            toast.innerHTML = `
+                <i class="mdi mdi-${icon}" style="font-size: 24px;"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideInUp 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Load draft on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const draft = localStorage.getItem('guaranteeDraft');
+            if (draft) {
+                const data = JSON.parse(draft);
+                document.getElementById('guaranteeNumber').value = data.guaranteeNumber || '';
+                document.getElementById('applicant').value = data.applicant || '';
+                document.getElementById('beneficiary').value = data.beneficiary || '';
+                document.getElementById('amount').value = data.amount || '';
+                document.getElementById('expiryDate').value = data.expiryDate || '';
+                
+                if (editorInstance && data.guaranteeTerms) {
+                    editorInstance.setData(data.guaranteeTerms);
+                }
+            }
+        });
+
+        // Apply Vetting Results Function
+        function applyVettingResults() {
+            if (!currentComplianceData) {
+                showToast('No vetting analysis data available', 'error');
+                return;
+            }
+            
+            try {
+                // 1. Apply all suggestions to guarantee wording
+                let updatedGuaranteeText = applyAllSuggestionsToText();
+                if (updatedGuaranteeText && editorInstance) {
+                    editorInstance.setData(updatedGuaranteeText);
+                    document.getElementById('guaranteeTerms').value = updatedGuaranteeText;
+                }
+                
+                // 2. Auto-populate form fields from extracted entities
+                if (currentComplianceData.entities) {
+                    populateFormFieldsFromEntities(currentComplianceData.entities);
+                }
+                
+                // 3. Close the modal
+                closeModal();
+                
+                // 4. Show success message
+                showToast('Vetting results applied successfully! Form fields have been updated.', 'success');
+                
+                // 5. Scroll to top of form to show changes
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+            } catch (error) {
+                console.error('Error applying vetting results:', error);
+                showToast('Failed to apply vetting results. Please try again.', 'error');
+            }
+        }
+        
+        // Apply All Suggestions to Text
+        function applyAllSuggestionsToText() {
+            if (!currentComplianceData || !currentComplianceData.fields) {
+                return null;
+            }
+            
+            let updatedText = '';
+            
+            // Get the guarantee wording field
+            const guaranteeField = currentComplianceData.fields['guarantee_wording'];
+            if (guaranteeField && guaranteeField.highlight_suggestions) {
+                updatedText = guaranteeField.value;
+                
+                // Apply all suggestions
+                Object.entries(guaranteeField.highlight_suggestions).forEach(([phrase, suggestion]) => {
+                    const regex = new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                    updatedText = updatedText.replace(regex, suggestion);
+                });
+                
+                return updatedText;
+            }
+            
+            return null;
+        }
+        
+        // Populate Form Fields from Entities
+        function populateFormFieldsFromEntities(entities) {
+            const fieldMappings = {
+                'applicant_name': 'applicant',
+                'applicant': 'applicant',
+                'beneficiary_name': 'beneficiary', 
+                'beneficiary': 'beneficiary',
+                'guarantee_amount': 'amount',
+                'amount': 'amount',
+                'guarantee_number': 'guaranteeNumber',
+                'expiry_date': 'expiryDate',
+                'expiration_date': 'expiryDate'
+            };
+            
+            Object.entries(entities).forEach(([entityKey, entityValue]) => {
+                const normalizedKey = entityKey.toLowerCase().replace(/[\s_-]/g, '_');
+                const formFieldId = fieldMappings[normalizedKey];
+                
+                if (formFieldId && entityValue) {
+                    const formField = document.getElementById(formFieldId);
+                    if (formField && (!formField.value || formField.value.trim() === '')) {
+                        // Only populate if field is empty to avoid overwriting user data
+                        if (formFieldId === 'expiryDate' && entityValue) {
+                            // Handle date formatting
+                            const dateValue = formatDateForInput(entityValue);
+                            if (dateValue) {
+                                formField.value = dateValue;
+                            }
+                        } else {
+                            formField.value = entityValue;
+                        }
+                        
+                        // Add visual feedback
+                        formField.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)';
+                        formField.style.borderColor = '#10b981';
+                        
+                        // Remove the highlighting after 3 seconds
+                        setTimeout(() => {
+                            formField.style.background = 'white';
+                            formField.style.borderColor = '#e2e8f0';
+                        }, 3000);
+                    }
+                }
+            });
+        }
+        
+        // Format Date for Input Field
+        function formatDateForInput(dateString) {
+            try {
+                // Try to parse various date formats
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    // Try parsing DD/MM/YYYY or DD-MM-YYYY format
+                    const parts = dateString.split(/[\/\-\.]/);
+                    if (parts.length === 3) {
+                        // Assume DD/MM/YYYY format
+                        const day = parseInt(parts[0]);
+                        const month = parseInt(parts[1]) - 1; // Month is 0-indexed
+                        const year = parseInt(parts[2]);
+                        const parsedDate = new Date(year, month, day);
+                        if (!isNaN(parsedDate.getTime())) {
+                            return parsedDate.toISOString().split('T')[0];
+                        }
+                    }
+                    return null;
+                }
+                return date.toISOString().split('T')[0];
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return null;
+            }
+        }
+
+        // Handle Escape key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('complianceModal').classList.contains('show')) {
+                closeModal();
+            }
+        });
+
+        // Smart Capture Functions
+        function openSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+            
+            modal.classList.add('loading');
+            // Set repository type for document classification with proper parameters
+            const params = new URLSearchParams({
+                repository_type: 'Trade Finance',
+                repository_id: REPOSITORY_CONFIG.repository_id,
+                form_type: 'bank_guarantee',
+                context: 'guarantee_form'
+            });
+            iframe.src = `/document-classification-overlay?${params.toString()}`;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            document.addEventListener('keydown', handleSmartCaptureEscape);
+        }
+        
+        function hideSmartCaptureLoading() {
+            const modal = document.getElementById('smartCaptureModal');
+            setTimeout(() => {
+                modal.classList.remove('loading');
+            }, 300);
+        }
+        
+        function handleSmartCaptureEscape(e) {
+            if (e.key === 'Escape') {
+                closeSmartCapture();
+            }
+        }
+        
+        function closeSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+            
+            modal.classList.remove('active');
+            modal.classList.remove('loading');
+            
+            setTimeout(() => {
+                iframe.src = '';
+            }, 300);
+            
+            document.body.style.overflow = 'auto';
+            document.removeEventListener('keydown', handleSmartCaptureEscape);
+        }
+
+        // Chatbot Functions
+        let isMaximized = false;
+        let isMinimized = false;
+
+        function openChatbot() {
+            const overlay = document.getElementById('chatbotOverlay');
+            const window = document.getElementById('chatbotWindow');
+            overlay.classList.add('active');
+            window.classList.remove('minimized');
+            isMinimized = false;
+            
+            // Send current form data to chatbot when it opens
+            setTimeout(() => {
+                sendFormContextToChatbot();
+            }, 500);
+        }
+
+        function closeChatbot() {
+            const overlay = document.getElementById('chatbotOverlay');
+            overlay.classList.remove('active');
+            isMaximized = false;
+            isMinimized = false;
+            const window = document.getElementById('chatbotWindow');
+            window.classList.remove('maximized', 'minimized');
+        }
+
+        function closeChatbotOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeChatbot();
+            }
+        }
+
+        function minimizeChatbot() {
+            const window = document.getElementById('chatbotWindow');
+            if (isMinimized) {
+                window.classList.remove('minimized');
+                isMinimized = false;
+            } else {
+                window.classList.add('minimized');
+                window.classList.remove('maximized');
+                isMinimized = true;
+                isMaximized = false;
+            }
+        }
+
+        function maximizeChatbot() {
+            const window = document.getElementById('chatbotWindow');
+            if (isMaximized) {
+                window.classList.remove('maximized');
+                isMaximized = false;
+            } else {
+                window.classList.add('maximized');
+                window.classList.remove('minimized');
+                isMaximized = true;
+                isMinimized = false;
+            }
+        }
+
+        // Load Sample Guarantee Text
+        function loadSampleGuarantee() {
+            // First populate the form fields with sample data
+            document.getElementById('guaranteeNumber').value = 'BG-2025-001234';
+            document.getElementById('guaranteeType').value = 'performance';
+            document.getElementById('issueDate').value = '2025-01-15';
+            document.getElementById('expiryDate').value = '2026-01-15';
+            
+            // Applicant Information
+            document.getElementById('applicant').value = 'Global Construction Solutions Ltd.';
+            document.getElementById('applicantAddress').value = '1500 Broadway Avenue, Suite 2500\nNew York, NY 10036\nUnited States\nTel: +1-212-555-0100\nEmail: contracts@globalconstruction.com';
+            
+            // Beneficiary Information
+            document.getElementById('beneficiary').value = 'Ministry of Infrastructure Development';
+            document.getElementById('beneficiaryAddress').value = 'Government Complex, Block A\n123 Capital Boulevard\nBerlin, 10117\nGermany\nTel: +49-30-5550-1000';
+            
+            // Financial Details
+            document.getElementById('currency').value = 'EUR';
+            document.getElementById('amount').value = '5000000';
+            document.getElementById('contractNumber').value = 'INFRA/2025/HIGHWAY/001';
+            document.getElementById('contractValue').value = '50000000';
+            
+            // Bank Details
+            document.getElementById('issuingBank').value = 'International Trade Bank AG';
+            document.getElementById('bankReference').value = 'ITB/BG/2025/001234';
+            document.getElementById('swiftCode').value = 'ITBDEFF';
+            document.getElementById('advisingBank').value = 'Deutsche Commerce Bank';
+            
+            // Guarantee Text with filled information
+            const sampleText = `<h3>BANK GUARANTEE</h3>
+<p><strong>Guarantee Number:</strong> BG-2025-001234</p>
+<p><strong>Date of Issue:</strong> January 15, 2025</p>
+<p><strong>Beneficiary:</strong> Ministry of Infrastructure Development<br>
+Government Complex, Block A<br>
+123 Capital Boulevard<br>
+Berlin, 10117, Germany</p>
+<p><strong>Applicant:</strong> Global Construction Solutions Ltd.<br>
+1500 Broadway Avenue, Suite 2500<br>
+New York, NY 10036, United States</p>
+
+<h4>WHEREAS:</h4>
+<p>The Applicant has entered into a Contract No. INFRA/2025/HIGHWAY/001 dated January 1, 2025 ("the Contract") with the Beneficiary for the Construction and Development of Highway Extension Project - Phase 3, valued at EUR 50,000,000 (Fifty Million Euros).</p>
+
+<p>In accordance with the terms and conditions of the Contract, the Applicant is required to provide a Performance Guarantee for the amount of EUR 5,000,000 (Five Million Euros), representing 10% of the total contract value.</p>
+
+<h4>NOW THEREFORE:</h4>
+<p>We, International Trade Bank AG, having our registered office at Friedrichstraße 200, 10117 Berlin, Germany (hereinafter referred to as "the Bank"), at the request of the Applicant, hereby irrevocably undertake to pay the Beneficiary any sum or sums not exceeding in total the amount of EUR 5,000,000 (Five Million Euros) upon receipt of the Beneficiary's first written demand stating that:</p>
+
+<ol>
+<li>The Applicant has failed to perform their obligations under the Contract; and</li>
+<li>The respect in which the Applicant is in breach.</li>
+</ol>
+
+<h4>CONDITIONS:</h4>
+<ul>
+<li>This guarantee shall come into force on January 15, 2025 and shall remain valid until January 15, 2026.</li>
+<li>Any demand under this guarantee must be received by us at our above address on or before January 15, 2026.</li>
+<li>This guarantee shall be automatically extended without amendment for successive periods of 6 months from the present or any future expiration date, unless we notify you at least 60 days prior to any expiration date that we elect not to extend this guarantee for any additional period.</li>
+<li>This guarantee is subject to the Uniform Rules for Demand Guarantees (URDG 758) of the International Chamber of Commerce.</li>
+<li>Any disputes arising out of or in connection with this guarantee shall be subject to the exclusive jurisdiction of the courts of Berlin, Germany.</li>
+</ul>
+
+<p><strong>Maximum Liability:</strong> Our liability under this guarantee shall not exceed EUR 5,000,000 and shall reduce automatically by the amount of any payment made by us under this guarantee.</p>
+
+<p><strong>Partial Drawings:</strong> Partial drawings are permitted under this guarantee.</p>
+
+<p><strong>Charges:</strong> All banking charges outside Germany are for the account of the Beneficiary. All banking charges in Germany are for the account of the Applicant.</p>
+
+<p><strong>Governing Law:</strong> This guarantee shall be governed by and construed in accordance with the laws of Germany.</p>
+
+<p><strong>Communication:</strong> All communications regarding this guarantee should be addressed to:<br>
+International Trade Bank AG<br>
+Trade Finance Department<br>
+Friedrichstraße 200, 10117 Berlin, Germany<br>
+SWIFT: ITBDEFF<br>
+Email: guarantees@itb-bank.com<br>
+Tel: +49-30-5550-2000</p>
+
+<p>IN WITNESS WHEREOF, we have caused this guarantee to be executed by our duly authorized officers on the date first written above.</p>
+
+<p><strong>For and on behalf of International Trade Bank AG</strong></p>
+<p>_______________________<br>
+<strong>Authorized Signatory</strong><br>
+Name: Dr. Hans Mueller<br>
+Title: Senior Vice President, Trade Finance<br>
+Date: January 15, 2025</p>
+
+<p>_______________________<br>
+<strong>Authorized Signatory</strong><br>
+Name: Maria Schmidt<br>
+Title: Head of Guarantee Operations<br>
+Date: January 15, 2025</p>`;
+
+            if (editorInstance) {
+                editorInstance.setData(sampleText);
+                document.getElementById('guaranteeTerms').value = sampleText;
+                showToast('Sample guarantee text loaded successfully', 'success');
+            } else {
+                showToast('Editor not initialized. Please try again.', 'error');
+            }
+        }
+
+        // Clear Guarantee Text
+        function clearGuaranteeText() {
+            if (editorInstance) {
+                if (confirm('Are you sure you want to clear the guarantee text?')) {
+                    editorInstance.setData('');
+                    document.getElementById('guaranteeTerms').value = '';
+                    showToast('Guarantee text cleared', 'info');
+                }
+            } else {
+                showToast('Editor not initialized. Please try again.', 'error');
+            }
+        }
+
+        // Initialize event listeners when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smart Capture modal click outside to close
+            const smartCaptureModal = document.getElementById('smartCaptureModal');
+            if (smartCaptureModal) {
+                smartCaptureModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeSmartCapture();
+                    }
+                });
+            }
+
+            // Set up message listener for chatbot auto-fill
+            window.addEventListener('message', handleChatbotMessage);
+            
+            // Make chatbot window draggable
+            const chatbotHeader = document.getElementById('chatbotHeader');
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            
+            if (chatbotHeader && chatbotWindow) {
+                let isDragging = false;
+                let currentX;
+                let currentY;
+                let initialX;
+                let initialY;
+                let xOffset = 0;
+                let yOffset = 0;
+
+                chatbotHeader.addEventListener('mousedown', dragStart);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', dragEnd);
+
+                function dragStart(e) {
+                    if (e.target.closest('.chatbot-controls')) return;
+                    
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+
+                    if (e.target === chatbotHeader || chatbotHeader.contains(e.target)) {
+                        isDragging = true;
+                    }
+                }
+
+                function drag(e) {
+                    if (isDragging) {
+                        e.preventDefault();
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+
+                        xOffset = currentX;
+                        yOffset = currentY;
+
+                        if (!isMaximized && !isMinimized) {
+                            chatbotWindow.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`;
+                        }
+                    }
+                }
+
+                function dragEnd() {
+                    initialX = currentX;
+                    initialY = currentY;
+                    isDragging = false;
+                }
+            }
+
+            // Handle messages from Smart Capture
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'POPULATE_GUARANTEE_FORM' && event.data.source === 'smart_capture') {
+                    const formData = event.data.data;
+                    
+                    // Populate form fields with extracted data
+                    Object.keys(formData).forEach(fieldName => {
+                        const element = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
+                        if (element) {
+                            if (element.type === 'date' && formData[fieldName]) {
+                                const dateValue = new Date(formData[fieldName]);
+                                if (!isNaN(dateValue)) {
+                                    element.value = dateValue.toISOString().split('T')[0];
+                                } else {
+                                    element.value = formData[fieldName];
+                                }
+                            } else {
+                                element.value = formData[fieldName];
+                            }
+                            
+                            // Highlight the field briefly
+                            element.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)';
+                            element.style.borderColor = '#10b981';
+                            
+                            setTimeout(() => {
+                                element.style.background = 'white';
+                                element.style.borderColor = '#e2e8f0';
+                            }, 3000);
+                        }
+                    });
+                    
+                    showToast('Form fields populated from document', 'success');
+                    closeSmartCapture();
+                }
+            });
+            
+            // Initialize repository context
+            console.log('Initializing Bank Guarantee Form with repository:', REPOSITORY_CONFIG);
+            
+            // Initialize chatbot iframe with repository context
+            initializeChatbotWithRepository();
+            
+            // Initialize form with repository context
+            initializeRepositoryContext();
+            
+            // Set document repository type for smart capture
+            localStorage.setItem('document_repository_type', 'Trade Finance');
+        });
+        
+        // Initialize chatbot iframe with repository context
+        function initializeChatbotWithRepository() {
+            const chatbotFrame = document.getElementById('chatbotFrame');
+            if (chatbotFrame) {
+                // Build URL with repository parameters
+                const params = new URLSearchParams({
+                    repository_id: REPOSITORY_CONFIG.repository_id,
+                    repository_name: REPOSITORY_CONFIG.repository_name,
+                    repository_type: REPOSITORY_CONFIG.repository_type,
+                    form_type: REPOSITORY_CONFIG.form_type
+                });
+                
+                // Set the iframe source with parameters
+                chatbotFrame.src = `/ai_chat_modern_overylay?${params.toString()}`;
+                
+                // Also set up load event to send context after iframe loads
+                chatbotFrame.onload = function() {
+                    setTimeout(() => {
+                        chatbotFrame.contentWindow.postMessage({
+                            type: 'repository_context',
+                            repository: REPOSITORY_CONFIG,
+                            source: 'trade_finance_guarantee_form',
+                            connected: true
+                        }, '*');
+                        console.log('Repository context sent to chatbot iframe');
+                    }, 500);
+                };
+            }
+        }
+        
+        // Initialize repository context for the form
+        function initializeRepositoryContext() {
+            // Update any repository-specific elements
+            const repoIndicators = document.querySelectorAll('.repository-indicator');
+            repoIndicators.forEach(indicator => {
+                indicator.textContent = REPOSITORY_CONFIG.repository_name;
+            });
+            
+            // Store repository context in session
+            sessionStorage.setItem('current_repository', JSON.stringify(REPOSITORY_CONFIG));
+            
+            // Mark repository as initialized
+            REPOSITORY_CONFIG.initialized = true;
+            
+            // Log initialization complete
+            console.log('Repository context initialized:', REPOSITORY_CONFIG);
+            
+            // Send repository context to chatbot iframe
+            setTimeout(() => {
+                const chatbotFrame = document.getElementById('chatbotFrame');
+                if (chatbotFrame && chatbotFrame.contentWindow) {
+                    chatbotFrame.contentWindow.postMessage({
+                        type: 'repository_context',
+                        repository: REPOSITORY_CONFIG,
+                        source: 'trade_finance_guarantee_form',
+                        connected: REPOSITORY_CONFIG.selected_from_dashboard
+                    }, '*');
+                }
+                
+                // Also set in chatbot repository integration if available
+                if (window.chatbotRepository) {
+                    window.chatbotRepository.setContext(REPOSITORY_CONFIG);
+                }
+            }, 1000);
+            
+            // Send repository context to chatbot when it opens
+            window.addEventListener('message', handleChatbotMessages);
+        }
+        
+        // Handle messages between form and chatbot
+        function handleChatbotMessages(event) {
+            if (event.data) {
+                switch(event.data.type) {
+                    case 'chatbot_ready':
+                        sendRepositoryContextToChatbot();
+                        break;
+                    case 'autofill_guarantee':
+                        autoFillForm(event.data.formData);
+                        break;
+                    case 'request_form_data':
+                        sendFormContextToChatbot();
+                        break;
+                }
+            }
+        }
+        
+        // Send repository context to chatbot
+        function sendRepositoryContextToChatbot() {
+            const chatbotFrame = document.getElementById('chatbotFrame');
+            if (chatbotFrame && chatbotFrame.contentWindow) {
+                chatbotFrame.contentWindow.postMessage({
+                    type: 'repository_context',
+                    repository: REPOSITORY_CONFIG,
+                    form_type: 'bank_guarantee',
+                    form_fields: getFormFields(),
+                    timestamp: new Date().toISOString()
+                }, '*');
+            }
+        }
+        
+        // Get current form fields for chatbot context
+        function getFormFields() {
+            return {
+                guaranteeNumber: document.getElementById('guaranteeNumber')?.value || '',
+                applicant: document.getElementById('applicant')?.value || '',
+                applicantAddress: document.getElementById('applicantAddress')?.value || '',
+                beneficiary: document.getElementById('beneficiary')?.value || '',
+                beneficiaryAddress: document.getElementById('beneficiaryAddress')?.value || '',
+                guaranteeType: document.getElementById('guaranteeType')?.value || '',
+                amount: document.getElementById('amount')?.value || '',
+                currency: document.getElementById('currency')?.value || '',
+                issueDate: document.getElementById('issueDate')?.value || '',
+                expiryDate: document.getElementById('expiryDate')?.value || '',
+                contractNumber: document.getElementById('contractNumber')?.value || '',
+                contractValue: document.getElementById('contractValue')?.value || '',
+                purpose: document.getElementById('purpose')?.value || '',
+                underlyingTransaction: document.getElementById('underlyingTransaction')?.value || '',
+                tolerancePercent: document.getElementById('tolerancePercent')?.value || '',
+                validityPeriod: document.getElementById('validityPeriod')?.value || '',
+                paymentTerms: document.getElementById('paymentTerms')?.value || '',
+                claimPeriod: document.getElementById('claimPeriod')?.value || '',
+                specialConditions: document.getElementById('specialConditions')?.value || '',
+                documentsRequired: document.getElementById('documentsRequired')?.value || '',
+                projectDescription: document.getElementById('projectDescription')?.value || '',
+                deliveryTerms: document.getElementById('deliveryTerms')?.value || '',
+                issuingBank: document.getElementById('issuingBank')?.value || '',
+                bankReference: document.getElementById('bankReference')?.value || '',
+                swiftCode: document.getElementById('swiftCode')?.value || '',
+                advisingBank: document.getElementById('advisingBank')?.value || '',
+                correspondentBank: document.getElementById('correspondentBank')?.value || '',
+                chargesBorneBy: document.getElementById('chargesBorneBy')?.value || '',
+                governingLaw: document.getElementById('governingLaw')?.value || '',
+                jurisdiction: document.getElementById('jurisdiction')?.value || '',
+                guaranteeText: editorInstance ? editorInstance.getData() : ''
+            };
+        }
+        
+        // Get current form data
+        function getCurrentFormData() {
+            return getFormFields();
+        }
+        
+        // Function to send form context to chatbot
+        function sendFormContextToChatbot() {
+            const chatbotFrame = document.getElementById('chatbotFrame');
+            if (chatbotFrame && chatbotFrame.contentWindow) {
+                const formData = getCurrentFormData();
+                chatbotFrame.contentWindow.postMessage({
+                    type: 'form_context',
+                    formData: formData,
+                    formType: 'bank_guarantee',
+                    timestamp: new Date().toISOString()
+                }, '*');
+                console.log('Form context sent to chatbot:', formData);
+            }
+        }
+        
+        // Auto-fill form from chatbot suggestions
+        function autoFillForm(formData) {
+            if (formData.guaranteeNumber) document.getElementById('guaranteeNumber').value = formData.guaranteeNumber;
+            if (formData.applicant) document.getElementById('applicant').value = formData.applicant;
+            if (formData.applicantAddress) document.getElementById('applicantAddress').value = formData.applicantAddress;
+            if (formData.beneficiary) document.getElementById('beneficiary').value = formData.beneficiary;
+            if (formData.beneficiaryAddress) document.getElementById('beneficiaryAddress').value = formData.beneficiaryAddress;
+            if (formData.guaranteeType) document.getElementById('guaranteeType').value = formData.guaranteeType;
+            if (formData.amount) document.getElementById('amount').value = formData.amount;
+            if (formData.currency) document.getElementById('currency').value = formData.currency;
+            if (formData.issueDate) document.getElementById('issueDate').value = formData.issueDate;
+            if (formData.expiryDate) document.getElementById('expiryDate').value = formData.expiryDate;
+            if (formData.tolerancePercent) document.getElementById('tolerancePercent').value = formData.tolerancePercent;
+            if (formData.contractValue) document.getElementById('contractValue').value = formData.contractValue;
+            if (formData.contractNumber) document.getElementById('contractNumber').value = formData.contractNumber;
+            if (formData.projectName) document.getElementById('projectName').value = formData.projectName;
+            if (formData.paymentTerms) document.getElementById('paymentTerms').value = formData.paymentTerms;
+            if (formData.claimPeriod) document.getElementById('claimPeriod').value = formData.claimPeriod;
+            if (formData.purpose) document.getElementById('purpose').value = formData.purpose;
+            if (formData.underlyingTransaction) document.getElementById('underlyingTransaction').value = formData.underlyingTransaction;
+            if (formData.specialConditions) document.getElementById('specialConditions').value = formData.specialConditions;
+            if (formData.documentsRequired) document.getElementById('documentsRequired').value = formData.documentsRequired;
+            if (formData.projectDescription) document.getElementById('projectDescription').value = formData.projectDescription;
+            if (formData.deliveryTerms) document.getElementById('deliveryTerms').value = formData.deliveryTerms;
+            if (formData.validityPeriod) document.getElementById('validityPeriod').value = formData.validityPeriod;
+            if (formData.issuingBank) document.getElementById('issuingBank').value = formData.issuingBank;
+            if (formData.bankReference) document.getElementById('bankReference').value = formData.bankReference;
+            if (formData.swiftCode) document.getElementById('swiftCode').value = formData.swiftCode;
+            if (formData.advisingBank) document.getElementById('advisingBank').value = formData.advisingBank;
+            if (formData.correspondentBank) document.getElementById('correspondentBank').value = formData.correspondentBank;
+            if (formData.chargesBorneBy) document.getElementById('chargesBorneBy').value = formData.chargesBorneBy;
+            if (formData.governingLaw) document.getElementById('governingLaw').value = formData.governingLaw;
+            if (formData.jurisdiction) document.getElementById('jurisdiction').value = formData.jurisdiction;
+            if (formData.guaranteeTerms && editorInstance) {
+                editorInstance.setData(formData.guaranteeTerms);
+            }
+            if (formData.contractNumber) document.getElementById('contractNumber').value = formData.contractNumber;
+            if (formData.contractValue) document.getElementById('contractValue').value = formData.contractValue;
+            if (formData.purpose) document.getElementById('purpose').value = formData.purpose;
+            if (formData.underlyingTransaction) document.getElementById('underlyingTransaction').value = formData.underlyingTransaction;
+            if (formData.tolerancePercent) document.getElementById('tolerancePercent').value = formData.tolerancePercent;
+            if (formData.validityPeriod) document.getElementById('validityPeriod').value = formData.validityPeriod;
+            if (formData.issuingBank) document.getElementById('issuingBank').value = formData.issuingBank;
+            if (formData.bankReference) document.getElementById('bankReference').value = formData.bankReference;
+            if (formData.swiftCode) document.getElementById('swiftCode').value = formData.swiftCode;
+            if (formData.advisingBank) document.getElementById('advisingBank').value = formData.advisingBank;
+            if (formData.correspondentBank) document.getElementById('correspondentBank').value = formData.correspondentBank;
+            if (formData.chargesBorneBy) document.getElementById('chargesBorneBy').value = formData.chargesBorneBy;
+            if (formData.governingLaw) document.getElementById('governingLaw').value = formData.governingLaw;
+            if (formData.jurisdiction) document.getElementById('jurisdiction').value = formData.jurisdiction;
+            if (formData.guaranteeText && editorInstance) {
+                editorInstance.setData(formData.guaranteeText);
+            }
+            
+            // Show success notification
+            showNotification('Form auto-filled from chatbot suggestions', 'success');
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)'};
+                color: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Handle messages from chatbot for auto-fill
+        function handleChatbotMessage(event) {
+            if (event.data && event.data.type === 'autofill_guarantee') {
+                autoFillForm(event.data.data);
+            }
+            
+            // Handle transaction confirmation from chatbot
+            if (event.data && event.data.type === 'transaction_confirmed') {
+                autoFillForm(event.data.formData);
+            }
+            
+            // Handle direct form population from chatbot
+            if (event.data && event.data.type === 'POPULATE_GUARANTEE_FORM') {
+                autoFillForm(event.data.data);
+            }
+            
+            // Handle chatbot ready message
+            if (event.data && event.data.type === 'chatbot_ready') {
+                sendRepositoryContextToChatbot();
+            }
+        }
+        
+        // Function to set up form sync with chatbot
+        function setupFormSyncWithChatbot() {
+            const form = document.querySelector('.form-card');
+            if (!form) return;
+            
+            // Add change listeners to all form inputs
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    // Debounce to avoid too many messages
+                    clearTimeout(window.formSyncTimeout);
+                    window.formSyncTimeout = setTimeout(() => {
+                        sendFormContextToChatbot();
+                    }, 1000);
+                });
+            });
+            
+            // Send initial form context
+            setTimeout(() => {
+                sendFormContextToChatbot();
+            }, 2000);
+        }
+    </script>
+
+    <!-- Smart Capture Modal -->
+    <div id="smartCaptureModal" class="smart-capture-modal">
+        <div class="smart-capture-iframe-container">
+            <div class="smart-capture-header">
+                <div class="smart-capture-header-title">
+                    <i class="mdi mdi-scan-helper"></i>
+                    <div>
+                        <h3>Smart Document Capture</h3>
+                        <div class="smart-capture-header-subtitle">Upload and extract data from your documents</div>
+                    </div>
+                </div>
+                <button class="smart-capture-close" onclick="closeSmartCapture()" title="Close">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="smart-capture-loading">
+                <div class="smart-capture-spinner"></div>
+                <div class="smart-capture-loading-text">Loading Smart Capture...</div>
+            </div>
+            <iframe id="smartCaptureIframe" class="smart-capture-iframe" src="" onload="hideSmartCaptureLoading()"></iframe>
+        </div>
+    </div>
+
+    <!-- Chatbot Icon -->
+    <div class="chatbot-icon" onclick="openChatbot()">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <!-- Chatbot Overlay -->
+    <div id="chatbotOverlay" class="chatbot-overlay" onclick="closeChatbotOnOverlay(event)">
+        <div id="chatbotWindow" class="chatbot-window" onclick="event.stopPropagation()">
+            <div class="chatbot-header" id="chatbotHeader">
+                <div class="chatbot-header-left">
+                    <i class="fas fa-robot"></i>
+                    <div>
+                        <h3>AI Assistant</h3>
+                        <div class="chatbot-status">
+                            <span class="status-dot"></span>
+                            <span>Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chatbot-controls">
+                    <button class="chatbot-control-btn" onclick="minimizeChatbot()" title="Minimize">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="chatbot-control-btn" onclick="maximizeChatbot()" title="Maximize">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="chatbot-control-btn" onclick="closeChatbot()" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chatbot-body">
+                <iframe id="chatbotFrame" class="chatbot-iframe" src="/ai_chat_modern_overylay"></iframe>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

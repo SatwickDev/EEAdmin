@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Configuration - EEAI Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: #ffffff;
+            padding: 6px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .tab:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .tab.active {
+            background: #4b5563;
+            color: #ffffff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group .description {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea.form-control {
+            min-height: 200px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4b5563;
+            color: white;
+            border: 1px solid #374151;
+        }
+
+        .btn-primary:hover {
+            background: #374151;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            background: #ffffff;
+            padding: 10px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #4b5563;
+            font-weight: 500;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+            transition: all 0.15s ease;
+            z-index: 999;
+        }
+
+        .back-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border-left: 4px solid #ef4444;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 48px;
+            color: #64748b;
+        }
+
+        .spinner {
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .config-section {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .config-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge.mandatory {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .badge.optional {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #dbeafe;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">
+        <i class="mdi mdi-arrow-left"></i>
+        Back to Home
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>Prompt Configuration</h1>
+            <p>Configure AI prompts for document classification, field extraction, and compliance checking</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading configuration...</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('unified')">
+                <i class="mdi mdi-brain"></i> Unified Prompt
+            </button>
+            <button class="tab" onclick="switchTab('settings')">
+                <i class="mdi mdi-cog"></i> Settings
+            </button>
+        </div>
+
+        <!-- Unified Prompt Tab -->
+        <div id="tab-unified" class="tab-content active">
+            <!-- Prompt Sections -->
+            <div class="config-section">
+                <h3>
+                    Section 1: System Prompt Configuration
+                    <span class="badge mandatory" style="font-size: 11px; margin-left: 8px;">Required</span>
+                </h3>
+                <div class="form-group">
+                    <div style="background: #f9fafb; padding: 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+                        <div style="color: #374151; font-size: 13px; line-height: 1.6;">
+                            <strong style="color: #1f2937;">Purpose:</strong> Standard instructions for AI model - Document classification and extraction rules, entity weighting rules (M/O/C), metadata format specifications.
+                        </div>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                            <strong style="color: #1f2937; font-size: 13px;">Dynamic Placeholder:</strong>
+                            <div style="margin-top: 8px;">
+                                <code style="background: #ffffff; padding: 6px 12px; border-radius: 4px; color: #1f2937; font-size: 12px; border: 1px solid #e5e7eb; display: inline-block;">{{comprehensive_list_of_documents}}</code>
+                                <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">→ retrieves from document_categories.json</span>
+                            </div>
+                        </div>
+                    </div>
+                    <textarea id="system-prompt-config" class="form-control" style="min-height: 350px; font-size: 13px; line-height: 1.7; background: #ffffff;" placeholder="Enter system prompt config...
+
+Example:
+You are an expert AI model trained for Trade Finance document understanding.
+
+Supported Document Types (37 total):
+{{comprehensive_list_of_documents}}
+
+Entity Extraction Weighting Rules:
+- M (Mandatory): always expected
+- O (Optional): may or may not be present
+- C (Conditional): based on other entity values"></textarea>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <h3>Section 2: Functionality Prompt</h3>
+                <div class="form-group">
+                    <div style="background: #f9fafb; padding: 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+                        <div style="color: #374151; font-size: 13px; line-height: 1.6;">
+                            <strong style="color: #1f2937;">Purpose:</strong> Function-specific context for custom functions.
+                        </div>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                            <strong style="color: #1f2937; font-size: 13px;">Dynamic Placeholders:</strong>
+                            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                                <div>
+                                    <code style="background: #ffffff; padding: 6px 12px; border-radius: 4px; color: #1f2937; font-size: 12px; border: 1px solid #e5e7eb; display: inline-block;">{{function_description}}</code>
+                                    <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">→ retrieves from selected custom function</span>
+                                </div>
+                                <div>
+                                    <code style="background: #ffffff; padding: 6px 12px; border-radius: 4px; color: #1f2937; font-size: 12px; border: 1px solid #e5e7eb; display: inline-block;">{{function_and_document_json}}</code>
+                                    <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">→ combines custom_functions.json + document_entities</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <textarea id="functionality-prompt" class="form-control" style="min-height: 250px; font-size: 13px; line-height: 1.7; background: #ffffff;" placeholder="Enter functionality prompt...
+
+Example:
+The uploaded document belongs to the {{function_description}}.
+
+Based on this context, the system expects the following document types and entity sets:
+
+{{function_and_document_json}}"></textarea>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <h3>Section 3: Response Prompt</h3>
+                <div class="form-group">
+                    <div style="background: #f9fafb; padding: 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+                        <div style="color: #374151; font-size: 13px; line-height: 1.6;">
+                            <strong style="color: #1f2937;">Purpose:</strong> Defines expected JSON output structure with classification_results array and summary_notes.
+                        </div>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 13px;">
+                            Specify the exact JSON schema format the AI should return.
+                        </div>
+                    </div>
+                    <textarea id="response-prompt" class="form-control" style="min-height: 350px; font-size: 13px; line-height: 1.7; font-family: 'Monaco', 'Menlo', 'Courier New', monospace; background: #ffffff;" placeholder="Enter response prompt...
+
+Example:
+Respond strictly in the following JSON structure:
+
+{
+  &quot;classification_results&quot;: [
+    {
+      &quot;document_type&quot;: &quot;Commercial Invoice&quot;,
+      &quot;pages&quot;: { &quot;from&quot;: 1, &quot;to&quot;: 3 },
+      &quot;confidence&quot;: 0.96,
+      &quot;entities&quot;: [
+        {
+          &quot;name&quot;: &quot;Invoice Number&quot;,
+          &quot;value&quot;: &quot;INV/2025/0154&quot;,
+          &quot;confidence&quot;: 0.97,
+          &quot;page&quot;: 1,
+          &quot;bounding_box&quot;: [0.12, 0.14, 0.30, 0.18]
+        }
+      ]
+    }
+  ],
+  &quot;summary_notes&quot;: {
+    &quot;missing_entities&quot;: [],
+    &quot;low_confidence_entities&quot;: [],
+    &quot;average_confidence&quot;: 0.94
+  }
+}"></textarea>
+                </div>
+            </div>
+
+            <!-- Model Configuration Card (Last) -->
+            <div class="config-section">
+                <h3>Model Configuration</h3>
+                <div class="input-group" style="grid-template-columns: 2fr 1fr 1fr;">
+                    <div class="form-group">
+                        <label>Model</label>
+                        <select id="unified-model" class="form-control" style="background: #ffffff;">
+                            <option value="gpt-4o">GPT-4o (Recommended)</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Temperature</label>
+                        <input type="number" id="unified-temperature" class="form-control" step="0.1" min="0" max="2" placeholder="0.1" style="background: #ffffff;">
+                        <div class="description" style="margin-top: 6px; font-size: 12px; color: #6b7280;">Lower = more focused, Higher = more creative</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Tokens</label>
+                        <input type="number" id="unified-max-tokens" class="form-control" min="1" max="128000" placeholder="4000" style="background: #ffffff;">
+                        <div class="description" style="margin-top: 6px; font-size: 12px; color: #6b7280;">Maximum response length</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="tab-content">
+            <div class="config-section">
+                <h3>Performance Settings</h3>
+                <div class="input-group">
+                    <div class="form-group">
+                        <label>Classification Timeout (seconds)</label>
+                        <input type="number" id="class-timeout" class="form-control" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Extraction Timeout (seconds)</label>
+                        <input type="number" id="extract-timeout" class="form-control" placeholder="60">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <div class="form-group">
+                        <label>Compliance Timeout (seconds)</label>
+                        <input type="number" id="compliance-timeout" class="form-control" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Retries</label>
+                        <input type="number" id="max-retries" class="form-control" placeholder="3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <h3>Feature Flags</h3>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enable-enhanced-classification">
+                        Enable Enhanced Classification
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enable-entity-extraction">
+                        Enable Entity Extraction
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enable-compliance-checking">
+                        Enable Compliance Checking
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enable-progress-tracking">
+                        Enable Progress Tracking
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="saveConfiguration()">
+                <i class="mdi mdi-content-save"></i>
+                Save Configuration
+            </button>
+            <button class="btn btn-secondary" onclick="resetToDefaults()">
+                <i class="mdi mdi-refresh"></i>
+                Reset to Defaults
+            </button>
+            <button class="btn btn-secondary" onclick="exportConfiguration()">
+                <i class="mdi mdi-download"></i>
+                Export YAML
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentConfig = null;
+
+        // Load configuration on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfiguration();
+        });
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.closest('.tab').classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        async function loadConfiguration() {
+            showLoading(true);
+            try {
+                const response = await fetch('/api/prompt-config');
+                const data = await response.json();
+
+                if (data.success) {
+                    currentConfig = data.config;
+                    populateForm(data.config);
+                    showAlert('Configuration loaded successfully', 'success');
+                } else {
+                    showAlert('Failed to load configuration: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading configuration:', error);
+                showAlert('Error loading configuration: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function populateForm(config) {
+            // Model Configuration
+            document.getElementById('unified-model').value = config.classification?.model || 'gpt-4o';
+            document.getElementById('unified-temperature').value = config.classification?.temperature ?? 0.1;
+            document.getElementById('unified-max-tokens').value = config.classification?.max_tokens || 4000;
+
+            // Unified Prompt Sections
+            document.getElementById('system-prompt-config').value = config.prompts?.unified?.system_prompt_config || '';
+            document.getElementById('functionality-prompt').value = config.prompts?.unified?.functionality_prompt || '';
+            document.getElementById('response-prompt').value = config.prompts?.unified?.response_prompt || '';
+
+            // Settings
+            document.getElementById('class-timeout').value = config.performance?.classification_timeout || 30;
+            document.getElementById('extract-timeout').value = config.performance?.extraction_timeout || 60;
+            document.getElementById('compliance-timeout').value = config.performance?.compliance_timeout || 30;
+            document.getElementById('max-retries').value = config.error_handling?.max_retries || 3;
+
+            // Feature flags
+            document.getElementById('enable-enhanced-classification').checked = config.features?.enable_enhanced_classification !== false;
+            document.getElementById('enable-entity-extraction').checked = config.features?.enable_entity_extraction !== false;
+            document.getElementById('enable-compliance-checking').checked = config.features?.enable_compliance_checking !== false;
+            document.getElementById('enable-progress-tracking').checked = config.features?.enable_progress_tracking !== false;
+        }
+
+        function buildConfigFromForm() {
+            return {
+                classification: {
+                    model: document.getElementById('unified-model').value,
+                    temperature: parseFloat(document.getElementById('unified-temperature').value),
+                    max_tokens: parseInt(document.getElementById('unified-max-tokens').value)
+                },
+                prompts: {
+                    unified: {
+                        system_prompt_config: document.getElementById('system-prompt-config').value,
+                        functionality_prompt: document.getElementById('functionality-prompt').value,
+                        response_prompt: document.getElementById('response-prompt').value
+                    }
+                },
+                performance: {
+                    classification_timeout: parseInt(document.getElementById('class-timeout').value),
+                    extraction_timeout: parseInt(document.getElementById('extract-timeout').value),
+                    compliance_timeout: parseInt(document.getElementById('compliance-timeout').value)
+                },
+                error_handling: {
+                    max_retries: parseInt(document.getElementById('max-retries').value)
+                },
+                features: {
+                    enable_enhanced_classification: document.getElementById('enable-enhanced-classification').checked,
+                    enable_entity_extraction: document.getElementById('enable-entity-extraction').checked,
+                    enable_compliance_checking: document.getElementById('enable-compliance-checking').checked,
+                    enable_progress_tracking: document.getElementById('enable-progress-tracking').checked
+                }
+            };
+        }
+
+        async function saveConfiguration() {
+            const config = buildConfigFromForm();
+
+            showLoading(true);
+            try {
+                const response = await fetch('/api/prompt-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentConfig = config;
+                    showAlert('Configuration saved successfully!', 'success');
+                } else {
+                    showAlert('Failed to save configuration: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving configuration:', error);
+                showAlert('Error saving configuration: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function resetToDefaults() {
+            if (!confirm('Are you sure you want to reset to default configuration? This will overwrite all current settings.')) {
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const response = await fetch('/api/prompt-config/reset', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await loadConfiguration();
+                    showAlert('Configuration reset to defaults successfully!', 'success');
+                } else {
+                    showAlert('Failed to reset configuration: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error resetting configuration:', error);
+                showAlert('Error resetting configuration: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function exportConfiguration() {
+            try {
+                const response = await fetch('/api/prompt-config/export');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'document_classification_config.yaml';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showAlert('Configuration exported successfully!', 'success');
+            } catch (error) {
+                console.error('Error exporting configuration:', error);
+                showAlert('Error exporting configuration: ' + error.message, 'error');
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

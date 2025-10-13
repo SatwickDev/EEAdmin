@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vetting Analysis Results - Guarantee Vetting</title>
+
+  <!-- Enhanced CSS Framework -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+
+  <style>
+    /* Page-specific styles */
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding-top: 120px;
+    }
+
+    /* Modern Floating Header - Consistent with index.html */
+    .app-header {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 16px 28px;
+    }
+
+    @keyframes slideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .app-header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Brand Section - Match index.html */
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .app-logo {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: logoFloat 4s ease-in-out infinite;
+    }
+
+    .app-logo:hover {
+      transform: scale(1.05) rotate(2deg);
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-2px); }
+    }
+
+    .app-title {
+      font-size: 24px !important;
+      font-weight: 800 !important;
+      margin: 0 !important;
+      background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      letter-spacing: -0.5px;
+    }
+
+    .app-subtitle {
+      font-size: 13px !important;
+      color: rgba(100, 116, 139, 0.8) !important;
+      margin: 0 !important;
+      font-weight: 500 !important;
+    }
+
+    /* Navigation Pills - Match index.html */
+    .app-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 4px;
+    }
+
+    .nav-link {
+      display: flex !important;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      text-decoration: none !important;
+      color: rgba(100, 116, 139, 0.8) !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(30, 41, 59, 0.9) !important;
+      transform: translateY(-1px);
+    }
+
+    .nav-link.active {
+      background: rgba(255, 255, 255, 0.9) !important;
+      color: #1e293b !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .app-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Status Indicator - Match index.html */
+    .status-indicator-modern {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #059669;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Action Buttons - Match index.html */
+    .action-button {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      padding: 10px 18px !important;
+      border-radius: 12px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      text-decoration: none !important;
+      border: none !important;
+      cursor: pointer !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      position: relative !important;
+      overflow: hidden !important;
+    }
+
+    .action-button.primary {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .action-button.primary:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+    }
+
+    .action-button.secondary {
+      background: rgba(255, 255, 255, 0.9) !important;
+      color: #374151 !important;
+      border: 1px solid rgba(229, 231, 235, 0.8) !important;
+    }
+
+    .action-button.secondary:hover {
+      background: rgba(255, 255, 255, 1) !important;
+      color: #1f2937 !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+      }
+    }
+
+    .main-container {
+      max-width: 1400px;
+      margin: 2rem auto 0;
+      padding: 0 var(--space-6);
+    }
+
+    .dashboard-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-8);
+      margin-bottom: var(--space-8);
+      box-shadow: var(--shadow-glass);
+      transition: all var(--transition-spring);
+    }
+
+    .card-header {
+      border-bottom: 1px solid var(--glass-border);
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--gray-800);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    /* Tabs and highlights styles from rich.html */
+    .nav-tabs {
+      border: none;
+      gap: var(--space-3);
+      margin-bottom: var(--space-8);
+    }
+
+    .nav-tabs .nav-link {
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      color: var(--gray-700);
+      font-weight: var(--font-weight-medium);
+      transition: all var(--transition-spring);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .nav-tabs .nav-link:hover {
+      border-color: var(--primary-500);
+      background: var(--primary-50);
+      color: var(--primary-700);
+    }
+
+    .nav-tabs .nav-link.active {
+      background: var(--primary-gradient);
+      color: var(--white);
+      border-color: var(--primary-500);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .tab-content {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-8);
+    }
+
+    .info-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+    }
+
+    .severity-high {
+      border-left: 4px solid var(--error-color);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+    }
+
+    .severity-medium {
+      border-left: 4px solid var(--warning-color);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+    }
+
+    .severity-low {
+      border-left: 4px solid var(--success-color);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    }
+
+    .highlight-container {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      margin-top: var(--space-4);
+      line-height: 1.5;
+      white-space: pre-line;
+      font-size: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .highlight-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary-gradient);
+      opacity: 0.8;
+    }
+
+    .highlight-container strong {
+      color: var(--gray-800);
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-4);
+      display: block;
+    }
+
+    /* Highlight styles - Improved UI */
+    .highlight-low {
+      background: transparent;
+      color: var(--gray-700);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-weight: var(--font-weight-normal);
+      margin: var(--space-1);
+      display: inline-block;
+      border-bottom: 2px solid var(--success-color);
+      position: relative;
+    }
+
+    .highlight-medium {
+      background: transparent;
+      color: var(--gray-700);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-weight: var(--font-weight-normal);
+      margin: var(--space-1);
+      display: inline-block;
+      border-bottom: 2px solid var(--warning-color);
+      position: relative;
+    }
+
+    .highlight-high {
+      background: transparent;
+      color: var(--gray-700);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-weight: var(--font-weight-normal);
+      margin: var(--space-1);
+      display: inline-block;
+      border-bottom: 2px solid var(--error-color);
+      position: relative;
+    }
+
+    .fade-in {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Enhanced suggestion buttons - Clean Modern Design */
+    .highlight-btn {
+      border: none;
+      cursor: pointer;
+      margin-left: 2px;
+      padding: 4px 8px;
+      font-size: 13px;
+      border-radius: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+      font-weight: 500;
+      backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .highlight-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .highlight-btn:active::before {
+      width: 120px;
+      height: 120px;
+    }
+
+    .highlight-btn.btn-right {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .highlight-btn.btn-wrong {
+      background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+    }
+
+    .highlight-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .highlight-btn.btn-right:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .highlight-btn.btn-wrong:hover {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-color: rgba(239, 68, 68, 0.5);
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+    }
+
+    .highlight-btn[disabled] {
+      opacity: 0.4;
+      pointer-events: none;
+      transform: none !important;
+    }
+
+    /* Suggestion styling - Enhanced Modern Design */
+    .red-strike {
+      text-decoration: line-through;
+      text-decoration-color: #ef4444;
+      text-decoration-thickness: 2px;
+      color: #6b7280;
+      background: transparent;
+      padding: 0 4px;
+      opacity: 0.7;
+      position: relative;
+    }
+
+    .suggested-text {
+      color: #059669;
+      font-weight: 600;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      padding: 3px 12px;
+      border-radius: 6px;
+      margin-left: 8px;
+      border: 1px solid #86efac;
+      display: inline-block;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(5, 150, 105, 0.1);
+      animation: subtle-pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes subtle-pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 1px 3px rgba(5, 150, 105, 0.1);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 2px 4px rgba(5, 150, 105, 0.15);
+      }
+    }
+
+    /* Suggestion wrapper - Enhanced design */
+    .suggestion-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+      border-radius: 8px;
+      border: 1px solid #fbbf24;
+      margin: 2px 4px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .suggestion-wrapper:hover {
+      background: linear-gradient(135deg, #fed7aa 0%, #fff7ed 100%);
+      border-color: #f59e0b;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(251, 191, 36, 0.2);
+    }
+
+    /* Diff styling */
+    .diff-original {
+      color: var(--danger-color);
+      background: rgba(220, 53, 69, 0.1);
+      text-decoration: line-through;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .diff-suggestion {
+      color: var(--success-color);
+      background: rgba(40, 167, 69, 0.1);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    /* Enhanced status indicators */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-medium);
+      transition: all 0.3s ease;
+      animation: slideInRight 0.4s ease;
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .status-badge.high {
+      background: var(--error-gradient);
+      color: white;
+    }
+
+    .status-badge.medium {
+      background: var(--warning-gradient);
+      color: white;
+    }
+
+    .status-badge.low {
+      background: var(--success-gradient);
+      color: white;
+    }
+
+    /* Enhanced cards */
+    .compliance-metric-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      text-align: center;
+      transition: all var(--transition-spring);
+    }
+
+    .compliance-metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .metric-value {
+      font-size: var(--text-4xl);
+      font-weight: var(--font-weight-bold);
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .metric-label {
+      color: var(--gray-600);
+      font-size: var(--text-sm);
+      font-weight: var(--font-weight-medium);
+      margin-top: var(--space-2);
+    }
+
+    /* Entities link styling */
+    .text-primary-600 {
+      color: #4f46e5;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .text-primary-600:hover {
+      color: #4338ca;
+      transform: translateX(2px);
+    }
+
+    /* Custom rule badge styles */
+    #CustomBadge {
+      position: relative;
+      transition: all 0.3s ease;
+      animation: pulse-badge 2s ease-in-out infinite;
+    }
+    
+    #CustomBadge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    @keyframes pulse-badge {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+      }
+    }
+    
+    #customRulesListInFramework {
+      background: rgba(99, 102, 241, 0.05);
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: white;
+      }
+
+      .dashboard-header,
+      .glass-button,
+      .glass-button-outline,
+      #severityFilter,
+      .highlight-btn {
+        display: none !important;
+      }
+
+      .dashboard-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+      }
+
+      .compliance-metric-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+      }
+
+      .red-strike {
+        text-decoration: none;
+        color: #dc2626;
+      }
+
+      .suggested-text {
+        color: #059669;
+      }
+
+      .highlight-low,
+      .highlight-medium,
+      .highlight-high {
+        background: none !important;
+        border: 1px solid;
+        color: black !important;
+      }
+
+      .highlight-high {
+        border-color: #dc2626;
+      }
+
+      .highlight-medium {
+        border-color: #f59e0b;
+      }
+
+      .highlight-low {
+        border-color: #10b981;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Global Floating Header -->
+  {% include 'components/floating_header.html' %}
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Vetting Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 fade-in">
+      <div class="compliance-metric-card">
+        <i class="mdi mdi-shield-check text-4xl mb-2" style="color: var(--primary-500);"></i>
+        <div id="complianceScore" class="metric-value">-</div>
+        <div class="metric-label">Vetting Score</div>
+      </div>
+      <div class="compliance-metric-card">
+        <i class="mdi mdi-alert-circle text-4xl mb-2" style="color: var(--error-500);"></i>
+        <div id="highRiskCount" class="metric-value">-</div>
+        <div class="metric-label">High Risk Issues</div>
+      </div>
+      <div class="compliance-metric-card">
+        <i class="mdi mdi-alert text-4xl mb-2" style="color: var(--warning-500);"></i>
+        <div id="mediumRiskCount" class="metric-value">-</div>
+        <div class="metric-label">Medium Risk Issues</div>
+      </div>
+      <div class="compliance-metric-card">
+        <i class="mdi mdi-check-circle text-4xl mb-2" style="color: var(--success-500);"></i>
+        <div id="lowRiskCount" class="metric-value">-</div>
+        <div class="metric-label">Low Risk Issues</div>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="dashboard-card fade-in">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="mdi mdi-file-check"></i>
+          Detailed Analysis Report
+        </h2>
+        <div class="flex gap-3">
+          <button class="glass-button-outline" onclick="printReport()">
+            <i class="mdi mdi-printer"></i>
+            Print
+          </button>
+          <button class="glass-button" style="background: var(--primary-gradient);" onclick="exportResults()">
+            <i class="mdi mdi-download"></i>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <div class="results-content">
+        <!-- Summary Section -->
+        <div class="glass-card p-6 mb-6">
+          <h6 class="text-lg font-bold gradient-text mb-4">Executive Summary</h6>
+          <div id="complianceSummary" class="text-gray-700"></div>
+        </div>
+
+        <!-- Framework and Articles -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="glass-card p-6">
+            <h6 class="text-lg font-bold gradient-text mb-4">
+              <i class="mdi mdi-book-open-variant"></i> Vetting Framework
+            </h6>
+            <div id="frameworkBadge" class="glass-button inline-block mb-3"></div>
+            <p class="text-sm text-gray-600">This analysis is based on international trade finance standards and best practices.</p>
+            <div id="CustomBadge" class="glass-button inline-block mb-3"></div>
+            <p id="customBadgeDescription" class="text-sm text-gray-600">This analysis includes custom compliance rules specific to your organization.</p>
+            
+            <!-- Custom Rules Display -->
+            <div id="customRulesDisplay" class="hidden mt-4 pt-4 border-t border-gray-200">
+              <h7 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <i class="mdi mdi-playlist-plus text-primary-500"></i>
+                Custom Rules Applied
+              </h7>
+              <p class="text-xs text-gray-500 mb-2">In addition to the standard framework rules, the following custom compliance rules have been applied to this vetting analysis:</p>
+              <div id="customRulesListInFramework" class="space-y-1 text-sm">
+                <!-- Custom rules will be inserted here -->
+              </div>
+            </div>
+          </div>
+          <div class="glass-card p-6">
+            <h6 class="text-lg font-bold gradient-text mb-4">
+              <i class="mdi mdi-format-list-bulleted"></i> Applicable Rules
+            </h6>
+            <ul id="articleList" class="space-y-2 max-h-48 overflow-y-auto"></ul>
+          </div>
+        </div>
+
+        <!-- Custom Rules Section -->
+        <div id="customRulesSection" class="glass-card p-6 mb-8 hidden">
+          <h6 class="text-lg font-bold gradient-text mb-4">
+            <i class="mdi mdi-playlist-plus"></i> Custom Rules Analysis
+          </h6>
+          <div id="customRulesContent" class="space-y-3">
+            <p class="text-sm text-gray-600">Custom rules were applied during this analysis:</p>
+            <div id="customRulesList" class="bg-gray-50 rounded-lg p-4 space-y-2"></div>
+            <div id="customRulesResults" class="mt-4"></div>
+          </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="flex items-center justify-between mb-6">
+          <h6 class="text-lg font-bold gradient-text flex items-center gap-3">
+            <span>
+              <i class="mdi mdi-text-search"></i> Field-by-Field Analysis
+            </span>
+            <a href="javascript:void(0)" onclick="goToEntitiesTab()" class="text-sm font-normal text-primary-600 hover:text-primary-700 flex items-center gap-1" title="View Extracted Entities">
+              <i class="mdi mdi-tag-multiple"></i>
+              <span>View Entities</span>
+              <i class="mdi mdi-arrow-right"></i>
+            </a>
+          </h6>
+          <div class="flex items-center gap-4">
+            <label class="text-sm font-medium text-gray-700">Filter by severity:</label>
+            <select id="severityFilter" class="form-select-modern" onchange="filterTabsBySeverity(this.value)">
+              <option value="all">All Levels</option>
+              <option value="high">High Risk Only</option>
+              <option value="medium">Medium Risk Only</option>
+              <option value="low">Low Risk Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-200 my-6"></div>
+
+        <!-- Enhanced Tabs -->
+        <ul class="nav-tabs flex flex-wrap gap-3 mb-6" id="fieldTabs" role="tablist"></ul>
+        <div class="tab-content" id="tabContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    let currentComplianceData = null;
+    let originalText = {}; // Store original text for each field
+    let suggestionHistory = {}; // Track applied suggestions
+
+    // Initialize page with results
+    window.addEventListener('DOMContentLoaded', () => {
+      // Get results from template context
+      const resultsData = {{ results | tojson | safe }};
+      if (resultsData) {
+        currentComplianceData = resultsData;
+        displayComplianceResults(resultsData);
+        
+        // Check if we need to navigate to entities tab
+        const navigateToEntities = sessionStorage.getItem('navigateToEntities');
+        if (navigateToEntities === 'true') {
+          sessionStorage.removeItem('navigateToEntities');
+          setTimeout(() => {
+            const entitiesTab = document.getElementById('tab-entities-tab');
+            if (entitiesTab) {
+              entitiesTab.click();
+            }
+          }, 500);
+        }
+      }
+    });
+
+    function displayComplianceResults(data) {
+      const { summary, rule_type, applicable_framework, applicable_articles, fields } = data;
+      
+      // Check for custom rules in different possible field names or session storage
+      let customRules = data.customRules || data.custom_rules || data.customRulesText || '';
+      const customRulesResults = data.customRulesResults || data.custom_rules_results || '';
+      
+      // If no custom rules in data, check session storage as fallback
+      if (!customRules) {
+        customRules = sessionStorage.getItem('customRules') || '';
+      }
+      
+      // Debug logging
+      console.log('Compliance Results Data:', data);
+      console.log('Custom Rules:', customRules);
+
+      // Calculate metrics
+      let highCount = 0, mediumCount = 0, lowCount = 0;
+      if (fields) {
+        Object.values(fields).forEach(field => {
+          if (field.severity === 'high') highCount++;
+          else if (field.severity === 'medium') mediumCount++;
+          else if (field.severity === 'low') lowCount++;
+        });
+      }
+
+      // Update metrics
+      document.getElementById('highRiskCount').textContent = highCount;
+      document.getElementById('mediumRiskCount').textContent = mediumCount;
+      document.getElementById('lowRiskCount').textContent = lowCount;
+
+      // Calculate compliance score (simple formula: higher score for fewer/lower severity issues)
+      const totalIssues = highCount + mediumCount + lowCount;
+      const weightedScore = 100 - (highCount * 15 + mediumCount * 8 + lowCount * 3);
+      const complianceScore = Math.max(0, Math.min(100, weightedScore));
+      document.getElementById('complianceScore').textContent = complianceScore + '%';
+
+
+      // Update summary
+      document.getElementById('complianceSummary').innerHTML = summary;
+
+      // Update framework badge
+      let badgeContent = `${rule_type} - ${applicable_framework}`;
+      document.getElementById('frameworkBadge').textContent = badgeContent;
+
+      // Always display custom rules badge
+      const customBadge = document.getElementById('CustomBadge');
+      
+      if (customBadge) {
+        // Get the same styling as frameworkBadge
+        const frameworkBadge = document.getElementById('frameworkBadge');
+        const frameworkStyles = frameworkBadge ? window.getComputedStyle(frameworkBadge) : null;
+        
+        if (customRules && customRules.trim() !== '') {
+          // Custom rules are present - show active badge
+          customBadge.style.cssText = 'background: var(--primary-gradient); color: white; font-size: 0.875rem; padding: 4px 12px; cursor: help; display: inline-block;';
+          customBadge.innerHTML = '<i class="mdi mdi-playlist-plus mr-1"></i>+ Custom Rules Applied';
+          customBadge.title = 'Custom compliance rules have been applied in addition to the standard framework';
+        } else {
+          // No custom rules - show badge with same style as framework badge
+          customBadge.className = 'glass-button inline-block mb-3';
+          customBadge.innerHTML = '<i class="mdi mdi-playlist-plus mr-1"></i>Custom Rule';
+          customBadge.title = 'Custom compliance rules can be applied for this analysis';
+        }
+      }
+
+      // Display custom rules in Vetting Framework section
+      if (customRules && customRules.trim() !== '') {
+        console.log('Displaying custom rules in framework...');
+        const customRulesDisplay = document.getElementById('customRulesDisplay');
+        const customRulesListInFramework = document.getElementById('customRulesListInFramework');
+        
+        if (customRulesDisplay && customRulesListInFramework) {
+          customRulesDisplay.classList.remove('hidden');
+          
+          const rules = customRules.split('\n').filter(rule => rule.trim());
+          customRulesListInFramework.innerHTML = rules.map(rule => 
+            `<div class="flex items-start gap-2 text-gray-600">
+              <i class="mdi mdi-check-circle text-primary-400 text-xs mt-0.5"></i>
+              <span>${rule.trim()}</span>
+            </div>`
+          ).join('');
+          console.log('Custom rules displayed:', rules);
+        } else {
+          console.error('Custom rules elements not found:', { customRulesDisplay, customRulesListInFramework });
+        }
+      }
+
+      // Update articles list
+      const articleList = document.getElementById('articleList');
+      articleList.innerHTML = '';
+      if (applicable_articles) {
+        applicable_articles.forEach(article => {
+          const li = document.createElement('li');
+          li.className = 'flex items-start gap-2 p-2 hover:bg-gray-50 rounded transition-colors';
+          li.innerHTML = `
+            <i class="mdi mdi-checkbox-marked-circle text-primary-500 mt-1"></i>
+            <div class="flex-1">
+              <div class="font-medium text-gray-800">
+                ${article.article}
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded ml-2">${article.type}</span>
+              </div>
+              <div class="text-gray-600 text-sm mt-1">${article.description}</div>
+            </div>
+          `;
+          articleList.appendChild(li);
+        });
+      }
+
+      // Display custom rules if present
+      if (customRules && customRules.trim() !== '') {
+        const customRulesSection = document.getElementById('customRulesSection');
+        const customRulesList = document.getElementById('customRulesList');
+        const customRulesResultsDiv = document.getElementById('customRulesResults');
+        
+        customRulesSection.classList.remove('hidden');
+        
+        // Display the custom rules
+        const rules = customRules.split('\n').filter(rule => rule.trim());
+        customRulesList.innerHTML = rules.map(rule => 
+          `<div class="flex items-start gap-2">
+            <i class="mdi mdi-checkbox-marked-circle text-primary-500 mt-0.5"></i>
+            <span class="text-sm">${rule.trim()}</span>
+          </div>`
+        ).join('');
+        
+        // Display custom rules results if available
+        if (customRulesResults) {
+          customRulesResultsDiv.innerHTML = `
+            <div class="border-t pt-4">
+              <h7 class="font-semibold text-gray-700 mb-2">Custom Rules Evaluation:</h7>
+              <div class="prose text-sm">${customRulesResults}</div>
+            </div>
+          `;
+        }
+      }
+
+      // Create enhanced tabs
+      createEnhancedTabs(fields, data.entities);
+    }
+
+    function createEnhancedTabs(fields, entities) {
+      const fieldTabs = document.getElementById('fieldTabs');
+      const tabContent = document.getElementById('tabContent');
+      fieldTabs.innerHTML = '';
+      tabContent.innerHTML = '';
+
+      if (fields) {
+        Object.keys(fields).forEach((key, index) => {
+          const field = fields[key];
+          const isActive = index === 0;
+          const tabId = 'tab-' + key;
+
+          // Create tab header
+          const li = document.createElement('li');
+          li.className = 'nav-item';
+          li.setAttribute('role', 'presentation');
+
+          const button = document.createElement('button');
+          button.className = 'nav-link' + (isActive ? ' active' : '');
+          button.id = tabId + '-tab';
+          button.setAttribute('data-bs-toggle', 'tab');
+          button.setAttribute('data-bs-target', '#' + tabId);
+          button.setAttribute('type', 'button');
+          button.setAttribute('role', 'tab');
+          button.dataset.field = key;
+
+          const severityIcon = field.severity === 'high' ? 'alert-circle' :
+                              field.severity === 'medium' ? 'alert' : 'check-circle';
+          const severityColor = field.severity === 'high' ? 'text-red-500' :
+                               field.severity === 'medium' ? 'text-yellow-500' : 'text-green-500';
+
+          button.innerHTML = `
+            <i class="mdi mdi-${severityIcon} ${severityColor}"></i>
+            ${key.replace(/_/g, ' ')}
+          `;
+
+          button.onclick = function() {
+            // Simple tab switching
+            document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show', 'active'));
+            this.classList.add('active');
+            document.getElementById(tabId).classList.add('show', 'active');
+          };
+
+          li.appendChild(button);
+          fieldTabs.appendChild(li);
+
+          // Create tab content
+          createTabContent(tabId, field, key, isActive, tabContent);
+        });
+      }
+
+      // Add entities tab if available
+      if (entities && Object.keys(entities).length > 0) {
+        createEntitiesTab(entities, fieldTabs, tabContent);
+      }
+    }
+
+    function createTabContent(tabId, field, key, isActive, tabContent) {
+      const tabPane = document.createElement('div');
+      tabPane.className = 'tab-pane fade' + (isActive ? ' show active' : '');
+      tabPane.id = tabId;
+      tabPane.setAttribute('role', 'tabpanel');
+
+      const severityClass = `severity-${field.severity}`;
+
+      // Store original text
+      originalText[key] = field.value;
+
+      const content = document.createElement('div');
+      content.innerHTML = `
+        <div class="info-card ${severityClass}">
+          <h6 class="fw-bold mb-2">
+            <i class="mdi mdi-alert"></i>
+            Severity: ${field.severity.toUpperCase()}
+          </h6>
+          <p class="mb-0">${field.reason}</p>
+        </div>
+
+        <div class="highlight-container">
+          <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <i class="mdi mdi-text-search text-blue-500"></i>
+                Interactive Text Analysis
+              </h3>
+              <p class="text-sm text-gray-600 mt-1">Click ✓ to accept suggestions or ✗ to reject them</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="glass-button-outline text-sm" onclick="undoAllChanges('${key}')">
+                <i class="mdi mdi-undo"></i> Reset All
+              </button>
+              <span id="applied-${key}" class="status-badge low hidden">
+                <i class="mdi mdi-check"></i> Changes Applied
+              </span>
+            </div>
+          </div>
+          <div id="highlight-content-${key}" class="mt-4"></div>
+        </div>
+      `;
+
+      tabPane.appendChild(content);
+      tabContent.appendChild(tabPane);
+
+      // Add highlighted content after DOM is ready
+      setTimeout(() => {
+        const highlightContainer = document.getElementById(`highlight-content-${key}`);
+        if (highlightContainer) {
+          highlightContainer.appendChild(
+            highlightTextToDOM(
+              field.value,
+              field.highlight_spans,
+              'highlight-' + field.severity,
+              field.reason,
+              key,
+              field.highlight_suggestions || {}
+            )
+          );
+        }
+      }, 100);
+    }
+
+    function createEntitiesTab(entities, fieldTabs, tabContent) {
+      const entLi = document.createElement('li');
+      entLi.className = 'nav-item';
+      entLi.setAttribute('role', 'presentation');
+
+      const entBtn = document.createElement('button');
+      entBtn.className = 'nav-link';
+      entBtn.id = 'tab-entities-tab';
+      entBtn.setAttribute('type', 'button');
+      entBtn.setAttribute('role', 'tab');
+      entBtn.innerHTML = '<i class="mdi mdi-tag-multiple"></i> Extracted Entities';
+
+      entBtn.onclick = function() {
+        document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('show', 'active'));
+        this.classList.add('active');
+        document.getElementById('tab-entities').classList.add('show', 'active');
+      };
+
+      entLi.appendChild(entBtn);
+      fieldTabs.appendChild(entLi);
+
+      const entPane = document.createElement('div');
+      entPane.className = 'tab-pane fade';
+      entPane.id = 'tab-entities';
+      entPane.setAttribute('role', 'tabpanel');
+
+      let tableHTML = '<h6 class="text-lg font-bold gradient-text mb-4"><i class="mdi mdi-tag-multiple"></i> Extracted Entities</h6>';
+      tableHTML += '<table class="w-full border-collapse border border-gray-200 rounded-lg overflow-hidden">';
+
+      Object.entries(entities).forEach(([key, value]) => {
+        tableHTML += `
+          <tr class="border-b border-gray-200">
+            <th class="bg-gray-50 p-4 text-left font-semibold text-gray-700" style="width: 200px;">${key.replace(/_/g, ' ').toUpperCase()}</th>
+            <td class="p-4 text-gray-800">${value}</td>
+          </tr>
+        `;
+      });
+
+      tableHTML += '</table>';
+      entPane.innerHTML = tableHTML;
+      tabContent.appendChild(entPane);
+    }
+
+    // Enhanced highlight function with accept/reject functionality
+    function highlightTextToDOM(text, spans, className, tooltip, fieldKey, suggestions = {}) {
+      if (!spans || spans.length === 0) return document.createTextNode(text);
+
+      spans.sort((a, b) => b.length - a.length);
+      const lowerText = text.toLowerCase();
+      const used = Array(text.length).fill(false);
+      const matches = [];
+
+      spans.forEach(span => {
+        const safe = span.toLowerCase();
+        let start = 0;
+        while ((start = lowerText.indexOf(safe, start)) !== -1) {
+          let overlap = false;
+          for (let i = start; i < start + span.length; i++) {
+            if (used[i]) { overlap = true; break; }
+          }
+          if (!overlap) {
+            for (let i = start; i < start + span.length; i++) used[i] = true;
+            matches.push({ start, end: start + span.length, phrase: span });
+          }
+          start += span.length;
+        }
+      });
+
+      matches.sort((a, b) => a.start - b.start);
+      const fragment = document.createDocumentFragment();
+      let cursor = 0;
+
+      matches.forEach(({ start, end, phrase }) => {
+        if (cursor < start) fragment.appendChild(document.createTextNode(text.slice(cursor, start)));
+
+        // Main highlight wrapper span
+        const wrapperSpan = document.createElement('span');
+        wrapperSpan.className = className + ' position-relative';
+        wrapperSpan.setAttribute('title', tooltip);
+
+        // Check if there's a suggestion for this phrase
+        if (suggestions && suggestions[phrase]) {
+          // Create a suggestion wrapper for better styling
+          wrapperSpan.className = 'suggestion-wrapper';
+
+          const redStrikeSpan = document.createElement('span');
+          redStrikeSpan.className = 'red-strike';
+          redStrikeSpan.textContent = text.slice(start, end);
+          wrapperSpan.appendChild(redStrikeSpan);
+
+          // Arrow indicator with enhanced styling
+          const arrow = document.createElement('span');
+          arrow.innerHTML = '→';
+          arrow.style.cssText = 'color: #9ca3af; margin: 0 8px; font-size: 16px; font-weight: bold; opacity: 0.8;';
+          wrapperSpan.appendChild(arrow);
+
+          // Green suggestion
+          const suggestionSpan = document.createElement('span');
+          suggestionSpan.className = 'suggested-text';
+          suggestionSpan.textContent = suggestions[phrase];
+          wrapperSpan.appendChild(suggestionSpan);
+
+          // Button container
+          const buttonContainer = document.createElement('span');
+          buttonContainer.style.marginLeft = '12px';
+          buttonContainer.style.display = 'inline-flex';
+          buttonContainer.style.gap = '4px';
+
+          // Accept button
+          const acceptBtn = document.createElement('button');
+          acceptBtn.type = 'button';
+          acceptBtn.className = 'highlight-btn btn-right';
+          acceptBtn.title = 'Accept suggestion: ' + suggestions[phrase];
+          acceptBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+          acceptBtn.onclick = function(e) {
+            e.preventDefault();
+            acceptSuggestion(fieldKey, phrase, suggestions[phrase], wrapperSpan);
+          };
+
+          // Reject button
+          const rejectBtn = document.createElement('button');
+          rejectBtn.type = 'button';
+          rejectBtn.className = 'highlight-btn btn-wrong';
+          rejectBtn.title = 'Reject suggestion';
+          rejectBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+          rejectBtn.onclick = function(e) {
+            e.preventDefault();
+            rejectSuggestion(fieldKey, phrase, wrapperSpan);
+          };
+
+          buttonContainer.appendChild(acceptBtn);
+          buttonContainer.appendChild(rejectBtn);
+
+          wrapperSpan.appendChild(buttonContainer);
+        } else {
+          // No suggestion, just highlight
+          wrapperSpan.textContent = text.slice(start, end);
+        }
+
+        fragment.appendChild(wrapperSpan);
+        cursor = end;
+      });
+
+      if (cursor < text.length) fragment.appendChild(document.createTextNode(text.slice(cursor)));
+      return fragment;
+    }
+
+    function acceptSuggestion(fieldKey, targetPhrase, suggestion, wrapperSpan) {
+      // Track the change
+      if (!suggestionHistory[fieldKey]) suggestionHistory[fieldKey] = [];
+      suggestionHistory[fieldKey].push({
+        original: targetPhrase,
+        suggestion: suggestion,
+        action: 'accepted'
+      });
+
+      // Update the UI - show only the accepted suggestion with a checkmark
+      wrapperSpan.innerHTML = '';
+      wrapperSpan.className = '';
+      wrapperSpan.style.cssText = 'color: #059669; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;';
+
+      const checkIcon = document.createElement('span');
+      checkIcon.innerHTML = '✓';
+      checkIcon.style.cssText = 'color: #10b981; font-size: 14px;';
+
+      const acceptedText = document.createElement('span');
+      acceptedText.textContent = suggestion;
+
+      wrapperSpan.appendChild(checkIcon);
+      wrapperSpan.appendChild(acceptedText);
+
+      // Show applied badge
+      markSuggestionApplied(fieldKey);
+    }
+
+    function rejectSuggestion(fieldKey, targetPhrase, wrapperSpan) {
+      // Track the rejection
+      if (!suggestionHistory[fieldKey]) suggestionHistory[fieldKey] = [];
+      suggestionHistory[fieldKey].push({
+        original: targetPhrase,
+        action: 'rejected'
+      });
+
+      // Replace with original text with a subtle style
+      const originalText = wrapperSpan.querySelector('.red-strike').textContent;
+      wrapperSpan.innerHTML = '';
+      wrapperSpan.className = '';
+      wrapperSpan.style.cssText = 'color: #374151; display: inline-flex; align-items: center; gap: 4px;';
+
+      const crossIcon = document.createElement('span');
+      crossIcon.innerHTML = '✗';
+      crossIcon.style.cssText = 'color: #ef4444; font-size: 12px;';
+
+      const rejectedText = document.createElement('span');
+      rejectedText.textContent = originalText;
+
+      wrapperSpan.appendChild(crossIcon);
+      wrapperSpan.appendChild(rejectedText);
+
+      wrapperSpan.removeAttribute('title');
+    }
+
+    function markSuggestionApplied(fieldKey) {
+      const badge = document.getElementById(`applied-${fieldKey}`);
+      if (badge) badge.classList.remove('hidden');
+    }
+
+    function undoAllChanges(fieldKey) {
+      // Refresh the tab content with original text
+      const field = currentComplianceData.fields[fieldKey];
+      const highlightContainer = document.getElementById(`highlight-content-${fieldKey}`);
+
+      if (highlightContainer && field) {
+        highlightContainer.innerHTML = '';
+        highlightContainer.appendChild(
+          highlightTextToDOM(
+            originalText[fieldKey],
+            field.highlight_spans,
+            'highlight-' + field.severity,
+            field.reason,
+            fieldKey,
+            field.highlight_suggestions || {}
+          )
+        );
+
+        // Clear history and hide badge
+        suggestionHistory[fieldKey] = [];
+        const badge = document.getElementById(`applied-${fieldKey}`);
+        if (badge) badge.classList.add('hidden');
+      }
+    }
+
+    function filterTabsBySeverity(severity) {
+      document.querySelectorAll('#fieldTabs .nav-link').forEach(tab => {
+        const fieldKey = tab.dataset.field;
+        const tabPane = document.getElementById('tab-' + fieldKey);
+        const field = currentComplianceData?.fields[fieldKey];
+        const shouldShow = (severity === 'all') || (field?.severity === severity);
+
+        if (shouldShow) {
+          tab.parentElement.style.display = '';
+          if (tabPane) tabPane.style.display = '';
+        } else {
+          tab.parentElement.style.display = 'none';
+          if (tabPane) tabPane.style.display = 'none';
+        }
+      });
+    }
+
+    function backToGuarantee() {
+      // Prepare the updated text with all accepted changes
+      const updatedText = getUpdatedText();
+
+      // Store the updated text to pass back to the guarantee page
+      sessionStorage.setItem('updatedGuaranteeText', updatedText);
+      sessionStorage.setItem('hasChanges', Object.keys(suggestionHistory).length > 0 ? 'true' : 'false');
+
+      window.location.href = '/guarantee';
+    }
+
+    function cancelAndBack() {
+      if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+        // Clear any stored changes and go back with original text
+        sessionStorage.removeItem('updatedGuaranteeText');
+        sessionStorage.setItem('hasChanges', 'false');
+        window.location.href = '/guarantee';
+      }
+    }
+
+    function getUpdatedText() {
+      // Get the original text
+      let updatedText = sessionStorage.getItem('originalGuaranteeText') || '';
+
+      // Apply all accepted changes
+      Object.keys(suggestionHistory).forEach(fieldKey => {
+        const changes = suggestionHistory[fieldKey];
+        changes.forEach(change => {
+          if (change.action === 'accepted') {
+            // Replace all occurrences of the original phrase with the suggestion
+            const regex = new RegExp(change.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            updatedText = updatedText.replace(regex, change.suggestion);
+          }
+        });
+      });
+
+      return updatedText;
+    }
+
+    function exportResults() {
+      if (!currentComplianceData) {
+        alert('No vetting results to export');
+        return;
+      }
+
+      const dataStr = JSON.stringify(currentComplianceData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+      const exportFileDefaultName = 'vetting-results-' + new Date().toISOString().slice(0, 10) + '.json';
+
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    }
+
+    async function saveResults() {
+      if (!currentComplianceData) {
+        alert('No vetting results to save');
+        return;
+      }
+
+      // Include suggestion history in saved data
+      const enhancedData = {
+        ...currentComplianceData,
+        suggestion_history: suggestionHistory,
+        applied_changes: getAppliedChanges()
+      };
+
+      try {
+        const response = await fetch('/api/compliance/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            compliance_data: enhancedData,
+            summary: currentComplianceData.summary,
+            severity: getSeverityLevel(currentComplianceData.fields)
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Show success with animation
+          showNotification('Results saved successfully!', 'success');
+        } else {
+          showNotification('Failed to save results: ' + (result.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        console.error('Error saving vetting results:', error);
+        showNotification('Failed to save results. Please try again.', 'error');
+      }
+    }
+
+    function getAppliedChanges() {
+      const changes = {};
+      Object.keys(suggestionHistory).forEach(fieldKey => {
+        const accepted = suggestionHistory[fieldKey].filter(h => h.action === 'accepted');
+        if (accepted.length > 0) {
+          changes[fieldKey] = accepted;
+        }
+      });
+      return changes;
+    }
+
+    function showNotification(message, type = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500' :
+        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+      } text-white`;
+      notification.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="mdi mdi-${type === 'success' ? 'check-circle' : 'alert-circle'} text-2xl"></i>
+          <span>${message}</span>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      // Auto-remove after 3 seconds
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    function printReport() {
+      window.print();
+    }
+
+    // Function to navigate to entities tab
+    function goToEntitiesTab() {
+      const entitiesTab = document.getElementById('tab-entities-tab');
+      if (entitiesTab) {
+        // Click the entities tab
+        entitiesTab.click();
+        
+        // Wait a moment for the tab to activate, then scroll
+        setTimeout(() => {
+          // Scroll to the tabs section
+          const tabsSection = document.getElementById('fieldTabs');
+          if (tabsSection) {
+            tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+          
+          // Also ensure the entities tab content is visible
+          const entitiesContent = document.getElementById('tab-entities');
+          if (entitiesContent) {
+            // Add a highlight effect to draw attention
+            entitiesContent.style.transition = 'background-color 0.3s ease';
+            entitiesContent.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
+            setTimeout(() => {
+              entitiesContent.style.backgroundColor = '';
+            }, 1500);
+          }
+        }, 100);
+      }
+    }
+
+    function getSeverityLevel(fields) {
+      if (!fields) return 'low';
+
+      let highCount = 0;
+      let mediumCount = 0;
+
+      Object.values(fields).forEach(field => {
+        if (field.severity === 'high') highCount++;
+        else if (field.severity === 'medium') mediumCount++;
+      });
+
+      if (highCount > 0) return 'high';
+      if (mediumCount > 0) return 'medium';
+      return 'low';
+    }
+  </script>
+</body>
+</html>

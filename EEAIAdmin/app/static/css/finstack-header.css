@@ -1,0 +1,293 @@
+/* ================================
+   FINSTACK HEADER - Exact Match with index.html
+   ================================ */
+
+/* Modern Floating Header */
+.floating-header {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+    animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Brand Section */
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-container {
+    position: relative;
+}
+
+.modern-logo {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: logoFloat 4s ease-in-out infinite;
+}
+
+.modern-logo:hover {
+    transform: scale(1.05) rotate(2deg);
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.status-pulse {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.brand-info h1,
+.brand-title {
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    letter-spacing: -0.5px;
+}
+
+.brand-info p,
+.brand-subtitle {
+    font-size: 13px !important;
+    color: rgba(100, 116, 139, 0.8) !important;
+    margin: 0 !important;
+    font-weight: 500 !important;
+}
+
+/* Navigation Pills */
+.nav-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 4px;
+}
+
+.nav-pill {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    text-decoration: none !important;
+    color: rgba(100, 116, 139, 0.8) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(30, 41, 59, 0.9) !important;
+    transform: translateY(-1px);
+}
+
+.nav-pill.active {
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #1e293b !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.nav-pill i {
+    font-size: 16px;
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-indicator-modern {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #059669;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.action-button {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 10px 18px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.action-button.primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.action-button.primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+}
+
+.action-button.secondary {
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #374151 !important;
+    border: 1px solid rgba(229, 231, 235, 0.8) !important;
+}
+
+.action-button.secondary:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    color: #1f2937 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Animations */
+@keyframes slideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes logoFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 1200px) {
+    .nav-pills {
+        gap: 4px;
+    }
+    
+    .nav-pill {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .nav-pill span {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .floating-header {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+    }
+    
+    .floating-header-content {
+        padding: 12px 20px;
+    }
+    
+    .brand-info p,
+    .brand-subtitle {
+        display: none !important;
+    }
+    
+    .nav-pills {
+        display: none;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    .action-button span {
+        display: none !important;
+    }
+    
+    .action-button {
+        padding: 8px 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .status-indicator-modern {
+        display: none;
+    }
+    
+    .brand-info h1,
+    .brand-title {
+        font-size: 20px !important;
+    }
+}

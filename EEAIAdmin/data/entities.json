@@ -1,0 +1,4072 @@
+{
+  "entities": [
+    {
+      "id": "1",
+      "name": "Document Identifier",
+      "description": "Reference number identifying a specific document",
+      "mappingFormField": "doc_index",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "2",
+      "name": "Booking reference number",
+      "description": "Reference number assigned by a carrier or agent to identify a specific consignment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "3",
+      "name": "Purchase Order number",
+      "description": "Identifier assigned by the buyer to an order",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "4",
+      "name": "House waybill document identifier",
+      "description": "Reference number to identify a house waybill",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "5",
+      "name": "Customs Declaration Document, Trader Assigned",
+      "description": "Reference assigned by a trader to identify a declaration",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "6",
+      "name": "Invoice Number",
+      "description": "Unique identifier for a commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "7",
+      "name": "Bill of Lading Number",
+      "description": "Reference number for a bill of lading document",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "8",
+      "name": "Shipping Order Number",
+      "description": "Reference number for a shipping order",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "9",
+      "name": "Container Number",
+      "description": "Unique identifier for a shipping container",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "10",
+      "name": "Certificate of Origin Number",
+      "description": "Reference number for a certificate of origin",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "11",
+      "name": "Letter of Credit Number",
+      "description": "Unique identifier for a letter of credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "12",
+      "name": "Bank Guarantee Number",
+      "description": "Reference number for a bank guarantee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "13",
+      "name": "Insurance Policy Number",
+      "description": "Unique identifier for an insurance policy",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "14",
+      "name": "Packing List Number",
+      "description": "Reference number for a packing list",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "15",
+      "name": "Commercial Invoice Date",
+      "description": "Date on which a commercial invoice was issued",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "16",
+      "name": "Shipment Date",
+      "description": "Date when goods were shipped",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "17",
+      "name": "Delivery Date",
+      "description": "Expected or actual date of delivery",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "18",
+      "name": "LC Expiry Date",
+      "description": "Expiration date of a letter of credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "19",
+      "name": "Document Presentation Date",
+      "description": "Date when documents are presented to the bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "20",
+      "name": "Exporter Name",
+      "description": "Name of the party exporting goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "21",
+      "name": "Importer Name",
+      "description": "Name of the party importing goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "22",
+      "name": "Consignee Name",
+      "description": "Name of the party to whom goods are consigned",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "23",
+      "name": "Shipper Name",
+      "description": "Name of the party shipping the goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "24",
+      "name": "Notify Party",
+      "description": "Party to be notified about shipment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "25",
+      "name": "Carrier Name",
+      "description": "Name of the transportation carrier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "26",
+      "name": "Issuing Bank",
+      "description": "Bank that issues the letter of credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "27",
+      "name": "Advising Bank",
+      "description": "Bank that advises the beneficiary of the LC",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "28",
+      "name": "Confirming Bank",
+      "description": "Bank that confirms the letter of credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "29",
+      "name": "Port of Loading",
+      "description": "Port where goods are loaded for shipment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "30",
+      "name": "Port of Discharge",
+      "description": "Port where goods are unloaded",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "31",
+      "name": "Place of Delivery",
+      "description": "Final destination for delivery of goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "32",
+      "name": "Country of Origin",
+      "description": "Country where goods originated",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "33",
+      "name": "Country of Destination",
+      "description": "Country where goods are destined",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "34",
+      "name": "Payment Terms",
+      "description": "Terms and conditions for payment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "35",
+      "name": "Incoterms",
+      "description": "International commercial terms defining responsibilities",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "36",
+      "name": "Partial Shipment Clause",
+      "description": "Clause indicating if partial shipments are allowed",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "37",
+      "name": "Transshipment Clause",
+      "description": "Clause indicating if transshipment is allowed",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "38",
+      "name": "Latest Shipment Date",
+      "description": "Latest date by which goods must be shipped",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "39",
+      "name": "Negotiation Period",
+      "description": "Period within which documents must be negotiated",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "40",
+      "name": "Document Requirements",
+      "description": "List of required documents for the transaction",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "41",
+      "name": "Invoice Amount",
+      "description": "Total amount stated on the invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "42",
+      "name": "LC Amount",
+      "description": "Total amount of the letter of credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "43",
+      "name": "Insurance Amount",
+      "description": "Amount of insurance coverage",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "44",
+      "name": "Freight Charges",
+      "description": "Charges for transportation of goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "45",
+      "name": "Customs Duty",
+      "description": "Duty payable to customs authorities",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "46",
+      "name": "Commission Amount",
+      "description": "Commission charged for services",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "47",
+      "name": "Discount Amount",
+      "description": "Discount applied to the transaction",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "48",
+      "name": "Currency Code",
+      "description": "Three-letter currency code (ISO 4217)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "49",
+      "name": "Exchange Rate",
+      "description": "Rate for currency conversion",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "50",
+      "name": "Gross Weight",
+      "description": "Total weight including packaging",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure"
+    },
+    {
+      "id": "51",
+      "name": "Net Weight",
+      "description": "Weight of goods excluding packaging",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure"
+    },
+    {
+      "id": "52",
+      "name": "Volume",
+      "description": "Total volume of the shipment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "53",
+      "name": "Quantity",
+      "description": "Number of units or items",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "54",
+      "name": "Unit of Measurement",
+      "description": "Standard unit for measuring quantity",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "55",
+      "name": "Package Type",
+      "description": "Type of packaging used",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "56",
+      "name": "Number of Packages",
+      "description": "Total count of packages",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "57",
+      "name": "Goods Description",
+      "description": "Detailed description of the goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "58",
+      "name": "HS Code",
+      "description": "Harmonized System code for goods classification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "59",
+      "name": "Product Code",
+      "description": "Internal code for product identification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "60",
+      "name": "Brand Name",
+      "description": "Brand or trademark of the goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "61",
+      "name": "Model Number",
+      "description": "Model or variant identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "62",
+      "name": "UN Number",
+      "description": "United Nations number for dangerous goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "63",
+      "name": "Hazard Class",
+      "description": "Classification of hazardous materials",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "64",
+      "name": "IMDG Code",
+      "description": "International Maritime Dangerous Goods code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "65",
+      "name": "Flash Point",
+      "description": "Temperature at which vapors ignite",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "66",
+      "name": "Vessel Name",
+      "description": "Name of the shipping vessel",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "67",
+      "name": "Voyage Number",
+      "description": "Reference number for the voyage",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "68",
+      "name": "Flight Number",
+      "description": "Identifier for air transportation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "69",
+      "name": "Truck Registration",
+      "description": "Registration number of transport vehicle",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "70",
+      "name": "Rail Car Number",
+      "description": "Identifier for railway wagon",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "71",
+      "name": "Container Type",
+      "description": "Type and size of container",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "72",
+      "name": "Seal Number",
+      "description": "Security seal identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "73",
+      "name": "Equipment Number",
+      "description": "Reference for transport equipment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "74",
+      "name": "Customs Reference",
+      "description": "Customs authority reference number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "75",
+      "name": "Tax Identification Number",
+      "description": "Tax ID of a party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "76",
+      "name": "VAT Number",
+      "description": "Value Added Tax registration number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "77",
+      "name": "EORI Number",
+      "description": "Economic Operators Registration and Identification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "78",
+      "name": "AEO Number",
+      "description": "Authorized Economic Operator number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "79",
+      "name": "License Number",
+      "description": "Import or export license reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "80",
+      "name": "Permit Number",
+      "description": "Special permit or authorization number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "81",
+      "name": "Beneficiary Name",
+      "description": "Name of the LC beneficiary",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "82",
+      "name": "Applicant Name",
+      "description": "Name of the LC applicant",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "83",
+      "name": "Account Number",
+      "description": "Bank account number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "84",
+      "name": "SWIFT Code",
+      "description": "Bank identifier code (BIC)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "85",
+      "name": "IBAN",
+      "description": "International Bank Account Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "86",
+      "name": "Routing Number",
+      "description": "Bank routing or sort code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "87",
+      "name": "Payment Reference",
+      "description": "Reference for payment transaction",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "88",
+      "name": "Drawdown Amount",
+      "description": "Amount drawn under LC or guarantee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "89",
+      "name": "Amendment Number",
+      "description": "Reference for LC amendment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "90",
+      "name": "Transfer Number",
+      "description": "Reference for LC transfer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "91",
+      "name": "Discrepancy Description",
+      "description": "Description of document discrepancies",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "92",
+      "name": "Tolerance Percentage",
+      "description": "Allowed variance in quantity or amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "93",
+      "name": "Insurance Certificate Number",
+      "description": "Reference for insurance certificate",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "94",
+      "name": "Quality Certificate Number",
+      "description": "Reference for quality certification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "95",
+      "name": "Inspection Certificate Number",
+      "description": "Reference for inspection certificate",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "96",
+      "name": "Phytosanitary Certificate Number",
+      "description": "Plant health certificate reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "97",
+      "name": "Health Certificate Number",
+      "description": "Health certification reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "98",
+      "name": "Warehouse Receipt Number",
+      "description": "Reference for warehoused goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "99",
+      "name": "Delivery Order Number",
+      "description": "Reference for delivery authorization",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "100",
+      "name": "CMR Number",
+      "description": "Road consignment note reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "101",
+      "name": "AWB Number",
+      "description": "Air Waybill reference number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "102",
+      "name": "Master Bill of Lading",
+      "description": "Master B/L issued by carrier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "103",
+      "name": "House Bill of Lading",
+      "description": "House B/L issued by freight forwarder",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "104",
+      "name": "Charter Party Reference",
+      "description": "Reference to charter agreement",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "105",
+      "name": "Freight Forwarder Reference",
+      "description": "Forwarder's internal reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "106",
+      "name": "Agent Reference",
+      "description": "Agent's reference number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "107",
+      "name": "Consignment Note Number",
+      "description": "Reference for consignment note",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "108",
+      "name": "Manifest Number",
+      "description": "Cargo manifest reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "109",
+      "name": "Entry Number",
+      "description": "Customs entry reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "110",
+      "name": "Export Declaration Number",
+      "description": "Export declaration reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "111",
+      "name": "Import Declaration Number",
+      "description": "Import declaration reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "112",
+      "name": "SAD Number",
+      "description": "Single Administrative Document number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "113",
+      "name": "EUR1 Number",
+      "description": "Movement certificate EUR.1 reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "114",
+      "name": "ATR Number",
+      "description": "ATR movement certificate reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "115",
+      "name": "GSP Form A Number",
+      "description": "Generalized System of Preferences certificate",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "116",
+      "name": "Quota Number",
+      "description": "Import/export quota reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "117",
+      "name": "Tariff Code",
+      "description": "Customs tariff classification code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "118",
+      "name": "Trade Agreement Reference",
+      "description": "Reference to applicable trade agreement",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "119",
+      "name": "Contract Number",
+      "description": "Sales or purchase contract reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "120",
+      "name": "Pro Forma Invoice Number",
+      "description": "Preliminary invoice reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "121",
+      "name": "Debit Note Number",
+      "description": "Reference for debit note",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "122",
+      "name": "Credit Note Number",
+      "description": "Reference for credit note",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "124",
+      "name": "Issue Date",
+      "description": "Date when the document was issued",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "125",
+      "name": "Order Date",
+      "description": "Date when the order was placed",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "126",
+      "name": "Buyer Name",
+      "description": "Name of the party purchasing goods or services",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "127",
+      "name": "Seller Name",
+      "description": "Name of the party selling goods or services",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "128",
+      "name": "Product Identifier",
+      "description": "Unique identifier for a product or item",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "129",
+      "name": "Description of Goods",
+      "description": "Detailed description of the goods being traded",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "130",
+      "name": "Unit Price",
+      "description": "Price per unit of the product",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "131",
+      "name": "Payment Method",
+      "description": "Method of payment (e.g., wire transfer, letter of credit)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "132",
+      "name": "Trade Terms Conditions Description",
+      "description": "Detailed description of trade terms and conditions (Incoterms description)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "133",
+      "name": "Trade Terms Conditions Code",
+      "description": "Code for trade terms and conditions (Incoterms code)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "134",
+      "name": "Ship To Party",
+      "description": "Party to whom goods are to be shipped or delivered",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "135",
+      "name": "Consignor",
+      "description": "Consignor for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "136",
+      "name": "Consignee",
+      "description": "Consignee for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "137",
+      "name": "Importer",
+      "description": "Importer for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "138",
+      "name": "Exporter",
+      "description": "Exporter for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "139",
+      "name": "Destination Country",
+      "description": "Destination Country for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "140",
+      "name": "Total Invoice Amount",
+      "description": "Total Invoice Amount for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "141",
+      "name": "Place of Issue",
+      "description": "Place of Issue for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "142",
+      "name": "Documentary Credit Identifier",
+      "description": "Documentary Credit Identifier for commercial invoice",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "143",
+      "name": "Buyer",
+      "description": "Buyer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "144",
+      "name": "Warehouse depositor",
+      "description": "Warehouse depositor",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "145",
+      "name": "Seller",
+      "description": "Seller",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "146",
+      "name": "Warehouse keeper",
+      "description": "Warehouse keeper",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "147",
+      "name": "Manufacturer",
+      "description": "Manufacturer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "148",
+      "name": "Manufacturer of goods",
+      "description": "Manufacturer of goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "149",
+      "name": "Payer",
+      "description": "Payer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "150",
+      "name": "Payee",
+      "description": "Payee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "151",
+      "name": "Applicant",
+      "description": "Applicant",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "152",
+      "name": "Consignor's freight forwarder",
+      "description": "Consignor's freight forwarder",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "153",
+      "name": "Consignee's freight forwarder",
+      "description": "Consignee's freight forwarder",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "154",
+      "name": "Beneficiary",
+      "description": "Beneficiary",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "155",
+      "name": "Transport service buyer",
+      "description": "Transport service buyer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "156",
+      "name": "Document/message issuer",
+      "description": "Document/message issuer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "157",
+      "name": "Transport service seller",
+      "description": "Transport service seller",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "158",
+      "name": "Goods item manufacturer",
+      "description": "Goods item manufacturer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "159",
+      "name": "Carrier",
+      "description": "Carrier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "160",
+      "name": "Goods item packer",
+      "description": "Goods item packer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "161",
+      "name": "Freight forwarder",
+      "description": "Freight forwarder",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "162",
+      "name": "Goods item despatch party",
+      "description": "Goods item despatch party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "163",
+      "name": "Customs broker",
+      "description": "Customs broker",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "164",
+      "name": "Freight invoice payer",
+      "description": "Freight invoice payer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "165",
+      "name": "Delivery party",
+      "description": "Delivery party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "166",
+      "name": "Inventory controller",
+      "description": "Inventory controller",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "167",
+      "name": "Place of loading",
+      "description": "Place of loading",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "168",
+      "name": "Party performing inspection",
+      "description": "Party performing inspection",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "169",
+      "name": "Seller's agent",
+      "description": "Seller's agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "170",
+      "name": "Place of discharge",
+      "description": "Place of discharge",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "171",
+      "name": "Buyer's agent",
+      "description": "Buyer's agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "172",
+      "name": "Invoicee",
+      "description": "Invoicee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "173",
+      "name": "Place of departure",
+      "description": "Place of departure",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "174",
+      "name": "Consignor's agent",
+      "description": "Consignor's agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "175",
+      "name": "Place of destination",
+      "description": "Place of destination",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "176",
+      "name": "Consignee's agent",
+      "description": "Consignee's agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "177",
+      "name": "Commercial invoice issuer",
+      "description": "Commercial invoice issuer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "178",
+      "name": "Invoicer",
+      "description": "Invoicer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "179",
+      "name": "Country of despatch",
+      "description": "Country of despatch",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "180",
+      "name": "Supplier",
+      "description": "Supplier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "181",
+      "name": "Despatch country",
+      "description": "Despatch country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "182",
+      "name": "Manufacturer's agent",
+      "description": "Manufacturer's agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "183",
+      "name": "Final destination country",
+      "description": "Final destination country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "184",
+      "name": "Packer",
+      "description": "Packer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "185",
+      "name": "Export country",
+      "description": "Export country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "186",
+      "name": "Despatch party",
+      "description": "Despatch party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "187",
+      "name": "Country of ultimate destination",
+      "description": "Country of ultimate destination",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "188",
+      "name": "Exporter's agent",
+      "description": "Exporter's agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "189",
+      "name": "Country of exportation",
+      "description": "Country of exportation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "190",
+      "name": "Importer's agent",
+      "description": "Importer's agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "191",
+      "name": "Transit country",
+      "description": "Transit country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "192",
+      "name": "Notify party 1",
+      "description": "Notify party 1",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "193",
+      "name": "Country of transit",
+      "description": "Country of transit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "194",
+      "name": "Notify party 2",
+      "description": "Notify party 2",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "195",
+      "name": "Address",
+      "description": "Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "196",
+      "name": "Intermediate consignee",
+      "description": "Intermediate consignee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "197",
+      "name": "Street and number/P.O. Box",
+      "description": "Street and number/P.O. Box",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "198",
+      "name": "Consignee's representative",
+      "description": "Consignee's representative",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "199",
+      "name": "City name",
+      "description": "City name",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "200",
+      "name": "Notify party's bank",
+      "description": "Notify party's bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "201",
+      "name": "Country sub-entity name",
+      "description": "Country sub-entity name",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "202",
+      "name": "Reimbursing bank",
+      "description": "Reimbursing bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "203",
+      "name": "Postcode identification",
+      "description": "Postcode identification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "204",
+      "name": "Country, coded",
+      "description": "Country, coded",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "205",
+      "name": "Agent's bank",
+      "description": "Agent's bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "206",
+      "name": "Country, name",
+      "description": "Country, name",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "207",
+      "name": "Second advising bank",
+      "description": "Second advising bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "208",
+      "name": "Party tax identification number",
+      "description": "Party tax identification number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "209",
+      "name": "Nominated bank",
+      "description": "Nominated bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "210",
+      "name": "Document/message number",
+      "description": "Document/message number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "211",
+      "name": "Negotiating bank",
+      "description": "Negotiating bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "212",
+      "name": "Document/message date",
+      "description": "Document/message date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "213",
+      "name": "Remitting bank",
+      "description": "Remitting bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "214",
+      "name": "Dispatch date",
+      "description": "Dispatch date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "215",
+      "name": "Drawee's bank",
+      "description": "Drawee's bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "216",
+      "name": "Drawee",
+      "description": "Drawee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "217",
+      "name": "Available with bank",
+      "description": "Available with bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "218",
+      "name": "Presenting bank",
+      "description": "Presenting bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "219",
+      "name": "Expiry date",
+      "description": "Expiry date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "220",
+      "name": "Collecting bank",
+      "description": "Collecting bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "221",
+      "name": "Delivery date/time, requested",
+      "description": "Delivery date/time, requested",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "222",
+      "name": "Deferred payment number",
+      "description": "Deferred payment number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "223",
+      "name": "Goods receipt date/time",
+      "description": "Goods receipt date/time",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "224",
+      "name": "Deferred payment date",
+      "description": "Deferred payment date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "225",
+      "name": "Departure date",
+      "description": "Departure date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "226",
+      "name": "Arrival date",
+      "description": "Arrival date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "227",
+      "name": "Latest date of shipment",
+      "description": "Latest date of shipment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "228",
+      "name": "Terms of delivery",
+      "description": "Terms of delivery",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "229",
+      "name": "Documentary credit issue date",
+      "description": "Documentary credit issue date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "230",
+      "name": "Trade terms (Incoterms)",
+      "description": "Trade terms (Incoterms)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "231",
+      "name": "Amendment date",
+      "description": "Amendment date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "232",
+      "name": "Mode of transport, coded",
+      "description": "Mode of transport, coded",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "233",
+      "name": "Acceptance date",
+      "description": "Acceptance date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "234",
+      "name": "Transport mode",
+      "description": "Transport mode",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "235",
+      "name": "Documentary credit number",
+      "description": "Documentary credit number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "236",
+      "name": "Transport document number",
+      "description": "Transport document number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "237",
+      "name": "Deferred payment reference",
+      "description": "Deferred payment reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "238",
+      "name": "Means of transport",
+      "description": "Means of transport",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "239",
+      "name": "Documentary credit expiry date",
+      "description": "Documentary credit expiry date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "240",
+      "name": "Bank reference number",
+      "description": "Bank reference number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "241",
+      "name": "Container identification number",
+      "description": "Container identification number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "242",
+      "name": "Sales contract number",
+      "description": "Sales contract number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "243",
+      "name": "Proforma invoice number",
+      "description": "Proforma invoice number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "244",
+      "name": "Truck identification",
+      "description": "Truck identification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "245",
+      "name": "Marks and numbers",
+      "description": "Marks and numbers",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "246",
+      "name": "Commercial invoice number",
+      "description": "Commercial invoice number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "247",
+      "name": "Container/package marks",
+      "description": "Container/package marks",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "248",
+      "name": "Consular invoice number",
+      "description": "Consular invoice number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "249",
+      "name": "Shipping marks",
+      "description": "Shipping marks",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "250",
+      "name": "Number of originals",
+      "description": "Number of originals",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "251",
+      "name": "House bill of lading number",
+      "description": "House bill of lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "252",
+      "name": "Number of copies",
+      "description": "Number of copies",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "253",
+      "name": "Master bill of lading number",
+      "description": "Master bill of lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "254",
+      "name": "Sea waybill number",
+      "description": "Sea waybill number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "255",
+      "name": "Air waybill number",
+      "description": "Air waybill number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "256",
+      "name": "House air waybill number",
+      "description": "House air waybill number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "257",
+      "name": "Forwarder's cargo receipt number",
+      "description": "Forwarder's cargo receipt number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "258",
+      "name": "Cube",
+      "description": "Cube",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "259",
+      "name": "Measurement",
+      "description": "Measurement",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "260",
+      "name": "Weight unit",
+      "description": "Weight unit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "261",
+      "name": "Volume unit",
+      "description": "Volume unit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "262",
+      "name": "Currency, coded",
+      "description": "Currency, coded",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "263",
+      "name": "Total amount",
+      "description": "Total amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "264",
+      "name": "Combined transport document number",
+      "description": "Combined transport document number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "265",
+      "name": "Partial shipment",
+      "description": "Partial shipment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "266",
+      "name": "Multimodal transport document number",
+      "description": "Multimodal transport document number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "267",
+      "name": "Transhipment",
+      "description": "Transhipment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "268",
+      "name": "Rail consignment note number",
+      "description": "Rail consignment note number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "269",
+      "name": "Truck consignment note number",
+      "description": "Truck consignment note number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "270",
+      "name": "Freight amount",
+      "description": "Freight amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "271",
+      "name": "Charter party bill of lading number",
+      "description": "Charter party bill of lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "272",
+      "name": "Charges",
+      "description": "Charges",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "273",
+      "name": "Discount",
+      "description": "Discount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "274",
+      "name": "Allowances",
+      "description": "Allowances",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "275",
+      "name": "Forwarding instructions number",
+      "description": "Forwarding instructions number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "276",
+      "name": "Tax",
+      "description": "Tax",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "277",
+      "name": "Goods receipt number",
+      "description": "Goods receipt number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "278",
+      "name": "Cargo manifest number",
+      "description": "Cargo manifest number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "279",
+      "name": "HS code (Harmonized System)",
+      "description": "HS code (Harmonized System)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "280",
+      "name": "Customs tariff number",
+      "description": "Customs tariff number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "281",
+      "name": "Batch number",
+      "description": "Batch number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "282",
+      "name": "Serial number",
+      "description": "Serial number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "283",
+      "name": "Product name",
+      "description": "Product name",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "284",
+      "name": "Product description",
+      "description": "Product description",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "285",
+      "name": "Lot number",
+      "description": "Lot number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "286",
+      "name": "Line item number",
+      "description": "Line item number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "287",
+      "name": "Nature of cargo",
+      "description": "Nature of cargo",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "288",
+      "name": "Package identification",
+      "description": "Package identification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "289",
+      "name": "Commodity code",
+      "description": "Commodity code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "290",
+      "name": "Trade commodity identification",
+      "description": "Trade commodity identification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "291",
+      "name": "Goods type",
+      "description": "Goods type",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "292",
+      "name": "Reference number",
+      "description": "Reference number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "293",
+      "name": "Goods item number",
+      "description": "Goods item number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "294",
+      "name": "Packing group",
+      "description": "Packing group",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "295",
+      "name": "Container size",
+      "description": "Container size",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "296",
+      "name": "Type of packages",
+      "description": "Type of packages",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "297",
+      "name": "Empty/full indicator",
+      "description": "Empty/full indicator",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "298",
+      "name": "Packaging type",
+      "description": "Packaging type",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "299",
+      "name": "Tare weight",
+      "description": "Tare weight",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "300",
+      "name": "Kind of packages",
+      "description": "Kind of packages",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "301",
+      "name": "Equipment supplier",
+      "description": "Equipment supplier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "302",
+      "name": "Packaging material",
+      "description": "Packaging material",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "303",
+      "name": "Customs procedure, coded",
+      "description": "Customs procedure, coded",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "304",
+      "name": "Number of units",
+      "description": "Number of units",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "305",
+      "name": "Customs valuation method, coded",
+      "description": "Customs valuation method, coded",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "306",
+      "name": "Unit type",
+      "description": "Unit type",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "307",
+      "name": "Previous Customs document reference",
+      "description": "Previous Customs document reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "308",
+      "name": "Additional Customs document reference",
+      "description": "Additional Customs document reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "309",
+      "name": "Import license number",
+      "description": "Import license number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "310",
+      "name": "Export license number",
+      "description": "Export license number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "311",
+      "name": "Place of the delivery of the goods (by the carrier)",
+      "description": "Place of the delivery of the goods (by the carrier)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "312",
+      "name": "Quantity ordered",
+      "description": "Quantity ordered",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "313",
+      "name": "Origin country",
+      "description": "Origin country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "314",
+      "name": "Payment term",
+      "description": "Payment term",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "315",
+      "name": "Allowance / Charge",
+      "description": "Allowance / Charge",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "316",
+      "name": "Order amount",
+      "description": "Order amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "317",
+      "name": "Tax amount",
+      "description": "Tax amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "318",
+      "name": "Invoice date",
+      "description": "Invoice date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "319",
+      "name": "Payment due date",
+      "description": "Payment due date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "320",
+      "name": "Seller's bank",
+      "description": "Seller's bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "321",
+      "name": "Seller's bank account number",
+      "description": "Seller's bank account number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "322",
+      "name": "Original Loading Location",
+      "description": "Original Loading Location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "323",
+      "name": "Baseport Unloading Location",
+      "description": "Baseport Unloading Location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "324",
+      "name": "Documentary credit amount",
+      "description": "Documentary credit amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "325",
+      "name": "Humidity percentage",
+      "description": "Humidity percentage",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "326",
+      "name": "Goods value",
+      "description": "Goods value",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "327",
+      "name": "Volume (Cube)",
+      "description": "Volume (Cube)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "328",
+      "name": "HS Code (Commodity Code)",
+      "description": "HS Code (Commodity Code)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "329",
+      "name": "Despatch date",
+      "description": "Despatch date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "330",
+      "name": "Despatch",
+      "description": "Despatch",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "331",
+      "name": "Type of Packaging (UNCEFACT coded) and shipping marks",
+      "description": "Type of Packaging (UNCEFACT coded) and shipping marks",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "332",
+      "name": "Package length",
+      "description": "Package length",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "333",
+      "name": "Package width",
+      "description": "Package width",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "334",
+      "name": "Insured party",
+      "description": "Insured party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "335",
+      "name": "Handling Instructions",
+      "description": "Handling Instructions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "336",
+      "name": "Insurance condition",
+      "description": "Insurance condition",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "337",
+      "name": "Authentication",
+      "description": "Authentication",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "338",
+      "name": "Transport means identifier",
+      "description": "Transport means identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "339",
+      "name": "Vehicle registration number",
+      "description": "Vehicle registration number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "340",
+      "name": "Transport Contract Document / Bill of Lading number",
+      "description": "Transport Contract Document / Bill of Lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "341",
+      "name": "Transport Temperature",
+      "description": "Transport Temperature",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "342",
+      "name": "Freight Forwarder reference number",
+      "description": "Freight Forwarder reference number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "343",
+      "name": "Consignment loading date",
+      "description": "Consignment loading date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "344",
+      "name": "Freight payer",
+      "description": "Freight payer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "345",
+      "name": "Payment Location",
+      "description": "Payment Location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "346",
+      "name": "Place or departure",
+      "description": "Place or departure",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "347",
+      "name": "Consignment summary description",
+      "description": "Consignment summary description",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "348",
+      "name": "Conveyance reference number/Journey identifier",
+      "description": "Conveyance reference number/Journey identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "349",
+      "name": "Mode of Transport",
+      "description": "Mode of Transport",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "350",
+      "name": "Container size and type",
+      "description": "Container size and type",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "351",
+      "name": "Full or empty container",
+      "description": "Full or empty container",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "352",
+      "name": "Seal Identifier",
+      "description": "Seal Identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "353",
+      "name": "Actual arrival date",
+      "description": "Actual arrival date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "354",
+      "name": "Estimated time of departure",
+      "description": "Estimated time of departure",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "355",
+      "name": "Actual departure date",
+      "description": "Actual departure date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "356",
+      "name": "Estimated time of arrival",
+      "description": "Estimated time of arrival",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "357",
+      "name": "Despatch/Pick-up Party",
+      "description": "Despatch/Pick-up Party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "358",
+      "name": "Exportation country",
+      "description": "Exportation country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "359",
+      "name": "Transport Means, gross weight",
+      "description": "Transport Means, gross weight",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "360",
+      "name": "Customs value",
+      "description": "Customs value",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "361",
+      "name": "Freight and charges amount",
+      "description": "Freight and charges amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "362",
+      "name": "Prepaid amount",
+      "description": "Prepaid amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "363",
+      "name": "Total collect charges",
+      "description": "Total collect charges",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "364",
+      "name": "Dangerous Goods Technical Name",
+      "description": "Dangerous Goods Technical Name",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "365",
+      "name": "Dangerous Goods Regulation Code",
+      "description": "Dangerous Goods Regulation Code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "366",
+      "name": "Packaging. Danger Level.Code",
+      "description": "Packaging. Danger Level.Code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "367",
+      "name": "UNDG Number",
+      "description": "UNDG Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "368",
+      "name": "Flashpoint temperature",
+      "description": "Flashpoint temperature",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "369",
+      "name": "Transport Equipment Identifier",
+      "description": "Transport Equipment Identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "370",
+      "name": "Arrival location",
+      "description": "Arrival location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "371",
+      "name": "Transport Contract Document Conditions",
+      "description": "Transport Contract Document Conditions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "372",
+      "name": "Transport equipment operator",
+      "description": "Transport equipment operator",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "373",
+      "name": "Latest pick-up date",
+      "description": "Latest pick-up date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "374",
+      "name": "Place of taking over of the goods",
+      "description": "Place of taking over of the goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "375",
+      "name": "Delivery Instructions",
+      "description": "Delivery Instructions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "376",
+      "name": "Loading Instructions",
+      "description": "Loading Instructions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "377",
+      "name": "Name of the destination station",
+      "description": "Name of the destination station",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "378",
+      "name": "Emergency Contact",
+      "description": "Emergency Contact",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "379",
+      "name": "Dangerous goods class number",
+      "description": "Dangerous goods class number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "380",
+      "name": "Insurance company",
+      "description": "Insurance company",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "381",
+      "name": "Insurance claim adjuster",
+      "description": "Insurance claim adjuster",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "382",
+      "name": "Insured value amount",
+      "description": "Insured value amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "383",
+      "name": "Issuer / Drawer",
+      "description": "Issuer / Drawer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "384",
+      "name": "Warehouse",
+      "description": "Warehouse",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "385",
+      "name": "Risk object text",
+      "description": "Risk object text",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "386",
+      "name": "Transport Means Type Code",
+      "description": "Transport Means Type Code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "387",
+      "name": "Dangerous Goods Declaration identifier",
+      "description": "Dangerous Goods Declaration identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "388",
+      "name": "Security information",
+      "description": "Security information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "389",
+      "name": "Unique Consignment Reference (UCR)",
+      "description": "Unique Consignment Reference (UCR)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "390",
+      "name": "Document endorsement",
+      "description": "Document endorsement",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "391",
+      "name": "Upper Orange Hazard Placard ID",
+      "description": "Upper Orange Hazard Placard ID",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "392",
+      "name": "Lower Orange Hazard Placard ID",
+      "description": "Lower Orange Hazard Placard ID",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "393",
+      "name": "Explosive Compatibility Group Code",
+      "description": "Explosive Compatibility Group Code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "394",
+      "name": "Reportable Quantity",
+      "description": "Reportable Quantity",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "395",
+      "name": "Tunnel Restriction Code",
+      "description": "Tunnel Restriction Code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "396",
+      "name": "Special Provision ID",
+      "description": "Special Provision ID",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "397",
+      "name": "All Packed In One Information",
+      "description": "All Packed In One Information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "398",
+      "name": "Q-Value Number",
+      "description": "Q-Value Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "399",
+      "name": "Overpack Information",
+      "description": "Overpack Information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "400",
+      "name": "Aircraft Limitation Information",
+      "description": "Aircraft Limitation Information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "401",
+      "name": "Shipper DG Declaration Information",
+      "description": "Shipper DG Declaration Information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "402",
+      "name": "Radioactive Indicator",
+      "description": "Radioactive Indicator",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "403",
+      "name": "Radioactive Material Details",
+      "description": "Radioactive Material Details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "404",
+      "name": "Dangerous Goods Logistics Package",
+      "description": "Dangerous Goods Logistics Package",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "10",
+      "dataCategoryValue": "Dangerous goods"
+    },
+    {
+      "id": "405",
+      "name": "Permit/Certificate/Carnet expiry date",
+      "description": "Permit/Certificate/Carnet expiry date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "406",
+      "name": "Consignment route",
+      "description": "Consignment route",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "407",
+      "name": "Consignment destination country",
+      "description": "Consignment destination country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "408",
+      "name": "Certification",
+      "description": "Certification",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "409",
+      "name": "Permit/Certificate/Carnet issuer",
+      "description": "Permit/Certificate/Carnet issuer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "410",
+      "name": "Management/Competent Authority",
+      "description": "Management/Competent Authority",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "411",
+      "name": "Statistical value",
+      "description": "Statistical value",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "412",
+      "name": "Nature of transaction",
+      "description": "Nature of transaction",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "413",
+      "name": "Goods declaration number",
+      "description": "Goods declaration number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "414",
+      "name": "Customs office of destination",
+      "description": "Customs office of destination",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "415",
+      "name": "Customs office of entry",
+      "description": "Customs office of entry",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "416",
+      "name": "Customs office of transit",
+      "description": "Customs office of transit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "417",
+      "name": "Agent",
+      "description": "Agent",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "418",
+      "name": "Consignment. Exit Customs Office",
+      "description": "Consignment. Exit Customs Office",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "419",
+      "name": "Tax or fee assessment basis amount",
+      "description": "Tax or fee assessment basis amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "420",
+      "name": "Tax or fee type",
+      "description": "Tax or fee type",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "421",
+      "name": "Customs Tariff Quantity Deduction",
+      "description": "Customs Tariff Quantity Deduction",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "422",
+      "name": "Tax Regime Type",
+      "description": "Tax Regime Type",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "12",
+      "dataCategoryValue": "Others"
+    },
+    {
+      "id": "423",
+      "name": "Transport means at border crossing",
+      "description": "Transport means at border crossing",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment"
+    },
+    {
+      "id": "424",
+      "name": "Permit/Certificate/Carnet number",
+      "description": "Permit/Certificate/Carnet number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "425",
+      "name": "Approval number",
+      "description": "Approval number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "426",
+      "name": "Specimen country of re-export",
+      "description": "Specimen country of re-export",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "427",
+      "name": "Specimen country of origin",
+      "description": "Specimen country of origin",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "428",
+      "name": "CITES Appendix reference",
+      "description": "CITES Appendix reference",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "429",
+      "name": "Purpose of CITES trade transaction",
+      "description": "Purpose of CITES trade transaction",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "430",
+      "name": "Monetary amount",
+      "description": "Monetary amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "431",
+      "name": "Annual quota",
+      "description": "Annual quota",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "432",
+      "name": "Exported quantity",
+      "description": "Exported quantity",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "433",
+      "name": "Name of animal or plant",
+      "description": "Name of animal or plant",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "434",
+      "name": "Specimen description",
+      "description": "Specimen description",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "435",
+      "name": "Guarantor",
+      "description": "Guarantor",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "436",
+      "name": "Type of transit guarantee",
+      "description": "Type of transit guarantee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "437",
+      "name": "Customs office of guarantee",
+      "description": "Customs office of guarantee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "438",
+      "name": "Advance ruling applicant",
+      "description": "Advance ruling applicant",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "439",
+      "name": "Advance ruling application recipient",
+      "description": "Advance ruling application recipient",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "440",
+      "name": "Excise guarantee beneficiary",
+      "description": "Excise guarantee beneficiary",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "441",
+      "name": "Conditions of guarantee",
+      "description": "Conditions of guarantee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "442",
+      "name": "Excise duty amount",
+      "description": "Excise duty amount",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "443",
+      "name": "Type of excise duty",
+      "description": "Type of excise duty",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "444",
+      "name": "Documentary credit document issue date",
+      "description": "Documentary credit document issue date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "445",
+      "name": "Documentary credit document effective end date",
+      "description": "Documentary credit document effective end date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "446",
+      "name": "Documentary Credit Applicant",
+      "description": "Documentary Credit Applicant",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "447",
+      "name": "Documentary Credit Available Bank",
+      "description": "Documentary Credit Available Bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "448",
+      "name": "Documentary Credit Beneficiary",
+      "description": "Documentary Credit Beneficiary",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "449",
+      "name": "Documentary Credit Reimbursing Bank",
+      "description": "Documentary Credit Reimbursing Bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "450",
+      "name": "Documentary Credit Applicant Agent Bank",
+      "description": "Documentary Credit Applicant Agent Bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "451",
+      "name": "Documentary Credit Drawee",
+      "description": "Documentary Credit Drawee",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "452",
+      "name": "Account holder",
+      "description": "Account holder",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "453",
+      "name": "Buyer's bank",
+      "description": "Buyer's bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    }
+  ]
+}

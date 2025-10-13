@@ -1,0 +1,268 @@
+/* Enhanced Dashboard Styles - Add to existing styles.css */
+
+/* Dashboard Specific Animations */
+@keyframes slideInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Apply animations to dashboard elements */
+.glass-card {
+  animation: fadeInScale 0.6s ease-out;
+}
+
+.feature-tile {
+  animation: slideInFromBottom 0.6s ease-out;
+}
+
+.feature-tile:nth-child(1) { animation-delay: 0.1s; }
+.feature-tile:nth-child(2) { animation-delay: 0.2s; }
+.feature-tile:nth-child(3) { animation-delay: 0.3s; }
+.feature-tile:nth-child(4) { animation-delay: 0.4s; }
+.feature-tile:nth-child(5) { animation-delay: 0.5s; }
+.feature-tile:nth-child(6) { animation-delay: 0.6s; }
+
+.floating-nav {
+  animation: slideInFromTop 0.5s ease-out;
+}
+
+.stats-card {
+  animation: slideInFromLeft 0.5s ease-out;
+}
+
+/* Enhanced hover effects */
+.feature-tile:hover .badge {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+.feature-tile:hover h3 {
+  color: #667eea;
+  transition: color 0.3s ease;
+}
+
+.feature-tile:hover .v-icon {
+  transform: rotate(15deg);
+  transition: transform 0.3s ease;
+}
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+  .floating-nav {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 16px;
+    border-radius: 16px;
+  }
+  
+  .pt-32 {
+    padding-top: 2rem;
+  }
+  
+  .feature-tile {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 24px !important;
+    margin: 16px;
+  }
+  
+  .feature-tile {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .floating-nav .flex {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .badge {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin-bottom: 8px;
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .text-4xl {
+    font-size: 2rem;
+  }
+  
+  .feature-tile h3 {
+    font-size: 1.5rem;
+  }
+  
+  .stats-card {
+    padding: 16px !important;
+  }
+}
+
+/* Loading states */
+.feature-tile.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.feature-tile.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #667eea;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Enhanced gradient backgrounds */
+.bg-gradient-dashboard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+}
+
+.bg-gradient-tile-1 {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.bg-gradient-tile-2 {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.bg-gradient-tile-3 {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.bg-gradient-tile-4 {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+}
+
+/* Interactive elements */
+.interactive-number {
+  transition: all 0.3s ease;
+}
+
+.interactive-number:hover {
+  transform: scale(1.1);
+  color: #667eea;
+}
+
+/* Status indicators */
+.status-online {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+}
+
+.status-offline {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+}
+
+.status-busy {
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+}
+
+/* Improved accessibility */
+.feature-tile:focus {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+.feature-tile:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Dark mode enhancements */
+.dark-mode .feature-tile:hover h3 {
+  color: #a855f7;
+}
+
+.dark-mode .stats-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .badge {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+
+/* Performance optimizations */
+.feature-tile {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.glass-card {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Print styles */
+@media print {
+  .floating-nav,
+  .feature-tile,
+  .glass-card {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .badge {
+    background: #666 !important;
+    color: white !important;
+  }
+}

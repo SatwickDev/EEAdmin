@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant Pro - EEAI Trade Finance</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="{{ url_for('static', filename='css/finstack-master.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/global-components.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <style>
+        /* Body padding for floating header */
+        body {
+            padding-top: 120px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
+    
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loader">
+            <div class="loader-ring"></div>
+            <div class="loader-logo">AI</div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="main-content">
+        <div class="page-container">
+            <!-- Welcome Section -->
+            <div class="glass-card" style="padding: 40px; margin-bottom: 32px;">
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);" class="animate-float">
+                        <i class="fas fa-robot" style="font-size: 40px; color: white;"></i>
+                    </div>
+                    <h1 class="heading-gradient" style="font-size: 3rem; margin-bottom: 16px;">AI Assistant Pro</h1>
+                    <p class="text-muted-pro" style="font-size: 1.25rem;">Intelligent conversational AI powered by advanced language models</p>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="glass-card" style="padding: 0; border-radius: 28px; overflow: hidden; height: 70vh; display: flex;">
+        <div class="app-container" style="display: flex; width: 100%; height: 100%;">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="app-logo">
+                    <div class="app-logo-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <div class="app-logo-text">AI Assistant</div>
+                        <span class="app-logo-badge">PRO</span>
+                    </div>
+                </a>
+            </div>
+
+            <button class="new-chat-btn" onclick="createNewChat()">
+                <i class="fas fa-plus"></i>
+                New Chat
+            </button>
+
+            <div class="session-list" id="session-list">
+                <!-- Sessions will be dynamically loaded here -->
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">U</div>
+                    <div class="user-info">
+                        <div class="user-name">User</div>
+                        <div class="user-status">Free Plan</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--gray-400);"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="mobile-menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <h1 class="chat-header-title" id="chat-title">AI Assistant Pro</h1>
+                <div class="chat-header-actions">
+                    <button class="header-action-btn" onclick="clearChat()">
+                        <i class="fas fa-broom"></i>
+                    </button>
+                    <button class="header-action-btn" onclick="exportChat()">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="header-action-btn" onclick="toggleSettings()">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome State -->
+                <div class="welcome-container" id="welcome-container">
+                    <div class="welcome-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h2 class="welcome-title">Welcome to AI Assistant Pro</h2>
+                    <p class="welcome-subtitle">Your intelligent companion for trade finance and document analysis</p>
+                    
+                    <div class="suggestions-grid">
+                        <div class="suggestion-card" onclick="sendSuggestion('Analyze this LC document for compliance')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <h4 class="suggestion-title">Document Analysis</h4>
+                            <p class="suggestion-description">Analyze trade finance documents for compliance</p>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="sendSuggestion('Generate a trade finance report')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="suggestion-title">Generate Reports</h4>
+                            <p class="suggestion-description">Create comprehensive trade finance reports</p>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="sendSuggestion('Check UCP 600 compliance')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-shield-check"></i>
+                            </div>
+                            <h4 class="suggestion-title">Compliance Check</h4>
+                            <p class="suggestion-description">Verify UCP 600 and ISBP compliance</p>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="sendSuggestion('Help with SWIFT message')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h4 class="suggestion-title">SWIFT Messages</h4>
+                            <p class="suggestion-description">Assistance with SWIFT messaging</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea
+                        id="chat-input"
+                        class="chat-input"
+                        placeholder="Type your message here... Press Enter to send, Shift+Enter for new line"
+                        rows="1"></textarea>
+                    
+                    <div class="input-actions">
+                        <button class="input-action-btn" onclick="attachFile()">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <button class="input-action-btn send-btn" id="send-btn" onclick="sendMessage()" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden file input for attachments -->
+    <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileSelect()">
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/enhanced-pdf-viewer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/session-manager.js') }}"></script>
+    <script>
+        // Global variables
+        let currentSessionId = null;
+        let sessionManager = null;
+        let isLoading = false;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+        
+        async function initializeApp() {
+            try {
+                // Show loading screen
+                document.getElementById('loading-screen').style.display = 'flex';
+                
+                // Initialize session manager
+                sessionManager = new SessionManager();
+                await sessionManager.init();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Auto-resize textarea
+                setupTextareaAutoResize();
+                
+                // Hide loading screen
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }, 1000);
+                
+                console.log('AI Chat Pro initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+                showToast('Failed to initialize application', 'error');
+            }
+        }
+        
+        function setupEventListeners() {
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            
+            // Chat input events
+            chatInput.addEventListener('input', function() {
+                sendBtn.disabled = !this.value.trim();
+            });
+            
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (this.value.trim()) {
+                        sendMessage();
+                    }
+                }
+            });
+            
+            // Mobile sidebar toggle
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                const toggle = document.querySelector('.mobile-menu-toggle');
+                
+                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            });
+        }
+        
+        function setupTextareaAutoResize() {
+            const textarea = document.getElementById('chat-input');
+            
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+            });
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            // Clear input
+            input.value = '';
+            input.style.height = 'auto';
+            document.getElementById('send-btn').disabled = true;
+            
+            // Hide welcome screen
+            const welcomeContainer = document.getElementById('welcome-container');
+            if (welcomeContainer) {
+                welcomeContainer.style.display = 'none';
+            }
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                isLoading = true;
+                
+                // Send to API
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: currentSessionId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                hideTypingIndicator();
+                
+                // Add AI response
+                addMessage(data.response || 'Sorry, I encountered an error.', 'assistant');
+                
+                // Update session if provided
+                if (data.session_id) {
+                    currentSessionId = data.session_id;
+                }
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+                showToast('Failed to send message', 'error');
+            } finally {
+                isLoading = false;
+            }
+        }
+        
+        function addMessage(content, type) {
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-wrapper">
+                    <div class="message-avatar">${type === 'user' ? 'U' : 'AI'}</div>
+                    <div class="message-content">
+                        <div class="message-text">${formatMessage(content)}</div>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function formatMessage(content) {
+            // Basic HTML escaping and formatting
+            return content
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>');
+        }
+        
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+            
+            typingDiv.innerHTML = `
+                <div class="message-wrapper">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        function sendSuggestion(suggestion) {
+            const input = document.getElementById('chat-input');
+            input.value = suggestion;
+            document.getElementById('send-btn').disabled = false;
+            sendMessage();
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        function createNewChat() {
+            if (sessionManager) {
+                sessionManager.createNewSession();
+            }
+            
+            // Clear current chat
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = `
+                <div class="welcome-container" id="welcome-container">
+                    <div class="welcome-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h2 class="welcome-title">Welcome to AI Assistant Pro</h2>
+                    <p class="welcome-subtitle">Your intelligent companion for trade finance and document analysis</p>
+                    
+                    <div class="suggestions-grid">
+                        <div class="suggestion-card" onclick="sendSuggestion('Analyze this LC document for compliance')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <h4 class="suggestion-title">Document Analysis</h4>
+                            <p class="suggestion-description">Analyze trade finance documents for compliance</p>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="sendSuggestion('Generate a trade finance report')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="suggestion-title">Generate Reports</h4>
+                            <p class="suggestion-description">Create comprehensive trade finance reports</p>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="sendSuggestion('Check UCP 600 compliance')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-shield-check"></i>
+                            </div>
+                            <h4 class="suggestion-title">Compliance Check</h4>
+                            <p class="suggestion-description">Verify UCP 600 and ISBP compliance</p>
+                        </div>
+                        
+                        <div class="suggestion-card" onclick="sendSuggestion('Help with SWIFT message')">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h4 class="suggestion-title">SWIFT Messages</h4>
+                            <p class="suggestion-description">Assistance with SWIFT messaging</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            currentSessionId = null;
+            showToast('New chat created', 'success');
+        }
+        
+        function clearChat() {
+            createNewChat();
+        }
+        
+        function exportChat() {
+            showToast('Chat export feature coming soon', 'info');
+        }
+        
+        function toggleSettings() {
+            showToast('Settings panel coming soon', 'info');
+        }
+        
+        function attachFile() {
+            document.getElementById('file-input').click();
+        }
+        
+        function handleFileSelect() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                showToast(`File "${file.name}" selected. Upload feature coming soon.`, 'info');
+                fileInput.value = ''; // Reset input
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icon = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            }[type] || 'fas fa-info-circle';
+            
+            toast.innerHTML = `
+                <i class="${icon}"></i>
+                <span>${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+    </script>
+    
+    <!-- Global Components Script -->
+    <script src="{{ url_for('static', filename='js/global-components.js') }}"></script>
+</body>
+</html>

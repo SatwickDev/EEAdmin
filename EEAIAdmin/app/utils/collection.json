@@ -1,0 +1,110 @@
+[
+  {
+    "COLLECTION_NUMBER": "COL-2023001",
+    "REMITTER": "John Doe",
+    "REMITTEE": "Jane Smith",
+    "COLLECTION_DATE": "2023-05-15",
+    "AMOUNT": 5000,
+    "CURRENCY": "USD",
+    "TYPE": "Credit",
+    "STATUS": "Received",
+    "COUNTRY": "United States",
+    "DOCUMENT_TYPE": "Invoice"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2023002",
+    "REMITTER": "Alice Johnson",
+    "REMITTEE": "Bob Brown",
+    "COLLECTION_DATE": "2023-09-28",
+    "AMOUNT": 3500,
+    "CURRENCY": "EUR",
+    "TYPE": "Debit",
+    "STATUS": "Pending",
+    "COUNTRY": "France",
+    "DOCUMENT_TYPE": "Contract"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2023003",
+    "REMITTER": "David Lee",
+    "REMITTEE": "Sarah Wilson",
+    "COLLECTION_DATE": "2023-12-10",
+    "AMOUNT": 7000,
+    "CURRENCY": "GBP",
+    "TYPE": "Credit",
+    "STATUS": "Paid",
+    "COUNTRY": "United Kingdom",
+    "DOCUMENT_TYPE": "Receipt"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2024001",
+    "REMITTER": "Emily Brown",
+    "REMITTEE": "Michael Davis",
+    "COLLECTION_DATE": "2024-02-22",
+    "AMOUNT": 4200,
+    "CURRENCY": "CAD",
+    "TYPE": "Debit",
+    "STATUS": "Received",
+    "COUNTRY": "Canada",
+    "DOCUMENT_TYPE": "Invoice"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2024002",
+    "REMITTER": "Sophia Clark",
+    "REMITTEE": "Kevin White",
+    "COLLECTION_DATE": "2024-07-14",
+    "AMOUNT": 6000,
+    "CURRENCY": "AUD",
+    "TYPE": "Credit",
+    "STATUS": "Pending",
+    "COUNTRY": "Australia",
+    "DOCUMENT_TYPE": "Contract"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2024003",
+    "REMITTER": "Oliver Garcia",
+    "REMITTEE": "Emma Martinez",
+    "COLLECTION_DATE": "2024-11-30",
+    "AMOUNT": 5500,
+    "CURRENCY": "CHF",
+    "TYPE": "Debit",
+    "STATUS": "Paid",
+    "COUNTRY": "Switzerland",
+    "DOCUMENT_TYPE": "Receipt"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2025001",
+    "REMITTER": "Liam Wilson",
+    "REMITTEE": "Ava Taylor",
+    "COLLECTION_DATE": "2025-03-19",
+    "AMOUNT": 4800,
+    "CURRENCY": "JPY",
+    "TYPE": "Credit",
+    "STATUS": "Received",
+    "COUNTRY": "Japan",
+    "DOCUMENT_TYPE": "Invoice"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2025002",
+    "REMITTER": "Mia Rodriguez",
+    "REMITTEE": "Ethan Lopez",
+    "COLLECTION_DATE": "2025-08-07",
+    "AMOUNT": 3000,
+    "CURRENCY": "CNY",
+    "TYPE": "Debit",
+    "STATUS": "Pending",
+    "COUNTRY": "China",
+    "DOCUMENT_TYPE": "Contract"
+  },
+  {
+    "COLLECTION_NUMBER": "COL-2025003",
+    "REMITTER": "Harper Martinez",
+    "REMITTEE": "Logan Perez",
+    "COLLECTION_DATE": "2025-12-25",
+    "AMOUNT": 6700,
+    "CURRENCY": "INR",
+    "TYPE": "Credit",
+    "STATUS": "Paid",
+    "COUNTRY": "India",
+    "DOCUMENT_TYPE": "Receipt"
+  }
+]

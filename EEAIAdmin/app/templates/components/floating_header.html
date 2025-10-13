@@ -1,0 +1,284 @@
+<!-- Global Floating Header Component -->
+<!-- Include this component in your page by using the include directive -->
+
+<!-- Modern Floating Header -->
+<div class="floating-header" id="globalFloatingHeader">
+    <div class="floating-header-content">
+        <!-- Brand Section -->
+        <div class="brand-section">
+            <div class="logo-container">
+                <div class="modern-logo">
+                    <svg width="28" height="28" viewBox="0 0 48 48">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1"/>
+                                <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                <stop offset="100%" style="stop-color:#06b6d4"/>
+                            </linearGradient>
+                        </defs>
+                        <g fill="url(#logoGradient)">
+                            <rect x="8" y="8" width="8" height="32" rx="3"/>
+                            <rect x="8" y="8" width="24" height="8" rx="3"/>
+                            <rect x="8" y="20" width="20" height="8" rx="3"/>
+                        </g>
+                        <g fill="url(#logoGradient)" opacity="0.6">
+                            <rect x="20" y="32" width="20" height="2" rx="1"/>
+                            <rect x="20" y="36" width="20" height="2" rx="1"/>
+                        </g>
+                    </svg>
+                    <div class="status-pulse"></div>
+                </div>
+            </div>
+            <div class="brand-info">
+                <h1 class="brand-title">Finstack</h1>
+                <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+            </div>
+        </div>
+
+        <!-- Navigation Pills -->
+        <nav class="nav-pills" id="globalNavPills">
+            <a href="/" class="nav-pill" data-page="dashboard">
+                <i class="mdi mdi-view-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/analytics" class="nav-pill" data-page="analytics">
+                <i class="mdi mdi-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/ai-chat-pro" class="nav-pill" data-page="ai-chat">
+                <i class="mdi mdi-robot"></i>
+                <span>Finance AI Agents</span>
+            </a>
+        </nav>
+
+        <!-- Actions -->
+        <div class="header-actions">
+            <div class="status-indicator-modern">
+                <div class="pulse-dot"></div>
+                <span>Online</span>
+            </div>
+            <button onclick="goBack()" class="action-button secondary" title="Go Back">
+                <i class="mdi mdi-arrow-left"></i>
+                <span class="btn-text">Back</span>
+            </button>
+            <a href="/" class="action-button secondary" title="Go to Dashboard">
+                <i class="mdi mdi-home"></i>
+                <span class="btn-text">Home</span>
+            </a>
+            <button onclick="showProfile()" class="action-button secondary" id="profileBtn" title="View Profile">
+                <i class="mdi mdi-account-circle"></i>
+                <span class="btn-text">Profile</span>
+            </button>
+            <button onclick="logout()" class="action-button primary" title="Logout">
+                <i class="mdi mdi-logout"></i>
+                <span class="btn-text">Logout</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="profile-modal">
+    <div class="profile-modal-content">
+        <div class="profile-modal-header">
+            <h2>User Profile</h2>
+            <button onclick="closeProfileModal()" class="close-btn">
+                <i class="mdi mdi-close"></i>
+            </button>
+        </div>
+        <div class="profile-modal-body">
+            <div class="profile-avatar">
+                <i class="mdi mdi-account-circle"></i>
+            </div>
+            <div class="profile-info">
+                <div class="profile-field">
+                    <label>Name</label>
+                    <p id="profileName">Loading...</p>
+                </div>
+                <div class="profile-field">
+                    <label>Email</label>
+                    <p id="profileEmail">Loading...</p>
+                </div>
+                <div class="profile-field">
+                    <label>Role</label>
+                    <p id="profileRole">User</p>
+                </div>
+                <div class="profile-field">
+                    <label>Last Login</label>
+                    <p id="profileLastLogin">Today</p>
+                </div>
+            </div>
+        </div>
+        <div class="profile-modal-footer">
+            <button onclick="closeProfileModal()" class="btn-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global Header JavaScript Functions
+(function() {
+    'use strict';
+    
+    // Set active navigation pill based on current page
+    function setActiveNavPill() {
+        const currentPath = window.location.pathname;
+        const navPills = document.querySelectorAll('#globalNavPills .nav-pill');
+        
+        navPills.forEach(pill => {
+            pill.classList.remove('active');
+            const href = pill.getAttribute('href');
+            
+            if (currentPath === href || 
+                (currentPath === '/' && pill.dataset.page === 'dashboard') ||
+                (currentPath.includes('trade_finance') && pill.dataset.page === 'forms') ||
+                (currentPath.includes('treasury') && pill.dataset.page === 'forms') ||
+                (currentPath.includes('cash_management') && pill.dataset.page === 'forms') ||
+                (currentPath.includes('ai-chat') && pill.dataset.page === 'ai-chat') ||
+                (currentPath.includes('ai_chat') && pill.dataset.page === 'ai-chat')) {
+                pill.classList.add('active');
+            }
+        });
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        setActiveNavPill();
+        loadUserProfile();
+    });
+    
+    // Back button functionality
+    window.goBack = function() {
+        if (document.referrer && document.referrer !== window.location.href) {
+            // Check for unsaved changes
+            if (window.hasUnsavedChanges && window.hasUnsavedChanges()) {
+                if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+                    window.history.back();
+                }
+            } else {
+                window.history.back();
+            }
+        } else {
+            window.location.href = '/';
+        }
+    };
+    
+    // Logout functionality
+    window.logout = function() {
+        if (confirm('Are you sure you want to logout?')) {
+            // Show loading state
+            const logoutBtn = event.target.closest('button');
+            if (logoutBtn) {
+                logoutBtn.disabled = true;
+                logoutBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Logging out...';
+            }
+            
+            fetch('/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (response.ok || response.redirected) {
+                    // Clear any stored data
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = '/';
+                } else {
+                    throw new Error('Logout failed');
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                // Redirect to home page even on error
+                window.location.href = '/';
+            });
+        }
+    };
+    
+    // Profile Modal Functions
+    window.showProfile = function() {
+        const modal = document.getElementById('profileModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    };
+    
+    window.closeProfileModal = function() {
+        const modal = document.getElementById('profileModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    };
+    
+    // Load user profile data
+    window.loadUserProfile = function() {
+        // Try to get user data from session storage first
+        const cachedUser = sessionStorage.getItem('currentUser');
+        if (cachedUser) {
+            const userData = JSON.parse(cachedUser);
+            updateProfileDisplay(userData);
+        }
+        
+        // Try to fetch fresh data from server
+        fetch('/auth/current-user', {
+            method: 'GET',
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('User profile not available');
+            }
+            return response.json();
+        })
+        .then(data => {
+            sessionStorage.setItem('currentUser', JSON.stringify(data));
+            updateProfileDisplay(data);
+        })
+        .catch(error => {
+            console.log('Using default profile data');
+            // Use default values if fetch fails or endpoint doesn't exist
+            const defaultUser = {
+                name: sessionStorage.getItem('userName') || 'User',
+                email: sessionStorage.getItem('userEmail') || 'user@finstack.com',
+                role: 'User',
+                lastLogin: new Date().toLocaleDateString()
+            };
+            updateProfileDisplay(defaultUser);
+        });
+    };
+    
+    // Update profile display
+    function updateProfileDisplay(userData) {
+        const nameEl = document.getElementById('profileName');
+        const emailEl = document.getElementById('profileEmail');
+        const roleEl = document.getElementById('profileRole');
+        const lastLoginEl = document.getElementById('profileLastLogin');
+        
+        if (nameEl) nameEl.textContent = userData.name || userData.firstName + ' ' + userData.lastName || 'User';
+        if (emailEl) emailEl.textContent = userData.email || 'user@finstack.com';
+        if (roleEl) roleEl.textContent = userData.role || 'User';
+        if (lastLoginEl) lastLoginEl.textContent = userData.lastLogin || 'Today';
+    }
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeProfileModal();
+        }
+    });
+    
+    // Close modal on outside click
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('profileModal');
+        if (modal && e.target === modal) {
+            closeProfileModal();
+        }
+    });
+    
+})();
+</script>

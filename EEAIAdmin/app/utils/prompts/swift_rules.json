@@ -1,0 +1,32 @@
+{
+  "SWIFT": {
+    "register import letter of credit": {
+      "sanctions": {
+        "APPLICANT_NAME": {
+          "not_contains": ["Iran", "North Korea"],
+          "severity": "high",
+          "error_message": "Applicant is from a sanctioned country."
+        }
+      },
+      "regulatory": {
+        "SWIFT_CODE": {
+          "not_contains": ["XXXX"],
+          "severity": "medium",
+          "error_message": "SWIFT code format is invalid or placeholder."
+        },
+        "MESSAGE_TYPE": {
+          "allowed_values": ["MT700", "MT701"],
+          "severity": "medium",
+          "error_message": "Unsupported SWIFT message type: {value}. Allowed: {allowed_values}."
+        }
+      },
+      "operational": {
+        "CURRENCY": {
+          "allowed_values": ["USD", "EUR", "JPY"],
+          "severity": "High",
+          "error_message": "Unsupported currency: {value}. Allowed: {allowed_values}."
+        }
+      }
+    }
+  }
+}

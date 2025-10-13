@@ -1,0 +1,292 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "code": "PO",
+      "name": "Purchase Order",
+      "sender": "Seller, Exporter",
+      "receiver": "Buyer, Importer",
+      "processType": "Commercial Processes"
+    },
+    {
+      "id": "2",
+      "code": "INV",
+      "name": "Commercial Invoice",
+      "sender": "Seller, Exporter",
+      "receiver": "Buyer, Importer",
+      "processType": "Commercial Processes"
+    },
+    {
+      "id": "3",
+      "code": "SLI",
+      "name": "Shipper's Letter of Instructions",
+      "sender": "Shipper, Consignor",
+      "receiver": "Freight Forwarder",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "4",
+      "code": "PL",
+      "name": "Packing List",
+      "sender": "Seller, Exporter",
+      "receiver": "Buyer, Importer",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "5",
+      "code": "BoL",
+      "name": "Bill of Lading",
+      "sender": "Carrier, Freight Forwarder",
+      "receiver": "Shipper, Freight Forwarder, Customs, Consignee",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "6",
+      "code": "SW",
+      "name": "Sea Waybill",
+      "sender": "Carrier, Freight Forwarder",
+      "receiver": "Shipper, Consignor",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "7",
+      "code": "SDO",
+      "name": "Ship's Delivery Order",
+      "sender": "Carrier",
+      "receiver": "Consignee",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "8",
+      "code": "AW",
+      "name": "Air Waybill",
+      "sender": "Freight Forwarder, Shipper",
+      "receiver": "Carrier",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "9",
+      "code": "SCM",
+      "name": "Sea Cargo Manifest",
+      "sender": "Carrier",
+      "receiver": "Customs",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "10",
+      "code": "ACM",
+      "name": "Air Cargo Manifest",
+      "sender": "Exporter, Freight Forwarder",
+      "receiver": "Customs",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "11",
+      "code": "CIM",
+      "name": "Rail Consignment Note",
+      "sender": "Shipper, Consignor",
+      "receiver": "Consignee",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "12",
+      "code": "CMR",
+      "name": "Road Consignment Note",
+      "sender": "Shipper, Consignor",
+      "receiver": "Consignee, Carrier",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "13",
+      "code": "CID",
+      "name": "Cargo Insurance Document",
+      "sender": "Insurance Company",
+      "receiver": "Shipper, Consignee, Bank, Customs",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "14",
+      "code": "WR",
+      "name": "Warehouse Receipt",
+      "sender": "Warehouse Keeper, Freight Forwarder",
+      "receiver": "Buyer, Seller",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "15",
+      "code": "DGD",
+      "name": "Dangerous Goods Declaration",
+      "sender": "Supplier, Shipper, Logistic service provider, Consignor",
+      "receiver": "Buyer, Regulator, Bank, Government agency, Carrier, Customs, Consignee",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "16",
+      "code": "CSD",
+      "name": "Consignment Security Declaration",
+      "sender": "Consignor, Regulated Agent, Aircraft Operator",
+      "receiver": "Buyer, Regulator, Bank, Government agency, Carrier, Customs, Consignee",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "17",
+      "code": "EIL",
+      "name": "Export/Import License for agricultural products",
+      "sender": "Government agency",
+      "receiver": "Exporter, Importer, Customs, Bank",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "18",
+      "code": "CoO",
+      "name": "Non-preferential Certificate of Origin",
+      "sender": "Seller, Exporter, Freight Forwarder, Chamber of Commerce",
+      "receiver": "Bank, Buyer, Importer",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "19",
+      "code": "PCoO",
+      "name": "Preferential Certificate of Origin",
+      "sender": "Seller, Exporter, Freight Forwarder, Chamber of Commerce",
+      "receiver": "Bank, Buyer, Importer, Customs",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "20",
+      "code": "CD",
+      "name": "Customs Declaration",
+      "sender": "Exporter, Importer, Freight Forwarder",
+      "receiver": "Customs",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "21",
+      "code": "CODEX",
+      "name": "CODEX Generic Model Official Certificate",
+      "sender": "Government agency, Exporter",
+      "receiver": "Government agency, Importer",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "22",
+      "code": "ePhyto",
+      "name": "Phytosanitary certificate",
+      "sender": "Government agency, Exporter",
+      "receiver": "Government agency, Importer",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "23",
+      "code": "WOAH",
+      "name": "International Veterinary Certificates",
+      "sender": "Government agency, Exporter",
+      "receiver": "Government agency, Importer",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "24",
+      "code": "CPC",
+      "name": "CITES Permit / Certificate",
+      "sender": "Government agency, Exporter",
+      "receiver": "Government agency, Importer",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "25",
+      "code": "CIO",
+      "name": "Certificate of Inspection for Organic Products",
+      "sender": "Government agency, Exporter",
+      "receiver": "Government agency, Importer",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "26",
+      "code": "CB",
+      "name": "Customs Bond",
+      "sender": "Exporter, Importer",
+      "receiver": "Customs",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "27",
+      "code": "ATA",
+      "name": "ATA Carnet",
+      "sender": "Government agency, Exporter",
+      "receiver": "Customs, Importer, Freight forwarder",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "28",
+      "code": "TIR",
+      "name": "TIR Carnet",
+      "sender": "Government agency, Exporter",
+      "receiver": "Customs, Carrier, Freight forwarder",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "29",
+      "code": "TAD",
+      "name": "Transit Accompanying Document",
+      "sender": "Customs, Exporter",
+      "receiver": "Customs, Carrier, Freight forwarder",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "30",
+      "code": "ARA",
+      "name": "Advance Ruling Application",
+      "sender": "Importer, Exporter",
+      "receiver": "Customs",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "31",
+      "code": "EG",
+      "name": "Excise Guarantee",
+      "sender": "Importer, Exporter",
+      "receiver": "Customs",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "32",
+      "code": "EMCS",
+      "name": "Administrative Documents used in the Excise Movement Control System",
+      "sender": "Supplier, Warehouse keeper",
+      "receiver": "Customs, Carrier, Freight forwarder",
+      "processType": "Border and Regulatory Processes"
+    },
+    {
+      "id": "33",
+      "code": "LC",
+      "name": "Letter of Credit",
+      "sender": "Bank",
+      "receiver": "Seller/Exporter",
+      "processType": "Financial Processes"
+    },
+    {
+      "id": "34",
+      "code": "PC",
+      "name": "Payment Confirmation",
+      "sender": "Bank",
+      "receiver": "Payer",
+      "processType": "Financial Processes"
+    },
+    {
+      "id": "35",
+      "code": "BoE",
+      "name": "Bill of Exchange",
+      "sender": "Payer/Buyer",
+      "receiver": "Payee/Seller",
+      "processType": "Financial Processes"
+    },
+    {
+      "id": "36",
+      "code": "PN",
+      "name": "Promissory Note",
+      "sender": "Payer/Buyer",
+      "receiver": "Payee/Seller",
+      "processType": "Financial Processes"
+    }
+  ]
+}

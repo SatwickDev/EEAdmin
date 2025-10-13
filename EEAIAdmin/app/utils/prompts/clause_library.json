@@ -1,0 +1,38 @@
+[
+  {
+    "category": "Guarantee Reference",
+    "description": "Unique identifier for the guarantee, often a reference number or contract reference."
+  },
+  {
+    "category": "Subject message of the Guarantee",
+    "description": "The main subject of the guarantee, e.g., project, contract, or obligation."
+  },
+  {
+    "category": "Guarantee effectiveness",
+    "description": "When the guarantee becomes effective, such as upon payment or contract signing."
+  },
+  {
+    "category": "Termination clause",
+    "description": "Expiry of the guarantee, fixed or conditional."
+  },
+  {
+    "category": "Mode of claim",
+    "description": "How a claim can be submitted: written form, with documents, within time, etc."
+  },
+  {
+    "category": "Jurisdiction",
+    "description": "Legal jurisdiction or governing law of the guarantee."
+  },
+  {
+    "category": "Requirement to return upon expiry",
+    "description": "If the guarantee must be returned or marked as complete at expiry."
+  },
+  {
+    "category": "Nature of Obligation",
+    "description": "Whether obligation is conditional or unconditional."
+  },
+  {
+    "category": "Assignment",
+    "description": "Can the guarantee be transferred or assigned to others?"
+  }
+]

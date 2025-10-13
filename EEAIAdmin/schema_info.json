@@ -1,0 +1,20 @@
+{
+    "CETRX.TRX_INBOX": {
+        "columns": {
+            "C_MAIN_REF": "VARCHAR2 - Main reference code for the transaction",
+            "LC_AMT": "NUMBER - Letter of Credit amount in the specified currency",
+            "LC_CCY": "VARCHAR2 - Currency code for the Letter of Credit (e.g., USD, EUR)",
+            "TRX_DATE": "DATE - The date when the transaction was initiated",
+            "EXPIRY_DT": "DATE - Expiry date of the Letter of Credit",
+            "LC_NO": "VARCHAR2 - Unique identifier for the Letter of Credit",
+            "APPL_NM": "VARCHAR2 - Name of the applicant (party applying for the LC)",
+            "BENE_NM": "VARCHAR2 - Name of the beneficiary (party receiving the LC)",
+            "CURRNT_STATUS": "VARCHAR2 - Current status of the transaction",
+            "NXT_STATUS": "VARCHAR2 - Next expected status of the transaction",
+            "C_FUNC_SHORT_NAME": "VARCHAR2 - Short name of the functional process associated with the transaction",
+            "C_MODULE": "VARCHAR2 - Module under which the transaction is categorized",
+            "C_UNIT_CODE": "VARCHAR2 - Unique identifier for (party applying for the LC)"
+        },
+        "description": "A view summarizing business transactions related to anchors and counterparties."
+    }
+}

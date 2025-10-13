@@ -1,0 +1,16 @@
+# Ignore virtual env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.idea/
+.DS_Store
+
+# Block all versions of this large file
+**/adibv6ee_eximtrx_chroma.json
+
+# Ignore ChromaDB database files and directory
+chroma/
+*.sqlite3

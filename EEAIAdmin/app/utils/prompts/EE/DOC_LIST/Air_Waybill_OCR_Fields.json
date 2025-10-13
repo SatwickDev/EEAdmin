@@ -1,0 +1,53 @@
+{
+    "Air Waybill": {
+        "AWB Details": [
+            "AWB Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Airline Name",
+            "Flight Number"
+        ],
+        "Parties Involved": [
+            "Shipper Name and Address",
+            "Consignee Name and Address",
+            "Agent Name and Address"
+        ],
+        "Routing & Transport": [
+            "Airport of Departure",
+            "Airport of Destination",
+            "Transit Points",
+            "Carrier Routing"
+        ],
+        "Cargo Information": [
+            "Nature and Quantity of Goods",
+            "Number of Packages",
+            "Gross Weight",
+            "Chargeable Weight",
+            "Dimensions",
+            "Volume (CBM)",
+            "Commodity Item Number",
+            "Handling Information"
+        ],
+        "Charges": [
+            "Freight Charges",
+            "Valuation Charges",
+            "Other Charges",
+            "Declared Value for Carriage",
+            "Declared Value for Customs",
+            "Total Amount Payable"
+        ],
+        "Payment Terms": [
+            "Freight Prepaid/Collect",
+            "Currency",
+            "Payment Method"
+        ],
+        "Regulatory & Legal": [
+            "Customs Reference Number",
+            "IATA Agent Code",
+            "Signature of Shipper or Agent",
+            "Carrier Signature",
+            "Applicable Convention",
+            "Conditions of Contract"
+        ]
+    }
+}

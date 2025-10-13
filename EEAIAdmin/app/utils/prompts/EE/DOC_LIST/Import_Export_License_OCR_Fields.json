@@ -1,0 +1,46 @@
+{
+    "Import/Export License": {
+        "License Details": [
+            "License Number",
+            "Date of Issue",
+            "Expiry Date",
+            "Type of License (Import/Export/DEPB/Advance License)",
+            "Issuing Authority",
+            "License Category"
+        ],
+        "Party Information": [
+            "License Holder Name and Address",
+            "IEC Code",
+            "GSTIN",
+            "Authorized Dealer Code"
+        ],
+        "Goods Description": [
+            "Item Description",
+            "HS Code",
+            "Quantity Allowed",
+            "UOM (Unit of Measure)",
+            "FOB/CIF Value",
+            "Currency",
+            "End Use of Goods"
+        ],
+        "Transaction Limits": [
+            "Country of Import/Export",
+            "Port of Registration",
+            "Permitted Ports",
+            "Value Cap",
+            "Validity Period",
+            "Revalidation Details"
+        ],
+        "Terms & Conditions": [
+            "Specific Conditions",
+            "Restrictions",
+            "Compliance Clauses",
+            "Amendment Details"
+        ],
+        "Authentication": [
+            "Authorized Signature",
+            "Seal/Stamp of Licensing Authority",
+            "Date and Place of Signature"
+        ]
+    }
+}

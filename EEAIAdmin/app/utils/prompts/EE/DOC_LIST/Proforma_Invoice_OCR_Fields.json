@@ -1,0 +1,36 @@
+{
+    "Proforma Invoice": {
+        "Invoice Details": [
+            "Proforma Invoice Number",
+            "Invoice Date",
+            "Validity Period",
+            "Currency"
+        ],
+        "Exporter & Buyer Information": [
+            "Exporter Name and Address",
+            "Buyer Name and Address"
+        ],
+        "Product Information": [
+            "Goods Description",
+            "Quantity",
+            "Unit of Measure",
+            "Unit Price",
+            "Total Amount"
+        ],
+        "Shipping & Delivery": [
+            "Delivery Terms (Incoterms)",
+            "Estimated Delivery Date",
+            "Port of Loading",
+            "Port of Discharge"
+        ],
+        "Payment & Terms": [
+            "Payment Terms",
+            "Bank Details"
+        ],
+        "Declarations & Authorization": [
+            "Declaration Statement",
+            "Authorized Signature",
+            "Exporter Stamp"
+        ]
+    }
+}

@@ -1,0 +1,384 @@
+{
+  "documentType": "Shipper's Letter of Instruction",
+  "code": "SLI",
+  "description": "A document issued by the shipper/exporter providing instructions to the freight forwarder for handling cargo shipment",
+  "category": "MANDATORY",
+  "fields": {
+    "mandatory": [
+      {
+        "name": "Issue Date",
+        "fieldId": "issue_date",
+        "type": "date",
+        "required": true,
+        "description": "Date when the SLI was issued",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Despatch Date",
+        "fieldId": "despatch_date",
+        "type": "date",
+        "required": true,
+        "description": "Date when goods will be dispatched",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Consignee",
+        "fieldId": "consignee",
+        "type": "text",
+        "required": true,
+        "description": "Party to whom goods are consigned",
+        "validation": null,
+        "placeholder": "Enter consignee name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Consignee Address",
+        "fieldId": "consignee_address",
+        "type": "textarea",
+        "required": true,
+        "description": "Complete address of consignee",
+        "validation": null,
+        "placeholder": "Enter complete consignee address",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Freight Forwarder",
+        "fieldId": "freight_forwarder",
+        "type": "text",
+        "required": true,
+        "description": "Name of freight forwarding company",
+        "validation": null,
+        "placeholder": "Enter freight forwarder name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Consignor",
+        "fieldId": "consignor",
+        "type": "text",
+        "required": true,
+        "description": "Party shipping the goods",
+        "validation": null,
+        "placeholder": "Enter consignor/shipper name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Consignor Address",
+        "fieldId": "consignor_address",
+        "type": "textarea",
+        "required": true,
+        "description": "Complete address of consignor",
+        "validation": null,
+        "placeholder": "Enter complete consignor address",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Despatch Location",
+        "fieldId": "despatch_location",
+        "type": "text",
+        "required": true,
+        "description": "Place from where goods will be dispatched",
+        "validation": null,
+        "placeholder": "Enter despatch location",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Origin Country",
+        "fieldId": "origin_country",
+        "type": "select",
+        "required": true,
+        "description": "Country of origin of goods",
+        "validation": null,
+        "placeholder": "Select country",
+        "options": ["United States", "China", "Germany", "Japan", "India", "United Kingdom", "Singapore", "UAE", "Netherlands", "France"],
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Place of Issue",
+        "fieldId": "place_of_issue",
+        "type": "text",
+        "required": true,
+        "description": "Location where SLI is issued",
+        "validation": null,
+        "placeholder": "Enter place of issue",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Trade Terms Conditions Description",
+        "fieldId": "trade_terms_desc",
+        "type": "text",
+        "required": true,
+        "description": "Description of trade terms (e.g., FOB Singapore)",
+        "validation": null,
+        "placeholder": "e.g., FOB Singapore Port",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Gross Weight",
+        "fieldId": "gross_weight",
+        "type": "number",
+        "required": true,
+        "description": "Total gross weight including packaging (kg)",
+        "validation": "^\\d+(\\.\\d{1,3})?$",
+        "placeholder": "0.000",
+        "step": "0.001",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Net Weight",
+        "fieldId": "net_weight",
+        "type": "number",
+        "required": true,
+        "description": "Net weight excluding packaging (kg)",
+        "validation": "^\\d+(\\.\\d{1,3})?$",
+        "placeholder": "0.000",
+        "step": "0.001",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Description of Goods",
+        "fieldId": "goods_description",
+        "type": "textarea",
+        "required": true,
+        "description": "Detailed description of goods being shipped",
+        "validation": null,
+        "placeholder": "Enter detailed goods description",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Number of Packages",
+        "fieldId": "num_packages",
+        "type": "number",
+        "required": true,
+        "description": "Total number of packages",
+        "validation": "^[1-9]\\d*$",
+        "placeholder": "Enter number of packages",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Type of Packaging and Shipping Marks",
+        "fieldId": "packaging_type_marks",
+        "type": "text",
+        "required": true,
+        "description": "Package type (UNCEFACT coded) and shipping marks",
+        "validation": null,
+        "placeholder": "e.g., CT (Cartons) with marks ABC123",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "HS Code (Commodity Code)",
+        "fieldId": "hs_code",
+        "type": "text",
+        "required": true,
+        "description": "Harmonized System code for customs",
+        "validation": "^\\d{6,10}$",
+        "placeholder": "Enter HS code",
+        "category": "MANDATORY"
+      }
+    ],
+    "optional": [
+      {
+        "name": "Documentary Credit Identifier",
+        "fieldId": "dc_identifier",
+        "type": "text",
+        "required": false,
+        "description": "Letter of credit reference if applicable",
+        "validation": "^LC-\\d{6,12}$",
+        "placeholder": "LC-123456",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Goods Value",
+        "fieldId": "goods_value",
+        "type": "number",
+        "required": false,
+        "description": "Total value of goods for freight calculation",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Package Length",
+        "fieldId": "package_length",
+        "type": "number",
+        "required": false,
+        "description": "Length of packages (cm)",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Package Width",
+        "fieldId": "package_width",
+        "type": "number",
+        "required": false,
+        "description": "Width of packages (cm)",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Volume (Cube)",
+        "fieldId": "volume",
+        "type": "number",
+        "required": false,
+        "description": "Total volume in cubic meters",
+        "validation": "^\\d+(\\.\\d{1,3})?$",
+        "placeholder": "0.000",
+        "step": "0.001",
+        "category": "OPTIONAL"
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Buyer",
+        "fieldId": "buyer",
+        "type": "text",
+        "required": false,
+        "description": "Name of the buying party",
+        "validation": null,
+        "placeholder": "Enter buyer name",
+        "condition": "Required when different from consignee",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Insured Party",
+        "fieldId": "insured_party",
+        "type": "text",
+        "required": false,
+        "description": "Party for whom goods are insured",
+        "validation": null,
+        "placeholder": "Enter insured party name",
+        "condition": "Required when insurance is arranged",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Notify Party",
+        "fieldId": "notify_party",
+        "type": "text",
+        "required": false,
+        "description": "Party to be notified of shipment",
+        "validation": null,
+        "placeholder": "Enter notify party",
+        "condition": "Required for 'To Order' shipments",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Handling Instructions",
+        "fieldId": "handling_instructions",
+        "type": "textarea",
+        "required": false,
+        "description": "Special handling instructions",
+        "validation": null,
+        "placeholder": "Enter special handling instructions",
+        "condition": "Required for fragile or special cargo",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Insurance Condition",
+        "fieldId": "insurance_condition",
+        "type": "select",
+        "required": false,
+        "description": "Type of insurance coverage",
+        "validation": null,
+        "placeholder": "Select insurance type",
+        "options": ["All Risk", "Free from Particular Average", "With Particular Average", "Total Loss Only"],
+        "condition": "Required when shipper arranges insurance",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Authentication",
+        "fieldId": "authentication",
+        "type": "text",
+        "required": false,
+        "description": "Authentication or signature details",
+        "validation": null,
+        "placeholder": "Enter authentication details",
+        "condition": "Required for certain destinations",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Shipping Marks",
+        "fieldId": "shipping_marks",
+        "type": "textarea",
+        "required": false,
+        "description": "Detailed shipping marks on packages",
+        "validation": null,
+        "placeholder": "Enter shipping marks",
+        "condition": "Required for consolidated shipments",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Transport Means Identifier",
+        "fieldId": "transport_means_id",
+        "type": "text",
+        "required": false,
+        "description": "Vessel name or flight number if known",
+        "validation": null,
+        "placeholder": "Enter vessel/flight details",
+        "condition": "Required when pre-booked transport",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Vehicle Registration Number",
+        "fieldId": "vehicle_reg_number",
+        "type": "text",
+        "required": false,
+        "description": "Registration number of transport vehicle",
+        "validation": null,
+        "placeholder": "Enter vehicle registration",
+        "condition": "Required for road transport",
+        "category": "CONDITIONAL"
+      }
+    ]
+  },
+  "transportInstructions": {
+    "modes": ["Sea Freight", "Air Freight", "Road Transport", "Rail Transport", "Multimodal"],
+    "services": ["Port to Port", "Door to Door", "Port to Door", "Door to Port"],
+    "containerTypes": ["20' Standard", "40' Standard", "40' High Cube", "20' Refrigerated", "40' Refrigerated", "Open Top", "Flat Rack"],
+    "loadTypes": ["FCL (Full Container Load)", "LCL (Less than Container Load)", "Break Bulk"]
+  },
+  "documentRequirements": {
+    "mandatory": [
+      "Commercial Invoice",
+      "Packing List",
+      "Certificate of Origin"
+    ],
+    "optional": [
+      "Export License (if required)",
+      "Dangerous Goods Declaration (if applicable)",
+      "Insurance Certificate",
+      "Phytosanitary Certificate (for agricultural products)",
+      "Health Certificate (for food products)"
+    ]
+  },
+  "validationRules": {
+    "crossFieldValidation": [
+      {
+        "rule": "despatch_date must be after or equal to issue_date",
+        "fields": ["issue_date", "despatch_date"]
+      },
+      {
+        "rule": "gross_weight must be greater than net_weight",
+        "fields": ["gross_weight", "net_weight"]
+      },
+      {
+        "rule": "volume calculation should match package dimensions if provided",
+        "fields": ["package_length", "package_width", "num_packages", "volume"]
+      }
+    ],
+    "businessRules": [
+      "Consignor and consignee cannot be the same entity",
+      "HS code must be valid for the destination country",
+      "Weight and volume must be within transport mode limits",
+      "Dangerous goods require additional documentation",
+      "Certain goods may require export licenses"
+    ]
+  }
+}

@@ -1,0 +1,293 @@
+{
+    "IMCO": {
+        "module_name": "Import Collections",
+        "description": "Handles all import collection transactions including documentary collections, clean collections, and import bills",
+        "statistics": {
+            "total_transactions": 789,
+            "total_value": 185000000,
+            "average_value": 234387,
+            "min_value": 15000,
+            "max_value": 2500000,
+            "avg_processing_time_hours": 48,
+            "success_rate": 87.5,
+            "status_distribution": {
+                "Authorised": 456,
+                "Awaiting Corporate Approval": 234,
+                "Released": 89,
+                "Rejected by Supervisor": 10
+            },
+            "monthly_trend": [
+                {"month": "Jan", "count": 245, "value": 58000000},
+                {"month": "Feb", "count": 267, "value": 63000000},
+                {"month": "Mar", "count": 277, "value": 64000000}
+            ],
+            "top_banks": [
+                {"name": "HSBC", "count": 234, "value": 56000000},
+                {"name": "Standard Chartered", "count": 189, "value": 45000000},
+                {"name": "Citibank", "count": 156, "value": 38000000},
+                {"name": "JPMorgan Chase", "count": 123, "value": 29000000},
+                {"name": "Bank of America", "count": 87, "value": 17000000}
+            ],
+            "currency_distribution": {
+                "USD": 456,
+                "EUR": 123,
+                "GBP": 89,
+                "AED": 67,
+                "SGD": 54
+            },
+            "processing_time_distribution": {
+                "0-24 hours": 234,
+                "24-48 hours": 345,
+                "48-72 hours": 156,
+                "72+ hours": 54
+            }
+        },
+        "recent_transactions": [
+            {"transaction_id": "IMCO-2024-001", "timestamp": "2024-01-31T14:23:00", "status": "Authorised", "transaction_value": 456000, "user_id": "USR001", "bank": "HSBC", "currency": "USD", "processing_time": 24, "customer": "ABC Trading Co.", "country": "Singapore"},
+            {"transaction_id": "IMCO-2024-002", "timestamp": "2024-01-31T13:45:00", "status": "Released", "transaction_value": 789000, "user_id": "USR002", "bank": "Standard Chartered", "currency": "EUR", "processing_time": 36, "customer": "XYZ Imports Ltd.", "country": "Germany"},
+            {"transaction_id": "IMCO-2024-003", "timestamp": "2024-01-31T12:30:00", "status": "Awaiting Corporate Approval", "transaction_value": 234000, "user_id": "USR003", "bank": "Citibank", "currency": "GBP", "processing_time": 12, "customer": "Global Trade Inc.", "country": "UK"},
+            {"transaction_id": "IMCO-2024-004", "timestamp": "2024-01-31T11:15:00", "status": "Authorised", "transaction_value": 567000, "user_id": "USR004", "bank": "JPMorgan Chase", "currency": "USD", "processing_time": 48, "customer": "International Commodities", "country": "USA"},
+            {"transaction_id": "IMCO-2024-005", "timestamp": "2024-01-31T10:00:00", "status": "Released", "transaction_value": 890000, "user_id": "USR005", "bank": "Bank of America", "currency": "AED", "processing_time": 72, "customer": "Middle East Trading", "country": "UAE"},
+            {"transaction_id": "IMCO-2024-006", "timestamp": "2024-01-31T09:30:00", "status": "Authorised", "transaction_value": 345000, "user_id": "USR006", "bank": "HSBC", "currency": "SGD", "processing_time": 18, "customer": "Asia Pacific Imports", "country": "Singapore"},
+            {"transaction_id": "IMCO-2024-007", "timestamp": "2024-01-31T09:00:00", "status": "Released", "transaction_value": 123000, "user_id": "USR007", "bank": "Standard Chartered", "currency": "USD", "processing_time": 24, "customer": "Global Supply Chain", "country": "China"},
+            {"transaction_id": "IMCO-2024-008", "timestamp": "2024-01-31T08:30:00", "status": "Awaiting Corporate Approval", "transaction_value": 678000, "user_id": "USR008", "bank": "Citibank", "currency": "EUR", "processing_time": 36, "customer": "European Traders", "country": "France"},
+            {"transaction_id": "IMCO-2024-009", "timestamp": "2024-01-31T08:00:00", "status": "Authorised", "transaction_value": 456000, "user_id": "USR009", "bank": "JPMorgan Chase", "currency": "GBP", "processing_time": 42, "customer": "UK Importers Ltd.", "country": "UK"},
+            {"transaction_id": "IMCO-2024-010", "timestamp": "2024-01-31T07:30:00", "status": "Released", "transaction_value": 234000, "user_id": "USR010", "bank": "Bank of America", "currency": "USD", "processing_time": 30, "customer": "Americas Trade Corp.", "country": "Brazil"}
+        ],
+        "performance_metrics": {
+            "sla_compliance": 92.5,
+            "error_rate": 2.3,
+            "customer_satisfaction": 4.5,
+            "automation_rate": 78.5
+        }
+    },
+    "IMLC": {
+        "module_name": "Import Letter of Credit",
+        "description": "Manages import letter of credit transactions including issuance, amendments, and settlements",
+        "statistics": {
+            "total_transactions": 1456,
+            "total_value": 5000036735852,
+            "average_value": 3434093352,
+            "min_value": 250000,
+            "max_value": 85000000,
+            "avg_processing_time_hours": 72,
+            "success_rate": 91.3,
+            "status_distribution": {
+                "Authorised": 789,
+                "Awaiting Corporate Approval": 456,
+                "Released": 178,
+                "Rejected by Supervisor": 33
+            },
+            "monthly_trend": [
+                {"month": "Jan", "count": 478, "value": 1650000000000},
+                {"month": "Feb", "count": 489, "value": 1680000000000},
+                {"month": "Mar", "count": 489, "value": 1670036735852}
+            ],
+            "top_banks": [
+                {"name": "HSBC", "count": 456, "value": 1567000000000},
+                {"name": "Standard Chartered", "count": 378, "value": 1298000000000},
+                {"name": "Citibank", "count": 289, "value": 992000000000},
+                {"name": "JPMorgan Chase", "count": 234, "value": 803000000000},
+                {"name": "Bank of America", "count": 99, "value": 340036735852}
+            ],
+            "currency_distribution": {
+                "USD": 789,
+                "EUR": 234,
+                "GBP": 178,
+                "AED": 145,
+                "SGD": 110
+            },
+            "processing_time_distribution": {
+                "0-24 hours": 189,
+                "24-48 hours": 456,
+                "48-72 hours": 567,
+                "72+ hours": 244
+            }
+        },
+        "recent_transactions": [
+            {"transaction_id": "IMLC-2024-001", "timestamp": "2024-01-31T15:00:00", "status": "Authorised", "transaction_value": 12000000, "user_id": "USR006", "bank": "HSBC", "currency": "USD", "processing_time": 48, "customer": "Global Manufacturing Ltd.", "country": "China", "lc_type": "Irrevocable"},
+            {"transaction_id": "IMLC-2024-002", "timestamp": "2024-01-31T14:30:00", "status": "Released", "transaction_value": 8500000, "user_id": "USR007", "bank": "Standard Chartered", "currency": "EUR", "processing_time": 72, "customer": "European Auto Parts", "country": "Germany", "lc_type": "Confirmed"},
+            {"transaction_id": "IMLC-2024-003", "timestamp": "2024-01-31T14:00:00", "status": "Awaiting Corporate Approval", "transaction_value": 6700000, "user_id": "USR008", "bank": "Citibank", "currency": "GBP", "processing_time": 24, "customer": "British Textiles", "country": "UK", "lc_type": "Standby"},
+            {"transaction_id": "IMLC-2024-004", "timestamp": "2024-01-31T13:30:00", "status": "Authorised", "transaction_value": 9200000, "user_id": "USR009", "bank": "JPMorgan Chase", "currency": "USD", "processing_time": 96, "customer": "Tech Components Inc.", "country": "Taiwan", "lc_type": "Revolving"},
+            {"transaction_id": "IMLC-2024-005", "timestamp": "2024-01-31T13:00:00", "status": "Released", "transaction_value": 15600000, "user_id": "USR010", "bank": "Bank of America", "currency": "AED", "processing_time": 60, "customer": "Middle East Construction", "country": "UAE", "lc_type": "Transferable"}
+        ],
+        "performance_metrics": {
+            "sla_compliance": 94.8,
+            "error_rate": 1.8,
+            "customer_satisfaction": 4.7,
+            "automation_rate": 82.5
+        }
+    },
+    "INFI": {
+        "module_name": "Inward Finance",
+        "description": "Handles inward remittances, finance arrangements, and related financial transactions",
+        "statistics": {
+            "total_transactions": 423,
+            "total_value": 98700000,
+            "average_value": 233333,
+            "min_value": 10000,
+            "max_value": 1200000,
+            "avg_processing_time_hours": 24,
+            "success_rate": 89.2,
+            "status_distribution": {
+                "Authorised": 234,
+                "Awaiting Corporate Approval": 123,
+                "Released": 56,
+                "Rejected by Supervisor": 10
+            },
+            "monthly_trend": [
+                {"month": "Jan", "count": 134, "value": 31000000},
+                {"month": "Feb", "count": 145, "value": 34000000},
+                {"month": "Mar", "count": 144, "value": 33700000}
+            ],
+            "top_banks": [
+                {"name": "HSBC", "count": 123, "value": 29000000},
+                {"name": "Standard Chartered", "count": 98, "value": 23000000},
+                {"name": "Citibank", "count": 87, "value": 20000000},
+                {"name": "JPMorgan Chase", "count": 65, "value": 15000000},
+                {"name": "Bank of America", "count": 50, "value": 11700000}
+            ],
+            "currency_distribution": {
+                "USD": 234,
+                "EUR": 89,
+                "GBP": 56,
+                "AED": 34,
+                "SGD": 10
+            }
+        },
+        "recent_transactions": [
+            {"transaction_id": "INFI-2024-001", "timestamp": "2024-01-31T16:00:00", "status": "Authorised", "transaction_value": 345000, "user_id": "USR011", "bank": "HSBC", "currency": "USD", "processing_time": 12, "customer": "Tech Solutions Ltd.", "country": "India"},
+            {"transaction_id": "INFI-2024-002", "timestamp": "2024-01-31T15:30:00", "status": "Released", "transaction_value": 278000, "user_id": "USR012", "bank": "Standard Chartered", "currency": "EUR", "processing_time": 24, "customer": "European Finance Corp.", "country": "Netherlands"},
+            {"transaction_id": "INFI-2024-003", "timestamp": "2024-01-31T15:00:00", "status": "Awaiting Corporate Approval", "transaction_value": 189000, "user_id": "USR013", "bank": "Citibank", "currency": "GBP", "processing_time": 18, "customer": "UK Services Ltd.", "country": "UK"}
+        ],
+        "performance_metrics": {
+            "sla_compliance": 93.2,
+            "error_rate": 2.1,
+            "customer_satisfaction": 4.6,
+            "automation_rate": 85.3
+        }
+    },
+    "MESG": {
+        "module_name": "Messages",
+        "description": "Manages SWIFT messages, MT700 series, and inter-bank communications",
+        "statistics": {
+            "total_transactions": 678,
+            "total_value": 156800000,
+            "average_value": 231268,
+            "min_value": 5000,
+            "max_value": 2300000,
+            "avg_processing_time_hours": 6,
+            "success_rate": 94.5,
+            "status_distribution": {
+                "Authorised": 389,
+                "Awaiting Corporate Approval": 178,
+                "Released": 98,
+                "Rejected by Supervisor": 13
+            },
+            "monthly_trend": [
+                {"month": "Jan", "count": 215, "value": 49000000},
+                {"month": "Feb", "count": 234, "value": 54000000},
+                {"month": "Mar", "count": 229, "value": 53800000}
+            ],
+            "message_types": {
+                "MT700": 234,
+                "MT701": 156,
+                "MT707": 123,
+                "MT799": 98,
+                "MT103": 67
+            }
+        },
+        "recent_transactions": [
+            {"transaction_id": "MESG-2024-001", "timestamp": "2024-01-31T17:00:00", "status": "Authorised", "transaction_value": 267000, "user_id": "USR014", "message_type": "MT700", "priority": "High", "destination": "HSBCSGSG"},
+            {"transaction_id": "MESG-2024-002", "timestamp": "2024-01-31T16:45:00", "status": "Released", "transaction_value": 198000, "user_id": "USR015", "message_type": "MT701", "priority": "Normal", "destination": "SCBLSGSG"},
+            {"transaction_id": "MESG-2024-003", "timestamp": "2024-01-31T16:30:00", "status": "Awaiting Corporate Approval", "transaction_value": 234000, "user_id": "USR016", "message_type": "MT707", "priority": "Urgent", "destination": "CITISGSG"}
+        ],
+        "performance_metrics": {
+            "sla_compliance": 97.8,
+            "error_rate": 0.9,
+            "customer_satisfaction": 4.8,
+            "automation_rate": 92.5
+        }
+    },
+    "OWGT": {
+        "module_name": "Outward Guarantees",
+        "description": "Processes outward bank guarantees, performance bonds, and standby letters of credit",
+        "statistics": {
+            "total_transactions": 567,
+            "total_value": 134500000,
+            "average_value": 237213,
+            "min_value": 50000,
+            "max_value": 3500000,
+            "avg_processing_time_hours": 36,
+            "success_rate": 90.8,
+            "status_distribution": {
+                "Authorised": 345,
+                "Awaiting Corporate Approval": 145,
+                "Released": 67,
+                "Rejected by Supervisor": 10
+            },
+            "monthly_trend": [
+                {"month": "Jan", "count": 178, "value": 42000000},
+                {"month": "Feb", "count": 189, "value": 45000000},
+                {"month": "Mar", "count": 200, "value": 47500000}
+            ],
+            "guarantee_types": {
+                "Performance": 234,
+                "Bid Bond": 156,
+                "Advance Payment": 98,
+                "Retention": 79
+            }
+        },
+        "recent_transactions": [
+            {"transaction_id": "OWGT-2024-001", "timestamp": "2024-01-31T18:00:00", "status": "Authorised", "transaction_value": 345000, "user_id": "USR017", "bank": "HSBC", "guarantee_type": "Performance", "validity_months": 12, "customer": "Construction Corp.", "beneficiary": "Government Agency"},
+            {"transaction_id": "OWGT-2024-002", "timestamp": "2024-01-31T17:45:00", "status": "Released", "transaction_value": 289000, "user_id": "USR018", "bank": "Standard Chartered", "guarantee_type": "Bid Bond", "validity_months": 6, "customer": "Engineering Ltd.", "beneficiary": "Oil Company"}
+        ],
+        "performance_metrics": {
+            "sla_compliance": 91.5,
+            "error_rate": 2.7,
+            "customer_satisfaction": 4.4,
+            "automation_rate": 76.8
+        }
+    },
+    "SHGT": {
+        "module_name": "Shipping Guarantees",
+        "description": "Handles shipping guarantees, letters of indemnity, and shipping document processing",
+        "statistics": {
+            "total_transactions": 345,
+            "total_value": 87600000,
+            "average_value": 253913,
+            "min_value": 25000,
+            "max_value": 1800000,
+            "avg_processing_time_hours": 12,
+            "success_rate": 93.1,
+            "status_distribution": {
+                "Authorised": 198,
+                "Awaiting Corporate Approval": 89,
+                "Released": 48,
+                "Rejected by Supervisor": 10
+            },
+            "monthly_trend": [
+                {"month": "Jan", "count": 108, "value": 27000000},
+                {"month": "Feb", "count": 118, "value": 30000000},
+                {"month": "Mar", "count": 119, "value": 30600000}
+            ],
+            "shipping_lines": [
+                {"name": "Maersk", "count": 98, "value": 25000000},
+                {"name": "MSC", "count": 87, "value": 22000000},
+                {"name": "CMA CGM", "count": 67, "value": 17000000},
+                {"name": "Hapag-Lloyd", "count": 56, "value": 14000000},
+                {"name": "ONE", "count": 37, "value": 9600000}
+            ]
+        },
+        "recent_transactions": [
+            {"transaction_id": "SHGT-2024-001", "timestamp": "2024-01-31T19:00:00", "status": "Authorised", "transaction_value": 298000, "user_id": "USR019", "shipping_line": "Maersk", "vessel": "MAERSK SENTOSA", "bl_number": "MAEU123456789", "port": "Singapore"},
+            {"transaction_id": "SHGT-2024-002", "timestamp": "2024-01-31T18:45:00", "status": "Released", "transaction_value": 267000, "user_id": "USR020", "shipping_line": "MSC", "vessel": "MSC OSCAR", "bl_number": "MSCU987654321", "port": "Rotterdam"}
+        ],
+        "performance_metrics": {
+            "sla_compliance": 95.3,
+            "error_rate": 1.5,
+            "customer_satisfaction": 4.7,
+            "automation_rate": 88.9
+        }
+    }
+}

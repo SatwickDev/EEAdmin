@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - EEAI Trade Finance</title>
+    
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/floating-header-unified.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <style>
+    body {
+      padding-top: 100px;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding-top: 80px;
+      }
+    }
+  </style>
+</head>
+<body class="with-floating-header">
+    <!-- Unified Floating Header -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg width="28" height="28" viewBox="0 0 48 48">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#logoGradient)">
+                                <rect x="8" y="8" width="8" height="32" rx="3"/>
+                                <rect x="8" y="8" width="24" height="8" rx="3"/>
+                                <rect x="8" y="20" width="20" height="8" rx="3"/>
+                            </g>
+                            <g fill="url(#logoGradient)" opacity="0.6">
+                                <rect x="20" y="32" width="20" height="2" rx="1"/>
+                                <rect x="20" y="36" width="20" height="2" rx="1"/>
+                            </g>
+                        </svg>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">Finstack</h1>
+                    <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+                </div>
+            </div>
+
+            <!-- Navigation Pills -->
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill ">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-pill ">
+                    <i class="mdi mdi-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/ai-chat-pro" class="nav-pill active">
+                    <i class="mdi mdi-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+                <a href="/compliance-results" class="nav-pill ">
+                    <i class="mdi mdi-shield-check"></i>
+                    <span>Vetting</span>
+                </a>
+                <a href="/document-classification" class="nav-pill ">
+                    <i class="mdi mdi-file-document-multiple"></i>
+                    <span>Documents</span>
+                </a>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <a href="/ai-chat-pro" class="action-button">
+                    <i class="mdi mdi-plus"></i>
+                    <span>New Session</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Floating Header -->
+    
+
+            <!-- Navigation Pills -->
+            
+
+            <!-- Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="pulse-dot"></div>
+                    <span>Online</span>
+                </div>
+                <button onclick="window.location.href='/'" class="action-button secondary">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <!-- Modern Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <!-- Enhanced Logo Section -->
+                <div class="sidebar-logo">
+                    <div class="logo-icon">
+                    <svg width="36" height="36" viewBox="0 0 48 48">
+                        <defs>
+                            <linearGradient id="finstack-chat-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <g fill="url(#finstack-chat-gradient)">
+                            <rect x="8" y="8" width="8" height="32" rx="2"/>
+                            <rect x="8" y="8" width="24" height="8" rx="2"/>
+                            <rect x="8" y="20" width="20" height="8" rx="2"/>
+                        </g>
+                        <g fill="currentColor" opacity="0.7">
+                            <rect x="20" y="32" width="20" height="2" rx="1"/>
+                            <rect x="20" y="36" width="20" height="2" rx="1"/>
+                        </g>
+                    </svg>
+                        <div class="logo-badge"></div>
+                    </div>
+                    <div class="logo-info">
+                        <span class="logo-text">Finstack AI</span>
+                        <span class="logo-subtitle">Trade Finance Assistant</span>
+                    </div>
+                </div>
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <i class="fas fa-plus"></i>
+                    New Chat
+                </button>
+            </div>
+
+            <!-- Sidebar Content -->
+            <div class="sidebar-content">
+                <!-- User Manuals Section -->
+                <div class="sidebar-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-book"></i>
+                            <span>User Manuals</span>
+                        </div>
+                        <div class="section-actions">
+                            <button class="section-action-btn upload-manual-btn" onclick="openUploadModal()" data-tooltip="Upload Manual">
+                                <i class="fas fa-upload"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="manuals-section">
+                <div class="manual-list" id="manual-list">
+                    <!-- Manuals will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Chat History Section -->
+                <div class="sidebar-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-comments"></i>
+                            <span>Recent Chats</span>
+                        </div>
+                        <div class="section-actions">
+                            <button class="section-action-btn" onclick="refreshSessions()" data-tooltip="Refresh">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="section-action-btn danger" onclick="deleteAllSessions()" data-tooltip="Delete All">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chat-history">
+                <div id="sessions-container" class="sessions-list">
+                    <!-- Chat sessions will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Repositories Section -->
+                <div class="sidebar-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-database"></i>
+                            <span>Knowledge Repositories</span>
+                        </div>
+                        <div class="section-actions">
+                            <button class="section-action-btn" onclick="refreshRepositories()" data-tooltip="Refresh">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="repositories-section" id="repositories-section">
+                <div class="repositories-list" id="repositories-list">
+                    <!-- Trade Finance Repository -->
+                    <div class="repository-item" data-repo="trade_finance">
+                        <div class="repository-header">
+                            <div class="repository-info">
+                                <div class="repository-icon">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <div class="repository-details">
+                                    <span class="repository-name">Trade Finance</span>
+                                    <span class="repository-desc">LC, BG, Trade Documents</span>
+                                </div>
+                            </div>
+                            <div class="repository-status">
+                                <span class="status-badge">
+                                    <i class="fas fa-circle"></i>
+                                    Disconnected
+                                </span>
+                                <button class="connect-btn" onclick="toggleRepository('trade_finance')">
+                                    <i class="fas fa-plug"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="repository-collections" style="display: none;">
+                            <div class="collections-loading">
+                                <div class="loading-spinner"></div>
+                                <span>Loading collections...</span>
+                            </div>
+                            <ul class="collections-list"></ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Treasury Repository -->
+                    <div class="repository-item" data-repo="treasury">
+                        <div class="repository-header">
+                            <div class="repository-info">
+                                <div class="repository-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="repository-details">
+                                    <span class="repository-name">Treasury</span>
+                                    <span class="repository-desc">FX, Money Market, Derivatives</span>
+                                </div>
+                            </div>
+                            <div class="repository-status">
+                                <span class="status-badge">
+                                    <i class="fas fa-circle"></i>
+                                    Disconnected
+                                </span>
+                                <button class="connect-btn" onclick="toggleRepository('treasury')">
+                                    <i class="fas fa-plug"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="repository-collections" style="display: none;">
+                            <div class="collections-loading">
+                                <div class="loading-spinner"></div>
+                                <span>Loading collections...</span>
+                            </div>
+                            <ul class="collections-list"></ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Cash Management Repository -->
+                    <div class="repository-item" data-repo="cash">
+                        <div class="repository-header">
+                            <div class="repository-info">
+                                <div class="repository-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="repository-details">
+                                    <span class="repository-name">Cash Management</span>
+                                    <span class="repository-desc">Payments, Liquidity, Reconciliation</span>
+                                </div>
+                            </div>
+                            <div class="repository-status">
+                                <span class="status-badge">
+                                    <i class="fas fa-circle"></i>
+                                    Disconnected
+                                </span>
+                                <button class="connect-btn" onclick="toggleRepository('cash')">
+                                    <i class="fas fa-plug"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="repository-collections" style="display: none;">
+                            <div class="collections-loading">
+                                <div class="loading-spinner"></div>
+                                <span>Loading collections...</span>
+                            </div>
+                            <ul class="collections-list"></ul>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-content">
+            <!-- Chat Header -->
+            <div class="chat-header" style="display: none;">
+                <h2 id="chat-title" class="chat-title">New Chat</h2>
+            </div>
+            
+            <!-- Welcome Section for Centered Input -->
+            <div class="welcome-section">
+                <div class="welcome-logo">
+                    <svg width="40" height="40" viewBox="0 0 48 48">
+                        <defs>
+                            <linearGradient id="welcomeLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea"/>
+                                <stop offset="100%" style="stop-color:#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                        <g fill="url(#welcomeLogoGradient)">
+                            <rect x="8" y="8" width="8" height="32" rx="3"/>
+                            <rect x="8" y="8" width="24" height="8" rx="3"/>
+                            <rect x="8" y="20" width="20" height="8" rx="3"/>
+                        </g>
+                    </svg>
+                </div>
+                <h1>Welcome to Finstack AI</h1>
+                <p>Your intelligent trade finance assistant. Ask questions, analyze documents, check compliance, and get expert guidance.</p>
+                
+                <div class="welcome-features">
+                    <div class="welcome-feature">
+                        <i class="fas fa-file-check"></i>
+                        <span>Document Analysis</span>
+                    </div>
+                    <div class="welcome-feature">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Compliance Check</span>
+                    </div>
+                    <div class="welcome-feature">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Trade Insights</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <!-- Messages will be displayed here -->
+                <!-- Welcome message will be added dynamically -->
+            </div>
+
+            <!-- Typing indicator will be dynamically added to messages -->
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state">
+                <div class="empty-state-icon">
+                    <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                        <circle cx="60" cy="60" r="50" stroke="url(#gradient)" stroke-width="2" opacity="0.1"/>
+                        <circle cx="60" cy="60" r="40" stroke="url(#gradient)" stroke-width="2" opacity="0.2"/>
+                        <circle cx="60" cy="60" r="30" stroke="url(#gradient)" stroke-width="2" opacity="0.3"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <g transform="translate(42, 42)">
+                            <path d="M18 0C8.059 0 0 8.059 0 18s8.059 18 18 18 18-8.059 18-18S27.941 0 18 0zm0 4c2.209 0 4 1.791 4 4s-1.791 4-4 4-4-1.791-4-4 1.791-4 4-4zm0 25.2c-4.5 0-8.48-2.292-10.8-5.76.045-3.585 7.2-5.54 10.8-5.54s10.755 1.955 10.8 5.54C26.48 26.908 22.5 29.2 18 29.2z" fill="url(#gradient)"/>
+                        </g>
+                    </svg>
+                </div>
+                <h2>Welcome to Finstack AI Assistant</h2>
+                <p>Your intelligent partner for trade finance operations</p>
+            </div>
+
+            <style>
+                .empty-state-icon {
+                    margin-bottom: 32px;
+                    display: flex;
+                    justify-content: center;
+                    animation: float 3s ease-in-out infinite;
+                }
+
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-10px); }
+                }
+
+                .empty-state h2 {
+                    font-size: 36px;
+                    font-weight: 700;
+                    margin-bottom: 16px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                }
+
+                .empty-state p {
+                    font-size: 18px;
+                    color: var(--text-secondary);
+                    margin-bottom: 40px;
+                    line-height: 1.6;
+                }
+            </style>
+
+            <!-- Speaking Indicator -->
+            <div class="speaking-indicator" id="speaking-indicator" onclick="stopSpeaking()">
+                <i class="fas fa-volume-up"></i>
+                <span>Speaking...</span>
+                <div class="speaking-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <i class="fas fa-stop-circle" style="margin-left: 10px;"></i>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="repository-context-indicator" id="repository-context-indicator" style="display: none;">
+                        <i class="fas fa-database"></i>
+                        <span class="context-text">Using: <strong id="active-repo-name">Trade Finance</strong></span>
+                        <button class="context-close" onclick="disconnectActiveRepository()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea
+                            class="message-input"
+                            id="message-input"
+                            placeholder="Message AI Assistant..."
+                            rows="1"
+                        ></textarea>
+                        <div class="input-actions">
+                            <button class="voice-btn" id="voice-btn" onclick="toggleVoiceRecording()">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button class="attach-btn" onclick="attachFile()">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="send-btn" id="send-btn" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Manual Modal -->
+    <div class="modal" id="upload-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Upload User Manual</h3>
+                <button class="close-modal" onclick="closeUploadModal()">&times;</button>
+            </div>
+
+            <div class="file-upload-area" id="file-upload-area" onclick="document.getElementById('file-input').click()">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <div class="upload-text">Drop your file here or click to browse</div>
+                <div class="upload-hint">Supported formats: PDF, DOCX, TXT</div>
+                <input type="file" id="file-input" accept=".pdf,.docx,.txt" style="display: none;" onchange="handleFileSelect(event)">
+            </div>
+
+            <div id="selected-file-info"></div>
+
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeUploadModal()">Cancel</button>
+                <button class="modal-btn primary" id="upload-btn" onclick="uploadManual()" disabled>Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/session-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-chat-enhanced.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai-chat-modern-sidebar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sidebar-enhancements.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/enhanced-sidebar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modern-sidebar-v2.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/unified-sidebar.js') }}"></script>
+    
+    <script>
+        // Custom initialization code can go here
+    </script>
+</body>
+</html>

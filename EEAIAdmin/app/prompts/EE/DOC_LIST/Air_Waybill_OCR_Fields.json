@@ -1,0 +1,68 @@
+[
+  {
+    "description": "Air Waybill tracking number",
+    "name": "AWB Number",
+    "required": true,
+    "type": "text"
+  },
+  {
+    "description": "Name of the shipping party",
+    "name": "Shipper Name",
+    "required": true,
+    "type": "text"
+  },
+  {
+    "description": "Name of the receiving party",
+    "name": "Consignee Name",
+    "required": true,
+    "type": "text"
+  },
+  {
+    "description": "Airport of departure",
+    "name": "Origin Airport",
+    "required": true,
+    "type": "text"
+  },
+  {
+    "description": "Airport of arrival",
+    "name": "Destination Airport",
+    "required": true,
+    "type": "text"
+  },
+  {
+    "description": "Flight identification",
+    "name": "Flight Number",
+    "required": true,
+    "type": "text"
+  },
+  {
+    "description": "Date when goods were shipped",
+    "name": "Date of Shipment",
+    "required": true,
+    "type": "date"
+  },
+  {
+    "description": "Total number of packages",
+    "name": "Number of Pieces",
+    "required": true,
+    "type": "number"
+  },
+  {
+    "description": "Total weight in kg",
+    "name": "Gross Weight",
+    "required": true,
+    "type": "number"
+  },
+  {
+    "description": "Weight used for charge calculation",
+    "name": "Chargeable Weight",
+    "required": true,
+    "type": "number"
+  },
+  {
+    "name": "country party name",
+    "type": "text",
+    "required": true,
+    "description": ""
+  }
+]

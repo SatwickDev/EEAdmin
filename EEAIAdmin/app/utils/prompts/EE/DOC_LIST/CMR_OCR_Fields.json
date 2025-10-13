@@ -1,0 +1,53 @@
+{
+    "CMR (Road Consignment Note)": {
+        "CMR Details": [
+            "CMR Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Applicable Convention"
+        ],
+        "Parties Involved": [
+            "Consignor Name and Address",
+            "Consignee Name and Address",
+            "Carrier Name and Address",
+            "Successive Carrier(s)",
+            "Carrier's Agent"
+        ],
+        "Transport & Routing": [
+            "Place of Taking Over the Goods",
+            "Place of Delivery",
+            "Transport Route",
+            "Vehicle Registration Number",
+            "Means of Transport"
+        ],
+        "Cargo Information": [
+            "Goods Description",
+            "Number of Packages",
+            "Type of Packaging",
+            "Marks and Numbers",
+            "Gross Weight",
+            "Volume",
+            "Special Instructions",
+            "Handling Instructions",
+            "Dangerous Goods (if any)"
+        ],
+        "Charges": [
+            "Freight Charges",
+            "Additional Charges",
+            "Currency",
+            "Payment Terms"
+        ],
+        "Legal & Regulatory": [
+            "Customs Information",
+            "Insurance Details",
+            "CMR Conditions",
+            "Jurisdiction Clause"
+        ],
+        "Signatures": [
+            "Signature of Consignor",
+            "Signature of Carrier",
+            "Signature of Consignee",
+            "Stamp of Parties Involved"
+        ]
+    }
+}

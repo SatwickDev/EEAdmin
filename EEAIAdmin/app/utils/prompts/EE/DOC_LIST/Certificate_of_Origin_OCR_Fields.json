@@ -1,0 +1,37 @@
+{
+    "Certificate of Origin": {
+        "Certificate Details": [
+            "Certificate Number",
+            "Date of Issue",
+            "Issuing Authority",
+            "Type of Certificate (Preferential/Non-Preferential)"
+        ],
+        "Exporter & Consignee Information": [
+            "Exporter Name and Address",
+            "Consignee Name and Address"
+        ],
+        "Shipment Information": [
+            "Country of Origin",
+            "Country of Final Destination",
+            "Port of Loading",
+            "Port of Discharge",
+            "Transport Mode",
+            "Vessel/Flight/Vehicle Number"
+        ],
+        "Goods Information": [
+            "Marks and Numbers",
+            "Package Type",
+            "Number of Packages",
+            "Goods Description",
+            "HS Code",
+            "Gross Weight",
+            "Net Weight"
+        ],
+        "Certification & Authentication": [
+            "Declaration by Exporter",
+            "Signature of Exporter",
+            "Authorized Signature of Issuing Authority",
+            "Official Stamp/Seal"
+        ]
+    }
+}

@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/css/forms-theme.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --bg-color: #f8f9fa;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --focus-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body padding for floating header */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            padding-top: 120px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTE2djJIMjR2LTJoMTJ6Ii8+PC9nPjwvZz48L3N2Zz4=');
+            pointer-events: none;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        /* Cash Management-specific overrides */
+        .form-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            padding: 30px;
+            color: white;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+            opacity: 0.9;
+            font-size: 15px;
+        }
+
+        /* Smart Capture Section - Premium Card */
+        .smart-capture-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin: 20px 30px 24px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .smart-capture-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #2563eb, #06b6d4);
+        }
+        
+        .smart-capture-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .smart-capture-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 28px;
+        }
+        
+        .smart-capture-text h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .smart-capture-text p {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+        }
+        
+        /* Enhanced Smart Capture Button - Premium Design */
+        .btn-smart-capture {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 70%, #06b6d4 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-smart-capture::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-smart-capture:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-smart-capture:hover::before {
+            left: 100%;
+        }
+        
+        .btn-smart-capture i {
+            font-size: 20px;
+        }
+        
+        .btn-smart-capture span {
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .btn-secondary:hover {
+            background: #3b82f6;
+        }
+        
+        .balance-card {
+            background: #eff6ff;
+            border-left-color: #3b82f6;
+        }
+        
+        .balance-value {
+            color: #3b82f6;
+        }
+
+        .tabs {
+            background: white;
+            padding: 0 30px;
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: var(--primary-color);
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--focus-shadow);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .summary-card h4 {
+            color: var(--text-color);
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .summary-card .trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .trend.positive {
+            color: #10b981;
+        }
+
+        .trend.negative {
+            color: #ef4444;
+        }
+
+        /* Chatbot Icon */
+        .chatbot-icon {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .chatbot-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .chatbot-icon i {
+            color: white;
+            font-size: 24px;
+        }
+
+        /* Chatbot Container */
+        .chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+        }
+
+        .chatbot-container.active {
+            display: flex;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .chatbot-iframe {
+            flex: 1;
+            border: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* Modal Overlay for Smart Capture - Matching index.html design */
+        .smart-capture-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(30, 41, 59, 0.4));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .smart-capture-modal.active {
+            display: block;
+        }
+        
+        .smart-capture-iframe-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+            max-height: 900px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+            backdrop-filter: blur(24px) saturate(1.5);
+            -webkit-backdrop-filter: blur(24px) saturate(1.5);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 
+                0 24px 48px rgba(59, 130, 246, 0.15),
+                0 12px 24px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.5),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(229, 231, 235, 0.3);
+            animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUpModal {
+            from {
+                transform: translate(-50%, -45%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+        
+        .smart-capture-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .smart-capture-header-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+        }
+        
+        .smart-capture-header-title i {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1));
+            position: relative;
+        }
+        
+        .smart-capture-header-title i::before {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .smart-capture-header-title h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .smart-capture-header-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+        
+        .smart-capture-close {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: 10px;
+            padding: 8px;
+            cursor: pointer;
+            color: #64748b;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .smart-capture-close:hover {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1e293b;
+            transform: scale(1.05);
+        }
+        
+        .smart-capture-iframe {
+            width: 100%;
+            height: calc(100% - 96px);
+            border: none;
+            display: block;
+            transition: opacity 0.3s ease;
+        }
+        
+        .smart-capture-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 10;
+        }
+        
+        .smart-capture-modal.loading .smart-capture-loading {
+            display: flex;
+        }
+        
+        .smart-capture-modal.loading .smart-capture-iframe {
+            opacity: 0;
+        }
+        
+        .smart-capture-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .smart-capture-loading-text {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .status-message.info {
+            background: #f3f4f6;
+            color: #374151;
+            border-left: 4px solid #9ca3af;
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background: var(--bg-color);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .chatbot-container {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
+
+    <div class="container">
+        <div class="main-content">
+            <div class="form-header">
+                <h1><i class="fas fa-wallet"></i> Cash Management</h1>
+                <p>Liquidity Management, Cash Positioning, and Payment Operations</p>
+            </div>
+            
+            <!-- Smart Capture Section -->
+            <div class="smart-capture-section">
+                <div class="smart-capture-info">
+                    <div class="smart-capture-icon">
+                        <i class="mdi mdi-scan-helper"></i>
+                    </div>
+                    <div class="smart-capture-text">
+                        <h3>Smart Document Capture</h3>
+                        <p>Upload and extract cash management information from documents automatically</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-smart-capture" onclick="openSmartCapture()">
+                    <i class="mdi mdi-scan-helper"></i> 
+                    <span>Start Smart Capture</span>
+                </button>
+            </div>
+
+        <div class="tabs" style="background: white; padding: 0 30px; display: flex; gap: 20px; border-bottom: 2px solid var(--border-color);">
+            <button class="tab active" onclick="showTab('liquidity')">
+                <i class="fas fa-tint"></i> Liquidity Management
+            </button>
+            <button class="tab" onclick="showTab('payments')">
+                <i class="fas fa-money-check-alt"></i> Payments
+            </button>
+            <button class="tab" onclick="showTab('collections')">
+                <i class="fas fa-hand-holding-usd"></i> Collections
+            </button>
+            <button class="tab" onclick="showTab('pooling')">
+                <i class="fas fa-layer-group"></i> Cash Pooling
+            </button>
+            <button class="tab" onclick="showTab('forecast')">
+                <i class="fas fa-chart-area"></i> Cash Forecast
+            </button>
+        </div>
+
+        <div class="form-container">
+            <div id="statusMessage" class="status-message"></div>
+
+            <!-- Liquidity Management Tab -->
+            <div id="liquidity" class="tab-content active">
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h4>Total Cash Balance</h4>
+                        <div class="value">$5,234,567.89</div>
+                        <div class="trend positive">↑ 5.2% from yesterday</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Available Liquidity</h4>
+                        <div class="value">$3,456,789.00</div>
+                        <div class="trend positive">↑ 2.1% from yesterday</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Net Cash Flow</h4>
+                        <div class="value">$234,567.00</div>
+                        <div class="trend negative">↓ 1.5% from yesterday</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Working Capital</h4>
+                        <div class="value">$1,234,567.00</div>
+                        <div class="trend positive">↑ 3.7% from yesterday</div>
+                    </div>
+                </div>
+
+                <form id="liquidityForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Account Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="accountNumber">Account Number <span class="required">*</span></label>
+                                <select id="accountNumber" name="accountNumber" required>
+                                    <option value="">Select Account</option>
+                                    <option value="1234567890">1234567890 - Main Operating</option>
+                                    <option value="2345678901">2345678901 - Payroll</option>
+                                    <option value="3456789012">3456789012 - Investment</option>
+                                    <option value="4567890123">4567890123 - Collections</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bankName">Bank Name <span class="required">*</span></label>
+                                <input type="text" id="bankName" name="bankName" required placeholder="Bank Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="accountCurrency">Currency <span class="required">*</span></label>
+                                <select id="accountCurrency" name="accountCurrency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="INR">INR</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="currentBalance">Current Balance</label>
+                                <input type="number" id="currentBalance" name="currentBalance" readonly value="5234567.89">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">Recent Transactions</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Debit</th>
+                                    <th>Credit</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2024-01-15</td>
+                                    <td>Wire Transfer - Supplier Payment</td>
+                                    <td>$50,000.00</td>
+                                    <td>-</td>
+                                    <td>$5,234,567.89</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-01-14</td>
+                                    <td>Customer Collection</td>
+                                    <td>-</td>
+                                    <td>$125,000.00</td>
+                                    <td>$5,284,567.89</td>
+                                </tr>
+                                <tr>
+                                    <td>2024-01-13</td>
+                                    <td>Payroll Processing</td>
+                                    <td>$345,000.00</td>
+                                    <td>-</td>
+                                    <td>$5,159,567.89</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="payments" class="tab-content">
+                <form id="paymentsForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Payment Instruction</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="paymentType">Payment Type <span class="required">*</span></label>
+                                <select id="paymentType" name="paymentType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="wire">Wire Transfer</option>
+                                    <option value="ach">ACH Transfer</option>
+                                    <option value="rtgs">RTGS</option>
+                                    <option value="neft">NEFT</option>
+                                    <option value="imps">IMPS</option>
+                                    <option value="check">Check</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentDate">Payment Date <span class="required">*</span></label>
+                                <input type="date" id="paymentDate" name="paymentDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="valueDate">Value Date <span class="required">*</span></label>
+                                <input type="date" id="valueDate" name="valueDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="priority">Priority</label>
+                                <select id="priority" name="priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="express">Express</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="debitAccount">Debit Account <span class="required">*</span></label>
+                                <select id="debitAccount" name="debitAccount" required>
+                                    <option value="">Select Account</option>
+                                    <option value="1234567890">1234567890 - Main Operating</option>
+                                    <option value="2345678901">2345678901 - Payroll</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentAmount">Amount <span class="required">*</span></label>
+                                <input type="number" id="paymentAmount" name="paymentAmount" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentCurrency">Currency <span class="required">*</span></label>
+                                <select id="paymentCurrency" name="paymentCurrency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="INR">INR</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="chargeBearer">Charges</label>
+                                <select id="chargeBearer" name="chargeBearer">
+                                    <option value="OUR">OUR - We pay all charges</option>
+                                    <option value="BEN">BEN - Beneficiary pays</option>
+                                    <option value="SHA">SHA - Shared charges</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">Beneficiary Details</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="beneficiaryName">Beneficiary Name <span class="required">*</span></label>
+                                <input type="text" id="beneficiaryName" name="beneficiaryName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="beneficiaryAccount">Account Number <span class="required">*</span></label>
+                                <input type="text" id="beneficiaryAccount" name="beneficiaryAccount" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="beneficiaryBank">Bank Name <span class="required">*</span></label>
+                                <input type="text" id="beneficiaryBank" name="beneficiaryBank" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="swiftCode">SWIFT/BIC Code</label>
+                                <input type="text" id="swiftCode" name="swiftCode" placeholder="e.g., ABCDUS33XXX">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentPurpose">Payment Purpose <span class="required">*</span></label>
+                            <textarea id="paymentPurpose" name="paymentPurpose" required placeholder="Description of payment purpose"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearPaymentsForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Collections Tab -->
+            <div id="collections" class="tab-content">
+                <form id="collectionsForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Collection Management</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="collectionType">Collection Type <span class="required">*</span></label>
+                                <select id="collectionType" name="collectionType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="direct_debit">Direct Debit</option>
+                                    <option value="standing_order">Standing Order</option>
+                                    <option value="check_collection">Check Collection</option>
+                                    <option value="cash_collection">Cash Collection</option>
+                                    <option value="virtual_account">Virtual Account</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="collectionDate">Collection Date <span class="required">*</span></label>
+                                <input type="date" id="collectionDate" name="collectionDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customerName">Customer Name <span class="required">*</span></label>
+                                <input type="text" id="customerName" name="customerName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="invoiceNumber">Invoice Number</label>
+                                <input type="text" id="invoiceNumber" name="invoiceNumber">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="collectionAmount">Amount <span class="required">*</span></label>
+                                <input type="number" id="collectionAmount" name="collectionAmount" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="collectionCurrency">Currency <span class="required">*</span></label>
+                                <select id="collectionCurrency" name="collectionCurrency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="INR">INR</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="creditAccount">Credit Account <span class="required">*</span></label>
+                                <select id="creditAccount" name="creditAccount" required>
+                                    <option value="">Select Account</option>
+                                    <option value="3456789012">3456789012 - Collections</option>
+                                    <option value="1234567890">1234567890 - Main Operating</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="collectionStatus">Status</label>
+                                <select id="collectionStatus" name="collectionStatus">
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="collected">Collected</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearCollectionsForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Process Collection
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Cash Pooling Tab -->
+            <div id="pooling" class="tab-content">
+                <form id="poolingForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Cash Pooling Structure</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="poolType">Pool Type <span class="required">*</span></label>
+                                <select id="poolType" name="poolType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="physical">Physical Pooling</option>
+                                    <option value="notional">Notional Pooling</option>
+                                    <option value="hybrid">Hybrid Pooling</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="masterAccount">Master Account <span class="required">*</span></label>
+                                <input type="text" id="masterAccount" name="masterAccount" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="poolingFrequency">Frequency <span class="required">*</span></label>
+                                <select id="poolingFrequency" name="poolingFrequency" required>
+                                    <option value="">Select Frequency</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="realtime">Real-time</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="targetBalance">Target Balance</label>
+                                <input type="number" id="targetBalance" name="targetBalance" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">Participating Accounts</h2>
+                        <div class="form-group">
+                            <label>Select Accounts for Pooling:</label>
+                            <div style="margin-top: 10px;">
+                                <label style="display: block; margin-bottom: 10px;">
+                                    <input type="checkbox" name="poolAccounts" value="1234567890"> 1234567890 - Main Operating
+                                </label>
+                                <label style="display: block; margin-bottom: 10px;">
+                                    <input type="checkbox" name="poolAccounts" value="2345678901"> 2345678901 - Payroll
+                                </label>
+                                <label style="display: block; margin-bottom: 10px;">
+                                    <input type="checkbox" name="poolAccounts" value="3456789012"> 3456789012 - Collections
+                                </label>
+                                <label style="display: block; margin-bottom: 10px;">
+                                    <input type="checkbox" name="poolAccounts" value="4567890123"> 4567890123 - Disbursements
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearPoolingForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Setup Pooling
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Cash Forecast Tab -->
+            <div id="forecast" class="tab-content">
+                <form id="forecastForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Cash Flow Forecast</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="forecastPeriod">Forecast Period <span class="required">*</span></label>
+                                <select id="forecastPeriod" name="forecastPeriod" required>
+                                    <option value="">Select Period</option>
+                                    <option value="daily">Daily (7 days)</option>
+                                    <option value="weekly">Weekly (4 weeks)</option>
+                                    <option value="monthly">Monthly (3 months)</option>
+                                    <option value="quarterly">Quarterly (1 year)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="startDate">Start Date <span class="required">*</span></label>
+                                <input type="date" id="startDate" name="startDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">End Date <span class="required">*</span></label>
+                                <input type="date" id="endDate" name="endDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confidenceLevel">Confidence Level</label>
+                                <select id="confidenceLevel" name="confidenceLevel">
+                                    <option value="high">High (90%+)</option>
+                                    <option value="medium">Medium (70-90%)</option>
+                                    <option value="low">Low (50-70%)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">Expected Cash Flows</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="expectedInflows">Expected Inflows <span class="required">*</span></label>
+                                <input type="number" id="expectedInflows" name="expectedInflows" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="expectedOutflows">Expected Outflows <span class="required">*</span></label>
+                                <input type="number" id="expectedOutflows" name="expectedOutflows" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="netCashFlow">Net Cash Flow</label>
+                                <input type="number" id="netCashFlow" name="netCashFlow" readonly step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="closingBalance">Projected Closing Balance</label>
+                                <input type="number" id="closingBalance" name="closingBalance" readonly step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assumptions">Forecast Assumptions</label>
+                            <textarea id="assumptions" name="assumptions" placeholder="Key assumptions for this forecast"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearForecastForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> Generate Forecast
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Chatbot Icon -->
+    <div class="chatbot-icon" onclick="openChatbot()">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <!-- Enhanced Chatbot Overlay -->
+    <div id="chatbotOverlay" class="chatbot-overlay" onclick="closeChatbotOnOverlay(event)">
+        <div id="chatbotWindow" class="chatbot-window">
+            <div id="chatbotHeader" class="chatbot-header">
+                <div class="chatbot-header-left">
+                    <i class="fas fa-robot"></i>
+                    <div>
+                        <h3>AI Assistant - Cash Management</h3>
+                        <div class="chatbot-status">
+                            <span class="status-dot"></span>
+                            <span>Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="window-controls">
+                    <button class="control-btn" onclick="minimizeChatbot()">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="control-btn" onclick="maximizeChatbot()">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="control-btn" onclick="closeChatbot()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chatbot-body">
+                <iframe id="chatbotFrame" class="chatbot-iframe" src=""></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Capture Modal -->
+    <div id="smartCaptureModal" class="smart-capture-modal">
+        <div class="smart-capture-iframe-container">
+            <div class="smart-capture-header">
+                <div class="smart-capture-header-title">
+                    <i class="mdi mdi-scan-helper"></i>
+                    <div>
+                        <h3>Smart Document Capture</h3>
+                        <div class="smart-capture-header-subtitle">Upload and extract cash management data from your documents</div>
+                    </div>
+                </div>
+                <button class="smart-capture-close" onclick="closeSmartCapture()" title="Close">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="smart-capture-loading">
+                <div class="smart-capture-spinner"></div>
+                <div class="smart-capture-loading-text">Loading Smart Capture...</div>
+            </div>
+            <iframe id="smartCaptureIframe" class="smart-capture-iframe" src="" onload="hideSmartCaptureLoading()"></iframe>
+        </div>
+    </div>
+
+    <script src="/static/js/enhanced-chatbot.js"></script>
+    <script src="/static/js/chatbot-repository-integration.js"></script>
+    <script>
+        // Repository Configuration - dynamically set based on selection from dashboard
+        const selectedRepo = sessionStorage.getItem('selectedRepository');
+        const REPOSITORY_CONFIG = {
+            repository_id: selectedRepo || 'cash_management',
+            repository_name: 'Cash Management',
+            repository_type: 'cash_management',
+            collection: 'cash_management_data',
+            selected_from_dashboard: selectedRepo ? true : false
+        };
+
+        // Smart Capture Functions
+        function openSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+            
+            // Add loading state
+            modal.classList.add('loading');
+            modal.classList.add('active');
+            
+            // Set the iframe source with repository context
+            const params = new URLSearchParams({
+                repository: REPOSITORY_CONFIG.repository_id,
+                form_type: 'cash_management',
+                form_context: document.querySelector('.tab-content.active')?.id || 'liquidity'
+            });
+            
+            iframe.src = `/document-classification-overlay?${params.toString()}`;
+            
+            // Send repository context once iframe loads
+            iframe.onload = function() {
+                hideSmartCaptureLoading();
+                // Send repository and form context to the iframe
+                iframe.contentWindow.postMessage({
+                    type: 'repository_context',
+                    repository: REPOSITORY_CONFIG,
+                    form_type: 'cash_management',
+                    activeTab: document.querySelector('.tab-content.active')?.id
+                }, '*');
+            };
+        }
+        
+        function closeSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            modal.classList.remove('active');
+            modal.classList.remove('loading');
+            
+            // Clear iframe source
+            setTimeout(() => {
+                document.getElementById('smartCaptureIframe').src = '';
+            }, 300);
+        }
+        
+        function hideSmartCaptureLoading() {
+            const modal = document.getElementById('smartCaptureModal');
+            setTimeout(() => {
+                modal.classList.remove('loading');
+            }, 500);
+        }
+        
+        function autoFillFormFromSmartCapture(formType, data) {
+            // Map the extracted data to form fields based on the active tab
+            const tabFormMap = {
+                'liquidity': 'liquidityForm',
+                'payments': 'paymentsForm',
+                'collections': 'collectionsForm',
+                'pooling': 'poolingForm',
+                'forecast': 'forecastForm'
+            };
+            
+            const formId = tabFormMap[formType];
+            if (!formId) return;
+            
+            // Fill form fields with extracted data
+            Object.keys(data).forEach(key => {
+                const element = document.querySelector(`#${formId} [name="${key}"]`);
+                if (element) {
+                    element.value = data[key];
+                    // Highlight the field briefly
+                    element.style.backgroundColor = '#dbeafe';
+                    setTimeout(() => {
+                        element.style.backgroundColor = '';
+                    }, 2000);
+                    
+                    // Trigger any necessary calculations
+                    if (key === 'expectedInflows' || key === 'expectedOutflows') {
+                        calculateNetCashFlow();
+                    }
+                }
+            });
+        }
+
+        // Initialize repository context
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log repository selection
+            console.log('Repository context loaded:', REPOSITORY_CONFIG);
+            console.log('Selected from dashboard:', REPOSITORY_CONFIG.selected_from_dashboard);
+            
+            // Set repository in session storage for chatbot access
+            sessionStorage.setItem('active_repository', JSON.stringify(REPOSITORY_CONFIG));
+            
+            // Update UI to show repository connection status
+            if (REPOSITORY_CONFIG.selected_from_dashboard) {
+                const navBrand = document.querySelector('.nav-brand h1');
+                if (navBrand) {
+                    navBrand.innerHTML = `Cash Management <span style="font-size: 12px; color: #3b82f6; margin-left: 10px;">
+                        <i class="fas fa-link"></i> Connected to Repository
+                    </span>`;
+                }
+                
+                // Show connection notification
+                setTimeout(() => {
+                    showMessage('Connected to Cash Management Repository', 'success');
+                }, 500);
+            }
+            
+            // Set repository context for chatbot
+            if (window.chatbotRepository) {
+                window.chatbotRepository.setContext(REPOSITORY_CONFIG);
+            }
+            
+            // Load saved draft if exists
+            loadDraftOnInit();
+        });
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.closest('.tab').classList.add('active');
+        }
+
+        // Repository-aware draft management
+        function saveDraft() {
+            const activeTab = document.querySelector('.tab-content.active').id;
+            const formData = collectFormData(activeTab);
+            
+            const draftKey = `cash_draft_${REPOSITORY_CONFIG.repository_id}_${activeTab}`;
+            localStorage.setItem(draftKey, JSON.stringify({
+                timestamp: new Date().toISOString(),
+                repository: REPOSITORY_CONFIG,
+                tab: activeTab,
+                data: formData
+            }));
+            
+            showMessage('Draft saved successfully', 'success');
+            
+            // Notify chatbot about draft save
+            if (window.chatbot && window.chatbot.iframe) {
+                window.chatbot.iframe.contentWindow.postMessage({
+                    type: 'draft_saved',
+                    repository: REPOSITORY_CONFIG,
+                    tab: activeTab
+                }, '*');
+            }
+        }
+        
+        function loadDraft() {
+            const activeTab = document.querySelector('.tab-content.active').id;
+            const draftKey = `cash_draft_${REPOSITORY_CONFIG.repository_id}_${activeTab}`;
+            const draft = localStorage.getItem(draftKey);
+            
+            if (draft) {
+                const draftData = JSON.parse(draft);
+                autoFillForm(activeTab, draftData.data);
+                showMessage(`Draft loaded from ${new Date(draftData.timestamp).toLocaleString()}`, 'info');
+            } else {
+                showMessage('No draft found for this section', 'info');
+            }
+        }
+        
+        function loadDraftOnInit() {
+            // Try to load draft for liquidity tab on page load
+            const draftKey = `cash_draft_${REPOSITORY_CONFIG.repository_id}_liquidity`;
+            const draft = localStorage.getItem(draftKey);
+            
+            if (draft) {
+                const draftData = JSON.parse(draft);
+                if (confirm('A draft was found. Would you like to load it?')) {
+                    autoFillForm('liquidity', draftData.data);
+                    showMessage('Draft loaded automatically', 'info');
+                }
+            }
+        }
+        
+        function collectFormData(tabName) {
+            const formMap = {
+                'liquidity': 'liquidityForm',
+                'payments': 'paymentsForm',
+                'collections': 'collectionsForm',
+                'pooling': 'poolingForm',
+                'forecast': 'forecastForm'
+            };
+            
+            const formId = formMap[tabName];
+            if (!formId) return {};
+            
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+            return Object.fromEntries(formData);
+        }
+
+        // Calculate net cash flow
+        document.getElementById('expectedInflows')?.addEventListener('input', calculateNetCashFlow);
+        document.getElementById('expectedOutflows')?.addEventListener('input', calculateNetCashFlow);
+
+        function calculateNetCashFlow() {
+            const inflows = parseFloat(document.getElementById('expectedInflows').value) || 0;
+            const outflows = parseFloat(document.getElementById('expectedOutflows').value) || 0;
+            const netFlow = inflows - outflows;
+            
+            document.getElementById('netCashFlow').value = netFlow.toFixed(2);
+            
+            // Calculate projected closing balance
+            const currentBalance = parseFloat(document.getElementById('currentBalance')?.value) || 5234567.89;
+            const closingBalance = currentBalance + netFlow;
+            document.getElementById('closingBalance').value = closingBalance.toFixed(2);
+        }
+
+        // Form submissions
+        document.getElementById('liquidityForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('liquidity', this);
+        });
+
+        document.getElementById('paymentsForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('payment', this);
+        });
+
+        document.getElementById('collectionsForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('collection', this);
+        });
+
+        document.getElementById('poolingForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('pooling', this);
+        });
+
+        document.getElementById('forecastForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('forecast', this);
+        });
+
+        async function submitForm(type, form) {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            // Get checked pool accounts if pooling form
+            if (type === 'pooling') {
+                data.poolAccounts = Array.from(document.querySelectorAll('input[name="poolAccounts"]:checked'))
+                    .map(cb => cb.value);
+            }
+            
+            // Add repository context
+            const submissionData = {
+                ...data,
+                repository: REPOSITORY_CONFIG,
+                transaction_type: type,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                const response = await fetch(`/api/repository/${REPOSITORY_CONFIG.repository_id}/${type}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(submissionData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} processed successfully!`, 'success');
+                    
+                    // Clear the draft after successful submission
+                    const draftKey = `cash_draft_${REPOSITORY_CONFIG.repository_id}_${type}`;
+                    localStorage.removeItem(draftKey);
+                    
+                    // Notify chatbot about successful submission
+                    if (window.chatbot && window.chatbot.iframe) {
+                        window.chatbot.iframe.contentWindow.postMessage({
+                            type: 'form_submitted',
+                            repository: REPOSITORY_CONFIG,
+                            transaction_type: type,
+                            transaction_id: result.transaction_id || result.id
+                        }, '*');
+                    }
+                    
+                    if (type !== 'liquidity') {
+                        form.reset();
+                    }
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                showMessage(`Error processing ${type}. Please try again.`, 'error');
+                console.error('Submission error:', error);
+            }
+        }
+
+        // Clear form functions
+        function clearPaymentsForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('paymentsForm').reset();
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        function clearCollectionsForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('collectionsForm').reset();
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        function clearPoolingForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('poolingForm').reset();
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        function clearForecastForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('forecastForm').reset();
+                document.getElementById('netCashFlow').value = '';
+                document.getElementById('closingBalance').value = '';
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        // Show status message
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('statusMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = `status-message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Consolidated message handler for both chatbot and smart capture
+        window.addEventListener('message', function(event) {
+            if (event.data) {
+                switch(event.data.type) {
+                    case 'smart_capture_data':
+                        // Handle Smart Capture data extraction
+                        const extractedData = event.data.data;
+                        const formType = event.data.form_type || 'liquidity';
+                        
+                        // Close the modal
+                        closeSmartCapture();
+                        
+                        // Auto-fill the form based on extracted data
+                        autoFillFormFromSmartCapture(formType, extractedData);
+                        
+                        // Show success message
+                        showMessage('Document data extracted and form populated successfully!', 'success');
+                        break;
+                    case 'autofill_cash':
+                        autoFillForm(event.data.formType, event.data.formData);
+                        break;
+                    case 'request_repository_context':
+                        // Send repository context to chatbot
+                        if (event.source) {
+                            event.source.postMessage({
+                                type: 'repository_context',
+                                repository: REPOSITORY_CONFIG,
+                                activeTab: document.querySelector('.tab-content.active').id
+                            }, '*');
+                        }
+                        break;
+                    case 'save_draft_request':
+                        saveDraft();
+                        break;
+                    case 'load_draft_request':
+                        loadDraft();
+                        break;
+                }
+            }
+        });
+
+        // Auto-fill form with data from chatbot
+        function autoFillForm(formType, data) {
+            const formMap = {
+                'payment': 'paymentsForm',
+                'collection': 'collectionsForm',
+                'pooling': 'poolingForm',
+                'forecast': 'forecastForm'
+            };
+            
+            const formId = formMap[formType];
+            if (!formId) return;
+            
+            // Show the appropriate tab
+            const tabMap = {
+                'payment': 'payments',
+                'collection': 'collections',
+                'pooling': 'pooling',
+                'forecast': 'forecast'
+            };
+            
+            showTab(tabMap[formType]);
+            
+            // Fill the form
+            Object.keys(data).forEach(key => {
+                const element = document.querySelector(`#${formId} [name="${key}"]`);
+                if (element) {
+                    if (element.type === 'checkbox' && Array.isArray(data[key])) {
+                        // Handle checkboxes for pooling accounts
+                        data[key].forEach(value => {
+                            const checkbox = document.querySelector(`#${formId} [name="${key}"][value="${value}"]`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    } else {
+                        element.value = data[key];
+                    }
+                    
+                    if (element.type !== 'checkbox') {
+                        element.style.backgroundColor = '#dbeafe';
+                        setTimeout(() => {
+                            element.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                }
+            });
+            
+            // Recalculate if forecast form
+            if (formType === 'forecast') {
+                calculateNetCashFlow();
+            }
+            
+            showMessage(`Form auto-filled from AI Assistant`, 'success');
+        }
+    </script>
+</body>
+</html>

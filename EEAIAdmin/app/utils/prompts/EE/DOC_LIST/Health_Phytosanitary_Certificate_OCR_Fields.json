@@ -1,0 +1,46 @@
+{
+    "Health/Phytosanitary Certificate": {
+        "Certificate Details": [
+            "Certificate Number",
+            "Date of Issue",
+            "Issuing Authority",
+            "Type of Certificate (Health/Phytosanitary)",
+            "Purpose (Export/Import/Transit)"
+        ],
+        "Exporter & Importer Information": [
+            "Exporter Name and Address",
+            "Importer Name and Address",
+            "Country of Origin",
+            "Country of Destination"
+        ],
+        "Consignment Details": [
+            "Description of Goods",
+            "HS Code",
+            "Botanical/Scientific Name (for plants/products)",
+            "Quantity",
+            "Unit of Measure",
+            "Packaging Type",
+            "Marks and Numbers",
+            "Invoice Number"
+        ],
+        "Inspection & Treatment": [
+            "Inspection Date",
+            "Place of Inspection",
+            "Treatment Applied (if any)",
+            "Treatment Date",
+            "Pest/Disease Inspection Result",
+            "Compliance with Sanitary/Phytosanitary Standards"
+        ],
+        "Transport & Shipment Info": [
+            "Mode of Transport",
+            "Port of Entry/Exit",
+            "Vessel/Flight Number",
+            "Container/Seal Number"
+        ],
+        "Authentication": [
+            "Authorized Officer Signature",
+            "Official Stamp/Seal",
+            "Place and Date of Certification"
+        ]
+    }
+}

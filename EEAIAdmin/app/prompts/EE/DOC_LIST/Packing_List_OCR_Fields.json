@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Packing List Number",
+    "type": "text",
+    "required": true,
+    "description": "Unique packing list ID"
+  },
+  {
+    "name": "Date",
+    "type": "date",
+    "required": true,
+    "description": "Date of packing list"
+  },
+  {
+    "name": "Shipper",
+    "type": "text",
+    "required": true,
+    "description": "Party shipping goods"
+  },
+  {
+    "name": "Consignee",
+    "type": "text",
+    "required": true,
+    "description": "Party receiving goods"
+  },
+  {
+    "name": "Number of Packages",
+    "type": "number",
+    "required": true,
+    "description": "Total package count"
+  },
+  {
+    "name": "Total Gross Weight",
+    "type": "number",
+    "required": true,
+    "description": "Total weight with packaging"
+  },
+  {
+    "name": "Total Net Weight",
+    "type": "number",
+    "required": true,
+    "description": "Total weight without packaging"
+  },
+  {
+    "name": "Package Type",
+    "type": "text",
+    "required": false,
+    "description": "Type of packaging used"
+  },
+  {
+    "name": "Marks and Numbers",
+    "type": "text",
+    "required": false,
+    "description": "Package identification marks"
+  }
+]

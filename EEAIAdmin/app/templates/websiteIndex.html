@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinStack - Innovation Partners for the Future of Finance</title>
+    <meta name="description" content="FinStack - AI-driven solutions for banks, financial institutions, and enterprise software firms. Specializing in Generative AI, Agentic AI, and workflow orchestration.">
+    <meta name="author" content="FinStack">
+
+    <meta property="og:title" content="FinStack - Innovation Partners for the Future of Finance">
+    <meta property="og:description" content="AI-driven solutions for banks, financial institutions, and enterprise software firms. Specializing in Generative AI, Agentic AI, and workflow orchestration.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1200&h=630&fit=crop&crop=center">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@finstack">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1200&h=630&fit=crop&crop=center">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .bg-clip-text {
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .delay-1000 {
+            animation-delay: 1000ms;
+        }
+        .delay-500 {
+            animation-delay: 500ms;
+        }
+    </style>
+</head>
+<body class="font-inter">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">FinStack</h1>
+                        </div>
+                    </div>
+                    <nav class="hidden md:flex space-x-8">
+                        <a href="#home" class="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
+                        <a href="#solutions" class="text-gray-700 hover:text-blue-600 transition-colors">Solutions</a>
+                        <a href="#about" class="text-gray-700 hover:text-blue-600 transition-colors">About</a>
+                        <a href="#vision" class="text-gray-700 hover:text-blue-600 transition-colors">Vision</a>
+                        <a href="#contact" class="text-gray-700 hover:text-blue-600 transition-colors">Contact</a>
+                    </nav>
+                    <div class="md:hidden">
+                        <button class="text-gray-700 hover:text-blue-600" onclick="toggleMobileMenu()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="4" x2="20" y1="12" y2="12"></line>
+                                <line x1="4" x2="20" y1="6" y2="6"></line>
+                                <line x1="4" x2="20" y1="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"></div>
+
+            <!-- Animated Background Circles -->
+            <div class="absolute inset-0">
+                <div class="absolute top-20 left-10 w-72 h-72 bg-blue-300/20 rounded-full blur-xl animate-pulse"></div>
+                <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-300/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-300/20 rounded-full blur-xl animate-pulse delay-500"></div>
+            </div>
+
+            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="animate-fade-in">
+                    <div class="flex items-center justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 mr-2">
+                            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                            <path d="M20 3v4"></path>
+                            <path d="M22 5h-4"></path>
+                            <path d="M4 17v2"></path>
+                            <path d="M5 18H3"></path>
+                        </svg>
+                        <span class="text-blue-600 font-semibold text-lg">Est. 2022</span>
+                    </div>
+
+                    <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+                        Welcome to
+                        <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">FinStack</span>
+                    </h1>
+
+                    <p class="text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed">
+                        Innovation Partners for the Future of Finance
+                    </p>
+
+                    <p class="text-lg text-gray-600 mb-12 max-w-3xl mx-auto">
+                        At FinStack, we are at the forefront of innovation, specializing in building transformative
+                        AI-driven solutions for banks, financial institutions, and enterprise software firms.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <button class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center">
+                            Explore Solutions
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2">
+                                <path d="M5 12h14"></path>
+                                <path d="m12 5 7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        <button class="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-full font-semibold text-lg hover:border-blue-600 hover:text-blue-600 transition-all duration-300">
+                            Learn More
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solutions Section -->
+        <section id="solutions" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Our Focus Areas</h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                        Cutting-edge AI solutions designed specifically for the financial services industry
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Solution 1 -->
+                    <div class="group hover:scale-105 transition-all duration-300">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 h-full hover:shadow-2xl transition-all duration-300">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 p-4 mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-white">
+                                    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path>
+                                    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path>
+                                    <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path>
+                                    <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path>
+                                    <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path>
+                                    <path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path>
+                                    <path d="M19.938 10.5a4 4 0 0 1 .585.396"></path>
+                                    <path d="M6 18a4 4 0 0 1-1.967-.516"></path>
+                                    <path d="M19.967 17.484A4 4 0 0 1 18 18"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">Generative AI & Agentic AI</h3>
+                            <p class="text-gray-600 leading-relaxed">
+                                Redefining how banks process and interpret complex documentation through smart, adaptable agents.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Solution 2 -->
+                    <div class="group hover:scale-105 transition-all duration-300">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 h-full hover:shadow-2xl transition-all duration-300">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 p-4 mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-white">
+                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                                    <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                                    <path d="M10 9H8"></path>
+                                    <path d="M16 13H8"></path>
+                                    <path d="M16 17H8"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">AI-powered Trade Finance Automation</h3>
+                            <p class="text-gray-600 leading-relaxed">
+                                OCR-driven multi-document classification, entity extraction, discrepancy detection, and compliance validation using UCP and configurable NLP-based rules.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Solution 3 -->
+                    <div class="group hover:scale-105 transition-all duration-300">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 h-full hover:shadow-2xl transition-all duration-300">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-r from-green-500 to-teal-500 p-4 mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-white">
+                                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">Cross-departmental Banking AI Solutions</h3>
+                            <p class="text-gray-600 leading-relaxed">
+                                Bringing AI to functions beyond trade, including risk, compliance, operations, and customer engagement.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Solution 4 -->
+                    <div class="group hover:scale-105 transition-all duration-300">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 h-full hover:shadow-2xl transition-all duration-300">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-4 mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-white">
+                                    <path d="M3 3v16a2 2 0 0 0 2 2h16"></path>
+                                    <path d="M18 17V9"></path>
+                                    <path d="M13 17V5"></path>
+                                    <path d="M8 17v-3"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">Advanced Analytics & Insights</h3>
+                            <p class="text-gray-600 leading-relaxed">
+                                Delivering actionable intelligence with real-time dashboards and data pipelines tailored for banking.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Solution 5 -->
+                    <div class="group hover:scale-105 transition-all duration-300">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 h-full hover:shadow-2xl transition-all duration-300">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 p-4 mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-white">
+                                    <rect width="8" height="8" x="3" y="3" rx="2"></rect>
+                                    <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
+                                    <rect width="8" height="8" x="13" y="13" rx="2"></rect>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">Workflow Orchestration</h3>
+                            <p class="text-gray-600 leading-relaxed">
+                                Seamless integration of AI agents into business workflows, improving efficiency, consistency, and traceability.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Solution 6 -->
+                    <div class="group hover:scale-105 transition-all duration-300">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 h-full hover:shadow-2xl transition-all duration-300">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 p-4 mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-white">
+                                    <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-4">Innovation Partnership</h3>
+                            <p class="text-gray-600 leading-relaxed">
+                                We co-create with clients, embedding ourselves as strategic partners in your digital transformation journey.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Growing Strong</h2>
+                    <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+                        A dynamic, growing startup with a young and energetic team
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <div class="text-4xl md:text-6xl font-bold text-white mb-2">2022</div>
+                        <div class="text-blue-100 text-lg font-medium">Established</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-6xl font-bold text-white mb-2">25+</div>
+                        <div class="text-blue-100 text-lg font-medium">Team Members</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-6xl font-bold text-white mb-2">₹20Cr</div>
+                        <div class="text-blue-100 text-lg font-medium">Revenue Target</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl md:text-6xl font-bold text-white mb-2">100%</div>
+                        <div class="text-blue-100 text-lg font-medium">AI-First Approach</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-20 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Why FinStack?</h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                        Our journey began with successful deployments for major Indian banks and international engagements.
+                        We've evolved from service implementations to creating cutting-edge products.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                    <!-- Domain Expertise -->
+                    <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex items-start space-x-6">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+                                        <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+                                        <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+                                        <path d="M10 6h4"></path>
+                                        <path d="M10 10h4"></path>
+                                        <path d="M10 14h4"></path>
+                                        <path d="M10 18h4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <h3 class="text-xl font-bold text-gray-900 mb-3">Domain Expertise</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    With decades of experience in trade finance and core banking, we have successfully delivered large-scale implementations for major financial institutions worldwide, including some of the leading banks in India.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI First Approach -->
+                    <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex items-start space-x-6">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+                                        <path d="M9 18h6"></path>
+                                        <path d="M10 22h4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <h3 class="text-xl font-bold text-gray-900 mb-3">AI First Approach</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    Purpose-built AI tools with explainability and compliance at the center, designed specifically for financial institutions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Innovation Partnership Model -->
+                    <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex items-start space-x-6">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <h3 class="text-xl font-bold text-gray-900 mb-3">Innovation Partnership Model</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    We co-create with clients, embedding ourselves as strategic partners in your digital transformation journey.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agile, Scalable Team -->
+                    <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex items-start space-x-6">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 p-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <circle cx="12" cy="12" r="6"></circle>
+                                        <circle cx="12" cy="12" r="2"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <h3 class="text-xl font-bold text-gray-900 mb-3">Agile, Scalable Team</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    A mix of experience and youthful energy, committed to execution excellence and continuous innovation.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-white text-center">
+                    <h3 class="text-3xl md:text-4xl font-bold mb-6">From Service to Product Innovation</h3>
+                    <p class="text-xl text-blue-100 mb-8 max-w-4xl mx-auto">
+                        With a strong foundation in trade finance software implementations, we are now advancing rapidly
+                        in Generative AI, Agentic AI, and workflow orchestration around intelligent agents, drawing on
+                        valuable experience from our collaboration with global leaders.
+                    </p>
+                    <button class="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold text-lg hover:bg-blue-50 transform hover:scale-105 transition-all duration-300">
+                        Learn About Our Journey
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vision Section -->
+        <section id="vision" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Our Vision</h2>
+                    <div class="max-w-4xl mx-auto">
+                        <p class="text-2xl text-gray-700 font-semibold mb-8">
+                            To become a globally recognized
+                            <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">product-based AI innovation firm</span>
+                        </p>
+                        <p class="text-xl text-gray-600">
+                            Delivering value through specialized financial technology solutions with an annual revenue target of ₹20 Crores
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                    <div class="text-center p-8">
+                        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 p-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10 text-white">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                                <path d="M2 12h20"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Global Recognition</h3>
+                        <p class="text-gray-600">
+                            Establishing FinStack as a leading AI innovation firm recognized worldwide for excellence in financial technology
+                        </p>
+                    </div>
+
+                    <div class="text-center p-8">
+                        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 p-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10 text-white">
+                                <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                                <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+                                <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+                                <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Product Innovation</h3>
+                        <p class="text-gray-600">
+                            Creating cutting-edge AI products that solve real operational challenges in banking and financial services
+                        </p>
+                    </div>
+
+                    <div class="text-center p-8">
+                        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-green-500 to-teal-500 p-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10 text-white">
+                                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                                <polyline points="16 7 22 7 22 13"></polyline>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Sustainable Growth</h3>
+                        <p class="text-gray-600">
+                            Building a sustainable business model with ambitious revenue targets and continuous value creation
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-3xl p-8 md:p-12 text-white text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-3xl md:text-4xl font-bold mb-6">Join Us in Shaping the Future of Banking</h3>
+                        <p class="text-xl text-gray-200 mb-8 max-w-3xl mx-auto">
+                            Partner with us to transform your financial operations through innovative AI solutions
+                        </p>
+                        <div class="text-2xl font-bold mb-4">
+                            <span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                                FinStack – Empowering Finance Through AI
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Get in Touch</h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                        Ready to transform your financial operations with AI? Let's discuss how we can partner together.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-6">Let's Start a Conversation</h3>
+                            <p class="text-gray-600 text-lg mb-8">
+                                We're here to help you navigate the future of finance through innovative AI solutions.
+                                Reach out to us and let's explore the possibilities together.
+                            </p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 p-3 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">Email</h4>
+                                    <p class="text-gray-600">admin@finstack-tech.com</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-green-500 to-teal-500 p-3 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">Phone</h4>
+                                    <p class="text-gray-600">+91 XXX XXX XXXX</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 p-3 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">Location</h4>
+                                    <p class="text-gray-600">India</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 p-3 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                                        <rect width="4" height="12" x="2" y="9"></rect>
+                                        <circle cx="4" cy="4" r="2"></circle>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">LinkedIn</h4>
+                                    <a href="https://www.linkedin.com/company/finstack-solutions-pvt-limited/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 transition-colors">
+                                        Follow us on LinkedIn
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 p-3 flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-white">
+                                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-900">Instagram</h4>
+                                    <a href="https://www.instagram.com/finstack_solutions?igsh=YnF1YWhxaWF2MTN5" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 transition-colors">
+                                        Follow us on Instagram
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                        <form class="space-y-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                <input type="text" id="name" name="name"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    placeholder="Enter your full name" required>
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                <input type="email" id="email" name="email"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    placeholder="Enter your email address" required>
+                            </div>
+
+                            <div>
+                                <label for="company" class="block text-sm font-medium text-gray-700 mb-2">Company/Organization</label>
+                                <input type="text" id="company" name="company"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    placeholder="Enter your company name">
+                            </div>
+
+                            <div>
+                                <label for="message" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                <textarea id="message" name="message" rows="4"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                                    placeholder="Tell us about your project or how we can help" required></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                                Send Message
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2">
+                                    <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
+                                    <path d="m21.854 2.147-10.94 10.939"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <div class="mb-8">
+                        <h3 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">FinStack</h3>
+                        <p class="text-xl text-gray-300 mb-6">Empowering Finance Through AI</p>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Innovation Partners for the Future of Finance - Established 2022</p>
+                    </div>
+                    <div class="border-t border-gray-800 pt-8">
+                        <p class="text-gray-400">© 2024 FinStack. All rights reserved. | Transforming Banking with AI Innovation</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
+            }
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

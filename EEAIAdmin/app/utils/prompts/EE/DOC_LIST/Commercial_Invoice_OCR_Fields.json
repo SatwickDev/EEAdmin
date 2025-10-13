@@ -1,0 +1,49 @@
+{
+    "Commercial Invoice": {
+        "Invoice Details": [
+            "Invoice Number",
+            "Invoice Date",
+            "Purchase Order Number",
+            "Currency",
+            "Terms of Sale (Incoterms)",
+            "Date of Issue"
+        ],
+        "Exporter & Consignee Information": [
+            "Exporter Name and Address",
+            "Consignee Name and Address",
+            "Ship To Address"
+        ],
+        "Shipping & Transport": [
+            "Port of Loading",
+            "Port of Discharge",
+            "Mode of Transport",
+            "Carrier Name"
+        ],
+        "Product Line Items": [
+            "Item SKU",
+            "Item Description",
+            "HS Code",
+            "Quantity",
+            "Unit of Measure",
+            "Unit Price",
+            "Total Price",
+            "Weight (Gross/Net)",
+            "Dimensions"
+        ],
+        "Financial Summary": [
+            "Subtotal",
+            "Freight Charges",
+            "Insurance",
+            "Handling Charges",
+            "Discounts",
+            "Tax",
+            "Total Invoice Amount"
+        ],
+        "Declarations & Authentication": [
+            "Declaration Statement",
+            "Signature",
+            "Name and Title of Signatory",
+            "Company Stamp"
+        ]
+    }
+}

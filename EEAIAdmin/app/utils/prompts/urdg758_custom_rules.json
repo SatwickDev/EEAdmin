@@ -1,0 +1,17 @@
+[
+  {
+    "rule_id": "CR-001",
+    "title": "Guarantee Must Be Non-Transferable",
+    "description": "Guarantees must state that they are non-transferable unless explicitly permitted."
+  },
+  {
+    "rule_id": "CR-002",
+    "title": "Fixed Expiry Date Mandatory",
+    "description": "Guarantees must include a fixed expiry date. Open-ended guarantees are not allowed."
+  },
+  {
+    "rule_id": "CR-003",
+    "title": "Governing Law Must Be Specified",
+    "description": "Guarantee must clearly mention the governing law and jurisdiction."
+  }
+]

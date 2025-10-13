@@ -1,0 +1,47 @@
+{
+    "Insurance Policy": {
+        "Policy Details": [
+            "Policy Number",
+            "Certificate Number(s) Covered",
+            "Date of Issue",
+            "Effective Date",
+            "Expiry Date",
+            "Type of Policy (Open, Specific, Marine, etc.)"
+        ],
+        "Insurer & Insured Information": [
+            "Insured Party Name and Address",
+            "Insurer Name and Address",
+            "Broker/Agent Details"
+        ],
+        "Coverage Information": [
+            "Description of Goods",
+            "Sum Insured",
+            "Currency",
+            "Insurance Premium",
+            "Coverage Terms (e.g., ICC A/B/C)",
+            "Geographical Scope",
+            "Voyage Details"
+        ],
+        "Shipment Information": [
+            "Mode of Transport",
+            "Vessel/Flight/Vehicle Number",
+            "Port of Loading",
+            "Port of Discharge",
+            "Transit Points",
+            "Place of Delivery"
+        ],
+        "Policy Terms & Clauses": [
+            "Policy Terms and Conditions",
+            "Exclusions",
+            "Claims Procedure",
+            "Subrogation Clause",
+            "Jurisdiction Clause",
+            "Duration of Risk"
+        ],
+        "Authentication": [
+            "Authorized Signatory of Insurer",
+            "Stamp/Seal",
+            "Date of Signing"
+        ]
+    }
+}

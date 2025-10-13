@@ -1,0 +1,72 @@
+{
+    "Letter of Credit (LC)": {
+        "LC Identification": [
+            "LC Number",
+            "Date of Issue",
+            "LC Type",
+            "Form of LC"
+        ],
+        "Parties Involved": [
+            "Issuing Bank Name and Address",
+            "Advising Bank Name and Address",
+            "Confirming Bank Name",
+            "Applicant Name and Address",
+            "Beneficiary Name and Address"
+        ],
+        "Shipment & Transport Details": [
+            "Port of Loading",
+            "Port of Discharge",
+            "Place of Delivery",
+            "Latest Shipment Date",
+            "Partial Shipments Allowed",
+            "Transshipment Allowed",
+            "Mode of Transport"
+        ],
+        "Goods & Transaction Info": [
+            "Description of Goods",
+            "Quantity",
+            "Unit of Measure",
+            "HS Code",
+            "Unit Price",
+            "Total Price",
+            "Currency",
+            "Tolerance Clause"
+        ],
+        "Financial Terms": [
+            "LC Amount",
+            "Currency",
+            "Tolerance on Amount",
+            "Available With",
+            "Available By",
+            "Reimbursement Instructions",
+            "Payment Terms"
+        ],
+        "Required Documents": [
+            "Commercial Invoice",
+            "Packing List",
+            "Bill of Lading / Air Waybill",
+            "Certificate of Origin",
+            "Insurance Certificate",
+            "Inspection Certificate",
+            "Other Specified Documents",
+            "Number of Copies / Originals Required"
+        ],
+        "Presentation & Expiry": [
+            "Expiry Date",
+            "Expiry Place",
+            "Presentation Period"
+        ],
+        "Instructions & Clauses": [
+            "UCP 600 Applicable",
+            "Confirmation Instructions",
+            "Transferability Clause",
+            "Revolving or Back-to-Back LC Notes",
+            "Special Instructions"
+        ],
+        "Signatures & Stamps": [
+            "Authorized Signature(s) of Issuing Bank",
+            "Bank Stamp/Seal",
+            "SWIFT Trailer"
+        ]
+    }
+}

@@ -1,0 +1,25 @@
+{
+  "UCP600": {
+    "register import letter of credit": {
+      "regulatory": {
+        "EXPIRY_DT": {
+          "required": true,
+          "severity": "high",
+          "error_message": "Expiry Date must be stated clearly as per UCP 600 Article 6."
+        },
+        "PRESENTATION_PERIOD": {
+          "allowed_values": ["21", "15", "10"],
+          "severity": "medium",
+          "error_message": "Presentation period {value} is non-standard under UCP 600. Allowed: {allowed_values}."
+        }
+      },
+      "operational": {
+        "CONFIRMATION_INSTRUCTIONS": {
+          "allowed_values": ["May Add", "Without", "Confirmed"],
+          "severity": "low",
+          "error_message": "Invalid confirmation instruction: {value}."
+        }
+      }
+    }
+  }
+}

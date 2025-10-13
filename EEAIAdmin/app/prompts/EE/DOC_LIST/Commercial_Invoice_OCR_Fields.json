@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Invoice Number",
+    "type": "text",
+    "required": true,
+    "description": "Unique invoice identifier"
+  },
+  {
+    "name": "Invoice Date",
+    "type": "date",
+    "required": true,
+    "description": "Date of invoice issue"
+  },
+  {
+    "name": "Seller Name",
+    "type": "text",
+    "required": true,
+    "description": "Name of the selling party"
+  },
+  {
+    "name": "Buyer Name",
+    "type": "text",
+    "required": true,
+    "description": "Name of the buying party"
+  },
+  {
+    "name": "Currency",
+    "type": "text",
+    "required": true,
+    "description": "Currency code (USD, EUR, etc.)"
+  },
+  {
+    "name": "Total Amount",
+    "type": "number",
+    "required": true,
+    "description": "Total invoice value"
+  },
+  {
+    "name": "Payment Terms",
+    "type": "text",
+    "required": true,
+    "description": "Terms of payment"
+  },
+  {
+    "name": "Incoterms",
+    "type": "text",
+    "required": false,
+    "description": "International commercial terms"
+  },
+  {
+    "name": "Country of Origin",
+    "type": "text",
+    "required": false,
+    "description": "Country where goods originated"
+  },
+  {
+    "name": "HS Code",
+    "type": "text",
+    "required": false,
+    "description": "Harmonized System code"
+  }
+]

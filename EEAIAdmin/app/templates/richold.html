@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fin AI - Guarantee Vetting</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CDN Dependencies -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/finstack-master.css') }}">
+  <link href="{{ url_for('static', filename='css/global-components.css') }}" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .glass-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .highlight-low {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      padding: 4px 8px;
+      border-radius: 8px;
+      border-left: 4px solid #28a745;
+      animation: highlightPulse 2s ease-in-out;
+    }
+
+    .highlight-medium {
+      background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+      padding: 4px 8px;
+      border-radius: 8px;
+      border-left: 4px solid #ffc107;
+      animation: highlightPulse 2s ease-in-out;
+    }
+
+    .highlight-high {
+      background: linear-gradient(135deg, #f8d7da, #fab1a0);
+      padding: 4px 8px;
+      border-radius: 8px;
+      border-left: 4px solid #dc3545;
+      animation: highlightPulse 2s ease-in-out;
+    }
+
+    @keyframes highlightPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    .editor-container {
+      background: white;
+      border-radius: 16px;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .editor-container:focus-within {
+      border-color: rgba(102, 126, 234, 0.5);
+      box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+    }
+
+    .ck-editor__editable_inline {
+      min-height: 300px;
+      padding: 24px;
+      font-size: 16px;
+      line-height: 1.6;
+      border-radius: 16px;
+    }
+
+    .action-button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      padding: 12px 24px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .action-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .action-button:disabled {
+      opacity: 0.6;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .severity-badge {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .severity-high {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+    }
+
+    .severity-medium {
+      background: linear-gradient(135deg, #feca57, #ff9ff3);
+      color: white;
+    }
+
+    .severity-low {
+      background: linear-gradient(135deg, #48dbfb, #0abde3);
+      color: white;
+    }
+
+    .compliance-modal {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-button {
+      background: transparent;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      border-radius: 12px 12px 0 0;
+      padding: 12px 24px;
+      margin-right: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .tab-button.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-color: transparent;
+    }
+
+    .suggestion-card {
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 16px;
+      border-left: 6px solid #4caf50;
+      padding: 20px;
+      margin: 16px 0;
+      animation: slideInFromLeft 0.5s ease-out;
+    }
+
+    @keyframes slideInFromLeft {
+      0% {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(102, 126, 234, 0.3);
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .highlight-btn {
+      background: linear-gradient(135deg, #48dbfb, #0abde3);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      padding: 4px 8px;
+      margin-left: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .highlight-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(72, 219, 251, 0.4);
+    }
+
+    .diff-original {
+      color: #e74c3c;
+      background: rgba(231, 76, 60, 0.1);
+      text-decoration: line-through;
+      padding: 2px 4px;
+      border-radius: 4px;
+      margin: 0 2px;
+    }
+
+    .diff-suggestion {
+      color: #27ae60;
+      background: rgba(39, 174, 96, 0.1);
+      padding: 2px 4px;
+      border-radius: 4px;
+      margin: 0 2px;
+      font-weight: 600;
+    }
+
+    .red-strike {
+      text-decoration: line-through;
+      text-decoration-color: #e74c3c;
+      text-decoration-thickness: 2px;
+    }
+
+    .header-nav {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 16px 24px;
+      margin: 24px;
+    }
+
+    .entities-table {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .entities-table th {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 12px;
+    }
+
+    .entities-table td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    @media (max-width: 768px) {
+      .glass-container {
+        margin: 12px;
+        border-radius: 16px;
+      }
+
+      .header-nav {
+        margin: 12px;
+        padding: 12px 16px;
+      }
+
+      .ck-editor__editable_inline {
+        min-height: 250px;
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <i class="mdi mdi-shield-check text-white text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white">Guarantee Vetting</h1>
+            <p class="text-white/70 text-sm">Advanced compliance checking system</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button onclick="goBackToDashboard()" class="action-button">
+            <i class="mdi mdi-arrow-left mr-2"></i>
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="glass-container mx-6 mb-6 p-8">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+        <!-- Editor Section -->
+        <div class="lg:col-span-3">
+          <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Guarantee Text Analysis</h2>
+            <p class="text-gray-600">Enter or paste your guarantee text below for comprehensive compliance vetting</p>
+          </div>
+
+          <div class="editor-container">
+            <textarea id="NON_STD_WORDING" placeholder="Enter your guarantee text here..."></textarea>
+          </div>
+
+          <div class="flex items-center justify-between mt-6">
+            <div class="flex items-center space-x-4">
+              <button onclick="checkCompliance()" class="action-button" id="vetButton">
+                <i class="mdi mdi-shield-search mr-2"></i>
+                Start Vetting Process
+              </button>
+              <button onclick="clearEditor()" class="px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 transition-colors">
+                <i class="mdi mdi-refresh mr-2"></i>
+                Clear
+              </button>
+            </div>
+
+            <div class="flex items-center space-x-3">
+              <label class="text-sm font-medium text-gray-700">Filter by severity:</label>
+              <select id="severityFilter" onchange="filterTabsBySeverity(this.value)"
+                      class="px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-400 transition-colors">
+                <option value="all">All Issues</option>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats Panel -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-2xl p-6 shadow-lg">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Stats</h3>
+
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600">Documents Processed</span>
+                <span class="font-bold text-2xl text-blue-600">2,847</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600">Compliance Rate</span>
+                <span class="font-bold text-2xl text-green-600">94.2%</span>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600">Avg. Processing</span>
+                <span class="font-bold text-2xl text-purple-600">2.3s</span>
+              </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+              <div class="flex items-center">
+                <i class="mdi mdi-information text-blue-500 mr-2"></i>
+                <span class="text-sm font-medium text-gray-700">System Status</span>
+              </div>
+              <div class="flex items-center mt-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                <span class="text-sm text-gray-600">All systems operational</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compliance Results Modal -->
+    <div id="complianceModal" class="hidden fixed inset-0 compliance-modal z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="modal-content w-full max-w-7xl max-h-[90vh] overflow-hidden">
+
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">Vetting Results</h2>
+              <p class="text-gray-600">Comprehensive compliance analysis report</p>
+            </div>
+            <button onclick="closeModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <i class="mdi mdi-close text-2xl text-gray-500"></i>
+            </button>
+          </div>
+
+          <!-- Modal Content -->
+          <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+
+            <!-- Summary Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div class="lg:col-span-2">
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6">
+                  <h3 class="text-lg font-bold text-gray-800 mb-3">Executive Summary</h3>
+                  <div id="complianceSummary" class="text-gray-700 leading-relaxed"></div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="bg-white rounded-xl p-4 border-2 border-gray-100">
+                  <h4 class="font-semibold text-gray-800 mb-2">Rule Framework</h4>
+                  <span id="frameworkBadge" class="severity-badge severity-low"></span>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 border-2 border-gray-100">
+                  <h4 class="font-semibold text-gray-800 mb-3">Applicable Articles</h4>
+                  <div id="articleList" class="space-y-2"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="border-b border-gray-200 mb-6">
+              <div id="fieldTabs" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tabContent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loader" class="loading-overlay hidden">
+      <div class="spinner"></div>
+      <div class="mt-6 text-xl font-semibold text-white">Analyzing Document...</div>
+      <div class="mt-2 text-white/70">This may take a few moments</div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.js"></script>
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+  <script>
+    let editorInstance = null;
+    let fieldHistory = {};
+    let currentComplianceData = null;
+    let fieldPhraseHistory = {};
+
+    // Initialize CKEditor
+    ClassicEditor.create(document.querySelector('#NON_STD_WORDING'), {
+      toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'undo', 'redo'],
+      placeholder: 'Enter your guarantee text here for comprehensive compliance analysis...'
+    })
+    .then(editor => {
+      editorInstance = editor;
+      console.log('CKEditor initialized successfully');
+    })
+    .catch(console.error);
+
+    // Navigation
+    function goBackToDashboard() {
+      if (confirm('Are you sure you want to go back? Any unsaved work will be lost.')) {
+        window.location.href = '/';
+      }
+    }
+
+    // Editor functions
+    function clearEditor() {
+      if (editorInstance && confirm('Clear all content?')) {
+        editorInstance.setData('');
+      }
+    }
+
+    // Modal functions
+    function closeModal() {
+      document.getElementById('complianceModal').classList.add('hidden');
+    }
+
+    // Highlighting functions
+    function highlightTextToDOM(text, spans, className, tooltip, fieldKey, suggestions = {}) {
+      if (!spans || spans.length === 0) return document.createTextNode(text);
+
+      spans.sort((a, b) => b.length - a.length);
+      const lowerText = text.toLowerCase();
+      const used = Array(text.length).fill(false);
+      const matches = [];
+
+      spans.forEach(span => {
+        const safe = span.toLowerCase();
+        let start = 0;
+        while ((start = lowerText.indexOf(safe, start)) !== -1) {
+          let overlap = false;
+          for (let i = start; i < start + span.length; i++) {
+            if (used[i]) {
+              overlap = true;
+              break;
+            }
+          }
+          if (!overlap) {
+            for (let i = start; i < start + span.length; i++) used[i] = true;
+            matches.push({ start, end: start + span.length, phrase: span });
+          }
+          start += span.length;
+        }
+      });
+
+      matches.sort((a, b) => a.start - b.start);
+      const fragment = document.createDocumentFragment();
+      let cursor = 0;
+
+      matches.forEach(({ start, end, phrase }) => {
+        if (cursor < start) {
+          fragment.appendChild(document.createTextNode(text.slice(cursor, start)));
+        }
+
+        const wrapperSpan = document.createElement('span');
+        wrapperSpan.className = className + ' position-relative cursor-pointer';
+        wrapperSpan.title = tooltip;
+
+        if (suggestions && suggestions[phrase]) {
+          const redStrikeSpan = document.createElement('span');
+          redStrikeSpan.className = 'red-strike';
+          redStrikeSpan.textContent = text.slice(start, end);
+          wrapperSpan.appendChild(redStrikeSpan);
+
+          const suggestionSpan = document.createElement('span');
+          suggestionSpan.textContent = ' ' + suggestions[phrase];
+          suggestionSpan.className = 'diff-suggestion ml-1';
+
+          const btn = document.createElement('button');
+          btn.className = 'highlight-btn';
+          btn.title = 'Replace with: ' + suggestions[phrase];
+          btn.innerHTML = '<i class="mdi mdi-check-circle"></i>';
+          btn.onclick = function(e) {
+            e.preventDefault();
+            applyPartialFix(fieldKey, phrase, suggestions[phrase]);
+          };
+
+          wrapperSpan.appendChild(suggestionSpan);
+          wrapperSpan.appendChild(btn);
+        } else {
+          wrapperSpan.textContent = text.slice(start, end);
+        }
+
+        fragment.appendChild(wrapperSpan);
+        cursor = end;
+      });
+
+      if (cursor < text.length) {
+        fragment.appendChild(document.createTextNode(text.slice(cursor)));
+      }
+
+      return fragment;
+    }
+
+    // Fix application functions
+    function applyPartialFix(fieldKey, targetPhrase, suggestion) {
+      if (!editorInstance) return;
+
+      let currentHTML = editorInstance.getData();
+      let pattern = new RegExp(targetPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+      if (!pattern.test(currentHTML)) {
+        alert("Phrase not found in the editor. It may have already been fixed.");
+        return;
+      }
+
+      let updatedHTML = currentHTML.replace(pattern, suggestion);
+
+      if (!fieldPhraseHistory[fieldKey]) fieldPhraseHistory[fieldKey] = [];
+      fieldPhraseHistory[fieldKey].push(currentHTML);
+
+      editorInstance.setData(updatedHTML);
+
+      // Show success message
+      showNotification('Fix applied successfully!', 'success');
+    }
+
+    function undoLastPhraseFix(fieldKey) {
+      if (fieldPhraseHistory[fieldKey] && fieldPhraseHistory[fieldKey].length > 0 && editorInstance) {
+        let prev = fieldPhraseHistory[fieldKey].pop();
+        editorInstance.setData(prev);
+        showNotification('Last fix undone', 'info');
+      } else {
+        alert("Nothing to undo.");
+      }
+    }
+
+    // Notification system
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white font-medium transform translate-x-full transition-transform duration-300`;
+
+      switch(type) {
+        case 'success':
+          notification.classList.add('bg-green-500');
+          break;
+        case 'error':
+          notification.classList.add('bg-red-500');
+          break;
+        case 'warning':
+          notification.classList.add('bg-yellow-500');
+          break;
+        default:
+          notification.classList.add('bg-blue-500');
+      }
+
+      notification.textContent = message;
+      document.body.appendChild(notification);
+
+      setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => document.body.removeChild(notification), 300);
+      }, 3000);
+    }
+
+    // Filter functions
+    function filterTabsBySeverity(severity) {
+      document.querySelectorAll('#fieldTabs .tab-button').forEach(tab => {
+        const fieldKey = tab.dataset.field;
+        if (!fieldKey) return;
+
+        const tabPane = document.getElementById('tab-' + fieldKey);
+        const field = currentComplianceData?.fields?.[fieldKey];
+
+        if (!field) return;
+
+        const shouldShow = (severity === 'all') || (field.severity === severity);
+        tab.classList.toggle('hidden', !shouldShow);
+        tabPane?.classList.toggle('hidden', !shouldShow);
+      });
+    }
+
+    // Compliance checking
+    function checkCompliance() {
+      if (!editorInstance) {
+        alert('Editor not initialized yet. Please wait a moment and try again.');
+        return;
+      }
+
+      const guaranteeText = editorInstance.getData().replace(/<[^>]+>/g, '');
+
+      if (!guaranteeText.trim()) {
+        alert('Please enter some guarantee text before starting the vetting process.');
+        return;
+      }
+
+      const data = {
+        fields: [{
+          label: "guarantee_wording",
+          value: guaranteeText,
+          description: "Full guarantee text"
+        }]
+      };
+
+      showLoader();
+
+      fetch('/AICheck', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        hideLoader();
+        currentComplianceData = data;
+        displayComplianceResults(data);
+      })
+      .catch(err => {
+        hideLoader();
+        console.error('Compliance check error:', err);
+        showNotification('Error during compliance check: ' + err.message, 'error');
+      });
+    }
+
+    function displayComplianceResults(data) {
+      const { summary, rule_type, applicable_framework, applicable_articles, fields, entities } = data;
+
+      // Update summary
+      document.getElementById('complianceSummary').textContent = summary || 'No summary available';
+      document.getElementById('frameworkBadge').textContent = `${rule_type || 'Unknown'} - ${applicable_framework || 'Unknown'}`;
+
+      // Update articles
+      const articleList = document.getElementById('articleList');
+      articleList.innerHTML = '';
+
+      if (applicable_articles && applicable_articles.length > 0) {
+        applicable_articles.forEach(article => {
+          const div = document.createElement('div');
+          div.className = 'bg-gray-50 rounded-lg p-3 border-l-4 border-blue-400';
+          div.innerHTML = `
+            <div class="font-semibold text-gray-800">${article.article}</div>
+            <div class="text-sm text-gray-600 mt-1">${article.description}</div>
+          `;
+          articleList.appendChild(div);
+        });
+      } else {
+        articleList.innerHTML = '<div class="text-gray-500 text-sm">No applicable articles found</div>';
+      }
+
+      // Generate tabs
+      generateTabs(fields, entities);
+
+      // Show modal
+      document.getElementById('complianceModal').classList.remove('hidden');
+    }
+
+    function generateTabs(fields, entities) {
+      const fieldTabs = document.getElementById('fieldTabs');
+      const tabContent = document.getElementById('tabContent');
+
+      fieldTabs.innerHTML = '';
+      tabContent.innerHTML = '';
+
+      let isFirst = true;
+
+      // Generate field tabs
+      if (fields) {
+        Object.keys(fields).forEach(fieldKey => {
+          const field = fields[fieldKey];
+
+          // Create tab button
+          const button = document.createElement('button');
+          button.className = `tab-button ${isFirst ? 'active' : ''}`;
+          button.dataset.field = fieldKey;
+          button.onclick = () => switchTab(fieldKey);
+          button.innerHTML = `
+            <div class="flex items-center space-x-2">
+              <span>${fieldKey.replace(/_/g, ' ')}</span>
+              <span class="severity-badge severity-${field.severity}">${field.severity}</span>
+            </div>
+          `;
+          fieldTabs.appendChild(button);
+
+          // Create tab content
+          const tabPane = document.createElement('div');
+          tabPane.id = 'tab-' + fieldKey;
+          tabPane.className = `tab-pane ${isFirst ? '' : 'hidden'}`;
+
+          tabPane.innerHTML = `
+            <div class="space-y-6">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  <h4 class="font-semibold text-gray-800 mb-2">Severity Level</h4>
+                  <span class="severity-badge severity-${field.severity}">${field.severity.toUpperCase()}</span>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-gray-800 mb-2">Issue Description</h4>
+                  <p class="text-gray-700">${field.reason || 'No reason provided'}</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-gray-800 mb-3">Highlighted Issues</h4>
+                <div class="bg-gray-50 rounded-lg p-4 border-2 border-gray-200" style="white-space: pre-wrap;" id="highlight-${fieldKey}">
+                  <!-- Highlighted content will be inserted here -->
+                </div>
+              </div>
+
+              ${field.suggestion ? `
+                <div class="suggestion-card">
+                  <h4 class="font-semibold text-gray-800 mb-3">
+                    <i class="mdi mdi-lightbulb-outline mr-2"></i>
+                    Suggested Improvements
+                  </h4>
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <h5 class="font-medium text-gray-700 mb-2">Original Text</h5>
+                      <div class="bg-red-50 border-l-4 border-red-400 p-3 rounded">${field.value}</div>
+                    </div>
+                    <div>
+                      <h5 class="font-medium text-gray-700 mb-2">Suggested Text</h5>
+                      <div class="bg-green-50 border-l-4 border-green-400 p-3 rounded">${field.suggestion}</div>
+                    </div>
+                  </div>
+                  <div class="flex space-x-3">
+                    <button onclick="applyFullFix('${fieldKey}', \`${field.suggestion.replace(/`/g, '\\`')}\`)"
+                            class="action-button">
+                      <i class="mdi mdi-check-circle mr-2"></i>
+                      Apply Full Fix
+                    </button>
+                    <button onclick="undoFix('${fieldKey}')"
+                            class="px-4 py-2 border-2 border-orange-300 rounded-lg text-orange-600 hover:bg-orange-50 transition-colors">
+                      <i class="mdi mdi-undo mr-2"></i>
+                      Undo Changes
+                    </button>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+
+          tabContent.appendChild(tabPane);
+
+          // Add highlighted content
+          setTimeout(() => {
+            const highlightContainer = document.getElementById(`highlight-${fieldKey}`);
+            if (highlightContainer) {
+              highlightContainer.innerHTML = '';
+              highlightContainer.appendChild(
+                highlightTextToDOM(
+                  field.value,
+                  field.highlight_spans,
+                  `highlight-${field.severity}`,
+                  field.reason,
+                  fieldKey,
+                  field.highlight_suggestions
+                )
+              );
+            }
+          }, 100);
+
+          isFirst = false;
+        });
+      }
+
+      // Add entities tab if available
+      if (entities && Object.keys(entities).length > 0) {
+        const button = document.createElement('button');
+        button.className = 'tab-button';
+        button.onclick = () => switchTab('entities');
+        button.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <i class="mdi mdi-tag-multiple"></i>
+            <span>Extracted Entities</span>
+          </div>
+        `;
+        fieldTabs.appendChild(button);
+
+        const tabPane = document.createElement('div');
+        tabPane.id = 'tab-entities';
+        tabPane.className = 'tab-pane hidden';
+
+        let tableHTML = '<div class="entities-table"><table class="w-full">';
+        tableHTML += '<thead><tr><th>Entity Type</th><th>Value</th></tr></thead><tbody>';
+
+        Object.entries(entities).forEach(([key, value]) => {
+          tableHTML += `
+            <tr>
+              <td class="font-medium text-gray-700">${key.replace(/_/g, ' ').toUpperCase()}</td>
+              <td class="text-gray-600">${value}</td>
+            </tr>
+          `;
+        });
+
+        tableHTML += '</tbody></table></div>';
+        tabPane.innerHTML = `
+          <div>
+            <h4 class="font-semibold text-gray-800 mb-4">
+              <i class="mdi mdi-tag-multiple mr-2"></i>
+              Extracted Entities
+            </h4>
+            ${tableHTML}
+          </div>
+        `;
+
+        tabContent.appendChild(tabPane);
+      }
+    }
+
+    function switchTab(tabId) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      const activeButton = document.querySelector(`[onclick="switchTab('${tabId}')"]`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
+
+      // Update tab content
+      document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.add('hidden');
+      });
+
+      const activePane = document.getElementById('tab-' + tabId);
+      if (activePane) {
+        activePane.classList.remove('hidden');
+      }
+    }
+
+    function applyFullFix(fieldKey, suggestionText) {
+      if (editorInstance) {
+        const currentText = editorInstance.getData();
+        fieldHistory[fieldKey] = currentText;
+        editorInstance.setData(suggestionText);
+        showNotification('Full fix applied successfully!', 'success');
+      }
+    }
+
+    function undoFix(fieldKey) {
+      if (fieldHistory[fieldKey] && editorInstance) {
+        editorInstance.setData(fieldHistory[fieldKey]);
+        delete fieldHistory[fieldKey];
+        showNotification('Changes undone successfully', 'info');
+      } else {
+        alert('No changes to undo for this field.');rich.html
+      }
+    }
+
+    // Loader functions
+    function showLoader() {
+      document.getElementById('loader').classList.remove('hidden');
+      document.getElementById('vetButton').disabled = true;
+      document.getElementById('vetButton').innerHTML = '<i class="mdi mdi-loading mdi-spin mr-2"></i>Processing...';
+    }
+
+    function hideLoader() {
+      document.getElementById('loader').classList.add('hidden');
+      document.getElementById('vetButton').disabled = false;
+      document.getElementById('vetButton').innerHTML = '<i class="mdi mdi-shield-search mr-2"></i>Start Vetting Process';
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+          case 'Enter':
+            e.preventDefault();
+            checkCompliance();
+            break;
+          case 'Escape':
+            closeModal();
+            break;
+        }
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      hideLoader();
+
+      // Add sample text for demo
+      setTimeout(() => {
+        if (editorInstance && !editorInstance.getData().trim()) {
+          const sampleText = `We hereby guarantee the due performance of the obligations of [Applicant Name] under the above referenced contract.
+
+This guarantee shall be effective from the date hereof and shall remain in force until [Expiry Date].
+
+Any claim under this guarantee must be made in writing and received by us no later than thirty (30) days after the expiry date specified above.
+
+This guarantee is subject to the Uniform Rules for Demand Guarantees (URDG 758).`;
+
+          editorInstance.setData(sampleText);
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

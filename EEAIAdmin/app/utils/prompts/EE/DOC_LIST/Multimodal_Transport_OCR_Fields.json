@@ -1,0 +1,53 @@
+{
+    "Multimodal Transport Document": {
+        "Document Details": [
+            "Document Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Mode of Transport"
+        ],
+        "Parties Involved": [
+            "Consignor Name and Address",
+            "Consignee Name and Address",
+            "Carrier Name and Address",
+            "Agent Name",
+            "Notify Party"
+        ],
+        "Routing & Transport": [
+            "Place of Receipt",
+            "Port of Loading",
+            "Port of Discharge",
+            "Place of Delivery",
+            "Vessel/Flight/Vehicle Name or Number",
+            "Transshipment Details"
+        ],
+        "Cargo Information": [
+            "Goods Description",
+            "Number of Packages",
+            "Type of Packaging",
+            "Marks and Numbers",
+            "Gross Weight",
+            "Net Weight",
+            "Volume",
+            "HS Code",
+            "Container/Seal Numbers"
+        ],
+        "Freight & Charges": [
+            "Freight Charges",
+            "Freight Terms (Prepaid/Collect)",
+            "Currency",
+            "Additional Charges"
+        ],
+        "Legal & Regulatory": [
+            "Applicable Law",
+            "Liability Clause",
+            "Jurisdiction",
+            "Multimodal Terms & Conditions"
+        ],
+        "Signatures & Authentication": [
+            "Signature of Carrier or Agent",
+            "Date of Signature",
+            "Stamp/Seal"
+        ]
+    }
+}

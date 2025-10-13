@@ -1,0 +1,90 @@
+{
+    "1D": {
+        "data": [
+            {"name": "Trade Finance", "y": 210, "value": 47100000, "drilldown": "TradeFinance", "modules": ["IMCO", "IMLC", "INFI", "MESG", "OWGT", "SHGT"]},
+            {"name": "Treasury", "y": 156, "value": 234500000, "drilldown": "Treasury", "modules": ["FXHD", "SWAP", "MKTD", "DERV", "BOND"]},
+            {"name": "Cash Management", "y": 189, "value": 89200000, "drilldown": "CashManagement", "modules": ["CASH", "POOL", "PAYM", "LIQU", "INVS"]}
+        ],
+        "period": {
+            "start": "2024-01-30",
+            "end": "2024-01-31"
+        }
+    },
+    "1W": {
+        "data": [
+            {"name": "Trade Finance", "y": 1037, "value": 252765111, "drilldown": "TradeFinance", "modules": ["IMCO", "IMLC", "INFI", "MESG", "OWGT", "SHGT"]},
+            {"name": "Treasury", "y": 892, "value": 1567800000, "drilldown": "Treasury", "modules": ["FXHD", "SWAP", "MKTD", "DERV", "BOND"]},
+            {"name": "Cash Management", "y": 1123, "value": 456700000, "drilldown": "CashManagement", "modules": ["CASH", "POOL", "PAYM", "LIQU", "INVS"]}
+        ],
+        "period": {
+            "start": "2024-01-24",
+            "end": "2024-01-31"
+        }
+    },
+    "1M": {
+        "data": [
+            {"name": "Trade Finance", "y": 4258, "value": 5574336735852, "drilldown": "TradeFinance", "modules": ["IMCO", "IMLC", "INFI", "MESG", "OWGT", "SHGT"]},
+            {"name": "Treasury", "y": 3456, "value": 8234000000, "drilldown": "Treasury", "modules": ["FXHD", "SWAP", "MKTD", "DERV", "BOND"]},
+            {"name": "Cash Management", "y": 4567, "value": 2345000000, "drilldown": "CashManagement", "modules": ["CASH", "POOL", "PAYM", "LIQU", "INVS"]}
+        ],
+        "period": {
+            "start": "2024-01-01",
+            "end": "2024-01-31"
+        }
+    },
+    "3M": {
+        "data": [
+            {"name": "Trade Finance", "y": 11959, "value": 16997000000, "drilldown": "TradeFinance", "modules": ["IMCO", "IMLC", "INFI", "MESG", "OWGT", "SHGT"]},
+            {"name": "Treasury", "y": 9876, "value": 23456000000, "drilldown": "Treasury", "modules": ["FXHD", "SWAP", "MKTD", "DERV", "BOND"]},
+            {"name": "Cash Management", "y": 13245, "value": 6789000000, "drilldown": "CashManagement", "modules": ["CASH", "POOL", "PAYM", "LIQU", "INVS"]}
+        ],
+        "period": {
+            "start": "2023-11-01",
+            "end": "2024-01-31"
+        }
+    },
+    "1Y": {
+        "data": [
+            {"name": "Trade Finance", "y": 47011, "value": 68337000000, "drilldown": "TradeFinance", "modules": ["IMCO", "IMLC", "INFI", "MESG", "OWGT", "SHGT"]},
+            {"name": "Treasury", "y": 38956, "value": 98765000000, "drilldown": "Treasury", "modules": ["FXHD", "SWAP", "MKTD", "DERV", "BOND"]},
+            {"name": "Cash Management", "y": 52347, "value": 34567000000, "drilldown": "CashManagement", "modules": ["CASH", "POOL", "PAYM", "LIQU", "INVS"]}
+        ],
+        "period": {
+            "start": "2023-02-01",
+            "end": "2024-01-31"
+        }
+    },
+    "drilldown": {
+        "TradeFinance": {
+            "name": "Trade Finance Modules",
+            "data": [
+                {"name": "IMCO", "y": 789, "value": 185000000},
+                {"name": "IMLC", "y": 1456, "value": 5000036735852},
+                {"name": "INFI", "y": 423, "value": 98700000},
+                {"name": "MESG", "y": 678, "value": 156800000},
+                {"name": "OWGT", "y": 567, "value": 134500000},
+                {"name": "SHGT", "y": 345, "value": 87600000}
+            ]
+        },
+        "Treasury": {
+            "name": "Treasury Modules",
+            "data": [
+                {"name": "FXHD", "y": 892, "value": 3456000000},
+                {"name": "SWAP", "y": 756, "value": 2345000000},
+                {"name": "MKTD", "y": 634, "value": 1234000000},
+                {"name": "DERV", "y": 567, "value": 987000000},
+                {"name": "BOND", "y": 607, "value": 1212000000}
+            ]
+        },
+        "CashManagement": {
+            "name": "Cash Management Modules",
+            "data": [
+                {"name": "CASH", "y": 1234, "value": 567000000},
+                {"name": "POOL", "y": 987, "value": 456000000},
+                {"name": "PAYM", "y": 1456, "value": 789000000},
+                {"name": "LIQU", "y": 678, "value": 345000000},
+                {"name": "INVS", "y": 212, "value": 188000000}
+            ]
+        }
+    }
+}

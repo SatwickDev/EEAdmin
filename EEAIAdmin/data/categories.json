@@ -1,0 +1,52 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "value": "References"
+    },
+    {
+      "id": "2",
+      "value": "Dates"
+    },
+    {
+      "id": "3",
+      "value": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "4",
+      "value": "Locations"
+    },
+    {
+      "id": "5",
+      "value": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "6",
+      "value": "Terms"
+    },
+    {
+      "id": "7",
+      "value": "Amounts/charges/percentages"
+    },
+    {
+      "id": "8",
+      "value": "Measure/Quantities"
+    },
+    {
+      "id": "9",
+      "value": "Goods"
+    },
+    {
+      "id": "10",
+      "value": "Dangerous goods"
+    },
+    {
+      "id": "11",
+      "value": "Transport modes/means/equipment"
+    },
+    {
+      "id": "12",
+      "value": "Others"
+    }
+  ]
+}

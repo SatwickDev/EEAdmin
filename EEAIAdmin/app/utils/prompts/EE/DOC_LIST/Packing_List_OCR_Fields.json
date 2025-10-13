@@ -1,0 +1,44 @@
+{
+    "Packing List": {
+        "Packing List Details": [
+            "Packing List Number",
+            "Date",
+            "Reference Invoice Number",
+            "Purchase Order Number"
+        ],
+        "Exporter & Consignee Information": [
+            "Exporter Name and Address",
+            "Consignee Name and Address",
+            "Ship To Address"
+        ],
+        "Shipment Information": [
+            "Carrier Name",
+            "Mode of Transport",
+            "Port of Loading",
+            "Port of Discharge",
+            "Container Number",
+            "Seal Number",
+            "Total Number of Packages"
+        ],
+        "Packing Details": [
+            "Package Type",
+            "Marks and Numbers",
+            "Item Description",
+            "HS Code",
+            "Quantity per Package",
+            "Gross Weight",
+            "Net Weight",
+            "Dimensions (LxWxH)"
+        ],
+        "Summary": [
+            "Total Quantity",
+            "Total Gross Weight",
+            "Total Net Weight",
+            "Total Volume (CBM)"
+        ],
+        "Declarations & Authorization": [
+            "Authorized Signature",
+            "Company Stamp"
+        ]
+    }
+}

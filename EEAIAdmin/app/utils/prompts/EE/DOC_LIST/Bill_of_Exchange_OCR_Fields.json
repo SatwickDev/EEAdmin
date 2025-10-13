@@ -1,0 +1,38 @@
+{
+    "Bill of Exchange": {
+        "Document Details": [
+            "Bill Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Tenor (Sight/Usance)",
+            "Maturity Date"
+        ],
+        "Parties Involved": [
+            "Drawer Name and Address",
+            "Drawee Name and Address",
+            "Payee Name and Address",
+            "Endorser Name(s)",
+            "Bank Involvement (if any)"
+        ],
+        "Payment Information": [
+            "Amount in Figures",
+            "Amount in Words",
+            "Currency",
+            "Interest Rate (if applicable)",
+            "Payment Terms",
+            "Bank Account Details for Payment"
+        ],
+        "Instructions & Endorsements": [
+            "Acceptance Instructions",
+            "Protest Clause",
+            "Endorsement Notes",
+            "Conditions of Payment"
+        ],
+        "Authentication": [
+            "Signature of Drawer",
+            "Seal/Stamp",
+            "Witness (if required)",
+            "Acceptance Signature by Drawee"
+        ]
+    }
+}

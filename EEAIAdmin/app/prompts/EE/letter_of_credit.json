@@ -1,0 +1,174 @@
+{
+  "documentType": "Letter of Credit",
+  "code": "LC",
+  "description": "A payment mechanism used in international trade to provide economic guarantee from a creditworthy bank to an exporter of goods",
+  "category": "MANDATORY",
+  "fields": {
+    "mandatory": [
+      {
+        "name": "Documentary Credit Identifier",
+        "fieldId": "dc_identifier",
+        "type": "text",
+        "required": true,
+        "description": "Unique LC reference number",
+        "validation": "^LC-\\d{6,12}$",
+        "placeholder": "LC-123456",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Documentary Credit Document Effective End Date",
+        "fieldId": "dc_effective_end_date",
+        "type": "date",
+        "required": true,
+        "description": "Expiry date of the letter of credit",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Documentary Credit Document Issue Date",
+        "fieldId": "dc_issue_date",
+        "type": "date",
+        "required": true,
+        "description": "Date when LC was issued",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Documentary Credit Applicant",
+        "fieldId": "dc_applicant",
+        "type": "text",
+        "required": true,
+        "description": "Party applying for the LC (usually buyer)",
+        "validation": null,
+        "placeholder": "Enter applicant name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Documentary Credit Available Bank",
+        "fieldId": "dc_available_bank",
+        "type": "text",
+        "required": true,
+        "description": "Bank where LC is available for negotiation",
+        "validation": null,
+        "placeholder": "Enter bank name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Documentary Credit Beneficiary",
+        "fieldId": "dc_beneficiary",
+        "type": "text",
+        "required": true,
+        "description": "Party in whose favor LC is issued (usually seller)",
+        "validation": null,
+        "placeholder": "Enter beneficiary name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Documentary Credit Amount",
+        "fieldId": "dc_amount",
+        "type": "number",
+        "required": true,
+        "description": "Maximum amount available under the LC",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "MANDATORY"
+      }
+    ],
+    "optional": [
+      {
+        "name": "Latest Pick-up Date",
+        "fieldId": "latest_pickup_date",
+        "type": "date",
+        "required": false,
+        "description": "Latest date for shipment",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Documentary Credit Applicant Agent Bank",
+        "fieldId": "dc_applicant_agent_bank",
+        "type": "text",
+        "required": false,
+        "description": "Applicant's bank",
+        "validation": null,
+        "placeholder": "Enter agent bank name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Documentary Credit Drawee",
+        "fieldId": "dc_drawee",
+        "type": "text",
+        "required": false,
+        "description": "Party on whom drafts are drawn",
+        "validation": null,
+        "placeholder": "Enter drawee name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Documentary Credit Reimbursing Bank",
+        "fieldId": "dc_reimbursing_bank",
+        "type": "text",
+        "required": false,
+        "description": "Bank authorized to honor reimbursement claims",
+        "validation": null,
+        "placeholder": "Enter reimbursing bank name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Place of Delivery",
+        "fieldId": "place_of_delivery",
+        "type": "text",
+        "required": false,
+        "description": "Location where goods will be delivered",
+        "validation": null,
+        "placeholder": "Enter delivery location",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Original Loading Location",
+        "fieldId": "loading_location",
+        "type": "text",
+        "required": false,
+        "description": "Port or place of loading",
+        "validation": null,
+        "placeholder": "Enter loading location",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Despatch",
+        "fieldId": "despatch",
+        "type": "text",
+        "required": false,
+        "description": "Place from which goods are dispatched",
+        "validation": null,
+        "placeholder": "Enter despatch location",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Baseport Unloading Location",
+        "fieldId": "unloading_location",
+        "type": "text",
+        "required": false,
+        "description": "Port of discharge",
+        "validation": null,
+        "placeholder": "Enter unloading port",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Description of Goods",
+        "fieldId": "goods_description",
+        "type": "textarea",
+        "required": false,
+        "description": "Brief description of goods/services",
+        "validation": null,
+        "placeholder": "Enter goods description",
+        "category": "OPTIONAL"
+      }
+    ],
+    "conditional": []
+  }
+}

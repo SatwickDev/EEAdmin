@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Functions - Finstack</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .functions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .function-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: all 0.15s;
+    }
+
+    .function-card:hover {
+      border-color: #4b5563;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .function-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .function-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .function-category {
+      display: inline-block;
+      background: #f3f4f6;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .function-description {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .function-docs {
+      margin-bottom: 16px;
+    }
+
+    .doc-requirement {
+      display: inline-flex;
+      align-items: center;
+      background: #f9fafb;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      color: #374151;
+      gap: 4px;
+    }
+
+    .doc-requirement.mandatory {
+      border-left: 3px solid #ef4444;
+    }
+
+    .doc-requirement.optional {
+      border-left: 3px solid #3b82f6;
+    }
+
+    .function-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: #4b5563;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #374151;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-icon {
+      padding: 6px;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #ffffff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #374151;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s;
+      z-index: 999;
+    }
+
+    .back-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      color: #6b7280;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+      color: #9ca3af;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-active {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+
+    .status-inactive {
+      background: rgba(107, 114, 128, 0.1);
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" class="back-btn">
+    <i class="mdi mdi-arrow-left"></i>
+    Back to Home
+  </a>
+
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Custom Functions</h1>
+        <p>Create and manage custom business functions with AI-powered document processing</p>
+      </div>
+      <a href="/custom_function_builder" class="btn btn-primary">
+        <i class="mdi mdi-plus"></i>
+        Create New Function
+      </a>
+    </div>
+
+    <div id="loading" style="text-align: center; padding: 48px; color: #6b7280;">
+      <div style="border: 3px solid #e5e7eb; border-top-color: #4b5563; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+      <p style="margin-top: 16px;">Loading functions...</p>
+    </div>
+
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+
+    <div id="functionsContainer" style="display: none;">
+      <div id="functionsGrid" class="functions-grid"></div>
+
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <i class="mdi mdi-function-variant"></i>
+        <h2 style="font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">No Functions Yet</h2>
+        <p style="margin-bottom: 24px;">Create your first custom function to automate document processing workflows</p>
+        <a href="/custom_function_builder" class="btn btn-primary">
+          <i class="mdi mdi-plus"></i>
+          Create Function
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let functions = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFunctions();
+    });
+
+    async function loadFunctions() {
+      try {
+        const response = await fetch('/api/custom_functions');
+        const data = await response.json();
+
+        if (data.success) {
+          functions = data.functions || [];
+          renderFunctions();
+        } else {
+          showError('Failed to load functions');
+        }
+      } catch (error) {
+        console.error('Error loading functions:', error);
+        showError('Error loading functions');
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('functionsContainer').style.display = 'block';
+      }
+    }
+
+    function renderFunctions() {
+      const grid = document.getElementById('functionsGrid');
+      const emptyState = document.getElementById('emptyState');
+
+      if (functions.length === 0) {
+        grid.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      grid.innerHTML = functions.map(func => `
+        <div class="function-card">
+          <div class="function-header">
+            <div>
+              <div class="function-name">${escapeHtml(func.name)}</div>
+              <span class="function-category">${escapeHtml(func.category)}</span>
+            </div>
+            <span class="status-badge ${func.isActive ? 'status-active' : 'status-inactive'}">
+              ${func.isActive ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+
+          <div class="function-description">
+            ${escapeHtml(func.description)}
+          </div>
+
+          <div class="function-docs">
+            <div style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 8px;">Required Documents:</div>
+            ${(func.documentRequirements || []).map(req => `
+              <span class="doc-requirement ${req.requirementType}">
+                <i class="mdi ${req.requirementType === 'mandatory' ? 'mdi-alert-circle' : 'mdi-information'}"></i>
+                ${escapeHtml(req.documentName)}
+              </span>
+            `).join('')}
+          </div>
+
+          <div class="function-actions">
+            <button class="btn btn-icon btn-secondary" onclick="viewFunction('${func.id}')" title="View Details">
+              <i class="mdi mdi-eye"></i>
+            </button>
+            <button class="btn btn-icon btn-secondary" onclick="editFunction('${func.id}')" title="Edit">
+              <i class="mdi mdi-pencil"></i>
+            </button>
+            <button class="btn btn-icon btn-secondary" onclick="toggleFunction('${func.id}')" title="${func.isActive ? 'Deactivate' : 'Activate'}">
+              <i class="mdi ${func.isActive ? 'mdi-pause' : 'mdi-play'}"></i>
+            </button>
+            <button class="btn btn-icon btn-danger" onclick="deleteFunction('${func.id}')" title="Delete">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function viewFunction(id) {
+      window.location.href = `/custom_function_builder?id=${id}&mode=view`;
+    }
+
+    function editFunction(id) {
+      window.location.href = `/custom_function_builder?id=${id}`;
+    }
+
+    async function toggleFunction(id) {
+      try {
+        const response = await fetch(`/api/custom_functions/${id}/toggle`, {
+          method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadFunctions();
+        } else {
+          showError(data.message || 'Failed to toggle function');
+        }
+      } catch (error) {
+        console.error('Error toggling function:', error);
+        showError('Error toggling function');
+      }
+    }
+
+    async function deleteFunction(id) {
+      if (!confirm('Are you sure you want to delete this function? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/custom_functions/${id}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          await loadFunctions();
+        } else {
+          showError(data.message || 'Failed to delete function');
+        }
+      } catch (error) {
+        console.error('Error deleting function:', error);
+        showError('Error deleting function');
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showError(message) {
+      alert('Error: ' + message);
+    }
+  </script>
+</body>
+</html>

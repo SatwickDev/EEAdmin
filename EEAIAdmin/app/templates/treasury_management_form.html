@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasury Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/css/forms-theme.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <style>
+        /* Body padding for floating header */
+        body {
+            padding-top: 120px;
+        }
+        
+        /* Treasury-specific overrides */
+        .form-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-secondary {
+            color: #10b981;
+            border-color: #10b981;
+        }
+        
+        .btn-secondary:hover {
+            background: #10b981;
+        }
+        
+        .rate-card {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+        }
+        
+        .rate-value {
+            color: #10b981;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px 10px 0 0;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .tabs {
+            background: white;
+            padding: 0 30px;
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: var(--primary-color);
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--focus-shadow);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Rate Display Card */
+        .rate-card {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .rate-card h4 {
+            color: var(--text-color);
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .rate-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Chatbot Icon */
+        .chatbot-icon {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .chatbot-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            animation: none;
+        }
+
+        .chatbot-icon i {
+            color: white;
+            font-size: 26px;
+        }
+        
+        /* Chatbot Overlay */
+        .chatbot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            z-index: 9999;
+        }
+        
+        .chatbot-overlay.active {
+            display: block;
+        }
+        
+        /* Chatbot Window */
+        .chatbot-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            height: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        
+        .chatbot-window.maximized {
+            width: 90vw;
+            height: 90vh;
+            max-width: 1200px;
+            max-height: 800px;
+        }
+        
+        .chatbot-window.minimized {
+            height: 60px;
+            width: 300px;
+            bottom: 100px;
+            top: auto;
+            right: 30px;
+            left: auto;
+            transform: none;
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+        
+        .chatbot-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .chatbot-header-left i {
+            font-size: 20px;
+        }
+        
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .chatbot-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: statusPulse 2s infinite;
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .chatbot-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chatbot-control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .chatbot-control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .chatbot-body {
+            flex: 1;
+            overflow: hidden;
+            border-radius: 0 0 16px 16px;
+        }
+        
+        .chatbot-window.minimized .chatbot-body {
+            display: none;
+        }
+        
+        .chatbot-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* OLD Chatbot Container - REMOVE */
+        .chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+        }
+
+        .chatbot-container.active {
+            display: flex;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .chatbot-iframe {
+            flex: 1;
+            border: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .status-message.error {
+            background: #fed7d7;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .chatbot-container {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
+
+    <div class="container">
+        <div class="main-content">
+            <div class="form-header">
+                <h1><i class="fas fa-chart-line"></i> Treasury Management</h1>
+                <p>Foreign Exchange, Investments, and Risk Management</p>
+            </div>
+            
+            <!-- Smart Capture Section -->
+            <div class="smart-capture-section">
+                <div class="smart-capture-info">
+                    <div class="smart-capture-icon">
+                        <i class="mdi mdi-scan-helper"></i>
+                    </div>
+                    <div class="smart-capture-text">
+                        <h3>Smart Document Capture</h3>
+                        <p>Upload and extract treasury information from documents automatically</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-smart-capture" onclick="openSmartCapture()">
+                    <i class="mdi mdi-scan-helper"></i> 
+                    <span>Start Smart Capture</span>
+                </button>
+            </div>
+
+        <div class="tabs" style="background: white; padding: 0 30px; display: flex; gap: 20px; border-bottom: 2px solid var(--border-color);">
+            <button class="tab active" onclick="showTab('forex')">
+                <i class="fas fa-exchange-alt"></i> Foreign Exchange
+            </button>
+            <button class="tab" onclick="showTab('investments')">
+                <i class="fas fa-piggy-bank"></i> Investments
+            </button>
+            <button class="tab" onclick="showTab('derivatives')">
+                <i class="fas fa-shield-alt"></i> Derivatives
+            </button>
+            <button class="tab" onclick="showTab('risk')">
+                <i class="fas fa-chart-pie"></i> Risk Management
+            </button>
+        </div>
+
+        <div class="form-container">
+            <div id="statusMessage" class="status-message"></div>
+
+            <!-- Foreign Exchange Tab -->
+            <div id="forex" class="tab-content active">
+                <form id="forexForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Foreign Exchange Transaction</h2>
+                        
+                        <!-- Current Rates Display -->
+                        <div class="form-grid" style="margin-bottom: 20px;">
+                            <div class="rate-card">
+                                <h4>USD/INR Spot Rate</h4>
+                                <span class="rate-value">83.25</span>
+                            </div>
+                            <div class="rate-card">
+                                <h4>EUR/INR Spot Rate</h4>
+                                <span class="rate-value">90.15</span>
+                            </div>
+                            <div class="rate-card">
+                                <h4>GBP/INR Spot Rate</h4>
+                                <span class="rate-value">105.50</span>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="transactionType">Transaction Type <span class="required">*</span></label>
+                                <select id="transactionType" name="transactionType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="spot">Spot</option>
+                                    <option value="forward">Forward</option>
+                                    <option value="swap">Swap</option>
+                                    <option value="option">Option</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dealDate">Deal Date <span class="required">*</span></label>
+                                <input type="date" id="dealDate" name="dealDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="valueDate">Value Date <span class="required">*</span></label>
+                                <input type="date" id="valueDate" name="valueDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="maturityDate">Maturity Date</label>
+                                <input type="date" id="maturityDate" name="maturityDate">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="buyCurrency">Buy Currency <span class="required">*</span></label>
+                                <select id="buyCurrency" name="buyCurrency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="JPY">JPY</option>
+                                    <option value="INR">INR</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="buyAmount">Buy Amount <span class="required">*</span></label>
+                                <input type="number" id="buyAmount" name="buyAmount" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="sellCurrency">Sell Currency <span class="required">*</span></label>
+                                <select id="sellCurrency" name="sellCurrency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="JPY">JPY</option>
+                                    <option value="INR">INR</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sellAmount">Sell Amount <span class="required">*</span></label>
+                                <input type="number" id="sellAmount" name="sellAmount" required step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="exchangeRate">Exchange Rate <span class="required">*</span></label>
+                                <input type="number" id="exchangeRate" name="exchangeRate" required step="0.0001">
+                            </div>
+                            <div class="form-group">
+                                <label for="counterparty">Counterparty <span class="required">*</span></label>
+                                <input type="text" id="counterparty" name="counterparty" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearForexForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Execute Trade
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Investments Tab -->
+            <div id="investments" class="tab-content">
+                <form id="investmentForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Investment Transaction</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="investmentType">Investment Type <span class="required">*</span></label>
+                                <select id="investmentType" name="investmentType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="fixed_deposit">Fixed Deposit</option>
+                                    <option value="treasury_bills">Treasury Bills</option>
+                                    <option value="government_securities">Government Securities</option>
+                                    <option value="corporate_bonds">Corporate Bonds</option>
+                                    <option value="commercial_paper">Commercial Paper</option>
+                                    <option value="mutual_funds">Mutual Funds</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="investmentDate">Investment Date <span class="required">*</span></label>
+                                <input type="date" id="investmentDate" name="investmentDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="maturityDateInv">Maturity Date <span class="required">*</span></label>
+                                <input type="date" id="maturityDateInv" name="maturityDateInv" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tenor">Tenor (Days)</label>
+                                <input type="number" id="tenor" name="tenor" min="1">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="principalAmount">Principal Amount <span class="required">*</span></label>
+                                <input type="number" id="principalAmount" name="principalAmount" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="investmentCurrency">Currency <span class="required">*</span></label>
+                                <select id="investmentCurrency" name="investmentCurrency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="INR">INR</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="interestRate">Interest Rate (% p.a.) <span class="required">*</span></label>
+                                <input type="number" id="interestRate" name="interestRate" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="maturityValue">Maturity Value</label>
+                                <input type="number" id="maturityValue" name="maturityValue" readonly step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="issuer">Issuer/Bank <span class="required">*</span></label>
+                                <input type="text" id="issuer" name="issuer" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="rating">Credit Rating</label>
+                                <select id="rating" name="rating">
+                                    <option value="">Select Rating</option>
+                                    <option value="AAA">AAA</option>
+                                    <option value="AA+">AA+</option>
+                                    <option value="AA">AA</option>
+                                    <option value="AA-">AA-</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A">A</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearInvestmentForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Book Investment
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Derivatives Tab -->
+            <div id="derivatives" class="tab-content">
+                <form id="derivativesForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Derivatives Transaction</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="derivativeType">Derivative Type <span class="required">*</span></label>
+                                <select id="derivativeType" name="derivativeType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="interest_rate_swap">Interest Rate Swap</option>
+                                    <option value="currency_swap">Currency Swap</option>
+                                    <option value="fx_forward">FX Forward</option>
+                                    <option value="fx_option">FX Option</option>
+                                    <option value="interest_rate_future">Interest Rate Future</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tradeDate">Trade Date <span class="required">*</span></label>
+                                <input type="date" id="tradeDate" name="tradeDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="effectiveDate">Effective Date <span class="required">*</span></label>
+                                <input type="date" id="effectiveDate" name="effectiveDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="terminationDate">Termination Date <span class="required">*</span></label>
+                                <input type="date" id="terminationDate" name="terminationDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="notionalAmount">Notional Amount <span class="required">*</span></label>
+                                <input type="number" id="notionalAmount" name="notionalAmount" required step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="notionalCurrency">Currency <span class="required">*</span></label>
+                                <select id="notionalCurrency" name="notionalCurrency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                    <option value="JPY">JPY</option>
+                                    <option value="INR">INR</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fixedRate">Fixed Rate (%)</label>
+                                <input type="number" id="fixedRate" name="fixedRate" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="floatingRate">Floating Rate Index</label>
+                                <select id="floatingRate" name="floatingRate">
+                                    <option value="">Select Index</option>
+                                    <option value="LIBOR">LIBOR</option>
+                                    <option value="SOFR">SOFR</option>
+                                    <option value="EURIBOR">EURIBOR</option>
+                                    <option value="MIBOR">MIBOR</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearDerivativesForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Execute Trade
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Risk Management Tab -->
+            <div id="risk" class="tab-content">
+                <form id="riskForm">
+                    <div class="form-section">
+                        <h2 class="section-title">Risk Assessment</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="riskType">Risk Type <span class="required">*</span></label>
+                                <select id="riskType" name="riskType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="market_risk">Market Risk</option>
+                                    <option value="credit_risk">Credit Risk</option>
+                                    <option value="liquidity_risk">Liquidity Risk</option>
+                                    <option value="operational_risk">Operational Risk</option>
+                                    <option value="fx_risk">Foreign Exchange Risk</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="assessmentDate">Assessment Date <span class="required">*</span></label>
+                                <input type="date" id="assessmentDate" name="assessmentDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="portfolio">Portfolio/Product <span class="required">*</span></label>
+                                <input type="text" id="portfolio" name="portfolio" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="exposureAmount">Exposure Amount <span class="required">*</span></label>
+                                <input type="number" id="exposureAmount" name="exposureAmount" required step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="var">Value at Risk (VaR)</label>
+                                <input type="number" id="var" name="var" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="confidenceLevel">Confidence Level (%)</label>
+                                <select id="confidenceLevel" name="confidenceLevel">
+                                    <option value="95">95%</option>
+                                    <option value="99">99%</option>
+                                    <option value="99.9">99.9%</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="timeHorizon">Time Horizon (Days)</label>
+                                <input type="number" id="timeHorizon" name="timeHorizon" value="1" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="riskRating">Risk Rating</label>
+                                <select id="riskRating" name="riskRating">
+                                    <option value="">Select Rating</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mitigationStrategy">Mitigation Strategy</label>
+                            <textarea id="mitigationStrategy" name="mitigationStrategy" placeholder="Describe risk mitigation measures"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="clearRiskForm()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Submit Assessment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Chatbot Icon -->
+    <div class="chatbot-icon" onclick="openChatbot()">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <!-- Enhanced Chatbot Overlay -->
+    <div id="chatbotOverlay" class="chatbot-overlay" onclick="closeChatbotOnOverlay(event)">
+        <div id="chatbotWindow" class="chatbot-window">
+            <div id="chatbotHeader" class="chatbot-header">
+                <div class="chatbot-header-left">
+                    <i class="fas fa-robot"></i>
+                    <div>
+                        <h3>AI Assistant - Treasury</h3>
+                        <div class="chatbot-status">
+                            <span class="status-dot"></span>
+                            <span>Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="window-controls">
+                    <button class="control-btn" onclick="minimizeChatbot()">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="control-btn" onclick="maximizeChatbot()">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="control-btn" onclick="closeChatbot()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chatbot-body">
+                <iframe id="chatbotFrame" class="chatbot-iframe" src=""></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/enhanced-chatbot.js"></script>
+    <script src="/static/js/chatbot-repository-integration.js"></script>
+    <script>
+        // Repository Configuration - dynamically set based on selection from dashboard
+        const selectedRepo = sessionStorage.getItem('selectedRepository');
+        const REPOSITORY_CONFIG = {
+            repository_id: selectedRepo || 'treasury',
+            repository_name: 'Treasury',
+            repository_type: 'treasury_management',
+            collection: 'treasury_data',
+            selected_from_dashboard: selectedRepo ? true : false
+        };
+
+        // Initialize repository context
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log repository selection
+            console.log('Repository context loaded:', REPOSITORY_CONFIG);
+            console.log('Selected from dashboard:', REPOSITORY_CONFIG.selected_from_dashboard);
+            
+            // Set repository in session storage for chatbot access
+            sessionStorage.setItem('active_repository', JSON.stringify(REPOSITORY_CONFIG));
+            
+            // Update UI to show repository connection status
+            if (REPOSITORY_CONFIG.selected_from_dashboard) {
+                const navBrand = document.querySelector('.nav-brand h1');
+                if (navBrand) {
+                    navBrand.innerHTML = `Treasury Management <span style="font-size: 12px; color: #10b981; margin-left: 10px;">
+                        <i class="fas fa-link"></i> Connected to Repository
+                    </span>`;
+                }
+                
+                // Show connection notification
+                setTimeout(() => {
+                    showMessage('Connected to Treasury Repository', 'success');
+                }, 500);
+            }
+            
+            // Set repository context for chatbot
+            if (window.chatbotRepository) {
+                window.chatbotRepository.setContext(REPOSITORY_CONFIG);
+            }
+            
+            // Load saved draft if exists
+            loadDraftOnInit();
+        });
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.closest('.tab').classList.add('active');
+        }
+
+        // Repository-aware draft management
+        function saveDraft() {
+            const activeTab = document.querySelector('.tab-content.active').id;
+            const formData = collectFormData(activeTab);
+            
+            const draftKey = `treasury_draft_${REPOSITORY_CONFIG.repository_id}_${activeTab}`;
+            localStorage.setItem(draftKey, JSON.stringify({
+                timestamp: new Date().toISOString(),
+                repository: REPOSITORY_CONFIG,
+                tab: activeTab,
+                data: formData
+            }));
+            
+            showMessage('Draft saved successfully', 'success');
+            
+            // Notify chatbot about draft save
+            if (window.chatbot && window.chatbot.iframe) {
+                window.chatbot.iframe.contentWindow.postMessage({
+                    type: 'draft_saved',
+                    repository: REPOSITORY_CONFIG,
+                    tab: activeTab
+                }, '*');
+            }
+        }
+        
+        function loadDraft() {
+            const activeTab = document.querySelector('.tab-content.active').id;
+            const draftKey = `treasury_draft_${REPOSITORY_CONFIG.repository_id}_${activeTab}`;
+            const draft = localStorage.getItem(draftKey);
+            
+            if (draft) {
+                const draftData = JSON.parse(draft);
+                autoFillForm(activeTab, draftData.data);
+                showMessage(`Draft loaded from ${new Date(draftData.timestamp).toLocaleString()}`, 'info');
+            } else {
+                showMessage('No draft found for this section', 'info');
+            }
+        }
+        
+        function loadDraftOnInit() {
+            // Try to load draft for forex tab on page load
+            const draftKey = `treasury_draft_${REPOSITORY_CONFIG.repository_id}_forex`;
+            const draft = localStorage.getItem(draftKey);
+            
+            if (draft) {
+                const draftData = JSON.parse(draft);
+                if (confirm('A draft was found. Would you like to load it?')) {
+                    autoFillForm('forex', draftData.data);
+                    showMessage('Draft loaded automatically', 'info');
+                }
+            }
+        }
+        
+        function collectFormData(tabName) {
+            const formMap = {
+                'forex': 'forexForm',
+                'investment': 'investmentForm',
+                'derivatives': 'derivativesForm',
+                'risk': 'riskForm'
+            };
+            
+            const formId = formMap[tabName];
+            if (!formId) return {};
+            
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+            return Object.fromEntries(formData);
+        }
+
+        // Calculate maturity value for investments
+        document.getElementById('principalAmount')?.addEventListener('input', calculateMaturityValue);
+        document.getElementById('interestRate')?.addEventListener('input', calculateMaturityValue);
+        document.getElementById('tenor')?.addEventListener('input', calculateMaturityValue);
+
+        function calculateMaturityValue() {
+            const principal = parseFloat(document.getElementById('principalAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const tenor = parseFloat(document.getElementById('tenor').value) || 0;
+            
+            if (principal && rate && tenor) {
+                const maturity = principal + (principal * rate * tenor) / (365 * 100);
+                document.getElementById('maturityValue').value = maturity.toFixed(2);
+            }
+        }
+
+        // Form submissions
+        document.getElementById('forexForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('forex', this);
+        });
+
+        document.getElementById('investmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('investment', this);
+        });
+
+        document.getElementById('derivativesForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('derivatives', this);
+        });
+
+        document.getElementById('riskForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitForm('risk', this);
+        });
+
+        async function submitForm(type, form) {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+            
+            // Add repository context
+            const submissionData = {
+                ...data,
+                repository: REPOSITORY_CONFIG,
+                transaction_type: type,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                const response = await fetch(`/api/repository/${REPOSITORY_CONFIG.repository_id}/${type}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(submissionData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} transaction submitted successfully!`, 'success');
+                    
+                    // Clear the draft after successful submission
+                    const draftKey = `treasury_draft_${REPOSITORY_CONFIG.repository_id}_${type}`;
+                    localStorage.removeItem(draftKey);
+                    
+                    // Notify chatbot about successful submission
+                    if (window.chatbot && window.chatbot.iframe) {
+                        window.chatbot.iframe.contentWindow.postMessage({
+                            type: 'form_submitted',
+                            repository: REPOSITORY_CONFIG,
+                            transaction_type: type,
+                            transaction_id: result.transaction_id || result.id
+                        }, '*');
+                    }
+                    
+                    form.reset();
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                showMessage(`Error submitting ${type} transaction. Please try again.`, 'error');
+                console.error('Submission error:', error);
+            }
+        }
+
+        // Clear form functions
+        function clearForexForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('forexForm').reset();
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        function clearInvestmentForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('investmentForm').reset();
+                document.getElementById('maturityValue').value = '';
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        function clearDerivativesForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('derivativesForm').reset();
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        function clearRiskForm() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                document.getElementById('riskForm').reset();
+                showMessage('Form cleared', 'info');
+            }
+        }
+
+        // Show status message
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('statusMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = `status-message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Handle messages from chatbot for auto-fill and repository operations
+        window.addEventListener('message', function(event) {
+            if (event.data) {
+                switch(event.data.type) {
+                    case 'autofill_treasury':
+                        autoFillForm(event.data.formType, event.data.formData);
+                        break;
+                    case 'request_repository_context':
+                        // Send repository context to chatbot
+                        if (event.source) {
+                            event.source.postMessage({
+                                type: 'repository_context',
+                                repository: REPOSITORY_CONFIG,
+                                activeTab: document.querySelector('.tab-content.active').id
+                            }, '*');
+                        }
+                        break;
+                    case 'save_draft_request':
+                        saveDraft();
+                        break;
+                    case 'load_draft_request':
+                        loadDraft();
+                        break;
+                }
+            }
+        });
+
+        // Auto-fill form with data from chatbot
+        function autoFillForm(formType, data) {
+            const formMap = {
+                'forex': 'forexForm',
+                'investment': 'investmentForm',
+                'derivatives': 'derivativesForm',
+                'risk': 'riskForm'
+            };
+            
+            const formId = formMap[formType];
+            if (!formId) return;
+            
+            // Show the appropriate tab
+            showTab(formType);
+            
+            // Fill the form
+            Object.keys(data).forEach(key => {
+                const element = document.querySelector(`#${formId} [name="${key}"]`);
+                if (element) {
+                    element.value = data[key];
+                    element.style.backgroundColor = '#d1fae5';
+                    setTimeout(() => {
+                        element.style.backgroundColor = '';
+                    }, 2000);
+                }
+            });
+            
+            // Recalculate if investment form
+            if (formType === 'investment') {
+                calculateMaturityValue();
+            }
+            
+            showMessage(`Form auto-filled from AI Assistant`, 'success');
+        }
+
+        // Auto-calculate exchange amounts
+        document.getElementById('buyAmount')?.addEventListener('input', calculateSellAmount);
+        document.getElementById('exchangeRate')?.addEventListener('input', calculateSellAmount);
+
+        function calculateSellAmount() {
+            const buyAmount = parseFloat(document.getElementById('buyAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 0;
+            
+            if (buyAmount && rate) {
+                const sellAmount = buyAmount * rate;
+                document.getElementById('sellAmount').value = sellAmount.toFixed(2);
+            }
+        }
+        
+        // Smart Capture Functions
+        function openSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+            
+            // Build URL with repository parameters
+            const params = new URLSearchParams({
+                repository_type: REPOSITORY_CONFIG.repository_name,
+                repository_id: REPOSITORY_CONFIG.repository_id,
+                form_type: 'treasury',
+                context: 'treasury_form'
+            });
+            iframe.src = `/document-classification-overlay?${params.toString()}`;
+            modal.classList.add('active');
+            modal.classList.add('loading');
+            
+            // Send repository context to iframe when it loads
+            iframe.onload = function() {
+                hideSmartCaptureLoading();
+                iframe.contentWindow.postMessage({
+                    type: 'repository_context',
+                    repository: REPOSITORY_CONFIG
+                }, '*');
+            };
+        }
+        
+        function closeSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+            modal.classList.remove('active');
+            iframe.src = '';
+        }
+        
+        function hideSmartCaptureLoading() {
+            const modal = document.getElementById('smartCaptureModal');
+            modal.classList.remove('loading');
+        }
+        
+        // Chatbot Functions
+        let isMaximized = false;
+        let isMinimized = false;
+        
+        function openChatbot() {
+            const overlay = document.getElementById('chatbotOverlay');
+            const window = document.getElementById('chatbotWindow');
+            overlay.classList.add('active');
+            window.classList.remove('minimized');
+            isMinimized = false;
+            
+            // Initialize chatbot iframe with repository context
+            const chatbotFrame = document.getElementById('chatbotFrame');
+            if (chatbotFrame && !chatbotFrame.src) {
+                const params = new URLSearchParams({
+                    repository_id: REPOSITORY_CONFIG.repository_id,
+                    repository_name: REPOSITORY_CONFIG.repository_name,
+                    repository_type: REPOSITORY_CONFIG.repository_type,
+                    source: 'treasury_form'
+                });
+                chatbotFrame.src = `/ai_chat_modern_overylay?${params.toString()}`;
+            }
+            
+            // Send current form data to chatbot when it opens
+            setTimeout(() => {
+                sendFormContextToChatbot();
+            }, 1000);
+        }
+        
+        function closeChatbot() {
+            const overlay = document.getElementById('chatbotOverlay');
+            overlay.classList.remove('active');
+            isMaximized = false;
+            isMinimized = false;
+            const window = document.getElementById('chatbotWindow');
+            window.classList.remove('maximized', 'minimized');
+        }
+        
+        function closeChatbotOnOverlay(event) {
+            if (event.target.id === 'chatbotOverlay') {
+                closeChatbot();
+            }
+        }
+        
+        function minimizeChatbot() {
+            const window = document.getElementById('chatbotWindow');
+            if (isMinimized) {
+                window.classList.remove('minimized');
+                isMinimized = false;
+            } else {
+                window.classList.add('minimized');
+                window.classList.remove('maximized');
+                isMinimized = true;
+                isMaximized = false;
+            }
+        }
+        
+        function maximizeChatbot() {
+            const window = document.getElementById('chatbotWindow');
+            if (isMaximized) {
+                window.classList.remove('maximized');
+                isMaximized = false;
+            } else {
+                window.classList.add('maximized');
+                window.classList.remove('minimized');
+                isMaximized = true;
+                isMinimized = false;
+            }
+        }
+        
+        // Send form context to chatbot
+        function sendFormContextToChatbot() {
+            const chatbotFrame = document.getElementById('chatbotFrame');
+            if (chatbotFrame && chatbotFrame.contentWindow) {
+                const activeTab = document.querySelector('.tab-content.active').id;
+                const formData = collectFormData(activeTab);
+                chatbotFrame.contentWindow.postMessage({
+                    type: 'form_context',
+                    formData: formData,
+                    formType: 'treasury',
+                    activeTab: activeTab,
+                    repository: REPOSITORY_CONFIG,
+                    timestamp: new Date().toISOString()
+                }, '*');
+            }
+        }
+        
+        // Handle messages from smart capture and chatbot
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'EXTRACTED_DATA') {
+                // Handle extracted data from smart capture
+                const activeTab = document.querySelector('.tab-content.active').id;
+                autoFillForm(event.data.data, activeTab);
+                closeSmartCapture();
+            } else if (event.data && event.data.type === 'autofill_treasury') {
+                // Handle autofill from chatbot
+                const activeTab = document.querySelector('.tab-content.active').id;
+                autoFillForm(event.data.data, activeTab);
+            }
+        });
+    </script>
+    
+    <!-- Smart Capture Modal -->
+    <div id="smartCaptureModal" class="smart-capture-modal">
+        <div class="smart-capture-iframe-container">
+            <div class="smart-capture-header">
+                <div class="smart-capture-header-title">
+                    <i class="mdi mdi-scan-helper"></i>
+                    <div>
+                        <h3>Smart Document Capture</h3>
+                        <div class="smart-capture-header-subtitle">Upload and extract data from your treasury documents</div>
+                    </div>
+                </div>
+                <button class="smart-capture-close" onclick="closeSmartCapture()" title="Close">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="smart-capture-loading">
+                <div class="smart-capture-spinner"></div>
+                <div class="smart-capture-loading-text">Loading Smart Capture...</div>
+            </div>
+            <iframe id="smartCaptureIframe" class="smart-capture-iframe" src="" onload="hideSmartCaptureLoading()"></iframe>
+        </div>
+    </div>
+    
+    <!-- Chatbot Icon -->
+    <div class="chatbot-icon" onclick="openChatbot()">
+        <i class="fas fa-comments"></i>
+    </div>
+    
+    <!-- Chatbot Overlay -->
+    <div id="chatbotOverlay" class="chatbot-overlay" onclick="closeChatbotOnOverlay(event)">
+        <div id="chatbotWindow" class="chatbot-window" onclick="event.stopPropagation()">
+            <div class="chatbot-header" id="chatbotHeader">
+                <div class="chatbot-header-left">
+                    <i class="fas fa-robot"></i>
+                    <div>
+                        <h3>AI Assistant - Treasury</h3>
+                        <div class="chatbot-status">
+                            <span class="status-dot"></span>
+                            <span>Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chatbot-controls">
+                    <button class="chatbot-control-btn" onclick="minimizeChatbot()" title="Minimize">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="chatbot-control-btn" onclick="maximizeChatbot()" title="Maximize">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="chatbot-control-btn" onclick="closeChatbot()" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chatbot-body">
+                <iframe id="chatbotFrame" class="chatbot-iframe" src=""></iframe>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

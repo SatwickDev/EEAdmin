@@ -1,0 +1,4806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guarantee Vetting</title>
+
+  <!-- Enhanced CSS Framework -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+
+  <style>
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #ffffff;
+      color: #1e293b;
+      line-height: 1.6;
+      padding-top: 140px;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.02) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Modern Floating Header - Matching index.html */
+    .floating-header {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+      animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .floating-header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+
+    /* Enhanced Logo Section */
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .logo-container {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      padding: 0.75rem;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                  0 0 0 1px rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      transform: translateZ(0);
+    }
+
+    .logo-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .logo-container:hover::before {
+      left: 100%;
+    }
+
+    .logo-container:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+
+    .logo-container i {
+      font-size: 1.375rem;
+      color: white;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand-text h1 {
+      font-size: 1.375rem;
+      margin: 0;
+      background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .brand-text p {
+      margin: 0;
+      font-size: 0.8125rem;
+      color: #64748b;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    /* Navigation Pills */
+    .nav-pills {
+      display: flex;
+      gap: 0.375rem;
+      background: #f1f5f9;
+      padding: 0.375rem;
+      border-radius: 12px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-pill {
+      padding: 0.625rem 1.25rem;
+      border-radius: 8px;
+      background: transparent;
+      color: #475569;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .nav-pill::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .nav-pill:hover::before {
+      opacity: 1;
+    }
+
+    .nav-pill:hover {
+      color: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    .nav-pill span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-pill.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      font-weight: 600;
+    }
+
+    .nav-pill.active::before {
+      display: none;
+    }
+
+    /* User Section */
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+    }
+
+    .notification-bell {
+      position: relative;
+      background: #f1f5f9;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .notification-bell:hover {
+      background: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .notification-bell:active {
+      transform: translateY(0);
+    }
+
+    .notification-bell i {
+      font-size: 1.125rem;
+      color: #475569;
+      transition: color 0.2s ease;
+    }
+
+    .notification-bell:hover i {
+      color: #1e293b;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.625rem;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .user-avatar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .user-avatar:hover::before {
+      left: 100%;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-content {
+        padding: 0.75rem 1rem;
+      }
+
+      .brand-text h1 {
+        font-size: 1.125rem;
+      }
+
+      .brand-text p {
+        display: none;
+      }
+
+      .nav-pills {
+        gap: 0.25rem;
+        padding: 0.25rem;
+      }
+
+      .nav-pill {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+      }
+
+      .logo-container {
+        padding: 0.5rem;
+      }
+
+      .logo-container i {
+        font-size: 1.125rem;
+      }
+    }
+
+    /* Hover Effects */
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+
+    .notification-bell.has-notification {
+      animation: pulse 2s infinite;
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 var(--space-6);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Dashboard Cards using glass morphism */
+    .dashboard-card {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+      box-shadow: var(--shadow-glass);
+      transition: all var(--transition-spring);
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-2xl);
+      border-color: var(--primary-200);
+    }
+
+    .card-header {
+      border-bottom: 1px solid var(--glass-border);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--gray-800);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    /* Enhanced Editor Section */
+    .editor-container {
+      position: relative;
+    }
+
+    .ck-editor__editable_inline {
+      min-height: 250px;
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      transition: all var(--transition-spring);
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .ck-editor__editable_inline:focus {
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px var(--primary-100);
+    }
+
+    /* Modern Buttons using unified design */
+    .btn-modern {
+      border-radius: var(--radius-lg);
+      font-weight: var(--font-weight-semibold);
+      padding: var(--space-4) var(--space-6);
+      border: none;
+      transition: all var(--transition-spring);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .btn-primary-modern {
+      background: var(--primary-gradient);
+      color: var(--white);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary-modern:hover {
+      background: var(--primary-gradient-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+      color: var(--white);
+    }
+
+    .btn-primary-modern:focus {
+      outline: 2px solid var(--primary-200);
+      outline-offset: 2px;
+    }
+
+    .btn-outline-modern {
+      background: transparent;
+      border: 2px solid var(--glass-border);
+      color: var(--primary-600);
+      backdrop-filter: blur(var(--glass-blur));
+    }
+
+    .btn-outline-modern:hover {
+      background: var(--primary-50);
+      border-color: var(--primary-500);
+      color: var(--primary-700);
+    }
+
+    /* Enhanced Control Section */
+    .control-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04),
+                  inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .control-section:hover {
+      background: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06),
+                  inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+    }
+
+    /* Editor Header Styling */
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    .editor-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .editor-title i {
+      color: #3b82f6;
+      font-size: 1.25rem;
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .editor-action-btn {
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 8px;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+    }
+
+    .editor-action-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      border-color: #3b82f6;
+      transform: translateY(-1px);
+    }
+
+    .editor-action-btn i {
+      font-size: 1.125rem;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .form-select-modern {
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      font-weight: var(--font-weight-medium);
+      transition: all var(--transition-spring);
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .form-select-modern:focus {
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px var(--primary-100);
+    }
+
+    /* Enhanced Highlights using unified design */
+    .highlight-low {
+      background: var(--success-gradient);
+      color: var(--white);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-weight: var(--font-weight-medium);
+      margin: var(--space-1);
+      display: inline-block;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .highlight-medium {
+      background: var(--warning-gradient);
+      color: var(--white);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-weight: var(--font-weight-medium);
+      margin: var(--space-1);
+      display: inline-block;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .highlight-high {
+      background: var(--error-gradient);
+      color: var(--white);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-weight: var(--font-weight-medium);
+      margin: var(--space-1);
+      display: inline-block;
+      box-shadow: var(--shadow-sm);
+    }
+
+
+    /* Enhanced Tabs using unified design */
+    .nav-tabs {
+      border: none;
+      gap: var(--space-3);
+      margin-bottom: var(--space-8);
+    }
+
+    .nav-tabs .nav-link {
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      color: var(--gray-700);
+      font-weight: var(--font-weight-medium);
+      transition: all var(--transition-spring);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .nav-tabs .nav-link:hover {
+      border-color: var(--primary-500);
+      background: var(--primary-50);
+      color: var(--primary-700);
+    }
+
+    .nav-tabs .nav-link.active {
+      background: var(--primary-gradient);
+      color: var(--white);
+      border-color: var(--primary-500);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Tab Content using unified design */
+    .tab-content {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-8);
+    }
+
+    .tab-pane {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Severity and Info Cards using unified design */
+    .info-card {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+    }
+
+    .severity-high {
+      border-left: 4px solid var(--error-color);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+    }
+
+    .severity-medium {
+      border-left: 4px solid var(--warning-color);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+    }
+
+    .severity-low {
+      border-left: 4px solid var(--success-color);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    }
+
+    /* Highlighted Text Container using unified design */
+    .highlight-container {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border: 2px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      margin-top: var(--space-6);
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-size: var(--text-lg);
+    }
+
+    .highlight-container strong {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      margin-bottom: var(--space-6);
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-bold);
+    }
+
+    /* Enhanced suggestion buttons using unified design */
+    .highlight-btn {
+      border: none;
+      color: var(--white);
+      cursor: pointer;
+      margin-left: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-sm);
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-spring);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+      font-weight: var(--font-weight-medium);
+    }
+
+    .highlight-btn.btn-right {
+      background: var(--success-gradient);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .highlight-btn.btn-wrong {
+      background: var(--error-gradient);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .highlight-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .highlight-btn.btn-right:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    .highlight-btn.btn-wrong:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    }
+
+    .highlight-btn[disabled] {
+      opacity: 0.4;
+      pointer-events: none;
+      transform: none !important;
+    }
+
+    /* Suggestion styling using unified design */
+    .red-strike {
+      text-decoration: line-through;
+      text-decoration-color: var(--error-color);
+      text-decoration-thickness: 2px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-xs);
+    }
+
+    .suggested-text {
+      color: var(--success-color);
+      font-weight: var(--font-weight-semibold);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-xs);
+      margin-left: var(--space-2);
+    }
+
+    /* Diff styling */
+    .diff-original {
+      color: var(--danger-color);
+      background: rgba(220, 53, 69, 0.1);
+      text-decoration: line-through;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .diff-suggestion {
+      color: var(--success-color);
+      background: rgba(40, 167, 69, 0.1);
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    /* Summary and Framework sections */
+    .summary-section {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .framework-badge {
+      background: linear-gradient(135deg, var(--info-color) 0%, #6f42c1 100%);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    /* Articles list styling */
+    .article-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .article-item {
+      background: var(--white-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .article-item:hover {
+      box-shadow: var(--shadow-sm);
+      transform: translateX(2px);
+    }
+
+    .article-title {
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .article-type {
+      background: var(--light-bg);
+      color: var(--text-muted);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+
+    /* Entities table styling */
+    .entities-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+
+    .entities-table th {
+      background: var(--light-bg);
+      color: var(--text-dark);
+      font-weight: 600;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .entities-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .entities-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Loading overlay using unified design */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: var(--z-toast);
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(var(--glass-blur));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modern-spinner {
+      width: 64px;
+      height: 64px;
+      border: 4px solid var(--glass-border);
+      border-top: 4px solid var(--primary-500);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: var(--space-6);
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-semibold);
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Tooltips */
+    .tooltip-inner {
+      max-width: 400px;
+      text-align: left;
+      background: var(--text-dark);
+      border-radius: var(--border-radius);
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    /* Responsive Design using unified design */
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 0 var(--space-4);
+      }
+
+      .dashboard-header {
+        margin: var(--space-4);
+        padding: var(--space-4);
+        border-radius: var(--radius-2xl);
+      }
+
+      .dashboard-card {
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+      }
+
+      .control-section {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+        padding: 1rem;
+      }
+
+      .editor-container {
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .editor-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .editor-title {
+        font-size: 1rem;
+      }
+
+      .floating-header {
+        border-radius: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      .header-content {
+        padding: 0.75rem 1rem;
+      }
+
+      .nav-pills {
+        display: none;
+      }
+
+      .user-section {
+        gap: 0.5rem;
+      }
+
+      .filter-group {
+        justify-content: center;
+      }
+
+      .modal-body {
+        padding: var(--space-4);
+      }
+
+      .brand-title {
+        font-size: var(--text-2xl);
+      }
+
+      .card-title {
+        font-size: var(--text-xl);
+      }
+    }
+
+    /* Additional utility classes */
+    .text-primary-custom {
+      color: var(--primary-color) !important;
+    }
+
+    .bg-light-custom {
+      background-color: var(--light-bg) !important;
+    }
+
+    .border-primary-custom {
+      border-color: var(--primary-color) !important;
+    }
+
+    /* Enhanced animation for better UX */
+    .fade-in {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+     /* Modern Variables */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --glass-bg: #ffffff;
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+
+        /* Modern Floating Header */
+        .floating-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .floating-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Brand Section */
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-container {
+            position: relative;
+        }
+
+        .modern-logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        .modern-logo:hover {
+            transform: scale(1.05) rotate(2deg);
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .status-pulse {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .brand-info h1 {
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            margin: 0 !important;
+            background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-info p {
+            font-size: 13px !important;
+            color: rgba(100, 116, 139, 0.8) !important;
+            margin: 0 !important;
+            font-weight: 500 !important;
+        }
+
+        /* Navigation Pills */
+        .nav-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 4px;
+        }
+
+        .nav-pill {
+            display: flex !important;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none !important;
+            color: rgba(100, 116, 139, 0.8) !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(30, 41, 59, 0.9) !important;
+            transform: translateY(-1px);
+        }
+
+        .nav-pill.active {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #1e293b !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-pill i {
+            font-size: 16px;
+        }
+
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .date-filter-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+        }
+
+        .date-filter-container input[type="date"] {
+            background: transparent;
+            border: none;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 500;
+            outline: none;
+        }
+
+        .status-indicator-modern {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #059669;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .action-button {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 10px 18px !important;
+            border-radius: 12px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            border: none !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-button.primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+        }
+
+        .action-button.secondary {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #374151 !important;
+            border: 1px solid rgba(229, 231, 235, 0.8) !important;
+        }
+
+        .action-button.secondary:hover {
+            background: rgba(255, 255, 255, 1) !important;
+            color: #1f2937 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes logoFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-2px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+
+        /* Adjust main content padding */
+        .pt-40 {
+            padding-top: 120px !important;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1200px) {
+            .nav-pills {
+                gap: 4px;
+            }
+
+            .nav-pill {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .nav-pill span {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .floating-header {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+            }
+
+            .floating-header-content {
+                padding: 12px 20px;
+            }
+
+            .brand-info p {
+                display: none !important;
+            }
+
+            .nav-pills {
+                display: none;
+            }
+
+            .header-actions {
+                gap: 8px;
+            }
+
+            .action-button span {
+                display: none !important;
+            }
+
+            .action-button {
+                padding: 8px 12px !important;
+            }
+
+            .pt-40 {
+                padding-top: 100px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .status-indicator-modern {
+                display: none;
+            }
+
+            .brand-info h1 {
+                font-size: 20px !important;
+            }
+        }
+
+        /* Enhanced Body and Content Adjustments */
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f0f4f8 100%);
+            padding-top: 140px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Main content styling */
+        .main-content {
+            background: transparent;
+            min-height: calc(100vh - 80px);
+            padding-top: 100px;
+        }
+
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* White theme card styling */
+        .glass-card {
+            background: #ffffff !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+        }
+
+        /* Advanced Filter Section */
+        .filter-section {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 16px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            transition: var(--transition-smooth);
+            outline: none;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* KPI Cards with Animation */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 32px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: var(--primary-gradient);
+            transition: left 0.5s ease;
+        }
+
+        .kpi-card:hover::before {
+            left: 0;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .kpi-icon-container {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .kpi-icon-container.gradient-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .kpi-icon-container.gradient-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .kpi-icon-container.gradient-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .kpi-icon-container.gradient-4 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .kpi-trend.positive {
+            color: #10b981;
+        }
+
+        .kpi-trend.negative {
+            color: #ef4444;
+        }
+
+        /* Chart Container Styles */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: var(--transition-smooth);
+            position: relative;
+            min-height: 400px;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-action-btn {
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            font-size: 12px;
+            color: #6b7280;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .chart-action-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* Modal for Chart Details */
+        .chart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chart-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Real-time Update Indicator */
+        .realtime-indicator {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .realtime-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* Advanced Chart Types */
+        .chart-type-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 4px;
+            background: #f3f4f6;
+            border-radius: 12px;
+        }
+
+        .chart-type-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .chart-type-btn.active {
+            background: white;
+            color: #6366f1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced Data Table */
+        .data-table-container {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            position: relative;
+            min-height: 500px;
+            margin-bottom: 32px;
+        }
+
+        .table-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(248, 250, 252, 0.8);
+        }
+
+        .table-search {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        .table-search input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .data-table th:hover {
+            background: #f1f5f9;
+        }
+
+        .data-table th i {
+            margin-left: 8px;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .data-table td {
+            padding: 16px;
+            font-size: 14px;
+            color: #374151;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s ease;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-badge.status-authorised {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-badge.status-released {
+            background: rgba(99, 102, 241, 0.1);
+            color: #4f46e5;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .status-badge.status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Transaction Details Drawer */
+        .transaction-drawer {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -8px 0 24px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 1500;
+            overflow-y: auto;
+        }
+
+        .transaction-drawer.active {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .drawer-content {
+            padding: 24px;
+        }
+
+        .detail-section {
+            margin-bottom: 32px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        /* Drill-down Panel */
+        .drilldown-panel {
+            display: none;
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            z-index: 1600;
+            animation: slideUpBounce 0.4s ease;
+            max-height: 80vh;
+            overflow: auto;
+        }
+
+        .drilldown-panel.active {
+            display: block;
+        }
+
+        @keyframes slideUpBounce {
+            0% {
+                transform: translate(-50%, 100px);
+                opacity: 0;
+            }
+            60% {
+                transform: translate(-50%, -10px);
+            }
+            100% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .drilldown-header {
+            padding: 32px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .drilldown-content {
+            padding: 32px;
+        }
+
+        .drilldown-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        /* Network Node Styles */
+        .network-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .network-node:hover {
+            filter: brightness(1.2);
+            transform: scale(1.1);
+        }
+
+        .node-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .node-tooltip.active {
+            display: block;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes logoFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-2px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+
+        /* New Animations for Header */
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes iconRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes logoShine {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes statusRing {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.4;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes spinOnce {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes settingsSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading States */
+        .chart-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f4f6;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-pill span {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .floating-header {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+            }
+
+            .floating-header-content {
+                padding: 12px 20px;
+            }
+
+            .nav-pills {
+                display: none;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding-top: 100px;
+            }
+
+            .page-container {
+                padding: 20px;
+            }
+
+            .date-filter-container {
+                display: none;
+            }
+
+            .transaction-drawer {
+                width: 100%;
+            }
+        }
+
+        /* Export Menu Styles */
+        .export-menu {
+            position: relative;
+        }
+
+        .export-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            min-width: 200px;
+            display: none;
+            z-index: 100;
+        }
+
+        .export-dropdown.active {
+            display: block;
+        }
+
+        .export-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .export-option:hover {
+            background: #f3f4f6;
+            color: #6366f1;
+        }
+
+        .export-option i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Interactive Features */
+        .interactive-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        .interactive-tooltip.active {
+            display: block;
+        }
+
+        /* Chart Controls */
+        .chart-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .time-range-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .time-range-btn {
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .time-range-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        /* Comparison Mode */
+        .comparison-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .comparison-toggle:hover {
+            border-color: #6366f1;
+        }
+
+        .comparison-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Advanced Features Panel */
+        .advanced-panel {
+            position: fixed;
+            right: -400px;
+            top: 100px;
+            width: 400px;
+            height: calc(100vh - 120px);
+            background: white;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 1500;
+            border-radius: 16px 0 0 16px;
+            overflow: auto;
+        }
+
+        .advanced-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-content {
+            padding: 24px;
+        }
+
+        .panel-section {
+            margin-bottom: 32px;
+        }
+
+        .panel-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        /* Settings Toggle */
+        .settings-toggle {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 56px;
+            height: 56px;
+            background: #6366f1;
+            color: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+            transition: var(--transition-smooth);
+            z-index: 1000;
+        }
+
+        .settings-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Module Drill-down Styles */
+        .module-detail-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .module-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .module-stat {
+            text-align: center;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .module-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .module-stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Breadcrumb Navigation */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-item:hover {
+            color: #6366f1;
+        }
+
+        .breadcrumb-separator {
+            color: #cbd5e1;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .pagination-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .pagination-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Action Menu */
+        .action-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .action-menu-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-width: 160px;
+            display: none;
+            z-index: 100;
+        }
+
+        .action-menu-dropdown.active {
+            display: block;
+        }
+
+        .action-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .action-menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        .action-menu-item i {
+            width: 16px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+    /* Custom Rules Section Styles */
+    .custom-rules-section {
+      margin-top: 1.5rem;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .custom-rules-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+      animation: shimmer 3s linear infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .custom-rules-content {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: top;
+    }
+    
+    .custom-rules-content.hidden {
+      transform: scaleY(0);
+      opacity: 0;
+      height: 0;
+      overflow: hidden;
+    }
+    
+    .rule-tab {
+      animation: fadeInUp 0.3s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .custom-rules-input textarea,
+    .form-control.glass-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      resize: vertical;
+      transition: all 0.3s ease;
+    }
+
+    .custom-rules-input textarea:focus,
+    .form-control.glass-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 4px 12px rgba(99, 102, 241, 0.15);
+      background: rgba(255, 255, 255, 0.95);
+      transform: translateY(-1px);
+    }
+    
+    .form-select-modern {
+      appearance: none;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 10px 36px 10px 16px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    
+    .form-select-modern:hover {
+      border-color: #6366f1;
+      background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .form-select-modern:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-sm::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-sm:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .glass-button-outline.active {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    .rule-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(99, 102, 241, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .rule-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+    
+    .rule-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .severity-high {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+    }
+    
+    .severity-medium {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #d97706;
+      border: 1px solid #fcd34d;
+    }
+    
+    .severity-low {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      color: #16a34a;
+      border: 1px solid #86efac;
+    }
+    
+    .test-result-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-left: 4px solid;
+      transition: all 0.2s ease;
+    }
+    
+    .test-result-card.passed {
+      border-left-color: #10b981;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
+    }
+    
+    .test-result-card.failed {
+      border-left-color: #ef4444;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.05) 0%, transparent 100%);
+    }
+    
+    .rule-preview-box {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+    }
+    
+    .rule-preview-box::before {
+      content: '✨';
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 20px;
+    }
+    
+    .tab-indicator {
+      height: 2px;
+      background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+      transition: all 0.3s ease;
+      margin-top: -2px;
+    }
+    
+    .input-group {
+      position: relative;
+    }
+    
+    .input-group label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .input-group label i {
+      color: #6366f1;
+      font-size: 16px;
+    }
+    
+    .required-field::after {
+      content: '*';
+      color: #ef4444;
+      margin-left: 4px;
+    }
+    
+    .help-text {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 4px;
+      font-style: italic;
+    }
+    
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    
+    .status-indicator.active {
+      background: #10b981;
+    }
+    
+    .status-indicator.inactive {
+      background: #94a3b8;
+      animation: none;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    
+    /* Responsive Design for Vetting Rules */
+    @media (max-width: 768px) {
+      .grid.grid-cols-2 {
+        display: block !important;
+      }
+      
+      .grid.grid-cols-2 > div {
+        margin-bottom: 16px;
+      }
+      
+      .rule-card {
+        padding: 16px;
+      }
+      
+      .rule-card > div {
+        flex-direction: column !important;
+        gap: 16px !important;
+      }
+      
+      .custom-rules-section {
+        margin: 1rem 0;
+        border-radius: 8px;
+      }
+      
+      .rule-preview-box {
+        padding: 12px;
+        border-radius: 8px;
+      }
+      
+      .test-result-card > div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+      }
+      
+      .tab-buttons {
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+      
+      .tab-buttons button {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .custom-rules-section .p-4 {
+        padding: 12px !important;
+      }
+      
+      .rule-card {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+      
+      .form-control.glass-input,
+      .form-select-modern {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      
+      .input-group label {
+        font-size: 12px;
+      }
+      
+      .help-text {
+        font-size: 11px;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+      <!-- Modern Floating Header -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <button class="toggle-sidebar-btn" onclick="toggleSidebar()" style="margin-right: 16px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 10px 14px; color: rgba(100, 116, 139, 0.8); cursor: pointer; transition: all 0.2s;">
+                    <i class="fas fa-bars" style="font-size: 16px;"></i>
+                </button>
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg width="28" height="28" viewBox="0 0 48 48">
+                            <defs>
+                                <linearGradient id="logoGradientHeader" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#logoGradientHeader)">
+                                <rect x="8" y="8" width="8" height="32" rx="3"/>
+                                <rect x="8" y="8" width="24" height="8" rx="3"/>
+                                <rect x="8" y="20" width="20" height="8" rx="3"/>
+                            </g>
+                            <g fill="url(#logoGradientHeader)" opacity="0.6">
+                                <rect x="20" y="32" width="20" height="2" rx="1"/>
+                                <rect x="20" y="36" width="20" height="2" rx="1"/>
+                            </g>
+                        </svg>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title"> Finstack </h1>
+                    <p class="brand-subtitle">Intelligent Vetting </p>
+                </div>
+            </div>
+
+            <!-- Navigation Pills -->
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill ">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-pill ">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/ai-chat" class="nav-pill ">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+                <a href="/compliance-results" class="nav-pill active">
+                    <i class="fas fa-shield-check"></i>
+                    <span>Vetting</span>
+                </a>
+                <a href="/document-classification" class="nav-pill">
+                    <i class="fas fa-file-document"></i>
+                    <span>Documents</span>
+                </a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="pulse-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Editor Card -->
+    <div class="dashboard-card fade-in">
+      <div class="card-header">
+        <h2 class="card-title">
+          <i class="mdi mdi-file-document-edit"></i>
+          Guarantee Text Editor
+        </h2>
+        <div class="flex gap-3">
+          <button class="glass-button-outline" onclick="clearEditor()">
+            <i class="mdi mdi-delete"></i>
+            Clear Editor
+          </button>
+          <button class="glass-button-outline" onclick="loadSample()">
+            <i class="mdi mdi-file-plus"></i>
+            Load Sample
+          </button>
+          <button class="glass-button-outline" onclick="clearResults()">
+            <i class="mdi mdi-close-circle"></i>
+            Clear Results
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-container">
+        <div class="editor-header">
+          <h3 class="editor-title">
+            <i class="mdi mdi-file-document-edit-outline"></i>
+            Guarantee Text Editor
+          </h3>
+          <div class="editor-actions">
+            <button class="editor-action-btn" onclick="clearEditor()" title="Clear All">
+              <i class="mdi mdi-delete-outline"></i>
+            </button>
+            <button class="editor-action-btn" onclick="loadSample()" title="Load Sample">
+              <i class="mdi mdi-file-import-outline"></i>
+            </button>
+          </div>
+        </div>
+        <textarea id="NON_STD_WORDING" placeholder="Enter your guarantee text here for AI-powered compliance analysis..."></textarea>
+      </div>
+
+      <!-- Custom Rules Section (Admin Only) -->
+      <div id="customRulesSection" class="custom-rules-section glass-card glass-card-hover p-4 mb-4" style="display: none;">
+        <div class="editor-header" style="border-bottom: 1px solid rgba(99, 102, 241, 0.1); padding-bottom: 16px; margin-bottom: 20px;">
+          <h3 class="editor-title" style="display: flex; align-items: center; gap: 12px;">
+            <span style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+              <i class="mdi mdi-shield-check"></i>
+            </span>
+            <span>Custom Vetting Rules</span>
+            <span style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; color: white; margin-left: 8px;">ADMIN</span>
+          </h3>
+          <button class="glass-button-outline btn-sm" onclick="toggleCustomRules()" style="display: flex; align-items: center; gap: 6px;">
+            <i class="mdi mdi-chevron-down" id="customRulesToggleIcon"></i>
+            <span id="customRulesToggleText">Manage Rules</span>
+          </button>
+        </div>
+        <div id="customRulesContent" class="custom-rules-content hidden mt-3">
+          <!-- Rule Management Tabs -->
+          <div class="mb-4">
+            <div class="flex gap-2 mb-4 tab-buttons">
+              <button class="glass-button-outline btn-sm active" onclick="showRuleTab('create')" id="createTab" style="display: flex; align-items: center; gap: 6px;">
+                <i class="mdi mdi-plus"></i> Create Rule
+              </button>
+              <button class="glass-button-outline btn-sm" onclick="showRuleTab('manage')" id="manageTab" style="display: flex; align-items: center; gap: 6px;">
+                <i class="mdi mdi-cog"></i> Manage Rules
+              </button>
+              <button class="glass-button-outline btn-sm" onclick="showRuleTab('test')" id="testTab" style="display: flex; align-items: center; gap: 6px;">
+                <i class="mdi mdi-test-tube"></i> Test History
+              </button>
+            </div>
+          </div>
+
+          <!-- Create Rule Tab -->
+          <div id="createRuleTab" class="rule-tab">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+              <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="mdi mdi-plus-circle" style="color: white; font-size: 24px;"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold" style="margin: 0;">Create New Vetting Rule</h4>
+                <p style="margin: 0; font-size: 12px; color: #64748b;">Define custom rules to identify onerous clauses in guarantees</p>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="input-group">
+                <label class="required-field">
+                  <i class="mdi mdi-tag"></i>
+                  Rule Name
+                </label>
+                <input type="text" id="ruleName" class="form-control glass-input" placeholder="e.g., Beneficiary Location Check">
+                <p class="help-text">A descriptive name for your rule</p>
+              </div>
+              <div class="input-group">
+                <label>
+                  <i class="mdi mdi-filter"></i>
+                  Condition Type
+                </label>
+                <select id="conditionType" class="form-select-modern" onchange="updateRulePreview()">
+                  <option value="contains">🔍 Contains</option>
+                  <option value="not_contains">🚫 Does Not Contain</option>
+                  <option value="starts_with">▶️ Starts With</option>
+                  <option value="ends_with">⏸️ Ends With</option>
+                  <option value="equals">⚖️ Equals</option>
+                  <option value="regex">🔧 Regular Expression</option>
+                </select>
+                <p class="help-text">How to match the text</p>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <div class="input-group">
+                <label class="required-field">
+                  <i class="mdi mdi-text-search"></i>
+                  Value to Check
+                </label>
+                <input type="text" id="ruleValue" class="form-control glass-input" placeholder="e.g., United States of America" oninput="updateRulePreview()">
+                <p class="help-text">The text pattern to search for in the guarantee</p>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <div class="input-group">
+                <label>
+                  <i class="mdi mdi-text"></i>
+                  Description
+                </label>
+                <textarea id="ruleDescription" class="form-control glass-input" rows="2" placeholder="Describe what this rule checks for..."></textarea>
+                <p class="help-text">Explain the purpose of this rule (optional)</p>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="input-group">
+                <label>
+                  <i class="mdi mdi-alert-circle"></i>
+                  Severity Level
+                </label>
+                <select id="ruleSeverity" class="form-select-modern" onchange="updateSeverityPreview()">
+                  <option value="low">🟢 Low Risk</option>
+                  <option value="medium" selected>🟡 Medium Risk</option>
+                  <option value="high">🔴 High Risk</option>
+                </select>
+                <p class="help-text">Impact level when rule is triggered</p>
+              </div>
+              <div class="input-group">
+                <label>
+                  <i class="mdi mdi-toggle-switch"></i>
+                  Status
+                </label>
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="ruleActive" checked style="width: 20px; height: 20px;">
+                    <span style="font-size: 14px;">Rule is Active</span>
+                  </label>
+                  <span class="status-indicator active"></span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Rule Preview -->
+            <div class="rule-preview-box mb-4">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="mdi mdi-eye" style="color: #6366f1;"></i>
+                  <h5 class="text-sm font-semibold" style="margin: 0;">Live Rule Preview</h5>
+                </div>
+                <button id="generateExplanationBtn" onclick="generateRuleExplanation()" class="glass-button-outline btn-sm" style="display: none; font-size: 11px; padding: 4px 8px;">
+                  <i class="mdi mdi-brain"></i> AI Explain
+                </button>
+              </div>
+              <p id="rulePreview" style="font-size: 14px; line-height: 1.6; color: #1e293b; font-weight: 500;">
+                The rule will check if the guarantee text contains "United States of America"
+              </p>
+              <div id="severityPreview" style="margin-top: 12px; display: inline-block;">
+                <span class="rule-badge severity-medium">
+                  <i class="mdi mdi-alert"></i>
+                  MEDIUM SEVERITY
+                </span>
+              </div>
+              <div id="aiExplanation" style="display: none; margin-top: 12px; padding: 10px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 6px; border-left: 3px solid #0ea5e9;">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                  <i class="mdi mdi-brain" style="color: #0ea5e9; font-size: 14px;"></i>
+                  <span style="font-size: 12px; font-weight: 600; color: #0c4a6e;">AI Explanation</span>
+                </div>
+                <p id="aiExplanationText" style="font-size: 12px; color: #164e63; margin: 0; line-height: 1.4;"></p>
+              </div>
+            </div>
+
+            <!-- Test Samples Section -->
+            <div class="mb-4" style="background: rgba(239, 246, 255, 0.5); border-radius: 12px; padding: 20px; border: 1px solid rgba(59, 130, 246, 0.1);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <i class="mdi mdi-test-tube" style="color: #6366f1; font-size: 18px;"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-sm font-semibold" style="margin: 0;">Test Your Rule</h5>
+                    <p class="text-xs text-gray-600" style="margin: 0;">Validate before saving</p>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="glass-button-outline btn-sm" onclick="generateTestSamples(event)" style="background: white;">
+                    <i class="mdi mdi-auto-fix"></i> Generate Samples
+                  </button>
+                  <button class="glass-button btn-sm" onclick="testNewRule()">
+                    <i class="mdi mdi-play-circle"></i> Run Test
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Sample Text Areas -->
+              <div id="testSamplesContainer" style="display: none;">
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                  <div>
+                    <label class="text-xs font-medium text-gray-700">Sample 1 (Should Trigger - Onerous)</label>
+                    <textarea id="sample1" class="form-control glass-input" rows="3"></textarea>
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium text-gray-700">Sample 2 (Should NOT Trigger - Not Onerous)</label>
+                    <textarea id="sample2" class="form-control glass-input" rows="3"></textarea>
+                  </div>
+                </div>
+                
+                <!-- Test Results -->
+                <div id="testResults" class="glass-card p-3" style="display: none;">
+                  <h5 class="text-sm font-semibold mb-2">Test Results:</h5>
+                  <div id="testResultsContent"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button class="glass-button" onclick="saveRule()">
+                <i class="mdi mdi-content-save"></i> Save Rule
+              </button>
+              <button class="glass-button-outline" onclick="clearRuleForm()">
+                <i class="mdi mdi-close"></i> Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Manage Rules Tab -->
+          <div id="manageRuleTab" class="rule-tab hidden">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                  <i class="mdi mdi-cog" style="color: white; font-size: 24px;"></i>
+                </div>
+                <div>
+                  <h4 class="text-lg font-semibold" style="margin: 0;">Manage Existing Rules</h4>
+                  <p style="margin: 0; font-size: 12px; color: #64748b;">View, edit, and control your vetting rules</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(99, 102, 241, 0.1); border-radius: 20px;">
+                <i class="mdi mdi-information" style="color: #6366f1; font-size: 16px;"></i>
+                <span style="font-size: 12px; color: #6366f1; font-weight: 500;">
+                  <span id="activeRulesCount">0</span> Active Rules
+                </span>
+              </div>
+            </div>
+            
+            <div id="rulesListContainer">
+              <div class="text-center py-8">
+                <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <i class="mdi mdi-loading mdi-spin" style="font-size: 32px; color: #6366f1;"></i>
+                </div>
+                <p style="color: #64748b; font-size: 14px;">Loading rules...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test History Tab -->
+          <div id="testHistoryTab" class="rule-tab hidden">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                  <i class="mdi mdi-history" style="color: white; font-size: 24px;"></i>
+                </div>
+                <div>
+                  <h4 class="text-lg font-semibold" style="margin: 0;">Test History</h4>
+                  <p style="margin: 0; font-size: 12px; color: #64748b;">Review past rule testing results</p>
+                </div>
+              </div>
+              <button class="glass-button-outline btn-sm" onclick="clearTestHistory()" style="display: flex; align-items: center; gap: 6px;">
+                <i class="mdi mdi-delete-sweep"></i>
+                Clear History
+              </button>
+            </div>
+            
+            <div id="testHistoryContainer">
+              <div class="text-center py-8">
+                <div style="width: 64px; height: 64px; margin: 0 auto 16px; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <i class="mdi mdi-loading mdi-spin" style="font-size: 32px; color: #10b981;"></i>
+                </div>
+                <p style="color: #64748b; font-size: 14px;">Loading test history...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <div>
+          <button class="glass-button" onclick="checkCompliance()">
+            <i class="mdi mdi-shield-check"></i>
+            Start Vetting
+          </button>
+        </div>
+        <div class="filter-group">
+          <label for="severityFilter" class="text-sm font-medium text-gray-700">Filter by severity:</label>
+          <select id="severityFilter" class="form-select-modern" onchange="filterTabsBySeverity(this.value)">
+            <option value="all">All Levels</option>
+            <option value="high">High Risk</option>
+            <option value="medium">Medium Risk</option>
+            <option value="low">Low Risk</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modern Loading Overlay -->
+  <div id="loader" class="loader-overlay hidden">
+    <div class="glass-card p-8 text-center">
+      <div class="modern-spinner mx-auto mb-6"></div>
+      <div id="loadingText" class="loading-text mb-2">Analyzing vetting requirements...</div>
+      <small id="loadingSubtext" class="text-gray-500">AI is processing your document</small>
+    </div>
+  </div>
+
+  <!-- Enhanced JavaScript -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.js"></script>
+  <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+  <script>
+    let editorInstance = null;
+    let fieldHistory = {};
+    let currentComplianceData = null;
+    let fieldPhraseHistory = {}; // For multi-phrase undo
+
+    // Enhanced Editor Initialization with Modern Configuration
+    ClassicEditor.create(document.querySelector('#NON_STD_WORDING'), {
+      toolbar: {
+        items: [
+          'heading', '|',
+          'bold', 'italic', 'underline', 'strikethrough', '|',
+          'link', 'blockQuote', '|',
+          'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+          'insertTable', '|',
+          'undo', 'redo', '|',
+          'findAndReplace', 'selectAll', '|',
+          'alignment'
+        ],
+        shouldNotGroupWhenFull: true
+      },
+      placeholder: 'Enter your guarantee text here for AI-powered compliance analysis...',
+      language: 'en',
+      table: {
+        contentToolbar: [
+          'tableColumn',
+          'tableRow',
+          'mergeTableCells'
+        ]
+      }
+    })
+    .then(editor => {
+      editorInstance = editor;
+      // Add enhanced styling to the editor
+      const editable = editor.editing.view.document.getRoot();
+      editor.editing.view.change(writer => {
+        writer.setStyle('min-height', '250px', editable);
+        writer.setStyle('padding', '1.25rem', editable);
+        writer.setStyle('font-size', '15px', editable);
+        writer.setStyle('line-height', '1.7', editable);
+      });
+
+      // Add smooth focus animation
+      editor.editing.view.document.on('focus', () => {
+        document.querySelector('.editor-container').classList.add('editor-focused');
+      });
+
+      editor.editing.view.document.on('blur', () => {
+        document.querySelector('.editor-container').classList.remove('editor-focused');
+      });
+
+      // Check for updated text after editor is ready
+      checkForUpdatedText();
+    })
+    .catch(console.error);
+
+    // Enhanced utility functions
+    function clearEditor() {
+      if (editorInstance && confirm('Are you sure you want to clear all content?')) {
+        editorInstance.setData('');
+      }
+    }
+
+    // Custom Rules Functions
+    let currentRuleId = null;
+    let isAdmin = false;
+    
+    // Check if user is admin on page load
+    async function checkAdminStatus() {
+      try {
+        const response = await fetch('/auth/current-user');
+        if (response.ok) {
+          const data = await response.json();
+          const adminEmails = ['ravi@finstack-tech.com', 'ilyashussain9@gmail.com', 'admin@finstack-tech.com'];
+          isAdmin = adminEmails.includes(data.user.email);
+          
+          // Show custom rules section only for admins
+          if (isAdmin) {
+            document.getElementById('customRulesSection').style.display = 'block';
+            loadVettingRules();
+          }
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+      }
+    }
+    
+    function toggleCustomRules() {
+      const content = document.getElementById('customRulesContent');
+      const icon = document.getElementById('customRulesToggleIcon');
+      const text = document.getElementById('customRulesToggleText');
+      
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.remove('mdi-chevron-down');
+        icon.classList.add('mdi-chevron-up');
+        text.textContent = 'Hide Rules';
+        if (isAdmin) {
+          loadVettingRules();
+        }
+      } else {
+        content.classList.add('hidden');
+        icon.classList.remove('mdi-chevron-up');
+        icon.classList.add('mdi-chevron-down');
+        text.textContent = 'Manage Rules';
+      }
+    }
+    
+    function showRuleTab(tab) {
+      // Hide all tabs
+      document.querySelectorAll('.rule-tab').forEach(t => t.classList.add('hidden'));
+      document.querySelectorAll('.glass-button-outline.btn-sm').forEach(b => b.classList.remove('active'));
+      
+      // Show selected tab
+      if (tab === 'create') {
+        document.getElementById('createRuleTab').classList.remove('hidden');
+        document.getElementById('createTab').classList.add('active');
+      } else if (tab === 'manage') {
+        document.getElementById('manageRuleTab').classList.remove('hidden');
+        document.getElementById('manageTab').classList.add('active');
+        loadVettingRules();
+      } else if (tab === 'test') {
+        document.getElementById('testHistoryTab').classList.remove('hidden');
+        document.getElementById('testTab').classList.add('active');
+        loadTestHistory();
+      }
+    }
+    
+    function updateRulePreview() {
+      const conditionType = document.getElementById('conditionType').value;
+      const ruleValue = document.getElementById('ruleValue').value || '[value]';
+      const preview = document.getElementById('rulePreview');
+      const explainBtn = document.getElementById('generateExplanationBtn');
+      
+      const previewTexts = {
+        'contains': `The rule will check if the guarantee text contains "${ruleValue}"`,
+        'not_contains': `The rule will check if the guarantee text does NOT contain "${ruleValue}"`,
+        'starts_with': `The rule will check if the guarantee text starts with "${ruleValue}"`,
+        'ends_with': `The rule will check if the guarantee text ends with "${ruleValue}"`,
+        'equals': `The rule will check if the guarantee text exactly equals "${ruleValue}"`,
+        'regex': `The rule will check if the guarantee text matches the pattern "${ruleValue}"`
+      };
+      
+      preview.innerHTML = previewTexts[conditionType] || 'Select a condition type';
+      
+      // Show/hide AI explain button based on whether rule is configured
+      if (conditionType && ruleValue && ruleValue !== '[value]') {
+        explainBtn.style.display = 'inline-flex';
+      } else {
+        explainBtn.style.display = 'none';
+        document.getElementById('aiExplanation').style.display = 'none';
+      }
+      
+      // Highlight the value in the preview
+      if (ruleValue !== '[value]') {
+        preview.innerHTML = preview.innerHTML.replace(
+          `"${ruleValue}"`,
+          `<span style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%); padding: 2px 6px; border-radius: 4px; font-weight: 600;">"${ruleValue}"</span>`
+        );
+      }
+    }
+
+    async function generateRuleExplanation() {
+      const ruleNameInput = document.getElementById('ruleName');
+      const ruleDescInput = document.getElementById('ruleDescription');
+      const conditionType = document.getElementById('conditionType').value;
+      const ruleValue = document.getElementById('ruleValue').value;
+      const severity = document.getElementById('ruleSeverity').value;
+      
+      if (!conditionType || !ruleValue) {
+        showNotification('Please configure the rule condition and value first', 'error');
+        return;
+      }
+      
+      const explanationDiv = document.getElementById('aiExplanation');
+      const explanationText = document.getElementById('aiExplanationText');
+      const explainBtn = document.getElementById('generateExplanationBtn');
+      
+      // Show loading state
+      explainBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Analyzing...';
+      explainBtn.disabled = true;
+      explanationDiv.style.display = 'block';
+      explanationText.innerHTML = 'AI is analyzing your rule configuration...';
+      
+      try {
+        const response = await fetch('/api/vetting/explain-rule', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: ruleNameInput.value || 'Untitled Rule',
+            description: ruleDescInput.value || '',
+            condition_type: conditionType,
+            value: ruleValue,
+            severity: severity
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.explanation) {
+          explanationText.innerHTML = data.explanation;
+        } else {
+          explanationText.innerHTML = 'Unable to generate explanation at this time.';
+        }
+      } catch (error) {
+        console.error('Error generating rule explanation:', error);
+        explanationText.innerHTML = 'Error generating explanation. Please try again.';
+      } finally {
+        explainBtn.innerHTML = '<i class="mdi mdi-brain"></i> AI Explain';
+        explainBtn.disabled = false;
+      }
+    }
+    
+    function updateSeverityPreview() {
+      const severity = document.getElementById('ruleSeverity').value;
+      const severityPreview = document.getElementById('severityPreview');
+      
+      const severityHTML = {
+        'low': '<span class="rule-badge severity-low"><i class="mdi mdi-information"></i> LOW SEVERITY</span>',
+        'medium': '<span class="rule-badge severity-medium"><i class="mdi mdi-alert"></i> MEDIUM SEVERITY</span>',
+        'high': '<span class="rule-badge severity-high"><i class="mdi mdi-alert-octagon"></i> HIGH SEVERITY</span>'
+      };
+      
+      severityPreview.innerHTML = severityHTML[severity];
+    }
+    
+    async function generateTestSamples(event) {
+      const conditionType = document.getElementById('conditionType').value;
+      const ruleValue = document.getElementById('ruleValue').value;
+      const ruleName = document.getElementById('ruleName').value;
+      const ruleDescription = document.getElementById('ruleDescription').value;
+      const severity = document.getElementById('ruleSeverity').value;
+      
+      if (!ruleValue) {
+        showNotification('Please enter a value to check first', 'warning');
+        return;
+      }
+      
+      const generateBtn = (event && event.currentTarget) || document.querySelector('button[onclick*="generateTestSamples"]');
+      const originalText = generateBtn.innerHTML;
+      generateBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Generating...';
+      generateBtn.disabled = true;
+      
+      try {
+        // Use the new direct sample generation endpoint
+        const response = await fetch('/api/vetting/generate-test-samples', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: ruleName || 'Test Rule',
+            condition_type: conditionType,
+            value: ruleValue,
+            description: ruleDescription || '',
+            severity: severity
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.success && data.samples) {
+            document.getElementById('sample1').value = data.samples[0].text;
+            document.getElementById('sample2').value = data.samples[1].text;
+            document.getElementById('testSamplesContainer').style.display = 'block';
+            
+            // Show metadata if available
+            if (data.metadata && data.metadata.explanation) {
+              showNotification('AI-generated test samples ready. ' + data.metadata.explanation, 'success');
+            } else if (data.metadata && data.metadata.llm_generated) {
+              showNotification('AI-generated test samples ready. Click "Run Test" to validate.', 'success');
+            } else {
+              showNotification('Test samples generated. Click "Run Test" to validate.', 'success');
+            }
+          }
+        } else {
+          const error = await response.json();
+          if (error.error === 'Admin access required') {
+            showNotification('Using basic sample generation (admin access required for AI)', 'info');
+          } else {
+            console.error('Error response:', error);
+          }
+          // Fall back to basic generation
+          generateBasicSamples(conditionType, ruleValue);
+        }
+      } catch (error) {
+        console.error('Error generating AI samples:', error);
+        // Fall back to basic generation
+        generateBasicSamples(conditionType, ruleValue);
+      } finally {
+        generateBtn.innerHTML = originalText;
+        generateBtn.disabled = false;
+      }
+    }
+    
+    function generateBasicSamples(conditionType, ruleValue) {
+      let onerousSample = '';
+      let nonOnerousSample = '';
+      
+      if (conditionType === 'contains') {
+        onerousSample = `This guarantee states that the beneficiary should not be from ${ruleValue}. The guarantee is subject to the laws and regulations.`;
+        nonOnerousSample = `This is a standard bank guarantee with no geographical restrictions. The beneficiary can be from any country.`;
+      } else if (conditionType === 'not_contains') {
+        onerousSample = `This is a standard guarantee without any specific restrictions or conditions.`;
+        nonOnerousSample = `This guarantee specifically mentions ${ruleValue} in its terms.`;
+      } else if (conditionType === 'starts_with') {
+        onerousSample = `${ruleValue} This guarantee document outlines the terms and conditions.`;
+        nonOnerousSample = `This document does not start with the specified text but mentions ${ruleValue} later.`;
+      } else if (conditionType === 'ends_with') {
+        onerousSample = `The terms and conditions of this guarantee are as follows ${ruleValue}`;
+        nonOnerousSample = `The document mentions ${ruleValue} but does not end with it.`;
+      } else {
+        onerousSample = `Sample text that includes ${ruleValue} as specified in the rule.`;
+        nonOnerousSample = `This is a standard guarantee text without specific conditions.`;
+      }
+      
+      document.getElementById('sample1').value = onerousSample;
+      document.getElementById('sample2').value = nonOnerousSample;
+      document.getElementById('testSamplesContainer').style.display = 'block';
+      
+      showNotification('Test samples generated (basic mode). Click "Run Test" to validate.', 'info');
+    }
+    
+    async function testNewRule() {
+      const sample1 = document.getElementById('sample1').value;
+      const sample2 = document.getElementById('sample2').value;
+      const conditionType = document.getElementById('conditionType').value;
+      const ruleValue = document.getElementById('ruleValue').value;
+      
+      if (!sample1 || !sample2 || !ruleValue) {
+        showNotification('Please generate samples and fill in the rule value first', 'warning');
+        return;
+      }
+      
+      // Test the rule locally
+      const testResults = [];
+      
+      // Test sample 1 (should be onerous)
+      const result1 = testRuleLocally(sample1, conditionType, ruleValue);
+      testResults.push({
+        sample: 'Sample 1',
+        expected: 'Onerous',
+        actual: result1 ? 'Onerous' : 'Not Onerous',
+        passed: result1
+      });
+      
+      // Test sample 2 (should NOT be onerous)
+      const result2 = testRuleLocally(sample2, conditionType, ruleValue);
+      testResults.push({
+        sample: 'Sample 2',
+        expected: 'Not Onerous',
+        actual: result2 ? 'Onerous' : 'Not Onerous',
+        passed: !result2
+      });
+      
+      // Display results
+      const resultsContainer = document.getElementById('testResultsContent');
+      resultsContainer.innerHTML = testResults.map(r => `
+        <div class="test-result-card ${r.passed ? 'passed' : 'failed'}">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${r.passed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'};">
+                <i class="mdi ${r.passed ? 'mdi-check-circle' : 'mdi-close-circle'}" style="color: ${r.passed ? '#10b981' : '#ef4444'}; font-size: 18px;"></i>
+              </div>
+              <div>
+                <p style="font-weight: 600; margin: 0; font-size: 14px;">${r.sample}</p>
+                <p style="font-size: 12px; color: #64748b; margin: 0;">
+                  Expected: <span style="font-weight: 500;">${r.expected}</span> • 
+                  Actual: <span style="font-weight: 500;">${r.actual}</span>
+                </p>
+              </div>
+            </div>
+            <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; ${r.passed ? 'background: rgba(16, 185, 129, 0.1); color: #10b981;' : 'background: rgba(239, 68, 68, 0.1); color: #ef4444;'}">
+              <i class="mdi ${r.passed ? 'mdi-check' : 'mdi-close'}"></i>
+              ${r.passed ? 'Passed' : 'Failed'}
+            </span>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('testResults').style.display = 'block';
+      
+      const allPassed = testResults.every(r => r.passed);
+      if (allPassed) {
+        showNotification('All tests passed! Your rule is working correctly.', 'success');
+      } else {
+        showNotification('Some tests failed. Please review your rule configuration.', 'error');
+      }
+    }
+    
+    function testRuleLocally(text, conditionType, value) {
+      const lowerText = text.toLowerCase();
+      const lowerValue = value.toLowerCase();
+      
+      switch(conditionType) {
+        case 'contains':
+          return lowerText.includes(lowerValue);
+        case 'not_contains':
+          return !lowerText.includes(lowerValue);
+        case 'starts_with':
+          return lowerText.startsWith(lowerValue);
+        case 'ends_with':
+          return lowerText.endsWith(lowerValue);
+        case 'equals':
+          return lowerText === lowerValue;
+        case 'regex':
+          try {
+            const regex = new RegExp(value, 'i');
+            return regex.test(text);
+          } catch {
+            return false;
+          }
+        default:
+          return false;
+      }
+    }
+    
+    async function saveRule() {
+      const ruleName = document.getElementById('ruleName').value;
+      const conditionType = document.getElementById('conditionType').value;
+      const ruleValue = document.getElementById('ruleValue').value;
+      const description = document.getElementById('ruleDescription').value;
+      const severity = document.getElementById('ruleSeverity').value;
+      
+      if (!ruleName || !ruleValue) {
+        showNotification('Please fill in all required fields', 'warning');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/vetting/rules', {
+          method: currentRuleId ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: ruleName,
+            condition_type: conditionType,
+            value: ruleValue,
+            description: description,
+            severity: severity,
+            is_active: true
+          })
+        });
+        
+        if (response.ok) {
+          // Add success animation
+          const saveButton = document.querySelector('button[onclick="saveRule()"]');
+          saveButton.innerHTML = '<i class="mdi mdi-check-circle"></i> Saved!';
+          saveButton.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+          saveButton.style.color = 'white';
+          
+          setTimeout(() => {
+            saveButton.innerHTML = '<i class="mdi mdi-content-save"></i> Save Rule';
+            saveButton.style.background = '';
+            saveButton.style.color = '';
+          }, 2000);
+          
+          showNotification('Rule saved successfully! 🎉', 'success');
+          clearRuleForm();
+          loadVettingRules();
+        } else {
+          const error = await response.json();
+          showNotification(error.message || 'Failed to save rule', 'error');
+        }
+      } catch (error) {
+        showNotification('Error saving rule: ' + error.message, 'error');
+      }
+    }
+    
+    function clearRuleForm() {
+      document.getElementById('ruleName').value = '';
+      document.getElementById('ruleValue').value = '';
+      document.getElementById('ruleDescription').value = '';
+      document.getElementById('conditionType').value = 'contains';
+      document.getElementById('ruleSeverity').value = 'medium';
+      document.getElementById('testSamplesContainer').style.display = 'none';
+      document.getElementById('testResults').style.display = 'none';
+      currentRuleId = null;
+      updateRulePreview();
+    }
+    
+    async function loadVettingRules() {
+      try {
+        const response = await fetch('/api/vetting/rules');
+        if (response.ok) {
+          const data = await response.json();
+          displayRules(data.rules);
+        }
+      } catch (error) {
+        console.error('Error loading rules:', error);
+      }
+    }
+    
+    function displayRules(rules) {
+      const container = document.getElementById('rulesListContainer');
+      
+      // Update active rules count
+      const activeCount = rules.filter(r => r.is_active).length;
+      document.getElementById('activeRulesCount').textContent = activeCount;
+      
+      if (rules.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <div style="width: 80px; height: 80px; margin: 0 auto 16px; background: rgba(148, 163, 184, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <i class="mdi mdi-folder-open-outline" style="font-size: 40px; color: #94a3b8;"></i>
+            </div>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 16px;">No rules configured yet</p>
+            <button class="glass-button btn-sm" onclick="showRuleTab('create')">
+              <i class="mdi mdi-plus"></i> Create Your First Rule
+            </button>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = rules.map(rule => `
+        <div class="rule-card">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <h5 style="font-size: 16px; font-weight: 600; margin: 0; color: #1e293b;">
+                  ${rule.name}
+                </h5>
+                <span class="status-indicator ${rule.is_active ? 'active' : 'inactive'}"></span>
+              </div>
+              <p style="font-size: 13px; color: #64748b; margin: 0 0 12px 0; line-height: 1.5;">
+                ${rule.description || 'No description provided'}
+              </p>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                  <i class="mdi mdi-filter" style="font-size: 12px;"></i>
+                  ${rule.condition_type.replace('_', ' ').toUpperCase()}
+                </span>
+                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 20px; font-size: 11px; font-weight: 500;">
+                  <i class="mdi mdi-text-search" style="font-size: 12px;"></i>
+                  "${rule.value.length > 30 ? rule.value.substring(0, 30) + '...' : rule.value}"
+                </span>
+                <span class="rule-badge severity-${rule.severity}">
+                  <i class="mdi ${rule.severity === 'high' ? 'mdi-alert-octagon' : rule.severity === 'medium' ? 'mdi-alert' : 'mdi-information'}"></i>
+                  ${rule.severity.toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="glass-button-outline btn-sm" onclick="showEffectivenessAnalysis('${rule._id}')" style="padding: 6px 10px;" title="AI Effectiveness Analysis">
+                <i class="mdi mdi-brain" style="font-size: 16px; color: #0ea5e9;"></i>
+              </button>
+              <button class="glass-button-outline btn-sm" onclick="editRule('${rule._id}')" style="padding: 6px 10px;" title="Edit Rule">
+                <i class="mdi mdi-pencil" style="font-size: 16px;"></i>
+              </button>
+              <button class="glass-button-outline btn-sm" onclick="toggleRuleStatus('${rule._id}', ${rule.is_active})" style="padding: 6px 10px;" title="${rule.is_active ? 'Deactivate' : 'Activate'} Rule">
+                <i class="mdi ${rule.is_active ? 'mdi-pause' : 'mdi-play'}" style="font-size: 16px; color: ${rule.is_active ? '#f59e0b' : '#10b981'};"></i>
+              </button>
+              <button class="glass-button-outline btn-sm" onclick="deleteRule('${rule._id}')" style="padding: 6px 10px;" title="Delete Rule">
+                <i class="mdi mdi-delete" style="font-size: 16px; color: #ef4444;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    async function deleteRule(ruleId) {
+      if (!confirm('Are you sure you want to delete this rule?')) return;
+      
+      try {
+        const response = await fetch(`/api/vetting/rules/${ruleId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showNotification('Rule deleted successfully', 'success');
+          loadVettingRules();
+        } else {
+          showNotification('Failed to delete rule', 'error');
+        }
+      } catch (error) {
+        showNotification('Error deleting rule: ' + error.message, 'error');
+      }
+    }
+
+    async function showEffectivenessAnalysis(ruleId) {
+      try {
+        // Show loading modal
+        const modal = document.createElement('div');
+        modal.className = 'effectiveness-modal';
+        modal.style.cssText = `
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000;
+          background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px);
+          display: flex; align-items: center; justify-content: center; padding: 20px;
+        `;
+        
+        modal.innerHTML = `
+          <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+            <div style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+              <div style="display: flex; justify-content: between; align-items: center;">
+                <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: #1f2937; display: flex; align-items: center; gap: 12px;">
+                  <i class="mdi mdi-brain" style="color: #0ea5e9;"></i>
+                  AI Effectiveness Analysis
+                </h3>
+                <button onclick="this.closest('.effectiveness-modal').remove()" style="background: none; border: none; color: #6b7280; cursor: pointer; font-size: 20px;">
+                  <i class="mdi mdi-close"></i>
+                </button>
+              </div>
+            </div>
+            <div id="effectivenessContent" style="padding: 24px;">
+              <div style="text-align: center; padding: 40px;">
+                <i class="mdi mdi-loading mdi-spin" style="font-size: 40px; color: #0ea5e9; margin-bottom: 16px;"></i>
+                <p style="color: #6b7280; margin: 0;">Analyzing rule effectiveness...</p>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Fetch effectiveness data
+        const response = await fetch(`/api/vetting/rule-effectiveness/${ruleId}`);
+        const data = await response.json();
+        
+        const contentDiv = document.getElementById('effectivenessContent');
+        
+        if (data.success) {
+          const eff = data.effectiveness;
+          const metrics = eff.basic_metrics;
+          const llm = eff.llm_analysis || {};
+          
+          contentDiv.innerHTML = `
+            <div style="display: grid; gap: 20px;">
+              <!-- Score Card -->
+              <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; padding: 20px; text-align: center;">
+                <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #0c4a6e;">Overall Effectiveness Score</h4>
+                <div style="font-size: 48px; font-weight: 700; color: #0ea5e9; margin-bottom: 8px;">
+                  ${Math.round((eff.combined_score || 0.5) * 100)}%
+                </div>
+                <p style="margin: 0; font-size: 14px; color: #164e63;">
+                  Based on ${metrics.total_tests} tests with ${metrics.accuracy_rate ? Math.round(metrics.accuracy_rate * 100) + '%' : '0%'} accuracy
+                </p>
+              </div>
+
+              ${llm.overall_assessment ? `
+                <div style="background: #f9fafb; border-radius: 8px; padding: 16px; border-left: 4px solid #0ea5e9;">
+                  <h5 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">AI Assessment</h5>
+                  <p style="margin: 0; font-size: 13px; color: #4b5563; line-height: 1.5;">${llm.overall_assessment}</p>
+                </div>
+              ` : ''}
+
+              ${llm.strengths?.length ? `
+                <div>
+                  <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #059669; display: flex; align-items: center; gap: 6px;">
+                    <i class="mdi mdi-check-circle"></i> Strengths
+                  </h5>
+                  <ul style="margin: 0; padding-left: 20px; color: #065f46;">
+                    ${llm.strengths.map(strength => `<li style="margin-bottom: 4px; font-size: 13px;">${strength}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+
+              ${llm.weaknesses?.length ? `
+                <div>
+                  <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #dc2626; display: flex; align-items: center; gap: 6px;">
+                    <i class="mdi mdi-alert-circle"></i> Areas for Improvement
+                  </h5>
+                  <ul style="margin: 0; padding-left: 20px; color: #991b1b;">
+                    ${llm.weaknesses.map(weakness => `<li style="margin-bottom: 4px; font-size: 13px;">${weakness}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+
+              ${llm.improvement_suggestions?.length ? `
+                <div>
+                  <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #7c3aed; display: flex; align-items: center; gap: 6px;">
+                    <i class="mdi mdi-lightbulb"></i> Recommendations
+                  </h5>
+                  <ul style="margin: 0; padding-left: 20px; color: #5b21b6;">
+                    ${llm.improvement_suggestions.map(suggestion => `<li style="margin-bottom: 4px; font-size: 13px;">${suggestion}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+
+              ${llm.risk_coverage ? `
+                <div style="background: #fffbeb; border-radius: 8px; padding: 16px; border-left: 4px solid #f59e0b;">
+                  <h5 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #92400e;">Risk Coverage</h5>
+                  <p style="margin: 0; font-size: 13px; color: #78350f; line-height: 1.5;">${llm.risk_coverage}</p>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        } else {
+          contentDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+              <i class="mdi mdi-alert-circle" style="font-size: 40px; color: #ef4444; margin-bottom: 16px;"></i>
+              <p style="color: #6b7280; margin: 0;">${data.message || 'Unable to analyze rule effectiveness'}</p>
+            </div>
+          `;
+        }
+        
+      } catch (error) {
+        console.error('Error fetching effectiveness analysis:', error);
+        showNotification('Error loading effectiveness analysis', 'error');
+      }
+    }
+    
+    async function loadTestHistory() {
+      try {
+        const response = await fetch('/api/vetting/history');
+        if (response.ok) {
+          const data = await response.json();
+          displayTestHistory(data.history);
+        }
+      } catch (error) {
+        console.error('Error loading test history:', error);
+      }
+    }
+    
+    function displayTestHistory(history) {
+      const container = document.getElementById('testHistoryContainer');
+      if (history.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No test history available.</p>';
+        return;
+      }
+      
+      container.innerHTML = history.map(test => `
+        <div class="glass-card p-4 mb-3">
+          <div class="flex justify-between items-center mb-2">
+            <h5 class="font-semibold">${test.rule_name}</h5>
+            <span class="text-xs text-gray-500">${new Date(test.test_date).toLocaleString()}</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-xs ${test.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} px-2 py-1 rounded">
+              ${test.passed ? 'Passed' : 'Failed'}
+            </span>
+            <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+              ${test.samples_tested} samples tested
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearResults() {
+      hideResults();
+      currentComplianceData = null;
+    }
+
+    function loadSample() {
+      const sampleText = `We hereby unconditionally and irrevocably guarantee to pay you on first demand any amount up to USD 1,000,000 (One Million US Dollars) which you may demand from us in connection with the performance of the contract dated [DATE] between [CONTRACTOR NAME] and [BENEFICIARY NAME].
+
+This guarantee shall remain valid until [EXPIRY DATE] and shall be automatically released thereafter unless a claim has been made hereunder prior to such date.
+
+Any demand under this guarantee must be accompanied by your written statement that the principal has failed to fulfill his obligations under the above-mentioned contract.`;
+
+      if (editorInstance) {
+        editorInstance.setData(sampleText);
+      }
+    }
+
+    // Simple diff by words (not character, for readability)
+    function getWordDiff(orig, sugg) {
+      const o = orig.split(/\s+/), s = sugg.split(/\s+/);
+      let out = '', oi = 0, si = 0;
+      while (oi < o.length || si < s.length) {
+        if (o[oi] === s[si]) {
+          out += o[oi] + ' ';
+          oi++; si++;
+        } else if (o[oi] && !s.includes(o[oi])) {
+          out += `<span class="diff-original">${o[oi]}</span> `;
+          oi++;
+        } else if (s[si] && !o.includes(s[si])) {
+          out += `<span class="diff-suggestion">${s[si]}</span> `;
+          si++;
+        } else {
+          out += o[oi] + ' ';
+          oi++; si++;
+        }
+      }
+      return out.trim();
+    }
+
+    function highlightTextToDOM(text, spans, className, tooltip, fieldKey, suggestions = {}) {
+      if (!spans || spans.length === 0) return document.createTextNode(text);
+      spans.sort((a, b) => b.length - a.length);
+      const lowerText = text.toLowerCase();
+      const used = Array(text.length).fill(false);
+      const matches = [];
+      spans.forEach(span => {
+        const safe = span.toLowerCase();
+        let start = 0;
+        while ((start = lowerText.indexOf(safe, start)) !== -1) {
+          let overlap = false;
+          for (let i = start; i < start + span.length; i++) if (used[i]) { overlap = true; break; }
+          if (!overlap) {
+            for (let i = start; i < start + span.length; i++) used[i] = true;
+            matches.push({ start, end: start + span.length, phrase: span });
+          }
+          start += span.length;
+        }
+      });
+      matches.sort((a, b) => a.start - b.start);
+      const fragment = document.createDocumentFragment();
+      let cursor = 0;
+      matches.forEach(({ start, end, phrase }) => {
+        if (cursor < start) fragment.appendChild(document.createTextNode(text.slice(cursor, start)));
+
+        // Main highlight wrapper span (for layout and tooltip)
+        const wrapperSpan = document.createElement('span');
+        wrapperSpan.className = className + ' position-relative';
+        wrapperSpan.setAttribute('data-bs-toggle', 'tooltip');
+        wrapperSpan.setAttribute('title', tooltip);
+
+        // Original text with red strikethrough (only if suggestion exists)
+        if (suggestions && suggestions[phrase]) {
+          const redStrikeSpan = document.createElement('span');
+          redStrikeSpan.className = 'red-strike';
+          redStrikeSpan.textContent = text.slice(start, end);
+          wrapperSpan.appendChild(redStrikeSpan);
+
+          // Green suggestion (no strikethrough)
+          const suggestionSpan = document.createElement('span');
+          suggestionSpan.className = 'suggested-text';
+          suggestionSpan.textContent = suggestions[phrase];
+
+          // Create button container
+          const buttonContainer = document.createElement('span');
+          buttonContainer.style.marginLeft = '8px';
+
+          // Right button (Accept suggestion)
+          const rightBtn = document.createElement('button');
+          rightBtn.type = 'button';
+          rightBtn.className = 'highlight-btn btn-right';
+          rightBtn.title = 'Accept suggestion: ' + suggestions[phrase];
+          rightBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+          rightBtn.onclick = function(e) {
+            e.preventDefault();
+            acceptSuggestion(fieldKey, phrase, suggestions[phrase], wrapperSpan);
+          };
+
+          // Wrong button (Reject suggestion)
+          const wrongBtn = document.createElement('button');
+          wrongBtn.type = 'button';
+          wrongBtn.className = 'highlight-btn btn-wrong';
+          wrongBtn.title = 'Reject suggestion';
+          wrongBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+          wrongBtn.onclick = function(e) {
+            e.preventDefault();
+            rejectSuggestion(fieldKey, phrase, wrapperSpan);
+          };
+
+          buttonContainer.appendChild(rightBtn);
+          buttonContainer.appendChild(wrongBtn);
+
+          wrapperSpan.appendChild(suggestionSpan);
+          wrapperSpan.appendChild(buttonContainer);
+        } else {
+          // No suggestion, normal highlight
+          wrapperSpan.textContent = text.slice(start, end);
+        }
+
+        fragment.appendChild(wrapperSpan);
+        cursor = end;
+      });
+      if (cursor < text.length) fragment.appendChild(document.createTextNode(text.slice(cursor)));
+      return fragment;
+    }
+
+    function acceptSuggestion(fieldKey, targetPhrase, suggestion, wrapperSpan) {
+      if (!editorInstance) return;
+      let currentHTML = editorInstance.getData();
+      let plainText = currentHTML.replace(/<[^>]+>/g, '');
+
+      // More robust match: case-insensitive and boundary-aware (optional)
+      let pattern = new RegExp(targetPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+      if (!pattern.test(plainText)) {
+        alert("Phrase not found in the editor. It may have already been fixed.");
+        return;
+      }
+
+      let updated = plainText.replace(pattern, suggestion);
+
+      // Save multi-level history
+      if (!fieldPhraseHistory[fieldKey]) fieldPhraseHistory[fieldKey] = [];
+      fieldPhraseHistory[fieldKey].push(currentHTML);
+
+      editorInstance.setData(updated);
+
+      // Replace the highlighted text with green suggestion text in the analysis view
+      const redStrikeSpan = wrapperSpan.querySelector('.red-strike');
+      const suggestionSpan = wrapperSpan.querySelector('.suggested-text');
+      const buttonContainer = wrapperSpan.querySelector('span:last-child');
+
+      if (redStrikeSpan && suggestionSpan) {
+        // Clear the wrapper and add only the green suggestion text
+        wrapperSpan.innerHTML = '';
+        const newSuggestionSpan = document.createElement('span');
+        newSuggestionSpan.className = 'suggested-text';
+        newSuggestionSpan.textContent = suggestion;
+        wrapperSpan.appendChild(newSuggestionSpan);
+
+        // Remove highlight classes to remove colored background
+        wrapperSpan.className = 'position-relative';
+      }
+    }
+
+    function rejectSuggestion(fieldKey, targetPhrase, wrapperSpan) {
+      // Remove the green suggestion text and red strikethrough
+      const redStrikeSpan = wrapperSpan.querySelector('.red-strike');
+      const suggestionSpan = wrapperSpan.querySelector('.suggested-text');
+      const buttonContainer = wrapperSpan.querySelector('span:last-child');
+
+      if (redStrikeSpan) {
+        // Replace the entire wrapper with just the original text (no formatting)
+        const originalText = redStrikeSpan.textContent;
+        wrapperSpan.innerHTML = '';
+        wrapperSpan.appendChild(document.createTextNode(originalText));
+
+        // Remove all highlight classes and tooltip
+        wrapperSpan.className = '';
+        wrapperSpan.removeAttribute('data-bs-toggle');
+        wrapperSpan.removeAttribute('title');
+      }
+    }
+
+    function applyPartialFix(fieldKey, targetPhrase, suggestion) {
+      if (!editorInstance) return;
+      let currentHTML = editorInstance.getData();
+      let plainText = currentHTML.replace(/<[^>]+>/g, '');
+
+      // More robust match: case-insensitive and boundary-aware (optional)
+      let pattern = new RegExp(targetPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+      if (!pattern.test(plainText)) {
+        alert("Phrase not found in the editor. It may have already been fixed.");
+        return;
+      }
+
+      let updated = plainText.replace(pattern, suggestion);
+
+      // Save multi-level history
+      if (!fieldPhraseHistory[fieldKey]) fieldPhraseHistory[fieldKey] = [];
+      fieldPhraseHistory[fieldKey].push(currentHTML);
+
+      editorInstance.setData(updated);
+    }
+
+    function undoLastPhraseFix(fieldKey) {
+      if (fieldPhraseHistory[fieldKey] && fieldPhraseHistory[fieldKey].length > 0 && editorInstance) {
+        let prev = fieldPhraseHistory[fieldKey].pop();
+        editorInstance.setData(prev);
+      } else {
+        alert("Nothing to undo.");
+      }
+    }
+
+    function applyFix(fieldKey, suggestionText) {
+      if (editorInstance) {
+        const currentText = editorInstance.getData();
+        fieldHistory[fieldKey] = currentText;
+        editorInstance.setData(suggestionText);
+        markSuggestionApplied(fieldKey);
+      }
+    }
+
+    function undoFix(fieldKey) {
+      if (fieldHistory[fieldKey] && editorInstance) {
+        editorInstance.setData(fieldHistory[fieldKey]);
+        delete fieldHistory[fieldKey];
+        unmarkSuggestionApplied(fieldKey);
+      }
+    }
+
+    function markSuggestionApplied(fieldKey) {
+      const badge = document.getElementById(`applied-${fieldKey}`);
+      if (badge) badge.classList.remove('d-none');
+    }
+
+    function unmarkSuggestionApplied(fieldKey) {
+      const badge = document.getElementById(`applied-${fieldKey}`);
+      if (badge) badge.classList.add('d-none');
+    }
+
+    function filterTabsBySeverity(severity) {
+      document.querySelectorAll('#fieldTabs .nav-link').forEach(tab => {
+        const fieldKey = tab.dataset.field;
+        const tabPane = document.getElementById('tab-' + fieldKey);
+        const field = currentComplianceData?.fields[fieldKey];
+        const shouldShow = (severity === 'all') || (field?.severity === severity);
+        tab.classList.toggle('d-none', !shouldShow);
+        tabPane?.classList.toggle('d-none', !shouldShow);
+      });
+    }
+
+    async function checkCompliance() {
+      if (!editorInstance) {
+        alert('Editor not initialized. Please refresh the page.');
+        return;
+      }
+
+      const guaranteeText = editorInstance.getData().replace(/<[^>]+>/g, '');
+
+      if (!guaranteeText.trim()) {
+        alert('Please enter some text to analyze.');
+        return;
+      }
+
+      // Show loader
+      showLoader('Analyzing vetting requirements...');
+      
+      // First, check against vetting rules if available
+      try {
+        const vettingResponse = await fetch('/api/vetting/check', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            guarantee_text: guaranteeText
+          })
+        });
+        
+        if (vettingResponse.ok) {
+          const vettingData = await vettingResponse.json();
+          if (vettingData.vetting_result && vettingData.vetting_result.is_onerous) {
+            // Display vetting results
+            displayVettingResults(vettingData.vetting_result);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking vetting rules:', error);
+      }
+      
+      // Get custom rules if any
+      const customRulesTextarea = document.getElementById('customRulesInput');
+      const customRules = customRulesTextarea ? customRulesTextarea.value.trim() : '';
+      
+      // Store custom rules in session storage for compliance results page
+      if (customRules) {
+        sessionStorage.setItem('customRules', customRules);
+      }
+      
+      const data = {
+        fields: [{
+          label: "guarantee_wording",
+          value: guaranteeText,
+          description: "Full guarantee text"
+        }],
+        customRules: customRules
+      };
+
+      showLoader();
+      fetch('/AICheck', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(async data => {
+        hideLoader();
+        // Store original text in session storage for later use
+        sessionStorage.setItem('originalGuaranteeText', guaranteeText);
+
+        // Store results and navigate to results page
+        try {
+          const storeResponse = await fetch('/compliance-results', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          if (storeResponse.ok) {
+            // Navigate to results page
+            window.location.href = '/compliance-results';
+          } else {
+            alert('Failed to process results. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error storing results:', error);
+          alert('Failed to process results. Please try again.');
+        }
+      })
+      .catch(err => {
+        hideLoader();
+        console.error('Analysis error:', err);
+        alert("Analysis failed. Please try again. Error: " + err.message);
+      });
+    }
+
+
+
+    function showLoader() {
+      const loadingMessages = [
+        { main: "Analyzing vetting requirements...", sub: "AI is processing your document" },
+        { main: "Checking guarantee clauses...", sub: "Reviewing terms and conditions" },
+        { main: "Validating document structure...", sub: "Ensuring compliance standards" },
+        { main: "Examining risk factors...", sub: "Identifying potential issues" },
+        { main: "Reviewing legal framework...", sub: "Cross-referencing regulations" },
+        { main: "Assessing guarantee strength...", sub: "Evaluating protection levels" },
+        { main: "Verifying authenticity...", sub: "Checking document integrity" },
+        { main: "Scanning for red flags...", sub: "AI-powered risk detection" },
+        { main: "Analyzing obligations...", sub: "Mapping responsibilities" },
+        { main: "Processing vetting criteria...", sub: "Almost there..." }
+      ];
+      
+      // Select a random message
+      const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+      
+      // Update the loading text
+      document.getElementById('loadingText').textContent = randomMessage.main;
+      document.getElementById('loadingSubtext').textContent = randomMessage.sub;
+      
+      // Show the loader
+      document.getElementById('loader').classList.remove('hidden');
+      
+      // Optional: Rotate messages while loading
+      let messageIndex = 0;
+      window.loadingInterval = setInterval(() => {
+        messageIndex = (messageIndex + 1) % loadingMessages.length;
+        const message = loadingMessages[messageIndex];
+        document.getElementById('loadingText').textContent = message.main;
+        document.getElementById('loadingSubtext').textContent = message.sub;
+      }, 2500); // Change message every 2.5 seconds
+    }
+
+    function hideLoader() {
+      document.getElementById('loader').classList.add('hidden');
+      // Clear the loading message interval if it exists
+      if (window.loadingInterval) {
+        clearInterval(window.loadingInterval);
+        window.loadingInterval = null;
+      }
+    }
+
+    // Session Management Functions
+    async function logout() {
+      if (!confirm('Are you sure you want to logout?')) return;
+
+      try {
+        const response = await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok && response.status !== 401) {
+          console.warn('Logout request failed, proceeding with local cleanup');
+        }
+      } catch (error) {
+        console.warn('Logout request error:', error);
+      } finally {
+        // Clear session data
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('remember_me');
+
+        // Show success message and redirect
+        alert('Logged out successfully');
+        window.location.href = '/';
+      }
+    }
+
+    function backToDashboard() {
+      window.location.href = '/';
+    }
+
+
+    function checkAuthenticationStatus() {
+      const userData = localStorage.getItem('user_data');
+      const userId = localStorage.getItem('user_id');
+
+      if (!userData || !userId) {
+        // No session found, redirect to login
+        window.location.href = '/';
+        return false;
+      }
+
+      try {
+        const parsedUser = JSON.parse(userData);
+        if (!parsedUser || parsedUser.id !== userId) {
+          // Invalid session data
+          localStorage.clear();
+          window.location.href = '/';
+          return false;
+        }
+      } catch (error) {
+        console.error('Invalid user data:', error);
+        localStorage.clear();
+        window.location.href = '/';
+        return false;
+      }
+
+      return true;
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check authentication first
+      if (!checkAuthenticationStatus()) {
+        return; // Will redirect to login
+      }
+
+      hideLoader();
+
+      // Check if there's updated text from compliance results
+      const updatedText = sessionStorage.getItem('updatedGuaranteeText');
+      const hasChanges = sessionStorage.getItem('hasChanges') === 'true';
+
+      if (updatedText && hasChanges && editorInstance) {
+        // Update the editor with the modified text
+        editorInstance.setData(updatedText);
+
+        // Show a notification that changes were applied
+        showNotification('Changes from compliance check have been applied to the text.', 'success');
+
+        // Clear the session storage
+        sessionStorage.removeItem('updatedGuaranteeText');
+        sessionStorage.removeItem('hasChanges');
+      }
+
+      // Also clear the original text stored
+      sessionStorage.removeItem('originalGuaranteeText');
+
+      // Add fade-in animation to main container
+      setTimeout(() => {
+        document.querySelector('.main-container').classList.add('fade-in');
+      }, 100);
+
+      // Add scroll-based header effects
+      let lastScroll = 0;
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        const header = document.querySelector('.floating-header');
+        
+        if (currentScroll > 50) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+
+        lastScroll = currentScroll;
+      });
+
+      // Add ripple effect to buttons
+      document.querySelectorAll('.glass-button, .glass-button-outline').forEach(button => {
+        button.addEventListener('click', function(e) {
+          const ripple = document.createElement('span');
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+          
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = x + 'px';
+          ripple.style.top = y + 'px';
+          ripple.classList.add('ripple');
+          
+          this.appendChild(ripple);
+          
+          setTimeout(() => ripple.remove(), 600);
+        });
+      });
+    });
+
+    function checkForUpdatedText() {
+      // Check if there's updated text from compliance results
+      const updatedText = sessionStorage.getItem('updatedGuaranteeText');
+      const hasChanges = sessionStorage.getItem('hasChanges') === 'true';
+
+      if (updatedText && hasChanges && editorInstance) {
+        // Update the editor with the modified text
+        editorInstance.setData(updatedText);
+
+        // Show a notification that changes were applied
+        showNotification('Changes from vetting check have been applied to the text.', 'success');
+
+        // Clear the session storage
+        sessionStorage.removeItem('updatedGuaranteeText');
+        sessionStorage.removeItem('hasChanges');
+      }
+
+      // Also clear the original text stored
+      sessionStorage.removeItem('originalGuaranteeText');
+    }
+
+    // Function to navigate to entities tab
+    function navigateToEntitiesTab() {
+      // First check if we're on the compliance results page
+      if (window.location.pathname === '/compliance-results') {
+        // Find and click the entities tab
+        const entitiesTab = document.getElementById('tab-entities-tab');
+        if (entitiesTab) {
+          entitiesTab.click();
+        } else {
+          console.log('Entities tab not found');
+        }
+      } else {
+        // Store a flag and navigate to compliance results
+        sessionStorage.setItem('navigateToEntities', 'true');
+        window.location.href = '/compliance-results';
+      }
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        animation: slideIn 0.3s ease-out;
+      `;
+
+      notification.innerHTML = `
+        <i class="mdi mdi-${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : type === 'warning' ? 'alert' : 'information'} text-xl"></i>
+        <span>${message}</span>
+      `;
+
+      document.body.appendChild(notification);
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+      }, 5000);
+    }
+    
+    function displayVettingResults(vettingResult) {
+      if (!vettingResult.is_onerous) return;
+      
+      // Create a vetting results notification
+      const vettingDiv = document.createElement('div');
+      vettingDiv.className = 'glass-card p-4 mb-4';
+      vettingDiv.style.cssText = 'position: fixed; top: 120px; right: 20px; width: 450px; z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12); max-height: 80vh; overflow-y: auto;';
+      
+      const severityColors = {
+        'high': 'text-red-600 bg-red-50',
+        'medium': 'text-yellow-600 bg-yellow-50',
+        'low': 'text-green-600 bg-green-50'
+      };
+      
+      // Check if LLM analysis is available
+      const hasLlmAnalysis = vettingResult.llm_analysis && !vettingResult.llm_analysis.error;
+      const llm = vettingResult.llm_analysis || {};
+      
+      vettingDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 18px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
+            ⚠️ Vetting Alert
+            ${hasLlmAnalysis ? '<span style="background: linear-gradient(135deg, #10b981, #06d6a0); padding: 2px 6px; border-radius: 10px; font-size: 10px; color: white;">AI Enhanced</span>' : ''}
+          </h4>
+          <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: #6b7280; cursor: pointer;">
+            <i class="mdi mdi-close"></i>
+          </button>
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+          <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; ${vettingResult.overall_severity === 'high' ? 'background: #fee2e2; color: #dc2626;' : vettingResult.overall_severity === 'medium' ? 'background: #fef3c7; color: #d97706;' : 'background: #dcfce7; color: #16a34a;'}">
+            ${vettingResult.overall_severity?.toUpperCase()} SEVERITY
+          </span>
+          ${vettingResult.severity_upgraded_by_llm ? '<span style="margin-left: 8px; padding: 2px 6px; background: #e0e7ff; color: #3730a3; border-radius: 4px; font-size: 10px;">LLM Upgraded</span>' : ''}
+        </div>
+
+        ${hasLlmAnalysis && llm.overall_assessment ? `
+          <div style="margin-bottom: 16px; padding: 12px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; border-left: 4px solid #0ea5e9;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <i class="mdi mdi-brain" style="color: #0ea5e9; font-size: 16px;"></i>
+              <span style="font-size: 14px; font-weight: 600; color: #0c4a6e;">AI Analysis</span>
+              ${llm.confidence ? `<span style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9; padding: 2px 6px; border-radius: 10px; font-size: 10px;">${Math.round(llm.confidence * 100)}% confidence</span>` : ''}
+            </div>
+            <p style="font-size: 13px; color: #164e63; margin: 0; line-height: 1.4;">${llm.overall_assessment}</p>
+          </div>
+        ` : ''}
+        
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+          ${vettingResult.triggered_rules.map(rule => `
+            <div style="padding: 8px; background: #f9fafb; border-radius: 6px;">
+              <p style="font-size: 14px; font-weight: 500; margin: 0 0 4px 0;">${rule.rule_name}</p>
+              <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px 0;">${rule.description}</p>
+              <p style="font-size: 11px; color: #3b82f6; margin: 0;">${rule.condition}</p>
+            </div>
+          `).join('')}
+        </div>
+
+        ${hasLlmAnalysis && (llm.onerous_conditions_found?.length || llm.risk_factors?.length) ? `
+          <div style="margin-bottom: 12px;">
+            ${llm.onerous_conditions_found?.length ? `
+              <div style="margin-bottom: 8px;">
+                <h5 style="font-size: 12px; font-weight: 600; color: #dc2626; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px;">
+                  <i class="mdi mdi-alert-circle"></i> Specific Onerous Conditions
+                </h5>
+                <ul style="margin: 0; padding-left: 16px; font-size: 11px; color: #4b5563;">
+                  ${llm.onerous_conditions_found.map(condition => `<li style="margin-bottom: 2px;">${condition}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+            ${llm.risk_factors?.length ? `
+              <div style="margin-bottom: 8px;">
+                <h5 style="font-size: 12px; font-weight: 600; color: #d97706; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px;">
+                  <i class="mdi mdi-shield-alert"></i> Additional Risk Factors
+                </h5>
+                <ul style="margin: 0; padding-left: 16px; font-size: 11px; color: #4b5563;">
+                  ${llm.risk_factors.map(risk => `<li style="margin-bottom: 2px;">${risk}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+
+        ${hasLlmAnalysis && llm.recommendations?.length ? `
+          <div style="margin-bottom: 12px; padding: 10px; background: #f0fdf4; border-radius: 6px; border-left: 3px solid #22c55e;">
+            <h5 style="font-size: 12px; font-weight: 600; color: #166534; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px;">
+              <i class="mdi mdi-lightbulb"></i> Recommendations
+            </h5>
+            <ul style="margin: 0; padding-left: 16px; font-size: 11px; color: #15803d;">
+              ${llm.recommendations.map(rec => `<li style="margin-bottom: 2px;">${rec}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+        
+        <div style="margin-top: 12px; font-size: 11px; color: #6b7280; display: flex; justify-content: space-between; align-items: center;">
+          <span>${vettingResult.triggered_rules.length} rule(s) triggered • ${vettingResult.total_rules_checked} rules checked</span>
+          ${hasLlmAnalysis ? '<span style="color: #10b981;"><i class="mdi mdi-check-circle"></i> AI Enhanced</span>' : ''}
+        </div>
+      `;
+      
+      document.body.appendChild(vettingDiv);
+      
+      // Auto-remove after 15 seconds (extended for LLM content)
+      setTimeout(() => {
+        vettingDiv.style.transition = 'opacity 0.3s';
+        vettingDiv.style.opacity = '0';
+        setTimeout(() => vettingDiv.remove(), 300);
+      }, 15000);
+    }
+
+    // Add some additional animations
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check admin status for vetting rules
+      checkAdminStatus();
+      
+      // Smooth scrolling for better UX
+      document.documentElement.style.scrollBehavior = 'smooth';
+
+      // Add ripple effect to buttons
+      document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const ripple = document.createElement('span');
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          ripple.style.width = ripple.style.height = size + 'px';
+          ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+          ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+          ripple.classList.add('ripple');
+          this.appendChild(ripple);
+
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
+        });
+      });
+    });
+  </script>
+
+  <style>
+    /* Ripple effect */
+    .btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(0);
+      animation: ripple-animation 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* Ripple Effect */
+    .glass-button, .glass-button-outline {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(0);
+      animation: ripple-animation 0.6s ease-out;
+      pointer-events: none;
+    }
+
+    /* Editor Focus State */
+    .editor-container.editor-focused {
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1),
+                  0 6px 20px rgba(0, 0, 0, 0.05),
+                  inset 0 0 0 2px rgba(59, 130, 246, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .editor-container.editor-focused::before {
+      opacity: 1;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+    }
+  </style>
+</body>
+</html>

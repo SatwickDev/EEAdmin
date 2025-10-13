@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title | default('Analytics Dashboard') }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics-enhanced.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        /* Page Specific Enhancements */
+        .main-content {
+            margin-left: 0;
+            padding: 100px 20px 40px;
+            transition: margin-right var(--transition-smooth);
+        }
+
+        .main-content.filter-active {
+            margin-right: 360px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            background: var(--dark-glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--dark-glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-smooth);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary-gradient);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl), 0 0 30px rgba(102, 126, 234, 0.1);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .kpi-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .kpi-icon.primary { background: var(--primary-gradient); }
+        .kpi-icon.success { background: var(--success-gradient); }
+        .kpi-icon.warning { background: var(--warning-gradient); }
+        .kpi-icon.danger { background: var(--danger-gradient); }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .kpi-change.positive {
+            background: rgba(67, 233, 123, 0.1);
+            color: #43e97b;
+        }
+
+        .kpi-change.negative {
+            background: rgba(255, 8, 68, 0.1);
+            color: #ff0844;
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            background: var(--dark-glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--dark-glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-action-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-action-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.4);
+            color: var(--text-primary);
+        }
+
+        /* Data Table */
+        .data-table-container {
+            background: var(--dark-glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--dark-glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead th {
+            padding: 12px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table tbody td {
+            padding: 16px 12px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table tbody tr {
+            transition: all var(--transition-fast);
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Status Pills */
+        .status-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pill.active {
+            background: rgba(67, 233, 123, 0.1);
+            color: #43e97b;
+        }
+
+        .status-pill.pending {
+            background: rgba(250, 112, 154, 0.1);
+            color: #fa709a;
+        }
+
+        .status-pill.completed {
+            background: rgba(79, 172, 254, 0.1);
+            color: #4facfe;
+        }
+
+        /* Enhanced Floating Filter Panel */
+        .filter-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-panel-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .filter-close-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .filter-close-btn:hover {
+            background: rgba(255, 8, 68, 0.2);
+            color: #ff0844;
+        }
+
+        /* Time Range Selector */
+        .time-range-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .time-range-btn {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .time-range-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .time-range-btn.active {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Export Modal */
+        .export-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: var(--dark-glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--dark-glass-border);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            z-index: var(--z-modal);
+            opacity: 0;
+            pointer-events: none;
+            transition: all var(--transition-smooth);
+        }
+
+        .export-modal.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .export-option {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: center;
+        }
+
+        .export-option:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .export-option.selected {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .export-option i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+            color: #667eea;
+        }
+
+        .export-option span {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Floating Header -->
+    <div class="floating-header">
+        <div class="header-content" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo" style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-chart-line" style="font-size: 24px;"></i>
+                <div>
+                    <h1 style="font-size: 18px; font-weight: 700; margin: 0;">{{ category_name | default('Analytics') }}</h1>
+                    <p style="font-size: 12px; color: var(--text-tertiary); margin: 0;">Real-time Dashboard</p>
+                </div>
+            </div>
+            <div class="nav-actions" style="display: flex; gap: 12px;">
+                <button class="chart-action-btn" onclick="window.location.href='/analytics_category_selector'">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="chart-action-btn" onclick="refreshDashboard()">
+                    <i class="fas fa-sync"></i>
+                </button>
+                <button class="chart-action-btn" onclick="openExportModal()">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Toggle Button -->
+    <button class="filter-toggle-btn" onclick="toggleFilterPanel()" id="filterToggle">
+        <i class="fas fa-filter"></i>
+    </button>
+
+    <!-- Floating Filter Panel -->
+    <div class="floating-filter-panel collapsed" id="filterPanel">
+        <div class="filter-panel-header">
+            <h3 class="filter-panel-title">Filters</h3>
+            <button class="filter-close-btn" onclick="toggleFilterPanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-calendar"></i>
+                Date Range
+            </div>
+            <div class="date-range-picker">
+                <div class="date-preset-pills">
+                    <div class="date-pill active" onclick="selectDateRange('today')">Today</div>
+                    <div class="date-pill" onclick="selectDateRange('week')">This Week</div>
+                    <div class="date-pill" onclick="selectDateRange('month')">This Month</div>
+                    <div class="date-pill" onclick="selectDateRange('quarter')">Quarter</div>
+                    <div class="date-pill" onclick="selectDateRange('year')">Year</div>
+                    <div class="date-pill" onclick="selectDateRange('custom')">Custom</div>
+                </div>
+                <div class="custom-date-inputs" style="display: none;" id="customDateInputs">
+                    <div class="date-input-group">
+                        <label>From</label>
+                        <input type="date" id="dateFrom">
+                    </div>
+                    <div class="date-input-group">
+                        <label>To</label>
+                        <input type="date" id="dateTo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-tag"></i>
+                Categories
+            </div>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cat1" checked>
+                    <label for="cat1">Letter of Credit</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cat2" checked>
+                    <label for="cat2">Bank Guarantee</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cat3">
+                    <label for="cat3">Export Collection</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cat4">
+                    <label for="cat4">Import Collection</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-info-circle"></i>
+                Status
+            </div>
+            <div class="filter-dropdown">
+                <select id="statusFilter">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="expired">Expired</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Amount Range -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-dollar-sign"></i>
+                Amount Range
+            </div>
+            <div class="range-slider">
+                <div class="range-values">
+                    <span id="minAmount">$0</span>
+                    <span id="maxAmount">$10M</span>
+                </div>
+                <input type="range" class="range-input" min="0" max="10000000" value="5000000">
+            </div>
+        </div>
+
+        <!-- Filter Actions -->
+        <div class="filter-actions">
+            <button class="btn-apply-filter" onclick="applyFilters()">Apply Filters</button>
+            <button class="btn-reset-filter" onclick="resetFilters()">Reset</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- KPI Cards -->
+        <div class="dashboard-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div>
+                        <div class="kpi-title">Total Volume</div>
+                        <div class="kpi-value">$125.8M</div>
+                        <div class="kpi-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            12.5%
+                        </div>
+                    </div>
+                    <div class="kpi-icon primary">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div>
+                        <div class="kpi-title">Active Transactions</div>
+                        <div class="kpi-value">1,847</div>
+                        <div class="kpi-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            8.3%
+                        </div>
+                    </div>
+                    <div class="kpi-icon success">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div>
+                        <div class="kpi-title">Success Rate</div>
+                        <div class="kpi-value">97.2%</div>
+                        <div class="kpi-change negative">
+                            <i class="fas fa-arrow-down"></i>
+                            0.8%
+                        </div>
+                    </div>
+                    <div class="kpi-icon warning">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div>
+                        <div class="kpi-title">Avg Processing</div>
+                        <div class="kpi-value">2.4 days</div>
+                        <div class="kpi-change positive">
+                            <i class="fas fa-arrow-down"></i>
+                            15%
+                        </div>
+                    </div>
+                    <div class="kpi-icon danger">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 class="chart-title">Transaction Volume Trend</h3>
+                <div class="chart-actions">
+                    <button class="chart-action-btn" onclick="changeChartType('line')">
+                        <i class="fas fa-chart-line"></i>
+                    </button>
+                    <button class="chart-action-btn" onclick="changeChartType('bar')">
+                        <i class="fas fa-chart-bar"></i>
+                    </button>
+                    <button class="chart-action-btn" onclick="changeChartType('area')">
+                        <i class="fas fa-chart-area"></i>
+                    </button>
+                </div>
+            </div>
+            <canvas id="mainChart" height="80"></canvas>
+        </div>
+
+        <!-- Data Table -->
+        <div class="data-table-container">
+            <div class="chart-header">
+                <h3 class="chart-title">Recent Transactions</h3>
+                <div class="chart-actions">
+                    <button class="chart-action-btn" onclick="exportTableData()">
+                        <i class="fas fa-file-export"></i>
+                    </button>
+                </div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <!-- Dynamic content -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="floating-actions">
+        <button class="fab fab-primary" onclick="createNewTransaction()">
+            <i class="fas fa-plus"></i>
+            <span class="fab-tooltip">New Transaction</span>
+        </button>
+        <button class="fab fab-export" onclick="openExportModal()">
+            <i class="fas fa-download"></i>
+            <span class="fab-tooltip">Export Data</span>
+        </button>
+        <button class="fab fab-refresh" onclick="refreshDashboard()">
+            <i class="fas fa-sync"></i>
+            <span class="fab-tooltip">Refresh</span>
+        </button>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="export-modal" id="exportModal">
+        <h3 style="margin-bottom: 20px; color: var(--text-primary);">Export Analytics Data</h3>
+        <div class="export-options">
+            <div class="export-option" onclick="selectExportFormat('pdf')">
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF Report</span>
+            </div>
+            <div class="export-option" onclick="selectExportFormat('excel')">
+                <i class="fas fa-file-excel"></i>
+                <span>Excel</span>
+            </div>
+            <div class="export-option" onclick="selectExportFormat('csv')">
+                <i class="fas fa-file-csv"></i>
+                <span>CSV</span>
+            </div>
+            <div class="export-option" onclick="selectExportFormat('json')">
+                <i class="fas fa-code"></i>
+                <span>JSON</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn-apply-filter" style="flex: 1;" onclick="confirmExport()">Export</button>
+            <button class="btn-reset-filter" style="flex: 1;" onclick="closeExportModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        // Initialize particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Filter Panel Toggle
+        function toggleFilterPanel() {
+            const panel = document.getElementById('filterPanel');
+            const content = document.getElementById('mainContent');
+            const toggle = document.getElementById('filterToggle');
+            
+            panel.classList.toggle('collapsed');
+            content.classList.toggle('filter-active');
+            
+            if (panel.classList.contains('collapsed')) {
+                toggle.innerHTML = '<i class="fas fa-filter"></i>';
+            } else {
+                toggle.innerHTML = '<i class="fas fa-times"></i>';
+            }
+        }
+
+        // Date Range Selection
+        function selectDateRange(range) {
+            const pills = document.querySelectorAll('.date-pill');
+            pills.forEach(pill => pill.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const customInputs = document.getElementById('customDateInputs');
+            if (range === 'custom') {
+                customInputs.style.display = 'grid';
+            } else {
+                customInputs.style.display = 'none';
+            }
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            showLoading();
+            // Simulate API call
+            setTimeout(() => {
+                hideLoading();
+                refreshDashboard();
+            }, 1000);
+        }
+
+        // Reset Filters
+        function resetFilters() {
+            document.querySelectorAll('.checkbox-item input').forEach(cb => cb.checked = false);
+            document.getElementById('statusFilter').value = 'all';
+            document.querySelector('.range-input').value = 5000000;
+            selectDateRange('today');
+        }
+
+        // Export Modal
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function selectExportFormat(format) {
+            document.querySelectorAll('.export-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        function confirmExport() {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                closeExportModal();
+                alert('Export completed successfully!');
+            }, 2000);
+        }
+
+        // Loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // Initialize Chart
+        function initializeChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Transaction Volume',
+                        data: [65, 78, 90, 81, 95, 125],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.5)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.5)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Refresh Dashboard
+        function refreshDashboard() {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                // Update data here
+            }, 1500);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            initializeChart();
+        });
+    </script>
+</body>
+</html>

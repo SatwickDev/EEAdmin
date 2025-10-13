@@ -1,0 +1,39 @@
+{
+    "Promissory Note": {
+        "Document Details": [
+            "Note Number",
+            "Date of Issue",
+            "Place of Issue",
+            "Maturity Date",
+            "Tenure"
+        ],
+        "Parties Involved": [
+            "Maker Name and Address",
+            "Payee Name and Address",
+            "Endorser(s) (if any)",
+            "Guarantor Name (if applicable)"
+        ],
+        "Payment Information": [
+            "Principal Amount (in figures)",
+            "Principal Amount (in words)",
+            "Currency",
+            "Interest Rate",
+            "Repayment Schedule",
+            "Due Date",
+            "Payment Location"
+        ],
+        "Legal Clauses": [
+            "Promise to Pay Clause",
+            "Acceleration Clause",
+            "Waiver of Presentment",
+            "Jurisdiction Clause",
+            "Governing Law"
+        ],
+        "Authentication": [
+            "Signature of Maker",
+            "Stamp/Seal",
+            "Witness Signatures",
+            "Date of Acceptance"
+        ]
+    }
+}

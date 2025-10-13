@@ -1,0 +1,430 @@
+{
+  "documentType": "Bank Guarantee",
+  "code": "BG",
+  "description": "A written undertaking issued by a bank on behalf of a customer that serves as a guarantee for fulfilling a contract or obligation",
+  "category": "MANDATORY",
+  "fields": {
+    "mandatory": [
+      {
+        "name": "Guarantee Number",
+        "fieldId": "guarantee_number",
+        "type": "text",
+        "required": true,
+        "description": "Unique identifier for the bank guarantee",
+        "validation": "^BG-\\d{4}-\\d{6}$",
+        "placeholder": "BG-2024-001234",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Guarantee Type",
+        "fieldId": "guarantee_type",
+        "type": "select",
+        "required": true,
+        "description": "Type of bank guarantee being issued",
+        "validation": null,
+        "placeholder": "Select guarantee type",
+        "options": ["Bid Bond", "Performance Guarantee", "Advance Payment Guarantee", "Retention Money Guarantee", "Warranty Guarantee", "Payment Guarantee", "Financial Guarantee", "Customs Guarantee"],
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Issue Date",
+        "fieldId": "issue_date",
+        "type": "date",
+        "required": true,
+        "description": "Date when the guarantee was issued",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Expiry Date",
+        "fieldId": "expiry_date",
+        "type": "date",
+        "required": true,
+        "description": "Date when the guarantee expires",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Applicant Name",
+        "fieldId": "applicant_name",
+        "type": "text",
+        "required": true,
+        "description": "Party requesting the bank guarantee",
+        "validation": null,
+        "placeholder": "Enter applicant name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Beneficiary Name",
+        "fieldId": "beneficiary_name",
+        "type": "text",
+        "required": true,
+        "description": "Party in whose favor the guarantee is issued",
+        "validation": null,
+        "placeholder": "Enter beneficiary name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Guarantee Amount",
+        "fieldId": "guarantee_amount",
+        "type": "number",
+        "required": true,
+        "description": "Maximum amount covered by the guarantee",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Currency",
+        "fieldId": "currency",
+        "type": "select",
+        "required": true,
+        "description": "Currency of the guarantee amount",
+        "validation": null,
+        "placeholder": "Select currency",
+        "options": ["USD", "EUR", "GBP", "JPY", "CHF", "AUD", "CAD", "INR", "AED", "SGD"],
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Issuing Bank",
+        "fieldId": "issuing_bank",
+        "type": "text",
+        "required": true,
+        "description": "Bank issuing the guarantee",
+        "validation": null,
+        "placeholder": "Enter issuing bank name",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Issuing Bank Address",
+        "fieldId": "issuing_bank_address",
+        "type": "textarea",
+        "required": true,
+        "description": "Address of the issuing bank",
+        "validation": null,
+        "placeholder": "Enter complete bank address",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Underlying Contract Reference",
+        "fieldId": "contract_reference",
+        "type": "text",
+        "required": true,
+        "description": "Reference to the underlying contract or transaction",
+        "validation": null,
+        "placeholder": "Enter contract reference number",
+        "category": "MANDATORY"
+      },
+      {
+        "name": "Purpose of Guarantee",
+        "fieldId": "purpose",
+        "type": "textarea",
+        "required": true,
+        "description": "Brief description of the guarantee purpose",
+        "validation": null,
+        "placeholder": "Describe the purpose of this guarantee",
+        "category": "MANDATORY"
+      }
+    ],
+    "optional": [
+      {
+        "name": "Applicant Address",
+        "fieldId": "applicant_address",
+        "type": "textarea",
+        "required": false,
+        "description": "Complete address of the applicant",
+        "validation": null,
+        "placeholder": "Enter applicant address",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Beneficiary Address",
+        "fieldId": "beneficiary_address",
+        "type": "textarea",
+        "required": false,
+        "description": "Complete address of the beneficiary",
+        "validation": null,
+        "placeholder": "Enter beneficiary address",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Contract Date",
+        "fieldId": "contract_date",
+        "type": "date",
+        "required": false,
+        "description": "Date of the underlying contract",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Contract Value",
+        "fieldId": "contract_value",
+        "type": "number",
+        "required": false,
+        "description": "Total value of the underlying contract",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Project Name",
+        "fieldId": "project_name",
+        "type": "text",
+        "required": false,
+        "description": "Name of the project if applicable",
+        "validation": null,
+        "placeholder": "Enter project name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Project Location",
+        "fieldId": "project_location",
+        "type": "text",
+        "required": false,
+        "description": "Location of the project",
+        "validation": null,
+        "placeholder": "Enter project location",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Advising Bank",
+        "fieldId": "advising_bank",
+        "type": "text",
+        "required": false,
+        "description": "Bank advising the guarantee to beneficiary",
+        "validation": null,
+        "placeholder": "Enter advising bank name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Confirming Bank",
+        "fieldId": "confirming_bank",
+        "type": "text",
+        "required": false,
+        "description": "Bank adding its confirmation to the guarantee",
+        "validation": null,
+        "placeholder": "Enter confirming bank name",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Commission Rate",
+        "fieldId": "commission_rate",
+        "type": "number",
+        "required": false,
+        "description": "Bank commission rate (%)",
+        "validation": "^\\d{1,2}(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Commission Amount",
+        "fieldId": "commission_amount",
+        "type": "number",
+        "required": false,
+        "description": "Total commission charged",
+        "validation": "^\\d+(\\.\\d{1,2})?$",
+        "placeholder": "0.00",
+        "step": "0.01",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Claim Expiry Date",
+        "fieldId": "claim_expiry_date",
+        "type": "date",
+        "required": false,
+        "description": "Last date for submitting claims",
+        "validation": null,
+        "placeholder": "DD/MM/YYYY",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Governing Law",
+        "fieldId": "governing_law",
+        "type": "select",
+        "required": false,
+        "description": "Applicable law for the guarantee",
+        "validation": null,
+        "placeholder": "Select governing law",
+        "options": ["English Law", "New York Law", "Singapore Law", "UAE Law", "Indian Law", "German Law", "Swiss Law"],
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Jurisdiction",
+        "fieldId": "jurisdiction",
+        "type": "text",
+        "required": false,
+        "description": "Courts having jurisdiction",
+        "validation": null,
+        "placeholder": "Enter jurisdiction",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Special Conditions",
+        "fieldId": "special_conditions",
+        "type": "textarea",
+        "required": false,
+        "description": "Any special terms or conditions",
+        "validation": null,
+        "placeholder": "Enter special conditions if any",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "SWIFT Code",
+        "fieldId": "swift_code",
+        "type": "text",
+        "required": false,
+        "description": "SWIFT code of the issuing bank",
+        "validation": "^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$",
+        "placeholder": "e.g., DEUTDEFF",
+        "category": "OPTIONAL"
+      },
+      {
+        "name": "Reference to URDG",
+        "fieldId": "urdg_reference",
+        "type": "select",
+        "required": false,
+        "description": "Reference to Uniform Rules for Demand Guarantees",
+        "validation": null,
+        "placeholder": "Select URDG version",
+        "options": ["URDG 758", "URDG 458", "Not Applicable"],
+        "category": "OPTIONAL"
+      }
+    ],
+    "conditional": [
+      {
+        "name": "Counter Guarantee Required",
+        "fieldId": "counter_guarantee",
+        "type": "select",
+        "required": false,
+        "description": "Whether a counter guarantee is required",
+        "validation": null,
+        "placeholder": "Select Yes/No",
+        "options": ["Yes", "No"],
+        "condition": "Required for international guarantees",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Counter Guarantor Bank",
+        "fieldId": "counter_guarantor_bank",
+        "type": "text",
+        "required": false,
+        "description": "Bank providing counter guarantee",
+        "validation": null,
+        "placeholder": "Enter counter guarantor bank",
+        "condition": "Required when counter guarantee is Yes",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Reduction Clause",
+        "fieldId": "reduction_clause",
+        "type": "textarea",
+        "required": false,
+        "description": "Terms for reducing the guarantee amount",
+        "validation": null,
+        "placeholder": "Enter reduction clause details",
+        "condition": "Required for performance guarantees with progressive reduction",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Automatic Extension Clause",
+        "fieldId": "auto_extension_clause",
+        "type": "textarea",
+        "required": false,
+        "description": "Terms for automatic extension of guarantee",
+        "validation": null,
+        "placeholder": "Enter automatic extension terms",
+        "condition": "Required when guarantee has evergreen clause",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Claim Procedure",
+        "fieldId": "claim_procedure",
+        "type": "textarea",
+        "required": false,
+        "description": "Detailed procedure for making claims",
+        "validation": null,
+        "placeholder": "Describe claim procedure",
+        "condition": "Required for demand guarantees",
+        "category": "CONDITIONAL"
+      },
+      {
+        "name": "Documents Required for Claim",
+        "fieldId": "claim_documents",
+        "type": "textarea",
+        "required": false,
+        "description": "List of documents required for claim",
+        "validation": null,
+        "placeholder": "List required documents",
+        "condition": "Required for conditional guarantees",
+        "category": "CONDITIONAL"
+      }
+    ]
+  },
+  "validationRules": {
+    "crossFieldValidation": [
+      {
+        "rule": "expiry_date must be after issue_date",
+        "fields": ["issue_date", "expiry_date"]
+      },
+      {
+        "rule": "claim_expiry_date must be on or before expiry_date",
+        "fields": ["expiry_date", "claim_expiry_date"]
+      },
+      {
+        "rule": "guarantee_amount should not exceed contract_value",
+        "fields": ["guarantee_amount", "contract_value"]
+      },
+      {
+        "rule": "commission_amount should match guarantee_amount * commission_rate / 100",
+        "fields": ["guarantee_amount", "commission_rate", "commission_amount"]
+      }
+    ],
+    "businessRules": [
+      "Guarantee number must be unique",
+      "Applicant and beneficiary cannot be the same entity",
+      "Guarantee period should not exceed 5 years without special approval",
+      "For amounts above USD 10 million, additional approvals required",
+      "Counter guarantee required for cross-border guarantees",
+      "URDG 758 rules apply unless otherwise specified"
+    ],
+    "complianceChecks": [
+      "Verify applicant is not on sanctions list",
+      "Check beneficiary against blacklist",
+      "Ensure guarantee text complies with local regulations",
+      "Verify issuing bank has required licenses",
+      "Check if guarantee requires central bank approval",
+      "Validate against anti-money laundering requirements"
+    ]
+  },
+  "documentRequirements": {
+    "mandatory": [
+      "Application form signed by authorized signatories",
+      "Board resolution for guarantee issuance",
+      "Underlying contract or agreement",
+      "Financial statements of applicant"
+    ],
+    "optional": [
+      "Counter indemnity from parent company",
+      "Collateral documents if secured",
+      "Legal opinion if required",
+      "Project documents for project-related guarantees"
+    ]
+  },
+  "workflowStates": [
+    "Draft",
+    "Pending Approval",
+    "Approved",
+    "Issued",
+    "Amended",
+    "Claimed",
+    "Released",
+    "Expired",
+    "Cancelled"
+  ]
+}

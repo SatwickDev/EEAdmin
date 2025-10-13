@@ -1,0 +1,15 @@
+{
+  "module": "Period Reports",
+  "filename": "period_reports.json",
+  "record_count": 15,
+  "columns": [
+    "REPORT_ID",
+    "REPORT_TYPE",
+    "PERIOD_START",
+    "PERIOD_END",
+    "RECORD_COUNT",
+    "TOTAL_AMOUNT"
+  ],
+  "generated_date": "2025-07-05 09:31:58",
+  "embedding_model": "text-embedding-3-large"
+}

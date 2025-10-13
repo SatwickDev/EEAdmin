@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Analysis - Finstack</title>
+    
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/floating-header-unified.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <style>
+    body {
+      padding-top: 100px;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding-top: 80px;
+      }
+    }
+  </style>
+</head>
+<body class="with-floating-header">
+    <!-- Unified Floating Header -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg width="28" height="28" viewBox="0 0 48 48">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#logoGradient)">
+                                <rect x="8" y="8" width="8" height="32" rx="3"/>
+                                <rect x="8" y="8" width="24" height="8" rx="3"/>
+                                <rect x="8" y="20" width="20" height="8" rx="3"/>
+                            </g>
+                            <g fill="url(#logoGradient)" opacity="0.6">
+                                <rect x="20" y="32" width="20" height="2" rx="1"/>
+                                <rect x="20" y="36" width="20" height="2" rx="1"/>
+                            </g>
+                        </svg>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">Finstack</h1>
+                    <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+                </div>
+            </div>
+
+            <!-- Navigation Pills -->
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill ">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-pill ">
+                    <i class="mdi mdi-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/ai-chat-pro" class="nav-pill ">
+                    <i class="mdi mdi-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+                <a href="/compliance-results" class="nav-pill ">
+                    <i class="mdi mdi-shield-check"></i>
+                    <span>Vetting</span>
+                </a>
+                <a href="/document-classification" class="nav-pill active">
+                    <i class="mdi mdi-file-document-multiple"></i>
+                    <span>Documents</span>
+                </a>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <a href="/ai-chat-pro" class="action-button">
+                    <i class="mdi mdi-plus"></i>
+                    <span>New Session</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="app">
+        <v-app>
+            <div class="app-container">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="sidebar-header">
+                        <div class="sidebar-title">
+                            <v-icon size="24">mdi-robot-excited</v-icon>
+                            Finstack AI
+                        </div>
+                    </div>
+                    <button class="new-chat-btn" @click="startNewSession">
+                        <v-icon size="18">mdi-plus</v-icon>
+                        New Analysis
+                    </button>
+                    <div class="sidebar-content">
+                        <div
+                            v-for="(session, index) in sessions"
+                            :key="session.id"
+                            class="session-item"
+                            :class="{ active: currentSessionId === session.id }"
+                            @click="selectSession(session.id)"
+                        >
+                            <v-icon size="18">mdi-file-document-outline</v-icon>
+                            [[ session.name || 'Document Analysis' ]]
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="main-content">
+                    <!-- Header -->
+                    <div class="main-header">
+                        <div class="header-left">
+                            <button class="icon-btn" @click="toggleSidebar">
+                                <v-icon size="20">mdi-menu</v-icon>
+                            </button>
+                            <div class="header-title">Document Intelligence</div>
+                        </div>
+                        <div class="header-actions">
+                            <button class="icon-btn" @click="toggleTheme">
+                                <v-icon size="20">[[ darkMode ? 'mdi-weather-sunny' : 'mdi-weather-night' ]]</v-icon>
+                            </button>
+                            <button class="icon-btn" @click="goBack">
+                                <v-icon size="20">mdi-home</v-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Container -->
+                    <div class="chat-container">
+                        <div class="chat-content">
+                            <!-- Welcome Screen -->
+                            <div v-if="!messages.length && !uploadedFiles.length" class="welcome-screen">
+                                <div class="welcome-icon">
+                                    <v-icon size="32">mdi-file-document-check</v-icon>
+                                </div>
+                                <h1 class="welcome-title">Welcome to Document Intelligence</h1>
+                                <p class="welcome-subtitle">Upload documents for AI-powered classification and compliance analysis</p>
+                                
+                                <div class="quick-actions">
+                                    <div class="quick-action-card" @click="$refs.fileInput.click()">
+                                        <div class="quick-action-icon">
+                                            <v-icon>mdi-file-upload</v-icon>
+                                        </div>
+                                        <div class="quick-action-title">Upload Documents</div>
+                                        <div class="quick-action-desc">PDF, images, or ZIP files</div>
+                                    </div>
+                                    <div class="quick-action-card" @click="showExample('letter_of_credit')">
+                                        <div class="quick-action-icon">
+                                            <v-icon>mdi-bank</v-icon>
+                                        </div>
+                                        <div class="quick-action-title">Letter of Credit</div>
+                                        <div class="quick-action-desc">Analyze LC documents</div>
+                                    </div>
+                                    <div class="quick-action-card" @click="showExample('invoice')">
+                                        <div class="quick-action-icon">
+                                            <v-icon>mdi-receipt</v-icon>
+                                        </div>
+                                        <div class="quick-action-title">Invoice Analysis</div>
+                                        <div class="quick-action-desc">Extract invoice data</div>
+                                    </div>
+                                    <div class="quick-action-card" @click="showExample('compliance')">
+                                        <div class="quick-action-icon">
+                                            <v-icon>mdi-shield-check</v-icon>
+                                        </div>
+                                        <div class="quick-action-title">Compliance Check</div>
+                                        <div class="quick-action-desc">UCP600 & SWIFT validation</div>
+                                    </div>
+                                </div>
+
+                                <!-- Upload Area -->
+                                <div
+                                    class="upload-area"
+                                    :class="{ dragging: isDragging }"
+                                    @click="$refs.fileInput.click()"
+                                    @dragover.prevent="isDragging = true"
+                                    @dragleave.prevent="isDragging = false"
+                                    @drop.prevent="handleDrop"
+                                >
+                                    <v-icon class="upload-icon">mdi-cloud-upload-outline</v-icon>
+                                    <h3 style="margin-bottom: 8px;">Drop files here or click to browse</h3>
+                                    <p style="color: var(--text-secondary); font-size: 14px;">
+                                        Supports PDF, JPG, PNG, and ZIP files
+                                    </p>
+                                </div>
+                                <input
+                                    ref="fileInput"
+                                    type="file"
+                                    multiple
+                                    accept=".pdf,.jpg,.jpeg,.png,.zip"
+                                    @change="handleFileSelect"
+                                    style="display: none;"
+                                />
+                            </div>
+
+                            <!-- Messages -->
+                            <div v-for="(message, index) in messages" :key="index" class="message-group">
+                                <div class="message">
+                                    <div class="message-avatar" :class="message.role === 'user' ? 'user-avatar' : 'ai-avatar'">
+                                        <v-icon size="20">[[ message.role === 'user' ? 'mdi-account' : 'mdi-robot' ]]</v-icon>
+                                    </div>
+                                    <div class="message-content">
+                                        <div v-if="message.type === 'text'" v-html="formatMessage(message.content)"></div>
+                                        
+                                        <!-- File Upload Message -->
+                                        <div v-if="message.type === 'files'">
+                                            <div class="file-preview-grid">
+                                                <div
+                                                    v-for="(file, idx) in message.files"
+                                                    :key="idx"
+                                                    class="file-preview-card"
+                                                >
+                                                    <div class="file-preview-image">
+                                                        <img v-if="file.preview" :src="file.preview" />
+                                                        <v-icon v-else size="32" color="grey">mdi-file-document</v-icon>
+                                                    </div>
+                                                    <div class="file-preview-name">[[ file.name ]]</div>
+                                                    <div class="file-preview-info">[[ formatFileSize(file.size) ]]</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Analysis Results -->
+                                        <div v-if="message.type === 'results'" class="analysis-results">
+                                            <div
+                                                v-for="(result, idx) in message.results"
+                                                :key="idx"
+                                                class="result-card"
+                                                @click="openResultModal(result)"
+                                            >
+                                                <div class="result-header">
+                                                    <div class="result-title">[[ result.file_name ]]</div>
+                                                    <div class="result-badge">[[ result.document_type ]]</div>
+                                                </div>
+                                                <div class="result-metrics">
+                                                    <div class="metric-item">
+                                                        <div class="metric-label">Confidence</div>
+                                                        <div class="metric-value">[[ Math.round(result.confidence * 100) ]]%</div>
+                                                        <div class="progress-bar">
+                                                            <div class="progress-fill" :style="{ width: (result.confidence * 100) + '%' }"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="metric-item">
+                                                        <div class="metric-label">Fields Extracted</div>
+                                                        <div class="metric-value">[[ Object.keys(result.extracted_fields || {}).length ]]</div>
+                                                    </div>
+                                                    <div class="metric-item" v-if="result.compliance">
+                                                        <div class="metric-label">Compliance</div>
+                                                        <div class="metric-value" :style="{ color: result.compliance.status === 'compliant' ? 'var(--accent-primary)' : 'var(--error)' }">
+                                                            [[ result.compliance.status ]]
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Loading -->
+                            <div v-if="isProcessing" class="message-group">
+                                <div class="message">
+                                    <div class="message-avatar ai-avatar">
+                                        <v-icon size="20">mdi-robot</v-icon>
+                                    </div>
+                                    <div class="message-content">
+                                        <div class="loading-dots">
+                                            <div class="loading-dot"></div>
+                                            <div class="loading-dot"></div>
+                                            <div class="loading-dot"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- File Preview Area -->
+                            <div v-if="uploadedFiles.length && !messages.length" class="file-preview-grid" style="margin-top: 32px;">
+                                <div
+                                    v-for="(file, index) in uploadedFiles"
+                                    :key="index"
+                                    class="file-preview-card"
+                                >
+                                    <button class="remove-file-btn" @click="removeFile(index)">
+                                        <v-icon size="16">mdi-close</v-icon>
+                                    </button>
+                                    <div class="file-preview-image">
+                                        <img v-if="file.preview" :src="file.preview" />
+                                        <v-icon v-else size="32" color="grey">mdi-file-document</v-icon>
+                                    </div>
+                                    <div class="file-preview-name">[[ file.name ]]</div>
+                                    <div class="file-preview-info">[[ formatFileSize(file.size) ]]</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="input-container">
+                        <div class="input-wrapper">
+                            <textarea
+                                v-model="inputText"
+                                class="input-field"
+                                placeholder="Ask about your documents or drop files to analyze..."
+                                @keydown.enter.prevent="handleEnter"
+                                rows="1"
+                            ></textarea>
+                            <div class="input-actions">
+                                <button class="icon-btn" @click="$refs.fileInput.click()">
+                                    <v-icon size="20">mdi-paperclip</v-icon>
+                                </button>
+                                <button
+                                    class="send-btn"
+                                    @click="sendMessage"
+                                    :disabled="(!inputText.trim() && !uploadedFiles.length) || isProcessing"
+                                >
+                                    <v-icon size="20">mdi-send</v-icon>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Modal -->
+            <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h2 style="margin: 0;">[[ selectedResult.file_name ]]</h2>
+                            <p style="margin: 4px 0 0; color: var(--text-secondary);">
+                                [[ selectedResult.document_type ]] • Confidence: [[ Math.round(selectedResult.confidence * 100) ]]%
+                            </p>
+                        </div>
+                        <button class="icon-btn" @click="closeModal">
+                            <v-icon>mdi-close</v-icon>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <div class="modal-section">
+                            <h3 style="margin-bottom: 16px;">Document Preview</h3>
+                            <div v-for="(img, idx) in getResultImages()" :key="idx" style="margin-bottom: 16px;">
+                                <img :src="img" style="width: 100%; border-radius: 8px;" />
+                            </div>
+                        </div>
+                        
+                        <div class="modal-section">
+                            <h3 style="margin-bottom: 16px;">Extracted Information</h3>
+                            <div style="display: grid; gap: 12px;">
+                                <div
+                                    v-for="(value, key) in selectedResult.extracted_fields"
+                                    :key="key"
+                                    style="padding: 12px; background: var(--bg-primary); border-radius: 8px;"
+                                >
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">
+                                        [[ formatFieldName(key) ]]
+                                    </div>
+                                    <div style="font-weight: 500;">[[ value ]]</div>
+                                </div>
+                            </div>
+                            
+                            <div v-if="selectedResult.compliance" style="margin-top: 24px;">
+                                <h3 style="margin-bottom: 16px;">Compliance Status</h3>
+                                <div class="result-badge" style="display: inline-block; margin-bottom: 16px;">
+                                    [[ selectedResult.compliance.status ]]
+                                </div>
+                                
+                                <div v-if="selectedResult.compliance.violations && selectedResult.compliance.violations.length">
+                                    <h4 style="margin-bottom: 8px; color: var(--error);">Violations</h4>
+                                    <div v-for="(v, idx) in selectedResult.compliance.violations" :key="idx" style="padding: 12px; background: var(--bg-primary); border-radius: 8px; margin-bottom: 8px;">
+                                        [[ v.description || v.message ]]
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @click="exportResult">
+                            <v-icon size="16">mdi-download</v-icon>
+                            Export
+                        </button>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-secondary" @click="rejectDocument">Reject</button>
+                            <button class="btn btn-primary" @click="approveDocument">
+                                <v-icon size="16">mdi-check</v-icon>
+                                Approve
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Snackbar -->
+            <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
+                [[ snackbar.text ]]
+            </v-snackbar>
+        </v-app>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify.min.js"></script>
+    <script>
+        const { createApp } = Vue;
+        const { createVuetify } = Vuetify;
+
+        const vuetify = createVuetify({
+            theme: {
+                defaultTheme: 'light'
+            }
+        });
+
+        const app = createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    darkMode: false,
+                    sessions: [],
+                    currentSessionId: null,
+                    messages: [],
+                    inputText: '',
+                    uploadedFiles: [],
+                    isDragging: false,
+                    isProcessing: false,
+                    showModal: false,
+                    selectedResult: null,
+                    snackbar: {
+                        show: false,
+                        text: '',
+                        color: 'success'
+                    }
+                };
+            },
+            mounted() {
+                // Check for saved theme preference
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    this.darkMode = true;
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+                
+                // Initialize with a session
+                this.startNewSession();
+            },
+            methods: {
+                toggleTheme() {
+                    this.darkMode = !this.darkMode;
+                    document.documentElement.setAttribute('data-theme', this.darkMode ? 'dark' : 'light');
+                    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+                },
+
+                toggleSidebar() {
+                    // Implement sidebar toggle for mobile
+                },
+
+                startNewSession() {
+                    const sessionId = Date.now().toString();
+                    const session = {
+                        id: sessionId,
+                        name: `Session ${this.sessions.length + 1}`,
+                        messages: []
+                    };
+                    this.sessions.push(session);
+                    this.currentSessionId = sessionId;
+                    this.messages = [];
+                    this.uploadedFiles = [];
+                },
+
+                selectSession(sessionId) {
+                    this.currentSessionId = sessionId;
+                    const session = this.sessions.find(s => s.id === sessionId);
+                    if (session) {
+                        this.messages = session.messages;
+                    }
+                },
+
+                handleFileSelect(event) {
+                    const files = Array.from(event.target.files);
+                    this.processFiles(files);
+                },
+
+                handleDrop(event) {
+                    this.isDragging = false;
+                    const files = Array.from(event.dataTransfer.files);
+                    this.processFiles(files);
+                },
+
+                processFiles(files) {
+                    files.forEach(file => {
+                        if (this.isValidFile(file)) {
+                            // Create preview for images
+                            if (file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                    file.preview = e.target.result;
+                                    this.uploadedFiles.push(file);
+                                };
+                                reader.readAsDataURL(file);
+                            } else {
+                                this.uploadedFiles.push(file);
+                            }
+                        } else {
+                            this.showSnackbar(`Invalid file type: ${file.name}`, 'error');
+                        }
+                    });
+                },
+
+                isValidFile(file) {
+                    const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/zip', 'application/x-zip-compressed'];
+                    return validTypes.includes(file.type) || file.name.toLowerCase().endsWith('.zip');
+                },
+
+                removeFile(index) {
+                    this.uploadedFiles.splice(index, 1);
+                },
+
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                },
+
+                formatMessage(text) {
+                    // Convert markdown-like formatting to HTML
+                    return text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n/g, '<br>');
+                },
+
+                formatFieldName(fieldName) {
+                    return fieldName
+                        .split('_')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                },
+
+                handleEnter(event) {
+                    if (!event.shiftKey) {
+                        this.sendMessage();
+                    }
+                },
+
+                async sendMessage() {
+                    if ((!this.inputText.trim() && !this.uploadedFiles.length) || this.isProcessing) return;
+
+                    // Add user message
+                    if (this.inputText.trim()) {
+                        this.messages.push({
+                            role: 'user',
+                            type: 'text',
+                            content: this.inputText
+                        });
+                    }
+
+                    // Add file message if files are uploaded
+                    if (this.uploadedFiles.length) {
+                        this.messages.push({
+                            role: 'user',
+                            type: 'files',
+                            files: this.uploadedFiles.map(f => ({
+                                name: f.name,
+                                size: f.size,
+                                preview: f.preview
+                            }))
+                        });
+                    }
+
+                    this.inputText = '';
+                    this.isProcessing = true;
+
+                    // Scroll to bottom
+                    this.$nextTick(() => {
+                        const container = document.querySelector('.chat-container');
+                        container.scrollTop = container.scrollHeight;
+                    });
+
+                    // Process documents
+                    if (this.uploadedFiles.length) {
+                        await this.classifyDocuments();
+                    }
+                },
+
+                async classifyDocuments() {
+                    const formData = new FormData();
+                    this.uploadedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
+                    formData.append('checkCompliance', 'true');
+
+                    try {
+                        const response = await fetch('/api/document/classify', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Add AI response with results
+                            this.messages.push({
+                                role: 'assistant',
+                                type: 'text',
+                                content: `I've analyzed ${data.total_files} document(s). Here are the results:`
+                            });
+
+                            this.messages.push({
+                                role: 'assistant',
+                                type: 'results',
+                                results: data.results
+                            });
+
+                            // Update session
+                            const session = this.sessions.find(s => s.id === this.currentSessionId);
+                            if (session) {
+                                session.messages = [...this.messages];
+                                session.name = data.results[0]?.document_type || 'Document Analysis';
+                            }
+
+                            this.uploadedFiles = [];
+                        } else {
+                            this.messages.push({
+                                role: 'assistant',
+                                type: 'text',
+                                content: `I encountered an error: ${data.error || 'Classification failed'}`
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        this.messages.push({
+                            role: 'assistant',
+                            type: 'text',
+                            content: 'I encountered an error while processing your documents. Please try again.'
+                        });
+                    } finally {
+                        this.isProcessing = false;
+                        // Scroll to bottom
+                        this.$nextTick(() => {
+                            const container = document.querySelector('.chat-container');
+                            container.scrollTop = container.scrollHeight;
+                        });
+                    }
+                },
+
+                showExample(type) {
+                    const examples = {
+                        letter_of_credit: 'Upload a Letter of Credit document to extract key fields like applicant, beneficiary, amount, and validate against UCP600 rules.',
+                        invoice: 'Upload commercial or proforma invoices to extract supplier details, line items, totals, and payment terms.',
+                        compliance: 'I can check your trade documents for SWIFT MT700 compliance and UCP600 adherence.'
+                    };
+                    
+                    this.messages.push({
+                        role: 'user',
+                        type: 'text',
+                        content: `Tell me about ${type.replace('_', ' ')} analysis`
+                    });
+                    
+                    this.messages.push({
+                        role: 'assistant',
+                        type: 'text',
+                        content: examples[type]
+                    });
+                },
+
+                openResultModal(result) {
+                    this.selectedResult = result;
+                    this.showModal = true;
+                },
+
+                closeModal() {
+                    this.showModal = false;
+                    this.selectedResult = null;
+                },
+
+                getResultImages() {
+                    if (!this.selectedResult || !this.selectedResult.preview_images) return [];
+                    return this.selectedResult.preview_images.map(img => {
+                        return img.startsWith('data:image/') ? img : 'data:image/png;base64,' + img;
+                    });
+                },
+
+                exportResult() {
+                    const report = {
+                        file_name: this.selectedResult.file_name,
+                        document_type: this.selectedResult.document_type,
+                        confidence: this.selectedResult.confidence,
+                        extracted_fields: this.selectedResult.extracted_fields,
+                        compliance: this.selectedResult.compliance
+                    };
+
+                    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${this.selectedResult.file_name}_analysis.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.showSnackbar('Report exported successfully', 'success');
+                },
+
+                approveDocument() {
+                    this.showSnackbar(`Document approved: ${this.selectedResult.file_name}`, 'success');
+                    this.closeModal();
+                },
+
+                rejectDocument() {
+                    this.showSnackbar(`Document rejected: ${this.selectedResult.file_name}`, 'error');
+                    this.closeModal();
+                },
+
+                showSnackbar(text, color = 'success') {
+                    this.snackbar.text = text;
+                    this.snackbar.color = color;
+                    this.snackbar.show = true;
+                },
+
+                goBack() {
+                    window.location.href = '/';
+                }
+            }
+        });
+
+        app.use(vuetify).mount('#app');
+    </script>
+</body>
+</html>

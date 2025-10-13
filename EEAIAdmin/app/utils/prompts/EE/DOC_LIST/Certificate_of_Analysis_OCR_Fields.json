@@ -1,0 +1,50 @@
+{
+    "Certificate of Analysis and Quality": {
+        "Certificate Details": [
+            "Certificate Number",
+            "Date of Issue",
+            "Issuing Laboratory/Authority",
+            "Place of Issue"
+        ],
+        "Product Information": [
+            "Product Name",
+            "Batch/Lot Number",
+            "Manufacture Date",
+            "Expiry Date",
+            "Supplier/Manufacturer Name",
+            "HS Code",
+            "Country of Origin"
+        ],
+        "Analysis Parameters": [
+            "Physical Characteristics (e.g., Color, Appearance, Odor)",
+            "Chemical Composition",
+            "Microbiological Results",
+            "Moisture Content",
+            "pH Value",
+            "Purity Level",
+            "Toxicity Test Results",
+            "Heavy Metals",
+            "Contaminants"
+        ],
+        "Test Methods & Standards": [
+            "Testing Methodology",
+            "Standards Followed (e.g., ISO, USP, BIS)",
+            "Sample Size",
+            "Test Date",
+            "Reference Number"
+        ],
+        "Results & Interpretation": [
+            "Observed Values",
+            "Specification Limits",
+            "Pass/Fail Status",
+            "Remarks/Comments on Conformity"
+        ],
+        "Authentication": [
+            "Analyst/Inspector Name",
+            "Authorized Signature",
+            "Designation",
+            "Seal/Stamp",
+            "Date and Place of Certification"
+        ]
+    }
+}

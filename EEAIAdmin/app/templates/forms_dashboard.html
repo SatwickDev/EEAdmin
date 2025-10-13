@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forms Dashboard - EEAI Financial Services</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-color: #f8f9fa;
+            --text-color: #2d3748;
+            --card-bg: white;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            min-height: 100vh;
+            padding-top: 120px;
+        }
+
+        /* Removed duplicate header styles - using global floating header */
+
+        /* Repository Selector */
+        .repository-selector {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .repository-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .repository-selector label {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .repository-selector select {
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 250px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .repository-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Forms Grid */
+        .forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .form-card.trade-finance::before {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .form-card.treasury::before {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .form-card.cash-management::before {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .form-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .trade-finance .form-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .treasury .form-icon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .cash-management .form-icon {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .form-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .form-card p {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .form-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .form-features li {
+            padding: 8px 0;
+            color: var(--text-color);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-features li i {
+            color: #10b981;
+            font-size: 12px;
+        }
+
+        .form-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: gap 0.3s ease;
+        }
+
+        .form-card:hover .form-action {
+            gap: 12px;
+        }
+
+        /* Statistics Section */
+        .stats-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        /* Chatbot Icon */
+        .chatbot-icon {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .chatbot-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .chatbot-icon i {
+            color: white;
+            font-size: 24px;
+        }
+
+        /* Chatbot Container */
+        .chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+        }
+
+        .chatbot-container.active {
+            display: flex;
+        }
+
+        .chatbot-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .chatbot-iframe {
+            flex: 1;
+            border: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .quick-actions h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+
+            .repository-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .repository-selector select {
+                width: 100%;
+            }
+
+            .forms-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chatbot-container {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
+
+    <!-- Repository Selector -->
+    <div class="repository-selector">
+        <div class="repository-content">
+            <label for="repositorySelect">Active Repository:</label>
+            <select id="repositorySelect" onchange="handleRepositoryChange()">
+                <option value="">Select Repository</option>
+                <option value="trade_finance">Trade Finance</option>
+                <option value="treasury">Treasury</option>
+                <option value="cash_management">Cash Management</option>
+            </select>
+            <div id="repositoryStatus" style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-info-circle" style="color: #667eea;"></i>
+                <span style="font-size: 14px; color: #6b7280;">Select a repository to view available forms</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>Quick Actions - Select Repository & Start Chat</h2>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="openChatbotForRepository('trade_finance')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Trade Finance Chat
+                </button>
+                <button class="action-btn" onclick="openChatbotForRepository('treasury')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
+                    <i class="fas fa-chart-line"></i>
+                    Treasury Chat
+                </button>
+                <button class="action-btn" onclick="openChatbotForRepository('cash_management')" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none;">
+                    <i class="fas fa-wallet"></i>
+                    Cash Management Chat
+                </button>
+                <button class="action-btn" onclick="openChatbotWithIntent('help')">
+                    <i class="fas fa-question-circle"></i>
+                    Get Help
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTransactions">0</div>
+                    <div class="stat-label">Total Transactions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="activeTransactions">0</div>
+                    <div class="stat-label">Active Transactions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="pendingApprovals">0</div>
+                    <div class="stat-label">Pending Approvals</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="completedToday">0</div>
+                    <div class="stat-label">Completed Today</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forms Grid -->
+        <div id="formsContainer" class="forms-grid">
+            <!-- Trade Finance Forms -->
+            <div class="form-card trade-finance" style="display: none;" data-repository="trade_finance">
+                <div class="form-icon">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <h3>Import Letter of Credit</h3>
+                <p>Create and manage import LC transactions with SWIFT MT700 format compliance</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> SWIFT MT700 Format</li>
+                    <li><i class="fas fa-check"></i> UCP600 Compliance</li>
+                    <li><i class="fas fa-check"></i> Document Management</li>
+                    <li><i class="fas fa-check"></i> Auto-fill from AI Assistant</li>
+                </ul>
+                <a href="/trade_finance_dashboard" class="form-action">
+                    Open Service <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="form-card trade-finance" style="display: none;" data-repository="trade_finance">
+                <div class="form-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Bank Guarantee</h3>
+                <p>Issue and manage bank guarantees with complete workflow automation</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> Multiple Guarantee Types</li>
+                    <li><i class="fas fa-check"></i> URDG758 Compliance</li>
+                    <li><i class="fas fa-check"></i> Risk Assessment</li>
+                    <li><i class="fas fa-check"></i> Digital Workflow</li>
+                </ul>
+                <a href="/trade_finance_dashboard" class="form-action">
+                    Open Service <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="form-card trade-finance" style="display: none;" data-repository="trade_finance">
+                <div class="form-icon">
+                    <i class="fas fa-file-export"></i>
+                </div>
+                <h3>Export Documentation</h3>
+                <p>Manage export documentation and compliance requirements</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> Export LC Processing</li>
+                    <li><i class="fas fa-check"></i> Document Checklist</li>
+                    <li><i class="fas fa-check"></i> Compliance Validation</li>
+                    <li><i class="fas fa-check"></i> SWIFT Messaging</li>
+                </ul>
+                <a href="/trade_finance_dashboard" class="form-action">
+                    Open Service <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Treasury Forms -->
+            <div class="form-card treasury" style="display: none;" data-repository="treasury">
+                <div class="form-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h3>Foreign Exchange</h3>
+                <p>Execute FX trades and manage currency exposures</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> Spot & Forward Trades</li>
+                    <li><i class="fas fa-check"></i> Real-time Rates</li>
+                    <li><i class="fas fa-check"></i> Currency Swaps</li>
+                    <li><i class="fas fa-check"></i> Position Management</li>
+                </ul>
+                <a href="/treasury_management_form#forex" class="form-action">
+                    Open Form <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="form-card treasury" style="display: none;" data-repository="treasury">
+                <div class="form-icon">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <h3>Investments</h3>
+                <p>Manage investment portfolio and fixed income securities</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> Fixed Deposits</li>
+                    <li><i class="fas fa-check"></i> Treasury Bills</li>
+                    <li><i class="fas fa-check"></i> Corporate Bonds</li>
+                    <li><i class="fas fa-check"></i> Yield Calculation</li>
+                </ul>
+                <a href="/treasury_management_form#investments" class="form-action">
+                    Open Form <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="form-card treasury" style="display: none;" data-repository="treasury">
+                <div class="form-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h3>Risk Management</h3>
+                <p>Assess and manage financial risks across portfolios</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> VaR Calculation</li>
+                    <li><i class="fas fa-check"></i> Stress Testing</li>
+                    <li><i class="fas fa-check"></i> Exposure Analysis</li>
+                    <li><i class="fas fa-check"></i> Hedging Strategies</li>
+                </ul>
+                <a href="/treasury_management_form#risk" class="form-action">
+                    Open Form <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Cash Management Forms -->
+            <div class="form-card cash-management" style="display: none;" data-repository="cash_management">
+                <div class="form-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <h3>Liquidity Management</h3>
+                <p>Monitor and manage cash positions across accounts</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> Cash Position</li>
+                    <li><i class="fas fa-check"></i> Balance Monitoring</li>
+                    <li><i class="fas fa-check"></i> Liquidity Analysis</li>
+                    <li><i class="fas fa-check"></i> Account Reconciliation</li>
+                </ul>
+                <a href="/cash_management_form#liquidity" class="form-action">
+                    Open Form <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="form-card cash-management" style="display: none;" data-repository="cash_management">
+                <div class="form-icon">
+                    <i class="fas fa-money-check-alt"></i>
+                </div>
+                <h3>Payments</h3>
+                <p>Process and manage outgoing payment instructions</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> Wire Transfers</li>
+                    <li><i class="fas fa-check"></i> ACH Processing</li>
+                    <li><i class="fas fa-check"></i> RTGS/NEFT</li>
+                    <li><i class="fas fa-check"></i> Batch Processing</li>
+                </ul>
+                <a href="/cash_management_form#payments" class="form-action">
+                    Open Form <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="form-card cash-management" style="display: none;" data-repository="cash_management">
+                <div class="form-icon">
+                    <i class="fas fa-chart-area"></i>
+                </div>
+                <h3>Cash Forecast</h3>
+                <p>Forecast cash flows and optimize liquidity planning</p>
+                <ul class="form-features">
+                    <li><i class="fas fa-check"></i> Flow Projection</li>
+                    <li><i class="fas fa-check"></i> Scenario Analysis</li>
+                    <li><i class="fas fa-check"></i> Variance Reports</li>
+                    <li><i class="fas fa-check"></i> Trend Analysis</li>
+                </ul>
+                <a href="/cash_management_form#forecast" class="form-action">
+                    Open Form <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- No Repository Selected Message -->
+        <div id="noRepositoryMessage" style="text-align: center; padding: 60px 20px;">
+            <i class="fas fa-folder-open" style="font-size: 64px; color: #cbd5e0; margin-bottom: 20px;"></i>
+            <h2 style="color: #718096; margin-bottom: 10px;">No Repository Selected</h2>
+            <p style="color: #a0aec0;">Please select a repository from the dropdown above to view available forms</p>
+        </div>
+    </div>
+
+    <!-- Chatbot Icon -->
+    <div class="chatbot-icon" onclick="toggleChatbot()">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div id="chatbotContainer" class="chatbot-container">
+        <div class="chatbot-header">
+            <h3><i class="fas fa-robot"></i> AI Assistant</h3>
+            <button class="chatbot-close" onclick="toggleChatbot()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <iframe id="chatbotFrame" class="chatbot-iframe" src="/ai_chat_modern"></iframe>
+    </div>
+
+    <script>
+        // Initialize dashboard
+        window.addEventListener('load', function() {
+            // Load user preferences
+            loadUserPreferences();
+            
+            // Update statistics
+            updateStatistics();
+            
+            // Set up message listener for chatbot
+            window.addEventListener('message', handleChatbotMessage);
+        });
+
+        // Handle repository change
+        function handleRepositoryChange() {
+            const repository = document.getElementById('repositorySelect').value;
+            const formsContainer = document.getElementById('formsContainer');
+            const noRepoMessage = document.getElementById('noRepositoryMessage');
+            const statusElement = document.getElementById('repositoryStatus');
+            
+            // Hide all forms
+            document.querySelectorAll('.form-card').forEach(card => {
+                card.style.display = 'none';
+            });
+            
+            if (repository) {
+                // Show forms for selected repository
+                document.querySelectorAll(`.form-card[data-repository="${repository}"]`).forEach(card => {
+                    card.style.display = 'block';
+                });
+                
+                noRepoMessage.style.display = 'none';
+                
+                // Update status
+                const repoNames = {
+                    'trade_finance': 'Trade Finance',
+                    'treasury': 'Treasury',
+                    'cash_management': 'Cash Management'
+                };
+                
+                statusElement.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                    <span style="font-size: 14px; color: #10b981;">Active: ${repoNames[repository]}</span>
+                `;
+                
+                // Save preference
+                localStorage.setItem('selectedRepository', repository);
+                
+                // Update statistics based on repository
+                updateStatistics(repository);
+                
+                // Notify chatbot of repository change
+                const chatbotFrame = document.getElementById('chatbotFrame');
+                if (chatbotFrame && chatbotFrame.contentWindow) {
+                    chatbotFrame.contentWindow.postMessage({
+                        type: 'repository_change',
+                        repository: repository
+                    }, '*');
+                }
+            } else {
+                noRepoMessage.style.display = 'block';
+                statusElement.innerHTML = `
+                    <i class="fas fa-info-circle" style="color: #667eea;"></i>
+                    <span style="font-size: 14px; color: #6b7280;">Select a repository to view available forms</span>
+                `;
+            }
+        }
+
+        // Toggle chatbot
+        function toggleChatbot() {
+            const container = document.getElementById('chatbotContainer');
+            container.classList.toggle('active');
+        }
+
+        // Open chatbot for specific repository
+        function openChatbotForRepository(repository) {
+            // First, set the repository in the dropdown
+            document.getElementById('repositorySelect').value = repository;
+            handleRepositoryChange();
+            
+            const container = document.getElementById('chatbotContainer');
+            const chatbotFrame = document.getElementById('chatbotFrame');
+            
+            // Show chatbot
+            container.classList.add('active');
+            
+            // Send repository context and welcome message to chatbot
+            setTimeout(() => {
+                if (chatbotFrame && chatbotFrame.contentWindow) {
+                    const repoMessages = {
+                        'trade_finance': 'Welcome to Trade Finance! I can help you with:\n• Import/Export Letters of Credit\n• Bank Guarantees\n• Document Management\n• Compliance Checks\n\nWhat would you like to do?',
+                        'treasury': 'Welcome to Treasury Management! I can help you with:\n• Foreign Exchange Trades\n• Investments & Fixed Deposits\n• Derivatives\n• Risk Management\n\nWhat would you like to do?',
+                        'cash_management': 'Welcome to Cash Management! I can help you with:\n• Payment Processing\n• Collections\n• Liquidity Management\n• Cash Forecasting\n\nWhat would you like to do?'
+                    };
+                    
+                    chatbotFrame.contentWindow.postMessage({
+                        type: 'set_repository_context',
+                        repository: repository,
+                        welcomeMessage: repoMessages[repository],
+                        suggestedActions: getRepositoryActions(repository)
+                    }, '*');
+                }
+            }, 500);
+        }
+        
+        // Get repository-specific suggested actions
+        function getRepositoryActions(repository) {
+            const actions = {
+                'trade_finance': [
+                    'Create Import LC',
+                    'Create Bank Guarantee',
+                    'Check LC Status',
+                    'View Documents'
+                ],
+                'treasury': [
+                    'Execute FX Trade',
+                    'Create Investment',
+                    'View Positions',
+                    'Risk Report'
+                ],
+                'cash_management': [
+                    'Make Payment',
+                    'View Cash Position',
+                    'Cash Forecast',
+                    'Setup Collection'
+                ]
+            };
+            return actions[repository] || [];
+        }
+        
+        // Open chatbot with specific intent
+        function openChatbotWithIntent(intent) {
+            const container = document.getElementById('chatbotContainer');
+            const chatbotFrame = document.getElementById('chatbotFrame');
+            
+            // Show chatbot
+            container.classList.add('active');
+            
+            // Send intent to chatbot
+            setTimeout(() => {
+                if (chatbotFrame && chatbotFrame.contentWindow) {
+                    chatbotFrame.contentWindow.postMessage({
+                        type: 'set_intent',
+                        intent: intent,
+                        repository: document.getElementById('repositorySelect').value
+                    }, '*');
+                }
+            }, 500);
+        }
+
+        // Handle messages from chatbot
+        function handleChatbotMessage(event) {
+            if (event.data) {
+                if (event.data.type === 'navigate_to_form') {
+                    // Navigate to specific form based on chatbot instruction
+                    navigateToForm(event.data.formType, event.data.formData);
+                } else if (event.data.type === 'update_statistics') {
+                    // Update dashboard statistics
+                    updateStatistics();
+                }
+            }
+        }
+
+        // Navigate to form with pre-filled data
+        function navigateToForm(formType, formData) {
+            const formUrls = {
+                'import_lc': '/trade_finance',
+                'bank_guarantee': '/trade_finance#guarantee',
+                'forex': '/treasury_management_form#forex',
+                'investment': '/treasury_management_form#investments',
+                'payment': '/cash_management_form#payments',
+                'collection': '/cash_management_form#collections'
+            };
+            
+            const url = formUrls[formType];
+            if (url) {
+                // Store form data in session storage for auto-fill
+                if (formData) {
+                    sessionStorage.setItem('autoFillData', JSON.stringify(formData));
+                }
+                window.location.href = url;
+            }
+        }
+
+        // Load user preferences
+        function loadUserPreferences() {
+            // Load saved repository
+            const savedRepository = localStorage.getItem('selectedRepository');
+            if (savedRepository) {
+                document.getElementById('repositorySelect').value = savedRepository;
+                handleRepositoryChange();
+            }
+            
+            // Load user name from session or localStorage
+            const userName = localStorage.getItem('userName') || 'User';
+            document.getElementById('userName').textContent = userName;
+        }
+
+        // Update statistics
+        async function updateStatistics(repository) {
+            // This would normally fetch from backend
+            // For demo, using mock data
+            const stats = {
+                'trade_finance': {
+                    total: 156,
+                    active: 42,
+                    pending: 8,
+                    completed: 12
+                },
+                'treasury': {
+                    total: 289,
+                    active: 67,
+                    pending: 15,
+                    completed: 23
+                },
+                'cash_management': {
+                    total: 512,
+                    active: 128,
+                    pending: 24,
+                    completed: 45
+                }
+            };
+            
+            const data = stats[repository] || { total: 0, active: 0, pending: 0, completed: 0 };
+            
+            // Animate number updates
+            animateValue('totalTransactions', data.total);
+            animateValue('activeTransactions', data.active);
+            animateValue('pendingApprovals', data.pending);
+            animateValue('completedToday', data.completed);
+        }
+
+        // Animate value changes
+        function animateValue(id, end, duration = 1000) {
+            const element = document.getElementById(id);
+            const start = parseInt(element.textContent) || 0;
+            const range = end - start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                element.textContent = current;
+                if (current === end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+/* static/css/auth.css */
+
+/* Custom Theme Colors */
+:root {
+  --primary-color: #1976d2;
+  --primary-dark: #115293;
+  --primary-light: #42a5f5;
+  --secondary-color: #424242;
+  --accent-color: #ff5722;
+  --error-color: #f44336;
+  --warning-color: #ff9800;
+  --info-color: #2196f3;
+  --success-color: #4caf50;
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* Login Container */
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+/* Login Card */
+.login-card {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    rgba(25, 118, 210, 0.1) 90deg,
+    transparent 180deg,
+    rgba(25, 118, 210, 0.1) 270deg,
+    transparent 360deg
+  );
+  animation: rotate 20s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Logo Section */
+.logo-section {
+  text-align: center;
+}
+
+.logo-section h2 {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 8px 0;
+}
+
+/* Form Styles */
+.v-text-field {
+  margin-bottom: 8px;
+}
+
+.v-text-field .v-field {
+  border-radius: 8px;
+}
+
+.v-text-field .v-field:hover {
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+}
+
+.v-text-field.v-text-field--focused .v-field {
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+}
+
+/* Button Styles */
+.v-btn {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0.5px;
+}
+
+.v-btn--size-large {
+  height: 48px !important;
+}
+
+.v-btn.v-btn--variant-elevated {
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
+
+.v-btn:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+/* Checkbox Styles */
+.v-checkbox .v-selection-control__input {
+  border-radius: 4px;
+}
+
+/* Link Styles */
+a {
+  text-decoration: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Dashboard Styles */
+.v-app-bar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.v-app-bar-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+/* Card Hover Effects */
+.v-card {
+  transition: all 0.3s ease;
+}
+
+.v-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Loading Animation */
+.v-btn--loading {
+  pointer-events: none;
+}
+
+.v-btn--loading .v-btn__content {
+  opacity: 0;
+}
+
+/* Form Validation */
+.v-text-field.error--text .v-field {
+  border-color: var(--error-color) !important;
+}
+
+.v-messages.error--text {
+  color: var(--error-color) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 16px;
+  }
+
+  .login-card {
+    margin: 16px 0;
+  }
+
+  .logo-section h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    margin: 8px;
+  }
+
+  .v-card-title,
+  .v-card-text {
+    padding: 16px !important;
+  }
+
+  .logo-section h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Animation Classes */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.slide-up-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+/* Snackbar Custom Styles */
+.v-snackbar {
+  font-weight: 500;
+}
+
+.v-snackbar.v-snackbar--variant-elevated {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Menu Styles */
+.v-menu .v-list {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.v-list-item {
+  border-radius: 4px;
+  margin: 2px 4px;
+}
+
+.v-list-item:hover {
+  background-color: rgba(25, 118, 210, 0.1) !important;
+}
+
+/* Avatar Styles */
+.v-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Focus Styles for Accessibility */
+.v-btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.v-text-field .v-field:focus-within {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Chat Interface Styles */
+.chat-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.chat-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
+
+/* File Upload Zone */
+.file-upload-zone {
+  transition: all 0.2s ease;
+  border-radius: 12px !important;
+}
+
+.file-upload-zone:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.file-upload-zone input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* Chat Message Animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-container > div {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+/* Loading Dots Animation */
+@keyframes loadingDots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+.loading-dots::after {
+  content: '';
+  animation: loadingDots 1.5s infinite;
+}
+
+/* Image Fade In */
+@keyframes imageEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.image-fade-in {
+  animation: imageEnter 0.3s ease-out;
+}
+
+/* Dark mode chat styles */
+.dark .chat-container {
+  background-color: #374151;
+}
+
+.dark .file-upload-zone {
+  background-color: #374151;
+  border-color: #60a5fa;
+  color: #60a5fa;
+}
+
+.dark .file-upload-zone:hover {
+  background-color: #4b5563;
+}
+
+/* Chat bubble styles */
+.chat-bubble {
+  max-width: 70%;
+  word-wrap: break-word;
+  position: relative;
+}
+
+.chat-bubble::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.user-bubble::before {
+  bottom: 0;
+  right: -8px;
+  border-width: 8px 0 0 8px;
+  border-color: #2563eb transparent transparent transparent;
+}
+
+.bot-bubble::before {
+  bottom: 0;
+  left: -8px;
+  border-width: 8px 8px 0 0;
+  border-color: #e5e7eb transparent transparent transparent;
+}
+
+.dark .bot-bubble::before {
+  border-color: #4b5563 transparent transparent transparent;
+}
+
+/* Smooth transitions */
+.smooth-transition {
+  transition: all 0.2s ease;
+}
+
+/* Avatar styles */
+.avatar-border {
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  transition: border-color 0.2s ease;
+}
+
+.avatar-border:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+/* Action buttons */
+.action-button {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.2s ease;
+}
+
+.group:hover .action-button {
+  opacity: 1;
+  transform: translateY(-24px);
+}
+
+/* PDF Dialog styles */
+.pdf-dialog {
+  backdrop-filter: blur(8px);
+}
+
+.pdf-dialog .v-card {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Table styles in chat */
+.chat-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.chat-table th,
+.chat-table td {
+  border: 1px solid rgba(156, 163, 175, 0.3);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.chat-table th {
+  background-color: rgba(59, 130, 246, 0.1);
+  font-weight: 600;
+}
+
+.dark .chat-table th {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Chart container */
+.chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .chart-container {
+  background: #374151;
+}
+
+/* Responsive design for chat */
+@media (max-width: 768px) {
+  .chat-bubble {
+    max-width: 85%;
+  }
+
+  .action-button {
+    opacity: 1;
+    transform: translateY(-20px);
+  }
+
+  .file-upload-zone {
+    padding: 16px;
+  }
+}

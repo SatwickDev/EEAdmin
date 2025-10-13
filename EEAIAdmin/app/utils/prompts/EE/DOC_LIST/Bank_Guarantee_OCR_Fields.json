@@ -1,0 +1,40 @@
+{
+    "Bank Guarantee": {
+        "Guarantee Details": [
+            "Guarantee Number",
+            "Date of Issue",
+            "Expiry Date",
+            "Type of Guarantee (Performance, Financial, etc.)"
+        ],
+        "Parties Involved": [
+            "Applicant Name and Address",
+            "Beneficiary Name and Address",
+            "Issuing Bank Name and Address",
+            "Advising/Confirming Bank (if any)"
+        ],
+        "Guarantee Terms": [
+            "Guarantee Amount (in figures)",
+            "Guarantee Amount (in words)",
+            "Currency",
+            "Purpose of Guarantee",
+            "Claim Conditions",
+            "Partial Claims Allowed",
+            "Automatic Extension Clause"
+        ],
+        "Supporting References": [
+            "Underlying Contract Number",
+            "Contract Date",
+            "Invoice or Order Reference"
+        ],
+        "Governing Law & Jurisdiction": [
+            "Applicable Law",
+            "Jurisdiction",
+            "Dispute Resolution Mechanism"
+        ],
+        "Authentication": [
+            "Authorized Signatory of Bank",
+            "Stamp/Seal of Issuing Bank",
+            "Date and Place of Signature"
+        ]
+    }
+}

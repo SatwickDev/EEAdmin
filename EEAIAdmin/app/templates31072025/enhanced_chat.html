@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - Enhanced Chat</title>
+    
+    <!-- Font Awesome -->
+    
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/floating-header-unified.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <style>
+    body {
+      padding-top: 100px;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding-top: 80px;
+      }
+    }
+  </style>
+</head>
+<body class="with-floating-header">
+    <!-- Unified Floating Header -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <!-- Brand Section -->
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg width="28" height="28" viewBox="0 0 48 48">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#6366f1"/>
+                                    <stop offset="50%" style="stop-color:#8b5cf6"/>
+                                    <stop offset="100%" style="stop-color:#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                            <g fill="url(#logoGradient)">
+                                <rect x="8" y="8" width="8" height="32" rx="3"/>
+                                <rect x="8" y="8" width="24" height="8" rx="3"/>
+                                <rect x="8" y="20" width="20" height="8" rx="3"/>
+                            </g>
+                            <g fill="url(#logoGradient)" opacity="0.6">
+                                <rect x="20" y="32" width="20" height="2" rx="1"/>
+                                <rect x="20" y="36" width="20" height="2" rx="1"/>
+                            </g>
+                        </svg>
+                        <div class="status-pulse"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">Finstack</h1>
+                    <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+                </div>
+            </div>
+
+            <!-- Navigation Pills -->
+            <nav class="nav-pills">
+                <a href="/" class="nav-pill ">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/analytics" class="nav-pill ">
+                    <i class="mdi mdi-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="/ai-chat-pro" class="nav-pill active">
+                    <i class="mdi mdi-robot"></i>
+                    <span>AI Chat</span>
+                </a>
+                <a href="/compliance-results" class="nav-pill ">
+                    <i class="mdi mdi-shield-check"></i>
+                    <span>Vetting</span>
+                </a>
+                <a href="/document-classification" class="nav-pill ">
+                    <i class="mdi mdi-file-document-multiple"></i>
+                    <span>Documents</span>
+                </a>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <a href="/ai-chat-pro" class="action-button">
+                    <i class="mdi mdi-plus"></i>
+                    <span>New Session</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <!-- Enhanced Header with Export Actions -->
+        <div class="chat-header">
+            <div class="header-actions">
+                <div class="chat-title">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">
+                        <i class="fas fa-robot" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                        AI Assistant
+                    </h2>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn export-btn" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Excel</span>
+                    </button>
+                    <button class="action-btn pdf-btn" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF</span>
+                    </button>
+                    <button class="action-btn report-btn" onclick="generateReport()">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Report</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleTheme()">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                        <span id="theme-text">Dark</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-area" id="messages-container">
+            <!-- Welcome Message -->
+            <div class="message assistant">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-role">AI Assistant</div>
+                    <div class="message-text">
+                        Hello! I'm your AI assistant. I can help you with document analysis, data processing, and answering your questions. How can I assist you today?
+                    </div>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Input Area -->
+        <div class="input-area">
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <button class="attach-btn" onclick="attachFile()">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <textarea 
+                        class="message-input" 
+                        id="message-input" 
+                        placeholder="Message AI Assistant..." 
+                        rows="1" 
+                        style="height: 32px;"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button class="voice-btn" id="voice-btn" onclick="toggleVoiceRecording()">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="fab-container">
+            <button class="fab-btn" onclick="toggleFabMenu()">
+                <i class="fas fa-plus"></i>
+            </button>
+            <div class="fab-menu" id="fab-menu">
+                <div class="fab-menu-item" onclick="startNewChat()">
+                    <i class="fas fa-comments"></i>
+                    <span>New Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="clearChat()">
+                    <i class="fas fa-broom"></i>
+                    <span>Clear Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="exportChat()">
+                    <i class="fas fa-download"></i>
+                    <span>Export Chat</span>
+                </div>
+                <div class="fab-menu-item" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" style="display: none;" onchange="handleFileSelect(event)">
+
+    <!-- JavaScript -->
+    <script>
+        // Theme Management
+        let isDarkMode = localStorage.getItem('theme') === 'dark';
+        
+        function initializeTheme() {
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                updateThemeIcon();
+            }
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (isDarkMode) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                text.textContent = 'Light';
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                text.textContent = 'Dark';
+            }
+        }
+
+        // Input area functionality
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            updateSendButton();
+        });
+
+        // Update send button state
+        function updateSendButton() {
+            if (messageInput.value.trim()) {
+                sendBtn.classList.add('active');
+                sendBtn.disabled = false;
+            } else {
+                sendBtn.classList.remove('active');
+                sendBtn.disabled = true;
+            }
+        }
+
+        // Send message on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send message function
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = '32px';
+            updateSendButton();
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate API call
+            setTimeout(() => {
+                hideTypingIndicator();
+                addMessage('This is a sample response from the AI assistant. The actual implementation would call your backend API here.', 'assistant');
+            }, 1500);
+        }
+
+        // Add message to chat
+        function addMessage(content, role) {
+            const messagesContainer = document.getElementById('messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            const avatar = role === 'user' 
+                ? '<i class="fas fa-user"></i>' 
+                : '<i class="fas fa-robot"></i>';
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-role">${role === 'user' ? 'You' : 'AI Assistant'}</div>
+                    <div class="message-text">${escapeHtml(content)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('messages-container');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+
+            typingDiv.innerHTML = `
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content">
+                    <div class="message-role">AI Assistant</div>
+                    <div class="loading-dots">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Voice recording
+        let isRecording = false;
+
+        function toggleVoiceRecording() {
+            const voiceBtn = document.getElementById('voice-btn');
+            isRecording = !isRecording;
+
+            if (isRecording) {
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                // Start recording logic here
+            } else {
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                // Stop recording logic here
+            }
+        }
+
+        // File attachment
+        function attachFile() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Handle file upload logic here
+                console.log('File selected:', file.name);
+            }
+        }
+
+        // FAB menu
+        function toggleFabMenu() {
+            const menu = document.getElementById('fab-menu');
+            menu.classList.toggle('active');
+        }
+
+        // FAB menu actions
+        function startNewChat() {
+            document.getElementById('messages-container').innerHTML = '';
+            addMessage('Hello! I\'m starting a new conversation. How can I help you today?', 'assistant');
+            toggleFabMenu();
+        }
+
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat?')) {
+                document.getElementById('messages-container').innerHTML = '';
+                addMessage('Chat cleared. How can I help you today?', 'assistant');
+            }
+            toggleFabMenu();
+        }
+
+        function exportChat() {
+            // Export chat logic here
+            console.log('Exporting chat...');
+            toggleFabMenu();
+        }
+
+        function showSettings() {
+            // Show settings modal
+            console.log('Opening settings...');
+            toggleFabMenu();
+        }
+
+        // Export functions
+        function exportToExcel() {
+            console.log('Exporting to Excel...');
+            // Add actual export logic here
+        }
+
+        function exportToPDF() {
+            console.log('Exporting to PDF...');
+            // Add actual export logic here
+        }
+
+        function generateReport() {
+            console.log('Generating report...');
+            // Add actual report generation logic here
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize theme on load
+        initializeTheme();
+        updateSendButton();
+
+        // Close FAB menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const fabContainer = document.querySelector('.fab-container');
+            const fabMenu = document.getElementById('fab-menu');
+            
+            if (!fabContainer.contains(event.target) && fabMenu.classList.contains('active')) {
+                fabMenu.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+[
+  {
+    "date": "2023-01-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 80,
+    "variance_pattern": "Medium",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2023-02-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 75,
+    "variance_pattern": "Low",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2023-03-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 85,
+    "variance_pattern": "High",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2023-04-01",
+    "forecast_period": "QUARTERLY",
+    "confidence_level": 70,
+    "variance_pattern": "Medium",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2023-05-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 90,
+    "variance_pattern": "Low",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2023-06-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 65,
+    "variance_pattern": "High",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2023-07-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 70,
+    "variance_pattern": "Medium",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2023-08-01",
+    "forecast_period": "QUARTERLY",
+    "confidence_level": 80,
+    "variance_pattern": "High",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2023-09-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 75,
+    "variance_pattern": "Low",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2023-10-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 85,
+    "variance_pattern": "Medium",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2023-11-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 90,
+    "variance_pattern": "High",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2023-12-01",
+    "forecast_period": "QUARTERLY",
+    "confidence_level": 95,
+    "variance_pattern": "Low",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2024-01-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 80,
+    "variance_pattern": "Medium",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2024-02-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 75,
+    "variance_pattern": "Low",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2024-03-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 85,
+    "variance_pattern": "High",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2024-04-01",
+    "forecast_period": "QUARTERLY",
+    "confidence_level": 70,
+    "variance_pattern": "Medium",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2024-05-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 90,
+    "variance_pattern": "Low",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2024-06-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 65,
+    "variance_pattern": "High",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2024-07-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 70,
+    "variance_pattern": "Medium",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2024-08-01",
+    "forecast_period": "QUARTERLY",
+    "confidence_level": 80,
+    "variance_pattern": "High",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2024-09-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 75,
+    "variance_pattern": "Low",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2024-10-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 85,
+    "variance_pattern": "Medium",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2024-11-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 90,
+    "variance_pattern": "High",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2024-12-01",
+    "forecast_period": "QUARTERLY",
+    "confidence_level": 95,
+    "variance_pattern": "Low",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2025-01-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 80,
+    "variance_pattern": "Medium",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2025-02-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 75,
+    "variance_pattern": "Low",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2025-03-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 85,
+    "variance_pattern": "High",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2025-04-01",
+    "forecast_period": "QUARTERLY",
+    "confidence_level": 70,
+    "variance_pattern": "Medium",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2025-05-01",
+    "forecast_period": "DAILY",
+    "confidence_level": 90,
+    "variance_pattern": "Low",
+    "forecast_type": "Individual"
+  },
+  {
+    "date": "2025-06-01",
+    "forecast_period": "WEEKLY",
+    "confidence_level": 65,
+    "variance_pattern": "High",
+    "forecast_type": "Consolidated"
+  },
+  {
+    "date": "2025-07-01",
+    "forecast_period": "MONTHLY",
+    "confidence_level": 70,
+    "variance_pattern": "Medium",
+    "forecast_type": "Individual"
+  }
+]
