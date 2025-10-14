@@ -2368,6 +2368,21 @@ Instructions:
         )
         reply = response.choices[0].message["content"]
         print("✅ UCP600 GPT reply:\n", reply)
+        
+        # Check if reply is empty or None
+        if not reply or not reply.strip():
+            print("❌ UCP600 GPT returned empty response")
+            return {key: {"error": "Empty response from UCP600 analysis"} for key in fields}
+
+        # Try to clean the reply (remove any markdown, extra text)
+        reply = reply.strip()
+        if reply.startswith("```json"):
+            reply = reply[7:]
+        if reply.endswith("```"):
+            reply = reply[:-3]
+        reply = reply.strip()
+        
+        print(f"✅ UCP600 cleaned reply: {reply[:200]}...")
 
         parsed = json.loads(reply)
 
@@ -2380,6 +2395,10 @@ Instructions:
             for item in parsed
         }
 
+    except json.JSONDecodeError as e:
+        print(f"❌ UCP600 JSON parse error: {e}")
+        print(f"❌ UCP600 problematic reply: {reply[:500]}...")
+        return {key: {"error": f"JSON parse error: {str(e)}"} for key in fields}
     except Exception as e:
         print(f"❌ UCP600 compliance check error: {e}")
         return {key: {"error": str(e)} for key in fields}
@@ -2422,8 +2441,20 @@ IMPORTANT: Return ONLY the JSON array exactly as specified, with no extra text, 
             temperature=0.3
         )
         reply = response.choices[0].message["content"].strip()
+        print("✅ SWIFT GPT reply:\n", reply)
+        
         if not reply:
-            raise ValueError("Empty response from model")
+            print("❌ SWIFT GPT returned empty response")
+            return {key: {"error": "Empty response from SWIFT analysis"} for key in fields}
+        
+        # Try to clean the reply (remove any markdown, extra text)
+        if reply.startswith("```json"):
+            reply = reply[7:]
+        if reply.endswith("```"):
+            reply = reply[:-3]
+        reply = reply.strip()
+        
+        print(f"✅ SWIFT cleaned reply: {reply[:200]}...")
 
         # Directly parse JSON
         parsed = json.loads(reply)
@@ -2437,6 +2468,10 @@ IMPORTANT: Return ONLY the JSON array exactly as specified, with no extra text, 
             for item in parsed
         }
 
+    except json.JSONDecodeError as e:
+        print(f"❌ SWIFT JSON parse error: {e}")
+        print(f"❌ SWIFT problematic reply: {reply[:500]}...")
+        return {key: {"error": f"JSON parse error: {str(e)}"} for key in fields}
     except Exception as e:
         print(f"❌ SWIFT compliance check error: {e}")
         return {key: {"error": str(e)} for key in fields}

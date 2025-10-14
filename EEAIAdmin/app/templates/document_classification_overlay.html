@@ -1980,29 +1980,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Processing Time Breakdown -->
-                                    <div class="mt-4 pt-4 border-t border-gray-200">
-                                        <div class="flex items-center justify-between text-xs">
-                                            <div class="flex items-center gap-4">
-                                                <span class="text-gray-500">
-                                                    <i class="mdi mdi-file-check text-emerald-500"></i> Quality: <strong>{% raw %}{{ result.qualityTime || '0.0' }}{% endraw %}s</strong>
-                                                </span>
-                                                <span class="text-gray-500">
-                                                    <i class="mdi mdi-eye-check text-purple-500"></i> OCR: <strong>{% raw %}{{ result.ocrTime || '0.0' }}{% endraw %}s</strong>
-                                                </span>
-                                                <span class="text-gray-500">
-                                                    <i class="mdi mdi-clock-fast text-blue-500"></i> Classification: <strong>{% raw %}{{ result.classificationTime || '0.0' }}{% endraw %}s</strong>
-                                                </span>
-                                                <span class="text-gray-500">
-                                                    <i class="mdi mdi-text-box-search text-indigo-500"></i> Entity Extraction: <strong>{% raw %}{{ result.llmTime || '0.0' }}{% endraw %}s</strong>
-                                                </span>
-                                                <span class="text-gray-500">
-                                                    <i class="mdi mdi-brain text-green-500"></i> LLM Analysis: <strong>0.0s</strong>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <!-- More Insights Expandable Section -->
                                     <transition name="insights">
                                         <div v-if="result.insightsExpanded" class="mt-6 pt-6 border-t border-gray-300 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 rounded-xl p-8 shadow-lg animate-slide-in">
@@ -2219,7 +2196,7 @@
                                                                     <div class="relative w-12 h-12">
                                                                         <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
                                                                             <path class="text-gray-200" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-                                                                            <path class="text-red-500" stroke="currentColor" stroke-width="3" fill="none" v-bind:stroke-dasharray="`${parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4))}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                                                            <path class="text-red-500" stroke="currentColor" stroke-width="3" fill="none" v-bind:stroke-dasharray="`${result.complianceTime && parseFloat(result.complianceTime) > 0 ? Math.round(Math.max(0, 100 - (parseFloat(result.complianceTime) * 4))) : 0}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
                                                                         </svg>
                                                                         <div class="absolute inset-0 flex items-center justify-center">
                                                                             <i class="mdi mdi-shield-check text-red-500 text-lg"></i>
@@ -2230,7 +2207,7 @@
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.complianceTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                <span class="text-sm font-bold text-red-600">{% raw %}{{ parseFloat(result.complianceTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.complianceTime || 0) * 4)) }}{% endraw %}%</span>
+                                                                <span class="text-sm font-bold text-red-600">{% raw %}{{ result.complianceTime && parseFloat(result.complianceTime) > 0 ? Math.round(Math.max(0, 100 - (parseFloat(result.complianceTime) * 4))) : 0 }}{% endraw %}%</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2283,6 +2260,16 @@
                                                                     <div class="flex-1">
                                                                         <p class="text-sm font-medium text-gray-700">Field Extraction</p>
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.llmTime || '0.0' }}{% endraw %}s</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="flex items-center space-x-3">
+                                                                    <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center z-10">
+                                                                        <i class="mdi mdi-shield-check text-white text-xs"></i>
+                                                                    </div>
+                                                                    <div class="flex-1">
+                                                                        <p class="text-sm font-medium text-gray-700">Compliance Check</p>
+                                                                        <p class="text-xs text-gray-500">{% raw %}{{ result.complianceTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -2418,35 +2405,80 @@
                                                     </div>
                                                     
                                                     <!-- AI Recommendations -->
-                                                    <div class="glass-card p-6 bg-gradient-to-br from-white to-yellow-50 border border-yellow-100">
-                                                        <h5 class="font-semibold text-gray-700 mb-4 flex items-center">
+                                                    <div class="glass-card p-4 bg-gradient-to-br from-white via-yellow-50 to-amber-50 border border-yellow-100 shadow-lg">
+                                                        <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
                                                             <i class="mdi mdi-lightbulb-outline mr-2 text-yellow-500"></i>
                                                             AI Recommendations
                                                         </h5>
                                                         
                                                         <div class="space-y-3">
-                                                            <div class="flex items-start space-x-3 p-3" :class="parseFloat(result.qualityTime || 0) <= 2 ? 'bg-green-50' : parseFloat(result.qualityTime || 0) <= 4 ? 'bg-yellow-50' : 'bg-red-50'" style="border-radius: 8px;">
-                                                                <i :class="parseFloat(result.qualityTime || 0) <= 2 ? 'mdi mdi-check-circle text-green-500' : parseFloat(result.qualityTime || 0) <= 4 ? 'mdi mdi-alert-circle text-yellow-500' : 'mdi mdi-close-circle text-red-500'" class="mt-0.5"></i>
-                                                                <div>
-                                                                    <p class="text-sm font-medium text-gray-700">Document Quality</p>
-                                                                    <p class="text-xs text-gray-500">{% raw %}{{ parseFloat(result.qualityTime || 0) <= 2 ? 'Excellent scan quality detected' : parseFloat(result.qualityTime || 0) <= 4 ? 'Good quality, minor processing needed' : 'Quality analysis took longer than expected' }}{% endraw %}</p>
-                                                                </div>
+                                                            <!-- Image Quality Recommendation -->
+                                                            <div class="flex items-start space-x-3 p-3 rounded-lg" 
+                                                                 :class="(result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ? 
+                                                                         'bg-green-50 border-l-4 border-green-400' : 
+                                                                         (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ? 
+                                                                         'bg-blue-50 border-l-4 border-blue-400' : 
+                                                                         'bg-orange-50 border-l-4 border-orange-400'">
+                                                                <i :class="(result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ? 
+                                                                           'mdi mdi-check-circle text-green-600' : 
+                                                                           (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ? 
+                                                                           'mdi mdi-information text-blue-600' : 
+                                                                           'mdi mdi-alert text-orange-600'" class="text-lg mt-0.5"></i>
+                                                                <p class="text-sm text-gray-700 leading-relaxed">
+                                                                    {% raw %}{{ (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ? 
+                                                                        'Document scan quality is excellent. Continue using current scanning settings for optimal results.' : 
+                                                                        (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ? 
+                                                                        'Good image quality detected. Consider adjusting brightness or contrast for enhanced accuracy.' : 
+                                                                        'Image quality could be improved. Try rescanning with better lighting or higher resolution.' }}{% endraw %}
+                                                                </p>
                                                             </div>
                                                             
-                                                            <div class="flex items-start space-x-3 p-3" :class="result.fieldsExtracted >= 8 ? 'bg-green-50' : result.fieldsExtracted >= 5 ? 'bg-blue-50' : 'bg-orange-50'" style="border-radius: 8px;">
-                                                                <i :class="result.fieldsExtracted >= 8 ? 'mdi mdi-check-circle text-green-500' : result.fieldsExtracted >= 5 ? 'mdi mdi-information text-blue-500' : 'mdi mdi-alert text-orange-500'" class="mt-0.5"></i>
-                                                                <div>
-                                                                    <p class="text-sm font-medium text-gray-700">Field Extraction</p>
-                                                                    <p class="text-xs text-gray-500">{% raw %}{{ result.fieldsExtracted >= 8 ? 'All fields extracted successfully' : result.fieldsExtracted >= 5 ? result.fieldsExtracted + ' fields extracted successfully' : 'Only ' + result.fieldsExtracted + ' fields extracted' }}{% endraw %}</p>
-                                                                </div>
+                                                            <!-- Processing Performance Recommendation -->
+                                                            <div class="flex items-start space-x-3 p-3 rounded-lg"
+                                                                 :class="parseFloat(result.processingTime || 0) <= 3 ? 
+                                                                         'bg-green-50 border-l-4 border-green-400' : 
+                                                                         parseFloat(result.processingTime || 0) <= 8 ? 
+                                                                         'bg-yellow-50 border-l-4 border-yellow-400' : 
+                                                                         'bg-red-50 border-l-4 border-red-400'">
+                                                                <i :class="parseFloat(result.processingTime || 0) <= 3 ? 
+                                                                           'mdi mdi-rocket text-green-600' : 
+                                                                           parseFloat(result.processingTime || 0) <= 8 ? 
+                                                                           'mdi mdi-clock text-yellow-600' : 
+                                                                           'mdi mdi-timer-alert text-red-600'" class="text-lg mt-0.5"></i>
+                                                                <p class="text-sm text-gray-700 leading-relaxed">
+                                                                    {% raw %}{{ parseFloat(result.processingTime || 0) <= 3 ? 
+                                                                        'Excellent processing speed achieved. Your system is well-optimized for document analysis.' : 
+                                                                        parseFloat(result.processingTime || 0) <= 8 ? 
+                                                                        'Processing time is acceptable. Consider compressing images or upgrading hardware for faster results.' : 
+                                                                        'Processing is slower than expected. Check image size, system resources, or network connectivity.' }}{% endraw %}
+                                                                </p>
                                                             </div>
                                                             
-                                                            <div class="flex items-start space-x-3 p-3" :class="result.confidence >= 95 ? 'bg-purple-50' : result.confidence >= 85 ? 'bg-blue-50' : result.confidence >= 75 ? 'bg-yellow-50' : 'bg-red-50'" style="border-radius: 8px;">
-                                                                <i :class="result.confidence >= 95 ? 'mdi mdi-star text-purple-500' : result.confidence >= 85 ? 'mdi mdi-thumb-up text-blue-500' : result.confidence >= 75 ? 'mdi mdi-alert-circle text-yellow-500' : 'mdi mdi-alert text-red-500'" class="mt-0.5"></i>
-                                                                <div>
-                                                                    <p class="text-sm font-medium text-gray-700">{% raw %}{{ result.confidence >= 95 ? 'Exceptional Confidence' : result.confidence >= 85 ? 'High Confidence' : result.confidence >= 75 ? 'Moderate Confidence' : 'Low Confidence' }}{% endraw %}</p>
-                                                                    <p class="text-xs text-gray-500">Classification accuracy: {% raw %}{{ result.confidence }}{% endraw %}%</p>
-                                                                </div>
+                                                            <!-- Classification Accuracy Recommendation -->
+                                                            <div class="flex items-start space-x-3 p-3 rounded-lg"
+                                                                 :class="result.confidence >= 95 ? 
+                                                                         'bg-purple-50 border-l-4 border-purple-400' : 
+                                                                         result.confidence >= 85 ? 
+                                                                         'bg-blue-50 border-l-4 border-blue-400' : 
+                                                                         result.confidence >= 75 ? 
+                                                                         'bg-yellow-50 border-l-4 border-yellow-400' : 
+                                                                         'bg-red-50 border-l-4 border-red-400'">
+                                                                <i :class="result.confidence >= 95 ? 
+                                                                           'mdi mdi-star text-purple-600' : 
+                                                                           result.confidence >= 85 ? 
+                                                                           'mdi mdi-thumb-up text-blue-600' : 
+                                                                           result.confidence >= 75 ? 
+                                                                           'mdi mdi-help-circle text-yellow-600' : 
+                                                                           'mdi mdi-alert-circle text-red-600'" class="text-lg mt-0.5"></i>
+                                                                <p class="text-sm text-gray-700 leading-relaxed">
+                                                                    {% raw %}{{ result.confidence >= 95 ? 
+                                                                        'Outstanding classification accuracy! The AI has identified the document type with high confidence.' : 
+                                                                        result.confidence >= 85 ? 
+                                                                        'Good classification results. The document structure and content are clearly recognized.' : 
+                                                                        result.confidence >= 75 ? 
+                                                                        'Moderate classification confidence. Consider manual review to verify document type accuracy.' : 
+                                                                        'Low classification confidence detected. Manual verification is strongly recommended before processing.' }}{% endraw %}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2544,7 +2576,7 @@
                                     </div>
                                     <i class="mdi mdi-brain text-3xl text-green-500"></i>
                                 </div>
-                                <div class="metric-number text-3xl text-green-600">{% raw %}{{ avgLlmTime }}{% endraw %}s</div>
+                                <div class="metric-number text-3xl text-green-600">{% raw %}{{ avgComplianceTime || '0.0' }}{% endraw %}s</div>
                                 <p class="text-xs text-gray-600 mt-2">Average Time</p>
                             </div>
                         </div>
@@ -2816,11 +2848,6 @@
                                     :class="activeTab === 'compliance' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-600 hover:text-gray-800'">
                                 Compliance
                             </button>
-                            <button @click="activeTab = 'analysis'"
-                                    class="pb-3 px-1 font-medium transition-colors"
-                                    :class="activeTab === 'analysis' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-600 hover:text-gray-800'">
-                                AI Analysis
-                            </button>
                         </div>
 
                         <!-- Enhanced Fields Tab -->
@@ -2835,7 +2862,7 @@
                                     <!-- Field Header -->
                                     <div class="flex items-start justify-between mb-2">
                                         <div class="flex-1">
-                                            <h4 class="font-semibold text-gray-800 text-sm uppercase tracking-wide">
+                                            <h4 class="text-base font-semibold text-gray-900">
                                                 {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
                                             </h4>
                                         </div>
@@ -2974,53 +3001,77 @@
                                     </div>
                                 </div>
 
-                                <!-- Display all properties as table -->
-                                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                                    <div class="overflow-x-auto">
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-purple-50">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
-                                                        Field
-                                                    </th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
-                                                        Compliance
-                                                    </th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">
-                                                        Reason
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="(value, key) in getUCP600TableData()" :key="'ucp-row-' + key"
-                                                    class="hover:bg-gray-50">
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="flex items-center">
-                                                            <i class="mdi mdi-tag text-purple-500 mr-2"></i>
-                                                            <span class="text-sm font-medium text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <span v-if="typeof value === 'object' && value.compliance !== undefined"
-                                                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                                              :class="value.compliance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                                            <i :class="value.compliance ? 'mdi mdi-check-circle mr-1' : 'mdi mdi-alert-circle mr-1'"></i>
-                                                            {% raw %}{{ value.compliance ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                        </span>
-                                                        <span v-else class="text-sm text-gray-500">
-                                                            {% raw %}{{ typeof value === 'string' ? value : JSON.stringify(value) }}{% endraw %}
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        <span v-if="typeof value === 'object' && value.reason"
-                                                              class="text-sm text-gray-700">
-                                                            {% raw %}{{ value.reason }}{% endraw %}
-                                                        </span>
-                                                        <span v-else class="text-sm text-gray-500">-</span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                <!-- Display all properties as vertical cards -->
+                                <div class="space-y-3">
+                                    <div v-for="(value, key) in getUCP600TableData()" :key="'ucp-card-' + key"
+                                         class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1">
+                                                <!-- Field Name -->
+                                                <div class="flex items-center mb-3">
+                                                    <i class="mdi mdi-tag text-purple-500 mr-2"></i>
+                                                    <h6 class="text-base font-semibold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h6>
+                                                </div>
+                                                
+                                                <!-- Value Information -->
+                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-3">
+                                                    <!-- Actual Value -->
+                                                    <div class="bg-blue-50 rounded-md p-3">
+                                                        <label class="block text-xs font-medium text-blue-700 mb-1">Field Value</label>
+                                                        <p class="text-sm text-blue-900 font-mono break-words">
+                                                            {% raw %}{{ value.value || 'Not provided' }}{% endraw %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Compliance Status -->
+                                                <div class="mb-3">
+                                                    <span v-if="typeof value === 'object' && value.compliance !== undefined"
+                                                          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                                          :class="value.compliance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                        <i :class="value.compliance ? 'mdi mdi-check-circle mr-2' : 'mdi mdi-alert-circle mr-2'"></i>
+                                                        {% raw %}{{ value.compliance ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
+                                                    </span>
+                                                    <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
+                                                        <i class="mdi mdi-information mr-2"></i>
+                                                        {% raw %}{{ typeof value === 'string' ? value : JSON.stringify(value) }}{% endraw %}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Reason/Description -->
+                                                <div v-if="typeof value === 'object' && value.reason" class="mt-2">
+                                                    <label class="block text-xs font-medium text-gray-500 mb-1">Compliance Reason</label>
+                                                    <p class="text-sm text-gray-700 bg-gray-50 rounded-md p-3">
+                                                        <i class="mdi mdi-text-box-outline mr-2"></i>
+                                                        {% raw %}{{ value.reason }}{% endraw %}
+                                                    </p>
+                                                </div>
+
+                                                <!-- Additional metadata if available -->
+                                                <div v-if="typeof value === 'object' && value.severity" class="mt-3">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                                                          :class="{
+                                                              'bg-red-100 text-red-700': value.severity === 'high',
+                                                              'bg-yellow-100 text-yellow-700': value.severity === 'medium',
+                                                              'bg-blue-100 text-blue-700': value.severity === 'low'
+                                                          }">
+                                                        <i class="mdi mdi-alert mr-1"></i>
+                                                        Severity: {% raw %}{{ value.severity }}{% endraw %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Status Icon -->
+                                            <div class="ml-4">
+                                                <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                                                     :class="typeof value === 'object' && value.compliance !== undefined ? 
+                                                             (value.compliance ? 'bg-green-100' : 'bg-red-100') : 'bg-gray-100'">
+                                                    <i class="text-lg"
+                                                       :class="typeof value === 'object' && value.compliance !== undefined ? 
+                                                               (value.compliance ? 'mdi mdi-check text-green-600' : 'mdi mdi-close text-red-600') : 'mdi mdi-help text-gray-500'"></i>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -3088,53 +3139,85 @@
                                     </div>
                                 </div>
 
-                                <!-- Display all properties as table -->
-                                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                                    <div class="overflow-x-auto">
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-blue-50">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
-                                                        Field
-                                                    </th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
-                                                        Compliance
-                                                    </th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-blue-700 uppercase tracking-wider">
-                                                        Reason
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                <tr v-for="(value, key) in getSWIFTTableData()" :key="'swift-row-' + key"
-                                                    class="hover:bg-gray-50">
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="flex items-center">
-                                                            <i class="mdi mdi-tag text-blue-500 mr-2"></i>
-                                                            <span class="text-sm font-medium text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <span v-if="typeof value === 'object' && value.compliance !== undefined"
-                                                              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                                              :class="value.compliance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                                            <i :class="value.compliance ? 'mdi mdi-check-circle mr-1' : 'mdi mdi-alert-circle mr-1'"></i>
-                                                            {% raw %}{{ value.compliance ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                        </span>
-                                                        <span v-else class="text-sm text-gray-500">
-                                                            {% raw %}{{ typeof value === 'string' ? value : JSON.stringify(value) }}{% endraw %}
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        <span v-if="typeof value === 'object' && value.reason"
-                                                              class="text-sm text-gray-700">
-                                                            {% raw %}{{ value.reason }}{% endraw %}
-                                                        </span>
-                                                        <span v-else class="text-sm text-gray-500">-</span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                <!-- Display all properties as vertical cards -->
+                                <div class="space-y-3">
+                                    <div v-for="(value, key) in getSWIFTTableData()" :key="'swift-card-' + key"
+                                         class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1">
+                                                <!-- Field Name -->
+                                                <div class="flex items-center mb-3">
+                                                    <i class="mdi mdi-tag text-blue-500 mr-2"></i>
+                                                    <h6 class="text-base font-semibold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h6>
+                                                </div>
+                                                
+                                                <!-- Value Information -->
+                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-3">
+                                                    <!-- Actual Value -->
+                                                    <div class="bg-blue-50 rounded-md p-3">
+                                                        <label class="block text-xs font-medium text-blue-700 mb-1">Field Value</label>
+                                                        <p class="text-sm text-blue-900 font-mono break-words">
+                                                            {% raw %}{{ value.value || 'Not provided' }}{% endraw %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Compliance Status -->
+                                                <div class="mb-3">
+                                                    <span v-if="typeof value === 'object' && value.compliance !== undefined"
+                                                          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                                          :class="value.compliance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                        <i :class="value.compliance ? 'mdi mdi-check-circle mr-2' : 'mdi mdi-alert-circle mr-2'"></i>
+                                                        {% raw %}{{ value.compliance ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
+                                                    </span>
+                                                    <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
+                                                        <i class="mdi mdi-information mr-2"></i>
+                                                        {% raw %}{{ typeof value === 'string' ? value : JSON.stringify(value) }}{% endraw %}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Reason/Description -->
+                                                <div v-if="typeof value === 'object' && value.reason" class="mt-2">
+                                                    <label class="block text-xs font-medium text-gray-500 mb-1">Compliance Reason</label>
+                                                    <p class="text-sm text-gray-700 bg-gray-50 rounded-md p-3">
+                                                        <i class="mdi mdi-text-box-outline mr-2"></i>
+                                                        {% raw %}{{ value.reason }}{% endraw %}
+                                                    </p>
+                                                </div>
+
+                                                <!-- Additional metadata if available -->
+                                                <div class="flex flex-wrap gap-2 mt-3">
+                                                    <span v-if="typeof value === 'object' && value.severity"
+                                                          class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                                                          :class="{
+                                                              'bg-red-100 text-red-700': value.severity === 'high',
+                                                              'bg-yellow-100 text-yellow-700': value.severity === 'medium',
+                                                              'bg-blue-100 text-blue-700': value.severity === 'low'
+                                                          }">
+                                                        <i class="mdi mdi-alert mr-1"></i>
+                                                        Severity: {% raw %}{{ value.severity }}{% endraw %}
+                                                    </span>
+
+                                                    <!-- SWIFT Standard if available -->
+                                                    <span v-if="typeof value === 'object' && value.standard"
+                                                          class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-indigo-50 text-indigo-700">
+                                                        <i class="mdi mdi-book-open-variant mr-1"></i>
+                                                        Standard: {% raw %}{{ value.standard }}{% endraw %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Status Icon -->
+                                            <div class="ml-4">
+                                                <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                                                     :class="typeof value === 'object' && value.compliance !== undefined ? 
+                                                             (value.compliance ? 'bg-green-100' : 'bg-red-100') : 'bg-gray-100'">
+                                                    <i class="text-lg"
+                                                       :class="typeof value === 'object' && value.compliance !== undefined ? 
+                                                               (value.compliance ? 'mdi mdi-check text-green-600' : 'mdi mdi-close text-red-600') : 'mdi mdi-help text-gray-500'"></i>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -3155,78 +3238,6 @@
                                     <p class="text-yellow-800"><strong>{% raw %}{{ warning.field }}{% endraw %}:</strong> {% raw %}{{ warning.description }}{% endraw %}</p>
                                     <p v-if="warning.standard" class="text-yellow-700 text-sm mt-1">Standard: {% raw %}{{ warning.standard }}{% endraw %}</p>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Analysis Tab -->
-                        <div v-if="activeTab === 'analysis'" class="space-y-4">
-                            <div v-if="selectedResult">
-                                <!-- Processing Metrics -->
-                                <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 mb-4">
-                                    <h4 class="font-semibold text-purple-900 mb-4 flex items-center">
-                                        <i class="mdi mdi-chart-timeline-variant mr-2"></i>
-                                        Processing Metrics
-                                    </h4>
-                                    <div class="grid grid-cols-3 gap-4">
-                                        <div class="bg-white rounded-lg p-4 shadow-sm">
-                                            <div class="flex items-center mb-2">
-                                                <i class="mdi mdi-clock-fast text-blue-500 mr-2"></i>
-                                                <h5 class="text-sm font-medium text-gray-700">Classification Time</h5>
-                                            </div>
-                                            <p class="text-2xl font-bold text-blue-600">{% raw %}{{ selectedResult?.classificationTime || '0.0' }}{% endraw %}s</p>
-                                        </div>
-                                        <div class="bg-white rounded-lg p-4 shadow-sm">
-                                            <div class="flex items-center mb-2">
-                                                <i class="mdi mdi-eye-check text-purple-500 mr-2"></i>
-                                                <h5 class="text-sm font-medium text-gray-700">OCR Time</h5>
-                                            </div>
-                                            <p class="text-2xl font-bold text-purple-600">{% raw %}{{ selectedResult?.ocrTime || '0.0' }}{% endraw %}s</p>
-                                            <p class="text-xs text-gray-500 mt-1">Azure Cognitive Services</p>
-                                        </div>
-                                        <div class="bg-white rounded-lg p-4 shadow-sm">
-                                            <div class="flex items-center mb-2">
-                                                <i class="mdi mdi-brain text-green-500 mr-2"></i>
-                                                <h5 class="text-sm font-medium text-gray-700">LLM Analysis</h5>
-                                            </div>
-                                            <p class="text-2xl font-bold text-green-600">{% raw %}{{ selectedResult?.llmTime || '0.0' }}{% endraw %}s</p>
-                                            <p class="text-xs text-gray-500 mt-1">UCP600 & SWIFT Validation</p>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4 pt-4 border-t border-purple-200">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm font-medium text-gray-700">Total Processing Time:</span>
-                                            <span class="text-lg font-bold text-purple-700">{% raw %}{{ selectedResult?.processingTime || '0.0' }}{% endraw %}s</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- AI Summary -->
-                                <div v-if="selectedResult?.analysisResult?.summary" class="bg-blue-50 rounded-lg p-4 mb-4">
-                                    <h4 class="font-medium text-blue-900 mb-2">AI Summary</h4>
-                                    <p class="text-blue-800">{% raw %}{{ selectedResult.analysisResult.summary }}{% endraw %}</p>
-                                </div>
-
-                                <!-- Document Details -->
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h4 class="font-medium text-gray-700 mb-3">Document Details</h4>
-                                    <div class="space-y-2">
-                                        <div class="flex justify-between">
-                                            <span class="text-sm text-gray-600">Pages Processed:</span>
-                                            <span class="text-sm font-medium">{% raw %}{{ selectedResult?.previewImages?.length || 1 }}{% endraw %}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-sm text-gray-600">Fields Extracted:</span>
-                                            <span class="text-sm font-medium">{% raw %}{{ selectedResult?.fieldsExtracted || 0 }}{% endraw %}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="text-sm text-gray-600">Compliance Score:</span>
-                                            <span class="text-sm font-medium">{% raw %}{{ selectedResult?.complianceScore || 0 }}{% endraw %}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-else class="text-center py-8 text-gray-600">
-                                No analysis data available
                             </div>
                         </div>
                     </div>
@@ -3385,11 +3396,11 @@
                     const sum = this.results.reduce((acc, r) => acc + parseFloat(r.ocrTime || 0), 0);
                     return (sum / this.results.length).toFixed(1);
                 },
-                avgLlmTime() {
+                avgComplianceTime() {
                     if (!this.results || this.results.length === 0) return '0.0';
-                    // Since UCP600 & SWIFT validation isn't implemented yet, return 0.0
-                    // TODO: Once UCP600 & SWIFT validation is implemented, use r.ucp600Time and r.swiftTime
-                    return '0.0';
+                    // Use backend-provided compliance analysis time
+                    const sum = this.results.reduce((acc, r) => acc + parseFloat(r.complianceTime || 0), 0);
+                    return (sum / this.results.length).toFixed(1);
                 },
                 avgEntityExtractionTime() {
                     if (!this.results || this.results.length === 0) return '0.0';
@@ -3704,9 +3715,8 @@
                                             ...extraction.conditional || {}
                                         };
 
-                                        // Calculate compliance score from the compliance object
-                                        const complianceScore = compliance.compliant ? 100 :
-                                            (compliance.completeness ? parseInt(compliance.completeness) : 50);
+                                        // Use compliance score from backend (already calculated correctly)
+                                        const complianceScore = result.complianceScore || 85;
 
                                         processedResult = {
                                             fileName: result.file_name,
@@ -3719,6 +3729,7 @@
                                             classificationTime: result.processing_time?.classification || '0.0', // Document classification time
                                             ocrTime: result.processing_time?.ocr || '0.0', // OCR text extraction time
                                             llmTime: result.processing_time?.extraction || '0.0',
+                                            complianceTime: result.complianceTime || '0.0', // Add compliance time from backend
                                             extractedFields: extractedFields,
                                             previewImages: result.preview_images || [],
                                             // New format compliance data
@@ -3784,11 +3795,12 @@
                                             documentType: result.document_type,
                                             confidence: result.confidence,
                                             fieldsExtracted: Object.keys(extractedFields).length,
-                                            complianceScore: this.calculateComplianceScore(legacyCompliance),
+                                            complianceScore: result.complianceScore || 85,
                                             processingTime: result.processing_time?.total || '0.0',
                                             classificationTime: result.processing_time?.classification || '0.0',
                                             ocrTime: result.processing_time?.ocr || '0.0',
                                             llmTime: result.processing_time?.llm_analysis || '0.0',
+                                            complianceTime: result.complianceTime || '0.0', // Add compliance time from backend
                                             extractedFields: extractedFields,
                                             previewImages: result.preview_images || [],
                                             compliance: legacyCompliance,
@@ -3943,6 +3955,42 @@
                         .split('_')
                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                         .join(' ');
+                },
+                extractExpectedValue(reasonText) {
+                    if (!reasonText) return null;
+                    
+                    // Try to extract expected values from common patterns in compliance reasons
+                    const patterns = [
+                        // Pattern: "Expected: X, found: Y" or "Expected X, got Y"
+                        /expected[:\s]+([^,.\n]+)/i,
+                        // Pattern: "Should be: X" or "Must be: X"
+                        /(?:should|must)\s+be[:\s]+([^,.\n]+)/i,
+                        // Pattern: "Required format: X" or "Valid format: X"
+                        /(?:required|valid|allowed)\s+(?:format|values?)[:\s]+([^,.\n]+)/i,
+                        // Pattern: "Allowed: [X, Y, Z]" or "Allowed: X"
+                        /allowed[:\s]+\[?([^\]]+)\]?/i,
+                        // Pattern: "Format should be: X"
+                        /format\s+should\s+be[:\s]+([^,.\n]+)/i,
+                        // Pattern: "Standard requires: X"
+                        /standard\s+requires[:\s]+([^,.\n]+)/i
+                    ];
+                    
+                    for (const pattern of patterns) {
+                        const match = reasonText.match(pattern);
+                        if (match && match[1]) {
+                            // Clean up the extracted value
+                            let expectedValue = match[1].trim();
+                            // Remove quotes if present
+                            expectedValue = expectedValue.replace(/^["']|["']$/g, '');
+                            // Remove trailing punctuation
+                            expectedValue = expectedValue.replace(/[,.;!?]+$/, '');
+                            if (expectedValue.length > 0) {
+                                return expectedValue;
+                            }
+                        }
+                    }
+                    
+                    return null;
                 },
                 downloadReport() {
                     if (!this.selectedResult) return;
@@ -4899,16 +4947,20 @@
                     const ucp600Data = this.selectedResult.compliance.ucp600;
                     const filteredData = {};
 
-                    // Process each field and remove severity, exclude status
+                    // Process each field and remove unwanted fields
                     for (const [key, value] of Object.entries(ucp600Data)) {
-                        if (key === 'status' || key === 'violations' || key === 'warnings') {
-                            continue; // Skip these as they're handled separately
+                        if (key === 'status' || key === 'violations' || key === 'warnings' || 
+                            key === 'coordinate_mapping' || key === 'coordinate_mapping_stats' ||
+                            key.includes('coordinate_mapping')) {
+                            continue; // Skip these as they're handled separately or unwanted
                         }
 
                         if (typeof value === 'object' && value !== null) {
-                            // Create a copy without severity
+                            // Create a copy without unwanted properties
                             const cleanValue = { ...value };
                             delete cleanValue.severity;
+                            delete cleanValue.coordinate_mapping;
+                            delete cleanValue.coordinate_mapping_stats;
                             filteredData[key] = cleanValue;
                         } else {
                             filteredData[key] = value;
@@ -4924,16 +4976,20 @@
                     const swiftData = this.selectedResult.compliance.swift;
                     const filteredData = {};
 
-                    // Process each field and remove severity, exclude status
+                    // Process each field and remove unwanted fields
                     for (const [key, value] of Object.entries(swiftData)) {
-                        if (key === 'status' || key === 'violations' || key === 'warnings') {
-                            continue; // Skip these as they're handled separately
+                        if (key === 'status' || key === 'violations' || key === 'warnings' || 
+                            key === 'coordinate_mapping' || key === 'coordinate_mapping_stats' ||
+                            key.includes('coordinate_mapping')) {
+                            continue; // Skip these as they're handled separately or unwanted
                         }
 
                         if (typeof value === 'object' && value !== null) {
-                            // Create a copy without severity
+                            // Create a copy without unwanted properties
                             const cleanValue = { ...value };
                             delete cleanValue.severity;
+                            delete cleanValue.coordinate_mapping;
+                            delete cleanValue.coordinate_mapping_stats;
                             filteredData[key] = cleanValue;
                         } else {
                             filteredData[key] = value;
