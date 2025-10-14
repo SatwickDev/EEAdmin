@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     * {
@@ -228,10 +229,44 @@
       margin-top: 32px;
     }
 
+    /* SweetAlert Custom Styling */
+    .swal-custom {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+
+    .swal-custom .swal2-title {
+      font-size: 20px !important;
+      font-weight: 600 !important;
+      color: #1f2937 !important;
+    }
+
+    .swal-custom .swal2-html-container {
+      font-size: 14px !important;
+      color: #6b7280 !important;
+      line-height: 1.5 !important;
+    }
+
+    .swal-custom .swal2-confirm,
+    .swal-custom .swal2-cancel {
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      padding: 10px 24px !important;
+      border-radius: 6px !important;
+    }
+
+    .swal-custom .swal2-confirm {
+      background: #4b5563 !important;
+    }
+
+    .swal-custom .swal2-confirm:hover {
+      background: #374151 !important;
+    }
+
   </style>
 </head>
 <body>
-  <a href="/custom_functions" class="back-btn">
+  <!-- UPDATED: Back button with updated text -->
+  <a href="#" class="back-btn" id="backButton">
     <i class="mdi mdi-arrow-left"></i>
     Back to Functions
   </a>
@@ -307,7 +342,8 @@
     <!-- Action Buttons -->
     <div class="form-card">
       <div class="actions-bar">
-        <button class="btn btn-secondary" onclick="window.location.href='/custom_functions'">
+        <!-- UPDATED: Cancel button with ID for dynamic behavior -->
+        <button class="btn btn-secondary" id="cancelButton">
           <i class="mdi mdi-close"></i>
           Cancel
         </button>
@@ -324,12 +360,49 @@
     let documentTypes = [];
     let functionId = null;
     let mode = 'create'; // create or edit
+    let originalFunctionName = ''; // ADD THIS LINE
+
+    // UPDATED: Function to get return URL using hash for tab navigation
+    function getReturnURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('return_to');
+    const returnTab = urlParams.get('return_tab');
+
+    if (returnTo && returnTab) {
+        // Return to Document Entity Maintenance with Custom Functions tab active
+        return `/document_entity_maintenance#customFunctions`;
+    }
+    // Default fallback
+    return '/custom_functions';
+}
+
+    // Setup return navigation for back and cancel buttons
+    function setupReturnNavigation() {
+        const returnURL = getReturnURL();
+
+        // Update back button
+        const backButton = document.getElementById('backButton');
+        if (backButton) {
+            backButton.href = returnURL;
+        }
+
+        // Update cancel button
+        const cancelButton = document.getElementById('cancelButton');
+        if (cancelButton) {
+            cancelButton.onclick = function() {
+                window.location.href = returnURL;
+            };
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Check if we're editing an existing function
       const urlParams = new URLSearchParams(window.location.search);
       functionId = urlParams.get('id');
       mode = functionId ? 'edit' : 'create';
+
+      // Setup return navigation
+      setupReturnNavigation();
 
       // Load document types
       await loadDocumentTypes();
@@ -338,6 +411,32 @@
       if (functionId) {
         await loadFunctionData(functionId);
         document.getElementById('pageTitle').textContent = 'Edit Custom Function';
+        // Store original function name for edit validation
+        originalFunctionName = document.getElementById('functionName').value.trim();
+      }
+
+      // Setup real-time validation
+      setupFunctionNameValidation();
+
+      // Check if we're in view mode
+      const viewMode = urlParams.get('mode');
+
+      if (viewMode === 'view') {
+        // Make all form elements read-only
+        document.querySelectorAll('input, select, textarea, button').forEach(element => {
+          if (element.id !== 'backButton' && element.id !== 'cancelButton') {
+            element.disabled = true;
+          }
+        });
+
+        // Change page title
+        document.getElementById('pageTitle').textContent = 'View Custom Function';
+
+        // Hide the save button
+        document.querySelector('.btn-success').style.display = 'none';
+
+        // Change cancel button text
+        document.getElementById('cancelButton').innerHTML = '<i class="mdi mdi-arrow-left"></i> Back to Functions';
       }
     });
 
@@ -469,9 +568,215 @@
     }
 
     function removeDocumentRequirement(index) {
-      documentRequirements.splice(index, 1);
-      renderDocumentRequirements();
+      const req = documentRequirements[index];
+
+      Swal.fire({
+        title: 'Are you sure?',
+        html: `Are you sure you want to remove <strong>"${escapeHtml(req.documentName)}"</strong> from the requirements?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, remove it!',
+        cancelButtonText: 'Cancel',
+        backdrop: 'rgba(0,0,0,0.8)',
+        customClass: {
+          popup: 'animated fadeIn swal-custom',
+          title: 'swal-custom',
+          htmlContainer: 'swal-custom',
+          confirmButton: 'swal-custom',
+          cancelButton: 'swal-custom'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          documentRequirements.splice(index, 1);
+          renderDocumentRequirements();
+
+          Swal.fire({
+            title: 'Removed!',
+            html: `Document <strong>"${escapeHtml(req.documentName)}"</strong> has been removed.`,
+            icon: 'success',
+            confirmButtonColor: '#10b981',
+            confirmButtonText: 'OK',
+            backdrop: 'rgba(0,0,0,0.8)',
+            customClass: {
+              popup: 'animated bounceIn swal-custom',
+              title: 'swal-custom',
+              htmlContainer: 'swal-custom',
+              confirmButton: 'swal-custom'
+            }
+          });
+        }
+      });
     }
+
+    // Function to check for duplicate function names
+   // Function to check for duplicate function names
+async function checkDuplicateFunctionName(name) {
+  // If we're in edit mode and the name hasn't changed, it's not a duplicate
+  if (mode === 'edit' && name === originalFunctionName) {
+    return false;
+  }
+
+  // Simple cache to avoid repeated API calls for the same name
+  if (window.duplicateCheckCache && window.duplicateCheckCache[name] !== undefined) {
+    return window.duplicateCheckCache[name];
+  }
+
+  try {
+    // Try the dedicated check-name endpoint first
+    const checkResponse = await fetch('/api/custom_functions/check-name', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        excludeId: mode === 'edit' ? functionId : undefined
+      })
+    });
+
+    if (checkResponse.ok) {
+      const checkData = await checkResponse.json();
+      const isDuplicate = !checkData.available;
+
+      // Cache the result
+      if (!window.duplicateCheckCache) window.duplicateCheckCache = {};
+      window.duplicateCheckCache[name] = isDuplicate;
+
+      return isDuplicate;
+    }
+  } catch (error) {
+    console.warn('Check-name endpoint not available, falling back to full list check:', error);
+  }
+
+  // Fallback: Load all functions and check manually
+  try {
+    const response = await fetch('/api/custom_functions');
+    const data = await response.json();
+
+    if (data.success) {
+      const functions = data.functions || [];
+      const existingFunction = functions.find(func =>
+        func.name.toLowerCase() === name.toLowerCase() &&
+        (mode !== 'edit' || func.id !== functionId)
+      );
+      const isDuplicate = !!existingFunction;
+
+      // Cache the result
+      if (!window.duplicateCheckCache) window.duplicateCheckCache = {};
+      window.duplicateCheckCache[name] = isDuplicate;
+
+      return isDuplicate;
+    }
+  } catch (error) {
+    console.error('Error checking functions list:', error);
+  }
+
+  // If we can't check, allow the save to proceed (fail-open)
+  return false;
+}
+
+   // Real-time function name validation with SweetAlert
+// Real-time function name validation with persistent SweetAlert
+function setupFunctionNameValidation() {
+  const functionNameInput = document.getElementById('functionName');
+  if (!functionNameInput) return;
+
+  let debounceTimer;
+  let activeAlert = null;
+  let lastDuplicateName = '';
+
+  functionNameInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const name = this.value.trim();
+
+    // Reset border color
+    this.style.borderColor = '#e2e8f0';
+
+    // Close any active alert when user starts typing again
+    if (activeAlert && name !== lastDuplicateName) {
+      activeAlert.close();
+      activeAlert = null;
+      lastDuplicateName = '';
+    }
+
+    if (name.length < 2) return;
+
+    debounceTimer = setTimeout(async () => {
+      if (mode === 'create' || (mode === 'edit' && name !== originalFunctionName)) {
+        const isDuplicate = await checkDuplicateFunctionName(name);
+
+        if (isDuplicate && !activeAlert) {
+          this.style.borderColor = '#ef4444';
+          lastDuplicateName = name;
+
+          // Show persistent SweetAlert for duplicate name
+          activeAlert = await Swal.fire({
+            title: 'Duplicate Function Name!',
+            html: `A function with the name <strong>"${escapeHtml(name)}"</strong> already exists.<br><br>Please choose a different name to continue.`,
+            icon: 'error',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'OK',
+            backdrop: 'rgba(0,0,0,0.8)',
+            allowOutsideClick: false,
+            customClass: {
+              popup: 'animated shake swal-custom',
+              title: 'swal-custom',
+              htmlContainer: 'swal-custom',
+              confirmButton: 'swal-custom'
+            }
+          });
+
+          // When alert is closed, focus back on input
+          activeAlert.then(() => {
+            this.focus();
+            activeAlert = null;
+          });
+        } else if (!isDuplicate) {
+          this.style.borderColor = '#22c55e';
+          lastDuplicateName = '';
+        }
+      }
+    }, 800);
+  });
+
+  // Also validate on blur (when user leaves the field)
+  functionNameInput.addEventListener('blur', async function() {
+    const name = this.value.trim();
+
+    if (name.length < 2) return;
+
+    if (mode === 'create' || (mode === 'edit' && name !== originalFunctionName)) {
+      const isDuplicate = await checkDuplicateFunctionName(name);
+
+      if (isDuplicate && !activeAlert) {
+        this.style.borderColor = '#ef4444';
+
+        activeAlert = await Swal.fire({
+          title: 'Duplicate Function Name!',
+          html: `A function with the name <strong>"${escapeHtml(name)}"</strong> already exists.<br><br>Please choose a different name to continue.`,
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          confirmButtonText: 'OK',
+          backdrop: 'rgba(0,0,0,0.8)',
+          allowOutsideClick: false,
+          customClass: {
+            popup: 'animated shake swal-custom',
+            title: 'swal-custom',
+            htmlContainer: 'swal-custom',
+            confirmButton: 'swal-custom'
+          }
+        });
+
+        activeAlert.then(() => {
+          this.focus();
+          activeAlert = null;
+        });
+      } else if (!isDuplicate) {
+        this.style.borderColor = '#22c55e';
+      }
+    }
+  });
+}
 
     async function saveFunction() {
       // Validate required fields
@@ -480,7 +785,40 @@
       const category = document.getElementById('functionCategory').value;
 
       if (!name || !description || !category) {
-        showError('Please fill in all required fields (Name, Description, Category)');
+        Swal.fire({
+          title: 'Missing Information!',
+          html: 'Please fill in all required fields:<br><strong>• Function Name<br>• Description<br>• Category</strong>',
+          icon: 'warning',
+          confirmButtonColor: '#f59e0b',
+          confirmButtonText: 'OK',
+          backdrop: 'rgba(0,0,0,0.8)',
+          customClass: {
+            popup: 'animated shake swal-custom',
+            title: 'swal-custom',
+            htmlContainer: 'swal-custom',
+            confirmButton: 'swal-custom'
+          }
+        });
+        return;
+      }
+
+      // Check for duplicate function name
+      const isDuplicate = await checkDuplicateFunctionName(name);
+      if (isDuplicate) {
+        await Swal.fire({
+          title: 'Duplicate Function Name!',
+          html: `A function with the name <strong>"${escapeHtml(name)}"</strong> already exists.<br><br>Please choose a different name.`,
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          confirmButtonText: 'OK',
+          backdrop: 'rgba(0,0,0,0.8)',
+          customClass: {
+            popup: 'animated shake swal-custom',
+            title: 'swal-custom',
+            htmlContainer: 'swal-custom',
+            confirmButton: 'swal-custom'
+          }
+        });
         return;
       }
 
@@ -499,6 +837,30 @@
         const url = mode === 'edit' ? `/api/custom_functions/${functionId}` : '/api/custom_functions';
         const method = mode === 'edit' ? 'PUT' : 'POST';
 
+        // Show saving confirmation
+        const result = await Swal.fire({
+          title: 'Confirm Save',
+          html: `Are you sure you want to <strong>${mode === 'edit' ? 'update' : 'create'}</strong> the function <strong>"${escapeHtml(name)}"</strong>?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#10b981',
+          cancelButtonColor: '#6b7280',
+          confirmButtonText: `Yes, ${mode === 'edit' ? 'update' : 'create'} it!`,
+          cancelButtonText: 'Cancel',
+          backdrop: 'rgba(0,0,0,0.8)',
+          customClass: {
+            popup: 'animated fadeIn swal-custom',
+            title: 'swal-custom',
+            htmlContainer: 'swal-custom',
+            confirmButton: 'swal-custom',
+            cancelButton: 'swal-custom'
+          }
+        });
+
+        if (!result.isConfirmed) {
+          return;
+        }
+
         const response = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
@@ -508,14 +870,72 @@
         const data = await response.json();
 
         if (data.success) {
-          alert(`Function ${mode === 'edit' ? 'updated' : 'created'} successfully!`);
-          window.location.href = '/custom_functions';
+          await Swal.fire({
+            title: 'Success!',
+            html: `Function <strong>"${escapeHtml(name)}"</strong> has been ${mode === 'edit' ? 'updated' : 'created'} successfully!`,
+            icon: 'success',
+            confirmButtonColor: '#10b981',
+            confirmButtonText: 'OK',
+            backdrop: 'rgba(0,0,0,0.8)',
+            customClass: {
+              popup: 'animated bounceIn swal-custom',
+              title: 'swal-custom',
+              htmlContainer: 'swal-custom',
+              confirmButton: 'swal-custom'
+            }
+          });
+          // UPDATED: Redirect to return URL (Document Entity Maintenance with Custom Functions tab)
+          window.location.href = getReturnURL();
         } else {
-          showError(data.message || 'Failed to save function');
+          // Handle server-side duplicate name error
+          if (data.message && (data.message.toLowerCase().includes('duplicate') || data.message.toLowerCase().includes('already exists'))) {
+            await Swal.fire({
+              title: 'Duplicate Function Name!',
+              html: `A function with the name <strong>"${escapeHtml(name)}"</strong> already exists.<br><br>Please choose a different name.`,
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              confirmButtonText: 'OK',
+              backdrop: 'rgba(0,0,0,0.8)',
+              customClass: {
+                popup: 'animated shake swal-custom',
+                title: 'swal-custom',
+                htmlContainer: 'swal-custom',
+                confirmButton: 'swal-custom'
+              }
+            });
+          } else {
+            await Swal.fire({
+              title: 'Error!',
+              html: `Failed to save function: <strong>${escapeHtml(data.message || 'Unknown error')}</strong>`,
+              icon: 'error',
+              confirmButtonColor: '#ef4444',
+              confirmButtonText: 'OK',
+              backdrop: 'rgba(0,0,0,0.8)',
+              customClass: {
+                popup: 'animated shake swal-custom',
+                title: 'swal-custom',
+                htmlContainer: 'swal-custom',
+                confirmButton: 'swal-custom'
+              }
+            });
+          }
         }
       } catch (error) {
         console.error('Error saving function:', error);
-        showError('Error saving function');
+        await Swal.fire({
+          title: 'Error!',
+          html: `Error saving function: <strong>${escapeHtml(error.message)}</strong>`,
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          confirmButtonText: 'OK',
+          backdrop: 'rgba(0,0,0,0.8)',
+          customClass: {
+            popup: 'animated shake swal-custom',
+            title: 'swal-custom',
+            htmlContainer: 'swal-custom',
+            confirmButton: 'swal-custom'
+          }
+        });
       }
     }
 
@@ -526,7 +946,20 @@
     }
 
     function showError(message) {
-      alert('Error: ' + message);
+      Swal.fire({
+        title: 'Error!',
+        html: message,
+        icon: 'error',
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'OK',
+        backdrop: 'rgba(0,0,0,0.8)',
+        customClass: {
+          popup: 'animated shake swal-custom',
+          title: 'swal-custom',
+          htmlContainer: 'swal-custom',
+          confirmButton: 'swal-custom'
+        }
+      });
     }
   </script>
 </body>
