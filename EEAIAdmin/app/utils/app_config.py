@@ -81,6 +81,13 @@ if not COMPUTER_VISION_ENDPOINT or not COMPUTER_VISION_KEY:
 OCR_MAX_RETRIES = int(os.getenv("OCR_MAX_RETRIES", "3"))  # Default: 3
 OCR_RETRY_DELAY_BASE = int(os.getenv("OCR_RETRY_DELAY_BASE", "1"))  # Base (s)
 
+# OPTIMIZED: OCR Performance Configuration
+OCR_POLLING_INTERVAL = float(os.getenv("OCR_POLLING_INTERVAL", "0.2"))
+OCR_TIMEOUT_BASE = int(os.getenv("OCR_TIMEOUT_BASE", "20"))
+OCR_TIMEOUT_PER_PAGE = int(os.getenv("OCR_TIMEOUT_PER_PAGE", "5"))
+OCR_FAST_MODE = os.getenv("OCR_FAST_MODE", "true").lower() == "true"
+OCR_ADAPTIVE_POLLING = os.getenv("OCR_ADAPTIVE_POLLING", "true").lower() == "true"
+
 # Validate retry configuration
 if OCR_MAX_RETRIES < 1:
     logger.warning("OCR_MAX_RETRIES must be at least 1. Setting to 3.")
@@ -89,7 +96,22 @@ elif OCR_MAX_RETRIES > 10:
     logger.warning("OCR_MAX_RETRIES max is 10. Setting to 10.")
     OCR_MAX_RETRIES = 10
 
+# Validate OCR performance configuration
+if OCR_POLLING_INTERVAL < 0.1:
+    logger.warning("OCR_POLLING_INTERVAL too low. Setting to 0.1s.")
+    OCR_POLLING_INTERVAL = 0.1
+elif OCR_POLLING_INTERVAL > 2.0:
+    logger.warning("OCR_POLLING_INTERVAL too high. Setting to 2.0s.")
+    OCR_POLLING_INTERVAL = 2.0
+
+if OCR_TIMEOUT_BASE < 10:
+    logger.warning("OCR_TIMEOUT_BASE too low. Setting to 10s.")
+    OCR_TIMEOUT_BASE = 10
+
 logger.info(f"OCR retry: Max={OCR_MAX_RETRIES}, Delay={OCR_RETRY_DELAY_BASE}s")
+logger.info(f"OCR performance: Polling={OCR_POLLING_INTERVAL}s, "
+            f"Timeout={OCR_TIMEOUT_BASE}+{OCR_TIMEOUT_PER_PAGE}s/page, "
+            f"FastMode={OCR_FAST_MODE}, Adaptive={OCR_ADAPTIVE_POLLING}")
 
 
 # YAML Configuration Reader for Admin-Configurable Settings

@@ -21,6 +21,10 @@ import pdfplumber
 from sentence_transformers import SentenceTransformer
 
 from app.utils.app_config import COMPUTER_VISION_ENDPOINT, COMPUTER_VISION_KEY, embedding_model
+from app.utils.app_config import (OCR_MAX_RETRIES, OCR_RETRY_DELAY_BASE, 
+                                  OCR_POLLING_INTERVAL, OCR_TIMEOUT_BASE, 
+                                  OCR_TIMEOUT_PER_PAGE, OCR_FAST_MODE, 
+                                  OCR_ADAPTIVE_POLLING)
 from app.utils.rag_clausetag import collection_clause_tag
 from app.utils.rag_swift import collection_swift_rules
 from app.utils.rag_ucp600 import collection_ucp_rules
@@ -93,7 +97,7 @@ def extract_text_from_file(file_path, file_type):
                 logging.error("OCR processing timeout exceeded.")
                 return {"error": "OCR processing took too long", "text_data": []}
 
-            time.sleep(2)  # Wait before polling again
+            time.sleep(0.5)  # Wait before polling again
 
         # **Check OCR result status**
         if result.status != OperationStatusCodes.succeeded:
@@ -131,6 +135,144 @@ def extract_text_from_file(file_path, file_type):
 
     except Exception as e:
         logging.error(f"Unexpected error in OCR extraction: {e}")
+        return {"error": str(e), "text_data": []}
+
+
+def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None, page_count=1):
+    """
+    OPTIMIZED: Extract text using Azure Computer Vision OCR with performance optimizations.
+    
+    Args:
+        file_path (str): Path to the file to process.
+        file_type (str): MIME type of the file.
+        quality_verdict (str): Quality analysis verdict (direct_analysis, pre_processing, etc.)
+        page_count (int): Estimated number of pages for timeout calculation.
+
+    Returns:
+        dict: A dictionary containing extracted text, confidence scores, bounding box locations, and page numbers.
+    """
+    try:
+        if file_type not in ["application/pdf", "image/jpeg", "image/png"]:
+            logging.error(f"Unsupported file type: {file_type}")
+            return {"error": f"Unsupported file type: {file_type}", "text_data": []}
+
+        logging.info(f"🚀 OPTIMIZED OCR processing: {file_path}")
+        logging.info(f"📊 Quality verdict: {quality_verdict}, Pages: {page_count}")
+
+        # OPTIMIZATION 1: Dynamic timeout calculation
+        dynamic_timeout = OCR_TIMEOUT_BASE + (page_count * OCR_TIMEOUT_PER_PAGE)
+        
+        # OPTIMIZATION 2: Quality-based mode selection
+        fast_mode = OCR_FAST_MODE and quality_verdict in ["direct_analysis", "good"]
+        if fast_mode:
+            dynamic_timeout = max(10, dynamic_timeout * 0.7)  # Reduce timeout for high quality docs
+            logging.info("⚡ Fast mode enabled for high-quality document")
+
+        logging.info(f"⏰ Dynamic timeout: {dynamic_timeout}s (base: {OCR_TIMEOUT_BASE}s + {page_count}*{OCR_TIMEOUT_PER_PAGE}s)")
+
+        # Read file and send to Azure OCR
+        with open(file_path, "rb") as file_stream:
+            read_response = cv_client.read_in_stream(file_stream, raw=True)
+
+        # Extract operation ID from response headers
+        operation_location = read_response.headers.get("Operation-Location")
+        if not operation_location:
+            logging.error("Azure OCR response missing 'Operation-Location' header.")
+            return {"error": "Azure OCR response missing 'Operation-Location'", "text_data": []}
+
+        operation_id = operation_location.split("/")[-1]
+
+        # OPTIMIZATION 3: Adaptive polling with early termination
+        start_time = time.time()
+        poll_count = 0
+        
+        while True:
+            result = cv_client.get_read_result(operation_id)
+            poll_count += 1
+            
+            # OPTIMIZATION 4: Early termination for completed operations
+            if result.status not in ["notStarted", "running"]:
+                processing_time = time.time() - start_time
+                logging.info(f"✅ OCR completed in {processing_time:.2f}s after {poll_count} polls")
+                break
+
+            # OPTIMIZATION 5: Timeout check
+            if time.time() - start_time > dynamic_timeout:
+                logging.error(f"OCR processing timeout exceeded ({dynamic_timeout}s).")
+                return {"error": f"OCR processing took too long (>{dynamic_timeout}s)", "text_data": []}
+
+            # OPTIMIZATION 6: Adaptive polling intervals
+            if OCR_ADAPTIVE_POLLING:
+                if poll_count <= 2:
+                    sleep_time = 0.1  # Very fast initial polls
+                elif poll_count <= 5:
+                    sleep_time = OCR_POLLING_INTERVAL  # Standard polling
+                else:
+                    sleep_time = min(1.0, OCR_POLLING_INTERVAL * 2)  # Slower for long operations
+            else:
+                sleep_time = OCR_POLLING_INTERVAL
+                
+            time.sleep(sleep_time)
+
+        # Check OCR result status
+        if result.status != OperationStatusCodes.succeeded:
+            logging.warning(f"Azure OCR failed with status: {result.status}")
+            return {
+                "error": f"Azure OCR failed. Status: {result.status}",
+                "text_data": []
+            }
+
+        # Extract text, bounding boxes, and page numbers with optimized processing
+        text_data = []
+        total_confidence = 0
+        line_count = 0
+        
+        for page_num, read_result in enumerate(result.analyze_result.read_results, start=1):
+            for line in read_result.lines:
+                words = line.words
+
+                # OPTIMIZATION 7: Optimized confidence calculation
+                if words:
+                    confidence_scores = [word.confidence for word in words if hasattr(word, "confidence")]
+                    avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 1.0
+                else:
+                    avg_confidence = 1.0
+
+                text_data.append({
+                    "text": line.text,
+                    "bounding_box": line.bounding_box,
+                    "bounding_page": page_num,
+                    "confidence": avg_confidence
+                })
+                
+                total_confidence += avg_confidence
+                line_count += 1
+
+        if not text_data:
+            logging.warning("Azure OCR returned no text.")
+            return {"error": "No text extracted", "text_data": []}
+
+        # OPTIMIZATION 8: Quality metrics for performance monitoring
+        overall_confidence = total_confidence / line_count if line_count > 0 else 0.0
+        processing_time = time.time() - start_time
+        
+        logging.info(f"📊 OCR Results: {len(text_data)} lines, avg confidence: {overall_confidence:.3f}")
+        logging.info(f"⚡ Total processing time: {processing_time:.2f}s")
+        
+        return {
+            "text_data": text_data,
+            "processing_time": processing_time,
+            "overall_confidence": overall_confidence,
+            "optimization_stats": {
+                "fast_mode": fast_mode,
+                "dynamic_timeout": dynamic_timeout,
+                "poll_count": poll_count,
+                "adaptive_polling": OCR_ADAPTIVE_POLLING
+            }
+        }
+
+    except Exception as e:
+        logging.error(f"Unexpected error in optimized OCR extraction: {e}")
         return {"error": str(e), "text_data": []}
 
 

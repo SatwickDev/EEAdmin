@@ -1948,6 +1948,7 @@
                                             <div>
                                                 <h3 class="font-semibold text-gray-800">{% raw %}{{ result.documentType }}{% endraw %}</h3>
                                                 <p class="text-sm text-gray-600">{% raw %}{{ result.fileName }}{% endraw %}</p>
+                                                <p v-if="result.pageRange" class="text-xs text-purple-600 font-medium">{% raw %}{{ result.pageRange }}{% endraw %}</p>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-4">
@@ -3317,6 +3318,8 @@
                     showDetailsModal: false,
                     selectedResult: null,
                     activeTab: 'fields',
+                    // Tab navigation for grouped pages
+                    activePageTab: 0,  // Index of currently active page tab within a grouped result
                     // Enhanced modal properties
                     currentPage: 0,
                     zoomLevel: 1,
@@ -3746,6 +3749,7 @@
                                             classification: classification,
                                             pages: result.ocr_data?.pages || [],
                                             pageRange: result.ocr_data?.page_range || '',
+                                            individualPages: result.ocr_data?.individual_pages || [],  // Add individual page data for tabs
                                             enhanced_mode: result.enhanced_mode || false,
                                             page_by_page_mode: result.page_by_page_mode || false,
                                             insightsExpanded: false, // Initialize insights expanded state
@@ -4066,11 +4070,39 @@
                     this.showDetailsModal = false;
                     this.selectedResult = null;
                     this.activeTab = 'fields';
+                    this.activePageTab = 0;  // Reset page tab
                     this.currentPage = 0;
                     this.zoomLevel = 1;
                     this.activeFieldIndex = null;
                     this.drawings = [];
                     this.pendingHighlight = null;
+                },
+
+                // Page tab navigation for grouped results
+                switchPageTab(pageIndex) {
+                    this.activePageTab = pageIndex;
+                    console.log('Switched to page tab:', pageIndex);
+                    
+                    // If this is a grouped result with individual pages, we can show page-specific data
+                    if (this.selectedResult?.individualPages && this.selectedResult.individualPages[pageIndex]) {
+                        const pageData = this.selectedResult.individualPages[pageIndex];
+                        console.log('Page-specific data:', pageData);
+                        // Future: Could update currentPage for image preview to match the selected tab
+                    }
+                },
+
+                // Get current page data for tabbed view
+                getCurrentPageData() {
+                    if (!this.selectedResult?.individualPages || this.selectedResult.individualPages.length <= 1) {
+                        return null; // Single page or no individual page data
+                    }
+                    
+                    return this.selectedResult.individualPages[this.activePageTab] || null;
+                },
+
+                // Check if result has multiple pages (for showing tabs)
+                hasMultiplePages() {
+                    return this.selectedResult?.individualPages && this.selectedResult.individualPages.length > 1;
                 },
 
                 // Populate form fields back to parent LC form
