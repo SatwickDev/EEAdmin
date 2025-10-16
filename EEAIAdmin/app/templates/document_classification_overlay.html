@@ -4415,103 +4415,138 @@
                         });
                     }
                 },
-                async searchFieldCoordinates(fieldKey, fieldValue) {
-                    console.log('🔍 === FRONTEND COORDINATE SEARCH STARTED ===');
-                    console.log(`📝 Search parameters:`, { fieldKey, fieldValue });
-                    
-                    if (!fieldValue || !fieldValue.trim()) {
-                        console.warn('❌ No value to search for this field');
-                        alert('No value to search for this field');
-                        return;
-                    }
+               async searchFieldCoordinates(fieldKey, fieldValue) {
+    console.log('🔍 === FRONTEND COORDINATE SEARCH STARTED ===');
+    console.log(`📝 Search parameters:`, { fieldKey, fieldValue });
 
-                    console.log(`🔎 Setting search state for field: ${fieldKey}`);
-                    this.searchingField = fieldKey;
-                    
-                    try {
-                        console.log(`🔍 Searching coordinates for field '${fieldKey}' with value '${fieldValue}'`);
-                        
-                        const requestData = {
-                            field_value: fieldValue.trim(),
-                            document_id: this.selectedResult?.fileName || 'current',
-                            search_mode: 'exact'  // Start with exact search, can make this configurable
-                        };
-                        
-                        console.log('📤 Sending API request:', requestData);
-                        
-                        const response = await fetch('/api/search_field_coordinates', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(requestData)
-                        });
+    if (!fieldValue || !fieldValue.trim()) {
+        console.warn('❌ No value to search for this field');
+        alert('No value to search for this field');
+        return;
+    }
 
-                        console.log('📥 API response status:', response.status);
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                        }
+    console.log(`🔎 Setting search state for field: ${fieldKey}`);
+    this.searchingField = fieldKey;
 
-                        const data = await response.json();
-                        console.log('📊 API response data:', data);
-                        
-                        if (data.success && data.total_matches > 0) {
-                            console.log(`✅ Found ${data.total_matches} coordinate matches:`, data.matches);
-                            
-                            // Store all matches for this field
-                            this.coordinateSearchResults[fieldKey] = data.matches;
-                            console.log('💾 Stored all search results for field:', fieldKey);
-                            
-                            // Navigate to the page of the first match
-                            const firstMatch = data.matches[0];
-                            const targetPage = this.getRelativePageIndex(firstMatch.bounding_page);
-                            console.log(`📄 Navigation: Current page: ${this.currentPage}, Target page: ${targetPage}`);
-                            console.log(`📚 Available pages: ${this.selectedResult?.previewImages?.length || 0}`);
-                            console.log(`📋 Absolute page: ${firstMatch.bounding_page}, Relative index: ${targetPage}`);
-                            console.log(`🗂️ Group pages: ${JSON.stringify(this.selectedResult?.pages)}`);
-                            
-                            if (targetPage >= 0 && targetPage < this.selectedResult.previewImages.length) {
-                                console.log(`🧭 Navigating to relative page ${targetPage} (absolute page ${firstMatch.bounding_page})`);
-                                this.currentPage = targetPage;
-                                
-                                // Wait for page to load then highlight ALL matches
-                                this.$nextTick(() => {
-                                    console.log('⏱️ Waiting for page to load before highlighting...');
-                                    setTimeout(() => {
-                                        console.log('🎨 Highlighting ALL search results');
-                                        this.highlightAllSearchResults(data.matches);
-                                    }, 200);
-                                });
-                            } else {
-                                console.warn(`⚠️ Target page ${targetPage} is out of range (0-${this.selectedResult.previewImages.length - 1})`);
-                            }
-                            
-                            // Show success message with total count
-                            const message = `Found ${data.total_matches} coordinate matches for "${fieldValue}"`;
-                            console.log('📢 Showing success notification:', message);
-                            this.showNotification(message, 'success');
-                            
-                        } else {
-                            console.log('❌ No matches found in API response');
-                            const message = `No coordinates found for "${fieldValue}"`;
-                            console.log('📢 Showing warning notification:', message);
-                            this.showNotification(message, 'warning');
-                        }
-                        
-                    } catch (error) {
-                        console.error('❌ Error searching coordinates:', error);
-                        console.error('📍 Error details:', {
-                            message: error.message,
-                            stack: error.stack
-                        });
-                        this.showNotification('Error searching for coordinates', 'error');
-                    } finally {
-                        console.log(`🏁 Clearing search state for field: ${fieldKey}`);
-                        this.searchingField = null;
-                        console.log('🔍 === FRONTEND COORDINATE SEARCH COMPLETED ===');
-                    }
-                },
+    try {
+        console.log(`🔍 Searching coordinates for field '${fieldKey}' with value '${fieldValue}'`);
+
+        const requestData = {
+            field_value: fieldValue.trim(),
+            document_id: this.selectedResult?.fileName || 'current',
+            search_mode: 'exact'  // Start with exact search, can make this configurable
+        };
+
+        console.log('📤 Sending API request:', requestData);
+
+        const response = await fetch('/api/search_field_coordinates', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        console.log('📥 API response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('📊 API response data:', data);
+
+        if (data.success && data.total_matches > 0) {
+            console.log(`✅ Found ${data.total_matches} coordinate matches:`, data.matches);
+
+            // Store all matches for this field
+            this.coordinateSearchResults[fieldKey] = data.matches;
+            console.log('💾 Stored all search results for field:', fieldKey);
+
+            // FIX: Find the best match (longest matched text) instead of using first match
+            let bestMatch = data.matches[0];
+            let longestMatchLength = bestMatch.matched_text ? bestMatch.matched_text.length : 0;
+
+            // Find the match with the longest text (most complete match)
+            data.matches.forEach(match => {
+                if (match.matched_text && match.matched_text.length > longestMatchLength) {
+                    bestMatch = match;
+                    longestMatchLength = match.matched_text.length;
+                }
+            });
+
+            console.log('🎯 Selected best match:', {
+                matched_text: bestMatch.matched_text,
+                length: longestMatchLength,
+                bounding_page: bestMatch.bounding_page
+            });
+
+            // Convert absolute page number to relative page index
+            const absolutePage = bestMatch.bounding_page;
+            let targetPage;
+
+            // Method 1: Use the pages array if available
+            if (this.selectedResult?.pages && this.selectedResult.pages.length > 0) {
+                targetPage = this.selectedResult.pages.indexOf(absolutePage);
+                console.log(`📚 Using pages array: absolute page ${absolutePage} = relative index ${targetPage}`);
+            } else {
+                // Method 2: Direct conversion (assuming pages are 1-indexed in backend, 0-indexed in frontend)
+                targetPage = absolutePage - 1;
+                console.log(`📝 Using direct conversion: absolute page ${absolutePage} = relative index ${targetPage}`);
+            }
+
+            console.log(`📄 Navigation: Current page: ${this.currentPage}, Target page: ${targetPage}`);
+            console.log(`📚 Available pages: ${this.selectedResult?.previewImages?.length || 0}`);
+            console.log(`📋 Absolute page: ${absolutePage}, Relative index: ${targetPage}`);
+            console.log(`🗂️ Group pages: ${JSON.stringify(this.selectedResult?.pages)}`);
+
+            if (targetPage >= 0 && targetPage < (this.selectedResult?.previewImages?.length || 0)) {
+                console.log(`🧭 Navigating to relative page ${targetPage} (absolute page ${absolutePage})`);
+                this.currentPage = targetPage;
+
+                // Wait for page to load then highlight ALL matches
+                this.$nextTick(() => {
+                    console.log('⏱️ Waiting for page to load before highlighting...');
+                    setTimeout(() => {
+                        console.log('🎨 Highlighting ALL search results');
+                        this.highlightAllSearchResults(data.matches);
+                    }, 300);
+                });
+            } else {
+                console.warn(`⚠️ Target page ${targetPage} is out of range (0-${(this.selectedResult?.previewImages?.length || 1) - 1})`);
+
+                // Fallback: Highlight matches on current page anyway
+                this.$nextTick(() => {
+                    console.log('🔄 Fallback: Highlighting matches on current page');
+                    this.highlightAllSearchResults(data.matches);
+                });
+            }
+
+            // Show success message with total count
+            const message = `Found ${data.total_matches} coordinate matches for "${fieldValue}"`;
+            console.log('📢 Showing success notification:', message);
+            this.showNotification(message, 'success');
+
+        } else {
+            console.log('❌ No matches found in API response');
+            const message = `No coordinates found for "${fieldValue}"`;
+            console.log('📢 Showing warning notification:', message);
+            this.showNotification(message, 'warning');
+        }
+
+    } catch (error) {
+        console.error('❌ Error searching coordinates:', error);
+        console.error('📍 Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        this.showNotification('Error searching for coordinates', 'error');
+    } finally {
+        console.log(`🏁 Clearing search state for field: ${fieldKey}`);
+        this.searchingField = null;
+        console.log('🔍 === FRONTEND COORDINATE SEARCH COMPLETED ===');
+    }
+},
                 highlightSearchResult(searchResult) {
                     console.log('🎨 === HIGHLIGHTING SEARCH RESULT ===');
                     console.log('📊 Search result data:', searchResult);
@@ -4829,7 +4864,7 @@
                     const scaledHeight = height * scaleY;
 
                     ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
-                    
+
                     console.log(`🎨 Drew highlight at (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) size ${scaledWidth.toFixed(1)}x${scaledHeight.toFixed(1)}`);
                 },
                 startDrawing(event) {
