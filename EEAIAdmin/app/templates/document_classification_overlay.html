@@ -1069,13 +1069,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             z-index: 1000;
-            padding: 20px;
+            padding: 20px 5px 5px 5px;
         }
 
         /* Enhanced Modal styles */
@@ -1084,7 +1084,7 @@
             backdrop-filter: blur(20px);
             border-radius: 24px;
             width: 100%;
-            max-width: 1600px;
+            max-width: 2000px;
             height: 90vh;
             display: flex;
             flex-direction: column;
@@ -1259,14 +1259,15 @@
         /* Drawing tools */
         .drawing-tools {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 12px;
+            padding: 8px;
             border-radius: 12px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
         }
 
         .tool-btn {
@@ -1356,7 +1357,7 @@
         .document-image {
             display: block;
             max-width: 100%;
-            max-height: calc(90vh - 180px);
+            max-height: 100%;
             width: auto;
             height: auto;
             object-fit: contain;
@@ -1869,7 +1870,7 @@
 
                 <!-- Professional Processing Overlay -->
                 <div v-if="processing" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
-                    <div class="processing-card text-center animate-slide-in" :data-progress="Math.round((currentStep + 1) / steps.length * 100) + '%'" data-vue="true">
+                    <div class="processing-card text-center animate-slide-in" :data-progress="Math.round(getProgressPercentage()) + '%'" data-vue="true">
                         <!-- Left Section - Icon and Title -->
                         <div class="processing-left">
                             <!-- Professional Animated Icon Section -->
@@ -1915,7 +1916,7 @@
                             <div class="mt-8">
                                 <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
                                     <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500"
-                                         :style="{ width: Math.min(100, ((currentStep + 1) / steps.length * 100)) + '%' }"></div>
+                                         :style="{ width: getProgressPercentage() + '%' }"></div>
                                 </div>
                             </div>
                         </div>
@@ -2613,114 +2614,87 @@
         <!-- Enhanced Document Details Modal -->
         <div v-if="showDetailsModal" class="details-modal">
             <div class="modal-container">
-                <!-- Enhanced Modal Header -->
-                <div class="modal-header">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
-                                    <i :class="getFileIcon(selectedResult?.fileName)" class="text-2xl text-purple-600"></i>
+                <!-- Compact Modern Header -->
+                <div class="modal-header bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <!-- Left: Document Info + Controls -->
+                        <div class="flex items-center gap-6">
+                            <!-- Document Info -->
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                    <i :class="getFileIcon(selectedResult?.fileName)" class="text-xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl font-bold text-gray-800">{% raw %}{{ selectedResult?.documentType }}{% endraw %}</h2>
-                                    <p class="text-gray-600">{% raw %}{{ selectedResult?.fileName }}{% endraw %}</p>
+                                    <h2 class="text-lg font-bold text-white">{% raw %}{{ selectedResult?.documentType }}{% endraw %}</h2>
+                                    <p class="text-indigo-100 text-xs">{% raw %}{{ selectedResult?.fileName }}{% endraw %}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-6 mt-3">
+                            
+                            <!-- Compact Controls -->
+                            <div class="flex items-center gap-3">
                                 <!-- Page Navigation -->
-                                <div v-if="selectedResult?.previewImages && selectedResult.previewImages.length > 0" class="flex items-center gap-2">
+                                <div v-if="selectedResult?.previewImages && selectedResult.previewImages.length > 0" 
+                                     class="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1">
                                     <button @click="prevPage" :disabled="currentPage === 0"
-                                            class="px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 transition-colors">
-                                        <i class="mdi mdi-chevron-left"></i>
+                                            class="w-6 h-6 rounded flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                        <i class="mdi mdi-chevron-left text-sm"></i>
                                     </button>
-                                    <span class="px-3 py-1 bg-gray-100 rounded text-sm font-medium">
-                                        Page {% raw %}{{ getAbsolutePageNumber(currentPage) }}{% endraw %} of {% raw %}{{ getTotalPages() }}{% endraw %}
+                                    <span class="px-2 py-1 bg-white/20 rounded text-xs font-medium text-white">
+                                        {% raw %}{{ getAbsolutePageNumber(currentPage) }}{% endraw %}/{% raw %}{{ getTotalPages() }}{% endraw %}
                                     </span>
                                     <button @click="nextPage" :disabled="currentPage === selectedResult.previewImages.length - 1"
-                                            class="px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 transition-colors">
-                                        <i class="mdi mdi-chevron-right"></i>
+                                            class="w-6 h-6 rounded flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                        <i class="mdi mdi-chevron-right text-sm"></i>
                                     </button>
                                 </div>
 
                                 <!-- Zoom Controls -->
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1">
                                     <button @click="zoomOut" :disabled="zoomLevel <= 0.5"
-                                            class="px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 transition-colors">
-                                        <i class="mdi mdi-magnify-minus"></i>
+                                            class="w-6 h-6 rounded flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                        <i class="mdi mdi-magnify-minus text-sm"></i>
                                     </button>
-                                    <span class="px-3 py-1 bg-gray-100 rounded text-sm font-medium min-w-[60px] text-center">
+                                    <span class="px-2 py-1 bg-white/20 rounded text-xs font-medium text-white">
                                         {% raw %}{{ Math.round(zoomLevel * 100) }}{% endraw %}%
                                     </span>
                                     <button @click="zoomIn" :disabled="zoomLevel >= 3"
-                                            class="px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 transition-colors">
-                                        <i class="mdi mdi-magnify-plus"></i>
+                                            class="w-6 h-6 rounded flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                        <i class="mdi mdi-magnify-plus text-sm"></i>
                                     </button>
                                     <button @click="resetZoom"
-                                            class="px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                                        <i class="mdi mdi-fit-to-page-outline"></i>
+                                            class="w-6 h-6 rounded flex items-center justify-center text-white hover:bg-white/20 transition-all">
+                                        <i class="mdi mdi-fit-to-page-outline text-sm"></i>
                                     </button>
                                 </div>
-
-                                <!-- Export Button -->
-                                <button @click="exportJSON" class="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors flex items-center gap-2">
-                                    <i class="mdi mdi-code-json"></i>
-                                    <span class="text-sm font-medium">Export JSON</span>
-                                </button>
-
-                                <!-- Submit Button -->
-                                <button @click="populateFormFields" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-2">
-                                    <i class="mdi mdi-check-circle"></i>
-                                    <span class="text-sm font-medium">Submit</span>
-                                </button>
                             </div>
                         </div>
-                        <button @click="closeDetailsModal" class="text-gray-400 hover:text-gray-600 transition-all hover:rotate-90 hover:scale-110">
-                            <i class="mdi mdi-close text-2xl"></i>
-                        </button>
+                        
+                        <!-- Right: Actions + Close -->
+                        <div class="flex items-center gap-2">
+                            <button @click="exportJSON" 
+                                    class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all flex items-center gap-1">
+                                <i class="mdi mdi-code-json text-sm"></i>
+                                <span class="text-xs font-semibold">Export</span>
+                            </button>
+                            <button @click="populateFormFields" 
+                                    class="px-3 py-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-1">
+                                <i class="mdi mdi-check-circle text-sm"></i>
+                                <span class="text-xs font-semibold">Submit</span>
+                            </button>
+                            <button @click="closeDetailsModal" 
+                                    class="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all flex items-center justify-center">
+                                <i class="mdi mdi-close text-lg"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Modal Body -->
                 <div class="flex-1 flex overflow-hidden">
-                    <!-- Left Side - Enhanced Document Preview -->
-                    <div class="w-1/2 relative bg-gray-900 overflow-hidden" style="height: calc(90vh - 140px);">
+                    <!-- Left Side - Clean Document Preview -->
+                    <div class="w-2/5 relative bg-gray-100 flex flex-col h-full">
 
-                        <!-- Drawing Tools -->
-                        <div class="drawing-tools">
-                            <button @click="currentTool = 'select'"
-                                    :class="{ active: currentTool === 'select' }"
-                                    class="tool-btn" title="Select">
-                                <i class="mdi mdi-cursor-default"></i>
-                            </button>
-                            <button @click="currentTool = 'draw'"
-                                    :class="{ active: currentTool === 'draw' }"
-                                    class="tool-btn" title="Draw - Click and drag to draw">
-                                <i class="mdi mdi-pencil"></i>
-                            </button>
-                            <button @click="currentTool = 'rectangle'"
-                                    :class="{ active: currentTool === 'rectangle' }"
-                                    class="tool-btn" title="Rectangle - Click and drag to draw rectangle">
-                                <i class="mdi mdi-square-outline"></i>
-                            </button>
-                            <button @click="currentTool = 'textSelect'"
-                                    :class="{ active: currentTool === 'textSelect' }"
-                                    class="tool-btn" title="Text Selection - Select text to extract">
-                                <i class="mdi mdi-format-text-variant-outline"></i>
-                            </button>
-                            <button @click="clearDrawings" class="tool-btn" title="Clear all drawings">
-                                <i class="mdi mdi-eraser"></i>
-                            </button>
-
-                            <!-- Color Palette -->
-                            <div class="color-palette">
-                                <button v-for="color in drawColors" :key="color"
-                                        @click="currentColor = color"
-                                        :class="{ active: currentColor === color }"
-                                        :style="{ backgroundColor: color }"
-                                        class="color-btn"
-                                        :title="'Select ' + color + ' color'"></button>
-                            </div>
-                        </div>
+                        <!-- Simple Document View -->
 
                         <!-- Drawing Help -->
                         <div v-if="currentTool !== 'select'" class="absolute top-20 left-6 bg-black/75 text-white px-3 py-2 rounded-lg text-sm">
@@ -2742,23 +2716,23 @@
                             </button>
                         </div>
 
-                        <!-- Enhanced Image Viewer -->
-                        <div class="image-viewer h-full overflow-auto"
-                             :class="{ 'panning': isPanning, 'tool-active': currentTool !== 'select' }"
+                        <!-- Document Image Viewer -->
+                        <div class="flex-1 overflow-auto p-4"
                              @wheel.prevent="handleWheel"
                              @mousedown="startPan"
                              @mousemove="pan"
                              @mouseup="endPan"
                              @mouseleave="endPan"
-                             style="display: flex; align-items: center; justify-content: center; padding: 0;">
-                            <div class="image-container"
+                             style="display: flex; align-items: flex-start; justify-content: center;">
+                            <div class="relative bg-gray-50 shadow-lg rounded-lg overflow-hidden border border-gray-200"
                                  :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: 'center', position: 'relative', display: 'inline-block' }"
                                  v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage]">
                                 <img ref="documentImage"
                                      :src="'data:image/png;base64,' + selectedResult.previewImages[currentPage]"
                                      :alt="'Page ' + (currentPage + 1)"
                                      @load="onImageLoad"
-                                     class="document-image">
+                                     class="block w-full h-auto"
+                                     style="max-width: 100%; max-height: 75vh; object-fit: contain;">
 
                                 <!-- Canvas for drawing -->
                                 <canvas ref="drawingCanvas"
@@ -2789,185 +2763,289 @@
                         </div>
                     </div>
 
-                    <!-- Right Side - Details -->
-                    <div class="w-1/2 p-6 overflow-y-auto" style="max-height: calc(90vh - 140px);">
-                        <!-- Document Classification Display -->
-                        <div class="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                            <div class="flex items-center justify-between">
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-semibold text-purple-900">Document Classification</h3>
-                                    <div class="mt-2">
-                                        <p class="text-purple-700 font-medium">Type: {% raw %}{{ formatDocumentType(selectedResult?.documentType) }}{% endraw %}</p>
-                                        <p v-if="selectedResult?.analysisResult?.document_subtype || getMainSubtype()" class="text-purple-600 text-sm mt-1">
-                                            Subtype: {% raw %}{{ selectedResult?.analysisResult?.document_subtype || getMainSubtype() }}{% endraw %}
-                                        </p>
-                                    </div>
+                    <!-- Right Panel - Enhanced Details -->
+                    <div class="w-3/5 bg-gradient-to-br from-gray-50 to-slate-100 overflow-y-auto border-l border-gray-200">
+                        
+                        <!-- Enhanced Document Classification Header -->
+                        <div class="p-6 bg-white border-b border-gray-200 shadow-sm">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <i class="mdi mdi-file-search text-white text-2xl"></i>
                                 </div>
-                            </div>
-
-                            <!-- Per-Page Classification if available -->
-                            <div v-if="selectedResult?.analysisResult?.per_page && selectedResult.analysisResult.per_page[currentPage]"
-                                 class="mt-3 pt-3 border-t border-purple-200">
-                                <p class="text-sm text-purple-600 mb-1">Current Page ({% raw %}{{ currentPage + 1 }}{% endraw %}):</p>
                                 <div>
-                                    <p class="text-purple-700 font-medium">
-                                        {% raw %}{{ getPageDocumentType() }}{% endraw %}
+                                    <h3 class="text-xl font-bold text-gray-800">Document Analysis</h3>
+                                    <p class="text-sm text-gray-600">Classification and extracted information</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Enhanced Classification Cards -->
+                            <div class="grid grid-cols-1 gap-4">
+                                <!-- Main Document Type -->
+                                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                                            <span class="text-sm font-semibold text-indigo-700">Document Type</span>
+                                        </div>
+                                        <div class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-medium">
+                                            CLASSIFIED
+                                        </div>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-indigo-800 mb-1">
+                                        {% raw %}{{ formatDocumentType(selectedResult?.documentType) }}{% endraw %}
+                                    </h4>
+                                    <p v-if="selectedResult?.analysisResult?.document_subtype || getMainSubtype()" 
+                                       class="text-sm text-indigo-600">
+                                        {% raw %}{{ selectedResult?.analysisResult?.document_subtype || getMainSubtype() }}{% endraw %}
                                     </p>
-                                    <p v-if="getPageSubtype()" class="text-sm text-purple-600 mt-1">
-                                        Subtype: {% raw %}{{ getPageSubtype() }}{% endraw %}
-                                    </p>
+                                </div>
+                                
+                                <!-- Per-Page Classification -->
+                                <div v-if="selectedResult?.analysisResult?.per_page && selectedResult.analysisResult.per_page[currentPage]"
+                                     class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                            <span class="text-sm font-semibold text-purple-700">Page {% raw %}{{ currentPage + 1 }}{% endraw %} Analysis</span>
+                                        </div>
+                                        <div class="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium">
+                                            CURRENT
+                                        </div>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-purple-800 mb-1">{% raw %}{{ getPageDocumentType() }}{% endraw %}</h4>
+                                    <p v-if="getPageSubtype()" class="text-sm text-purple-600">{% raw %}{{ getPageSubtype() }}{% endraw %}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tabs -->
-                        <div class="flex gap-4 mb-6 border-b border-gray-200">
-                            <button @click="activeTab = 'fields'"
-                                    class="pb-3 px-1 font-medium transition-colors"
-                                    :class="activeTab === 'fields' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-600 hover:text-gray-800'">
-                                Extracted Fields
-                            </button>
-                            <button @click="selectedResult?.compliance?.ucp600 ? activeTab = 'ucp600' : null"
-                                    class="pb-3 px-1 font-medium transition-colors"
-                                    :class="[
-                                        activeTab === 'ucp600' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-600',
-                                        selectedResult?.compliance?.ucp600 ? 'hover:text-gray-800 cursor-pointer' : 'opacity-50 cursor-not-allowed'
-                                    ]">
-                                UCP600
-                            </button>
-                            <button @click="selectedResult?.compliance?.swift ? activeTab = 'swift' : null"
-                                    class="pb-3 px-1 font-medium transition-colors"
-                                    :class="[
-                                        activeTab === 'swift' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-600',
-                                        selectedResult?.compliance?.swift ? 'hover:text-gray-800 cursor-pointer' : 'opacity-50 cursor-not-allowed'
-                                    ]">
-                                SWIFT
-                            </button>
-                             <!-- Add Compliance Tab Button -->
-                            <button @click="activeTab = 'compliance'"
-                                    class="pb-3 px-1 font-medium transition-colors"
-                                    :class="activeTab === 'compliance' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-600 hover:text-gray-800'">
-                                Compliance
-                            </button>
+                        <!-- Modern Navigation Tabs -->
+                        <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
+                            <nav class="flex px-6">
+                                <button @click="activeTab = 'fields'"
+                                        :class="{ 
+                                            'border-indigo-500 text-indigo-600 bg-indigo-50': activeTab === 'fields', 
+                                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'fields' 
+                                        }"
+                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i class="mdi mdi-format-list-bulleted text-lg"></i>
+                                    <span>Fields</span>
+                                    <div v-if="selectedResult?.extractedFields" 
+                                         class="ml-1 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
+                                        {% raw %}{{ Object.keys(selectedResult.extractedFields).length }}{% endraw %}
+                                    </div>
+                                </button>
+                                
+                                <button @click="selectedResult?.compliance?.ucp600 ? activeTab = 'ucp600' : null"
+                                        :class="[
+                                            activeTab === 'ucp600' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500',
+                                            selectedResult?.compliance?.ucp600 ? 'hover:text-gray-700 hover:border-gray-300 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                                        ]"
+                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i class="mdi mdi-bank text-lg"></i>
+                                    <span>UCP600</span>
+                                </button>
+                                
+                                <button @click="selectedResult?.compliance?.swift ? activeTab = 'swift' : null"
+                                        :class="[
+                                            activeTab === 'swift' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500',
+                                            selectedResult?.compliance?.swift ? 'hover:text-gray-700 hover:border-gray-300 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                                        ]"
+                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i class="mdi mdi-swap-horizontal text-lg"></i>
+                                    <span>SWIFT</span>
+                                </button>
+                                
+                                <button @click="activeTab = 'compliance'"
+                                        :class="{ 
+                                            'border-indigo-500 text-indigo-600 bg-indigo-50': activeTab === 'compliance', 
+                                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'compliance' 
+                                        }"
+                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i class="mdi mdi-shield-check text-lg"></i>
+                                    <span>Compliance</span>
+                                </button>
+                            </nav>
                         </div>
 
-                        <!-- Enhanced Fields Tab -->
-                        <div v-if="activeTab === 'fields'" class="space-y-3">
-                            <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0">
-                                <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
-                                     :key="fieldKey"
-                                     class="field-item-enhanced"
-                                     :class="{ active: activeFieldIndex === index, 'border-purple-500 bg-purple-50': targetField === fieldKey }"
-                                     @click="highlightField(index, fieldData)">
+                        
+                        <!-- Tab Content Area -->
+                        <div class="flex-1 overflow-y-auto">
+                            
+                            <!-- Enhanced Fields Tab -->
+                            <div v-if="activeTab === 'fields'" class="p-6">
+                                <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="space-y-6">
+                                    <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
+                                         :key="fieldKey"
+                                         class="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                         :class="{ 
+                                             'ring-2 ring-indigo-500 shadow-lg border-indigo-300': activeFieldIndex === index, 
+                                             'ring-2 ring-purple-400 bg-purple-50 border-purple-300': targetField === fieldKey 
+                                         }"
+                                         @click="highlightField(index, fieldData)">
 
-                                    <!-- Field Header -->
-                                    <div class="flex items-start justify-between mb-2">
-                                        <div class="flex-1">
-                                            <h4 class="text-base font-semibold text-gray-900">
-                                                {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
-                                            </h4>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value)"
-                                                    :disabled="!fieldData?.value || searchingField === fieldKey"
-                                                    class="px-2 py-1 rounded-md text-xs font-medium transition-all hover:bg-purple-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    :class="{ 
-                                                        'bg-purple-600 text-white': searchingField === fieldKey,
-                                                        'bg-purple-100 text-purple-700': searchingField !== fieldKey 
-                                                    }"
-                                                    :title="searchingField === fieldKey ? 'Searching...' : 'Search coordinates for this field'"
-                                                    style="background: rgba(103, 126, 234, 0.1); color: #667eea;">
-                                                <i class="mdi text-sm" 
-                                                   :class="searchingField === fieldKey ? 'mdi-loading mdi-spin' : 'mdi-crosshairs-gps'"></i>
-                                                <span v-if="searchingField === fieldKey">Searching</span>
-                                                <span v-else>Find</span>
-                                            </button>
-                                            <div class="field-confidence"
-                                                 :class="getConfidenceClass(fieldData?.confidence || 0)">
-                                                <i class="mdi mdi-chart-donut text-xs"></i>
-                                                <span>{% raw %}{{ Math.round(fieldData?.confidence || 0) }}{% endraw %}%</span>
+                                        <!-- Enhanced Field Header -->
+                                        <div class="flex items-start justify-between mb-4">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-3 mb-2">
+                                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                                        <i class="mdi mdi-text-box text-white text-lg"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-lg font-bold text-gray-900">
+                                                            {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
+                                                        </h4>
+                                                        <p class="text-sm text-gray-500">Field extracted from document</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Enhanced Action Buttons -->
+                                            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value)"
+                                                        :disabled="!fieldData?.value || searchingField === fieldKey"
+                                                        class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+                                                        :class="{ 
+                                                            'bg-indigo-500 text-white': searchingField === fieldKey,
+                                                            'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600': searchingField !== fieldKey 
+                                                        }"
+                                                        title="Find in document">
+                                                    <i :class="searchingField === fieldKey ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-magnify'" class="text-lg"></i>
+                                                </button>
+                                                
+                                                <button @click.stop="currentTool = 'textSelect'; targetField = fieldKey"
+                                                        class="w-10 h-10 bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+                                                        title="Select text from document">
+                                                    <i class="mdi mdi-cursor-text text-lg"></i>
+                                                </button>
+                                                
+                                                <button v-if="!editingField || editingField !== fieldKey" 
+                                                        @click.stop="startFieldEdit(fieldKey, fieldData?.value)"
+                                                        class="w-10 h-10 bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+                                                        title="Edit field value">
+                                                    <i class="mdi mdi-pencil text-lg"></i>
+                                                </button>
+                                                
+                                                <!-- Location Status -->
+                                                <div v-if="fieldData?.bounding_box" 
+                                                     class="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
+                                                    <i class="mdi mdi-map-marker-check text-sm"></i>
+                                                    <span>Located</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Field Value (Editable) -->
-                                    <div class="bg-gray-50 rounded-lg p-3 font-mono text-sm">
-                                        <input v-if="editingField === fieldKey"
-                                               v-model="editedFields[fieldKey]"
-                                               @blur="saveFieldEdit(fieldKey)"
-                                               @keyup.enter="saveFieldEdit(fieldKey)"
-                                               @keyup.esc="cancelFieldEdit()"
-                                               class="w-full bg-white border border-purple-300 rounded px-2 py-1 text-gray-900 focus:outline-none focus:border-purple-500"
-                                               :ref="'fieldInput_' + fieldKey">
-                                        <p v-else
-                                           @click="startFieldEdit(fieldKey, fieldData?.value)"
-                                           class="text-gray-900 break-words cursor-text hover:bg-gray-100 px-2 py-1 rounded transition-colors"
-                                           title="Click to edit">
-                                            {% raw %}{{ fieldData?.value || 'N/A' }}{% endraw %}
-                                        </p>
-                                    </div>
+                                        <!-- Enhanced Field Value Section -->
+                                        <div class="mb-4">
+                                            <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <label class="text-sm font-semibold text-gray-700">Extracted Value</label>
+                                                    <div v-if="fieldData?.confidence" 
+                                                         class="px-3 py-1 rounded-full text-xs font-bold"
+                                                         :class="getConfidenceClass(fieldData.confidence)">
+                                                        <i class="mdi mdi-chart-donut mr-1"></i>
+                                                        {% raw %}{{ Math.round(fieldData.confidence * 100) }}{% endraw %}% confidence
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Editable Field Value -->
+                                                <div v-if="editingField === fieldKey" class="relative">
+                                                    <textarea v-model="editedFields[fieldKey]"
+                                                             @blur="saveFieldEdit(fieldKey)"
+                                                             @keyup.enter="saveFieldEdit(fieldKey)"
+                                                             @keyup.esc="cancelFieldEdit()"
+                                                             class="w-full bg-white border-2 border-indigo-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-indigo-500 resize-none"
+                                                             :ref="'fieldInput_' + fieldKey"
+                                                             rows="3"></textarea>
+                                                    <div class="absolute top-2 right-2 flex gap-1">
+                                                        <button @click="saveFieldEdit(fieldKey)" class="w-6 h-6 bg-green-500 text-white rounded-md flex items-center justify-center hover:bg-green-600">
+                                                            <i class="mdi mdi-check text-sm"></i>
+                                                        </button>
+                                                        <button @click="cancelFieldEdit()" class="w-6 h-6 bg-gray-500 text-white rounded-md flex items-center justify-center hover:bg-gray-600">
+                                                            <i class="mdi mdi-close text-sm"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div v-else @click="startFieldEdit(fieldKey, fieldData?.value)" 
+                                                     class="min-h-[60px] text-gray-900 bg-white rounded-lg px-4 py-3 border border-gray-200 hover:border-indigo-300 cursor-text transition-all">
+                                                    <div v-if="fieldData?.value" class="whitespace-pre-wrap font-medium">
+                                                        {% raw %}{{ fieldData.value }}{% endraw %}
+                                                    </div>
+                                                    <div v-else class="text-gray-400 italic flex items-center justify-center h-12">
+                                                        <i class="mdi mdi-pencil mr-2"></i>
+                                                        Click to add value
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                    <!-- Field Metadata -->
-                                    <div class="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                                        <span v-if="fieldData?.bounding_page !== undefined">
-                                            <i class="mdi mdi-file-document-outline mr-1"></i>
-                                            Page {% raw %}{{ fieldData?.bounding_page + 1 }}{% endraw %}
-                                        </span>
-                                        <span v-if="fieldData?.bounding_box">
-                                            <i class="mdi mdi-vector-square mr-1"></i>
-                                            Has location
-                                        </span>
+                                        <!-- Simplified Field Metadata -->
+                                        <div v-if="fieldData?.page !== undefined || fieldData?.method" 
+                                             class="flex items-center gap-4 text-sm text-gray-500">
+                                            <span v-if="fieldData?.page !== undefined" class="flex items-center gap-1">
+                                                <i class="mdi mdi-file-document-outline"></i>
+                                                Page {% raw %}{{ fieldData.page + 1 }}{% endraw %}
+                                            </span>
+                                            <span v-if="fieldData?.method" class="flex items-center gap-1">
+                                                <i class="mdi mdi-cog-outline"></i>
+                                                {% raw %}{{ fieldData.method }}{% endraw %}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div v-else class="text-center py-12 text-gray-500">
-                                <i class="mdi mdi-text-search text-5xl mb-3"></i>
-                                <p>No fields extracted from this document</p>
-                            </div>
-                        </div>
-
-                        <!-- Compliance Tab -->
-                        <div v-if="activeTab === 'compliance'" class="space-y-4">
-                            <div v-if="selectedResult?.compliance">
-                                <div class="flex items-center gap-3 mb-6">
-                                    <div class="w-12 h-12 rounded-full flex items-center justify-center"
-                                         :class="selectedResult.compliance.status === 'compliant' ? 'bg-green-100' : 'bg-red-100'">
-                                        <i class="text-2xl"
-                                           :class="selectedResult.compliance.status === 'compliant' ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'"></i>
+                                
+                                <!-- Enhanced No Fields State -->
+                                <div v-else class="text-center py-16">
+                                    <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                        <i class="mdi mdi-format-list-bulleted text-3xl text-gray-400"></i>
                                     </div>
-                                    <div>
-                                        <h4 class="font-semibold text-lg">
-                                            {% raw %}{{ selectedResult.compliance.status === 'compliant' ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                        </h4>
-                                        <p class="text-gray-600">Compliance Score: {% raw %}{{ selectedResult.complianceScore }}{% endraw %}%</p>
-                                    </div>
-                                </div>
-
-                                <div v-if="selectedResult.compliance.violations && selectedResult.compliance.violations.length > 0" class="mb-6">
-                                    <h5 class="font-medium text-red-700 mb-3">Violations</h5>
-                                    <div v-for="(violation, idx) in selectedResult.compliance.violations" :key="'v-' + idx"
-                                         class="bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
-                                        <p class="text-red-800">{% raw %}{{ violation.description || violation }}{% endraw %}</p>
-                                    </div>
-                                </div>
-
-                                <div v-if="selectedResult.compliance.warnings && selectedResult.compliance.warnings.length > 0">
-                                    <h5 class="font-medium text-yellow-700 mb-3">Warnings</h5>
-                                    <div v-for="(warning, idx) in selectedResult.compliance.warnings" :key="'w-' + idx"
-                                         class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                                        <p class="text-yellow-800">{% raw %}{{ warning.description || warning }}{% endraw %}</p>
-                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-700 mb-3">No Fields Extracted</h3>
+                                    <p class="text-gray-500 max-w-sm mx-auto">No extractable fields were found in this document. The document may not contain structured data or may need manual review.</p>
                                 </div>
                             </div>
-                            <div v-else class="text-center py-8 text-gray-600">
-                                No compliance data available
-                            </div>
-                        </div>
 
-                        <!-- UCP600 Tab -->
-                        <div v-if="activeTab === 'ucp600' && selectedResult?.compliance?.ucp600" class="space-y-4">
-                            <!-- Display compliance data regardless of structure -->
-                            <div v-if="typeof selectedResult.compliance.ucp600 === 'object'" class="space-y-4">
+                            <!-- Compliance Tab -->
+                            <div v-if="activeTab === 'compliance'" class="p-6">
+                                <div v-if="selectedResult?.compliance">
+                                    <div class="flex items-center gap-3 mb-6">
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                                             :class="selectedResult.compliance.status === 'compliant' ? 'bg-green-100' : 'bg-red-100'">
+                                            <i class="text-2xl"
+                                               :class="selectedResult.compliance.status === 'compliant' ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-lg">
+                                                {% raw %}{{ selectedResult.compliance.status === 'compliant' ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
+                                            </h4>
+                                            <p class="text-gray-600">Compliance Score: {% raw %}{{ selectedResult.complianceScore }}{% endraw %}%</p>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="selectedResult.compliance.violations && selectedResult.compliance.violations.length > 0" class="mb-6">
+                                        <h4 class="text-lg font-bold text-red-700 mb-4">Violations</h4>
+                                        <div v-for="(violation, idx) in selectedResult.compliance.violations" :key="'v-' + idx"
+                                             class="bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
+                                            <p class="text-red-800">{% raw %}{{ violation.description || violation }}{% endraw %}</p>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="selectedResult.compliance.warnings && selectedResult.compliance.warnings.length > 0">
+                                        <h4 class="text-lg font-bold text-yellow-700 mb-4">Warnings</h4>
+                                        <div v-for="(warning, idx) in selectedResult.compliance.warnings" :key="'w-' + idx"
+                                             class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
+                                            <p class="text-yellow-800">{% raw %}{{ warning.description || warning }}{% endraw %}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="text-center py-8 text-gray-600">
+                                    No compliance data available
+                                </div>
+                            </div>
+
+                            <!-- UCP600 Tab -->
+                            <div v-if="activeTab === 'ucp600' && selectedResult?.compliance?.ucp600" class="p-6">
+                                <!-- Display compliance data regardless of structure -->
+                                <div v-if="typeof selectedResult.compliance.ucp600 === 'object'" class="space-y-4">
                                 <!-- Header with icon -->
                                 <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
                                     <div class="flex items-center gap-4">
@@ -2991,11 +3069,11 @@
                                                    :class="selectedResult.compliance.ucp600.status === 'compliant' ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'"></i>
                                             </div>
                                             <div>
-                                                <h5 class="font-semibold text-lg"
+                                                <h4 class="text-lg font-bold text-gray-900"
                                                     :class="selectedResult.compliance.ucp600.status === 'compliant' ? 'text-green-700' : 'text-red-700'">
                                                     {% raw %}{{ selectedResult.compliance.ucp600.status === 'compliant' ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                </h5>
-                                                <p class="text-gray-600 text-sm">Overall compliance status</p>
+                                                </h4>
+                                                <p class="text-sm text-gray-500">Overall compliance status</p>
                                             </div>
                                         </div>
                                         <div class="text-right">
@@ -3008,26 +3086,31 @@
                                     </div>
                                 </div>
 
-                                <!-- Display all properties as vertical cards -->
-                                <div class="space-y-3">
+                                <!-- Display all properties as single row cards -->
+                                <div class="space-y-4">
                                     <div v-for="(value, key) in getUCP600TableData()" :key="'ucp-card-' + key"
-                                         class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                                         class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
                                         <div class="flex items-start justify-between">
                                             <div class="flex-1">
                                                 <!-- Field Name -->
-                                                <div class="flex items-center mb-3">
-                                                    <i class="mdi mdi-tag text-purple-500 mr-2"></i>
-                                                    <h6 class="text-base font-semibold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h6>
+                                                <div class="flex items-center gap-3 mb-4">
+                                                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                                                        <i class="mdi mdi-tag text-white text-lg"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-lg font-bold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h4>
+                                                        <p class="text-sm text-gray-500">UCP600 compliance field</p>
+                                                    </div>
                                                 </div>
                                                 
                                                 <!-- Value Information -->
-                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-3">
+                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-4">
                                                     <!-- Actual Value -->
-                                                    <div class="bg-blue-50 rounded-md p-3">
-                                                        <label class="block text-xs font-medium text-blue-700 mb-1">Field Value</label>
-                                                        <p class="text-sm text-blue-900 font-mono break-words">
+                                                    <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200">
+                                                        <label class="text-sm font-semibold text-gray-700 mb-2 block">Field Value</label>
+                                                        <div class="min-h-[60px] text-gray-900 bg-white rounded-lg px-4 py-3 border border-gray-200 font-medium">
                                                             {% raw %}{{ value.value || 'Not provided' }}{% endraw %}
-                                                        </p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 
@@ -3129,11 +3212,11 @@
                                                    :class="selectedResult.compliance.swift.status === 'compliant' ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'"></i>
                                             </div>
                                             <div>
-                                                <h5 class="font-semibold text-lg"
+                                                <h4 class="text-lg font-bold text-gray-900"
                                                     :class="selectedResult.compliance.swift.status === 'compliant' ? 'text-green-700' : 'text-red-700'">
                                                     {% raw %}{{ selectedResult.compliance.swift.status === 'compliant' ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                </h5>
-                                                <p class="text-gray-600 text-sm">Overall compliance status</p>
+                                                </h4>
+                                                <p class="text-sm text-gray-500">Overall compliance status</p>
                                             </div>
                                         </div>
                                         <div class="text-right">
@@ -3146,26 +3229,31 @@
                                     </div>
                                 </div>
 
-                                <!-- Display all properties as vertical cards -->
-                                <div class="space-y-3">
+                                <!-- Display all properties as single row cards -->
+                                <div class="space-y-4">
                                     <div v-for="(value, key) in getSWIFTTableData()" :key="'swift-card-' + key"
-                                         class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                                         class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
                                         <div class="flex items-start justify-between">
                                             <div class="flex-1">
                                                 <!-- Field Name -->
-                                                <div class="flex items-center mb-3">
-                                                    <i class="mdi mdi-tag text-blue-500 mr-2"></i>
-                                                    <h6 class="text-base font-semibold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h6>
+                                                <div class="flex items-center gap-3 mb-4">
+                                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
+                                                        <i class="mdi mdi-tag text-white text-lg"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-lg font-bold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h4>
+                                                        <p class="text-sm text-gray-500">SWIFT compliance field</p>
+                                                    </div>
                                                 </div>
                                                 
                                                 <!-- Value Information -->
-                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-3">
+                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-4">
                                                     <!-- Actual Value -->
-                                                    <div class="bg-blue-50 rounded-md p-3">
-                                                        <label class="block text-xs font-medium text-blue-700 mb-1">Field Value</label>
-                                                        <p class="text-sm text-blue-900 font-mono break-words">
+                                                    <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200">
+                                                        <label class="text-sm font-semibold text-gray-700 mb-2 block">Field Value</label>
+                                                        <div class="min-h-[60px] text-gray-900 bg-white rounded-lg px-4 py-3 border border-gray-200 font-medium">
                                                             {% raw %}{{ value.value || 'Not provided' }}{% endraw %}
-                                                        </p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 
@@ -3246,6 +3334,8 @@
                                     <p v-if="warning.standard" class="text-yellow-700 text-sm mt-1">Standard: {% raw %}{{ warning.standard }}{% endraw %}</p>
                                 </div>
                             </div>
+                        </div>
+                        
                         </div>
                     </div>
 
@@ -3460,6 +3550,21 @@
                     const index = this.selectedResult.pages.indexOf(absolutePageNumber);
                     return index >= 0 ? index : 0; // Return 0 if not found
                 },
+                getProgressPercentage() {
+                    // Calculate progress percentage with proper handling of compliance step
+                    if (this.currentStep >= this.steps.length) {
+                        // Completed - beyond all steps
+                        return 100;
+                    }
+                    
+                    if (this.currentStep === this.steps.length - 1) {
+                        // Last step (compliance) is running - show 90% to indicate it's not fully complete
+                        return 90;
+                    }
+                    
+                    // Normal progression for other steps
+                    return Math.min(90, ((this.currentStep + 1) / this.steps.length * 100));
+                },
                 handleFileSelect(event) {
                     const files = Array.from(event.target.files);
                     this.selectedFiles = [...this.selectedFiles, ...files];
@@ -3645,8 +3750,8 @@
                         'ocr_extraction': 2,      // Extracting Content
                         'document_classification': 3, // AI Classification
                         'field_extraction': 4,    // Reading Entities
-                        'compliance_check': 5,    // Compliance Check
-                        'finalizing': 5,          // Still compliance phase
+                        'compliance_check': 5,    // Compliance Check (running)
+                        'finalizing': 5,          // Still compliance phase (running)
                         'completed': 6            // Done (beyond steps array)
                     };
                     
@@ -3657,7 +3762,12 @@
                         this.currentStep = stepIndex;
                         this.processingStatus = message || this.steps[stepIndex] || 'Processing...';
                         
-                        console.log(`✅ Overlay Vue modal updated: currentStep=${this.currentStep}, status="${this.processingStatus}"`);
+                        // Special handling for completed stage
+                        if (stage === 'completed') {
+                            this.processingStatus = 'Processing Complete!';
+                        }
+                        
+                        console.log(`✅ Overlay Vue modal updated: currentStep=${this.currentStep}, status="${this.processingStatus}", progress=${this.getProgressPercentage()}%`);
                     } else {
                         console.warn(`⚠️  Unknown stage: ${stage}`);
                     }
