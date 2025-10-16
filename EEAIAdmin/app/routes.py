@@ -1952,6 +1952,407 @@ Return compliance status for each field.'''
             logger.error(f"Error reloading prompt config: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
 
+    # ==================== Helper Functions ====================
+    def normalize_date_for_search(text):
+        """
+        Normalize different date formats to a common format for comparison
+        Handles formats like: 2025-05-15, 15-05-2025, 15/05/2025, 15.05.2025
+        And different orders: yyyy-mm-dd, dd-mm-yyyy, mm-dd-yyyy, etc.
+        
+        Returns:
+            list: All possible normalized date representations
+        """
+        import re
+        
+        if not text or not isinstance(text, str):
+            return []
+        
+        # Remove extra whitespace
+        text = text.strip()
+        
+        # Define date separators
+        separators = ['-', '/', '.', ' ']
+        
+        # Extract potential date patterns
+        date_patterns = []
+        
+        # Pattern for various date formats (4 digits or 1-2 digits)
+        date_regex = r'(\d{1,4})[\/\-\.\s](\d{1,2})[\/\-\.\s](\d{1,4})'
+        matches = re.finditer(date_regex, text)
+        
+        for match in matches:
+            part1, part2, part3 = match.groups()
+            
+            # Convert to integers for processing
+            try:
+                p1, p2, p3 = int(part1), int(part2), int(part3)
+            except ValueError:
+                continue
+            
+            # Determine which part is year, month, day
+            normalized_dates = []
+            
+            # Case 1: First part is year (yyyy-mm-dd format)
+            if p1 >= 1900 and p1 <= 2100:
+                if 1 <= p2 <= 12 and 1 <= p3 <= 31:
+                    normalized_dates.append(f"{p1:04d}-{p2:02d}-{p3:02d}")
+                    normalized_dates.append(f"{p3:02d}-{p2:02d}-{p1:04d}")
+                    normalized_dates.append(f"{p3:02d}/{p2:02d}/{p1:04d}")
+                    normalized_dates.append(f"{p3:02d}.{p2:02d}.{p1:04d}")
+            
+            # Case 2: Last part is year (dd-mm-yyyy or mm-dd-yyyy format)
+            if p3 >= 1900 and p3 <= 2100:
+                # dd-mm-yyyy
+                if 1 <= p1 <= 31 and 1 <= p2 <= 12:
+                    normalized_dates.append(f"{p3:04d}-{p2:02d}-{p1:02d}")
+                    normalized_dates.append(f"{p1:02d}-{p2:02d}-{p3:04d}")
+                    normalized_dates.append(f"{p1:02d}/{p2:02d}/{p3:04d}")
+                    normalized_dates.append(f"{p1:02d}.{p2:02d}.{p3:04d}")
+                
+                # mm-dd-yyyy
+                if 1 <= p1 <= 12 and 1 <= p2 <= 31:
+                    normalized_dates.append(f"{p3:04d}-{p1:02d}-{p2:02d}")
+                    normalized_dates.append(f"{p2:02d}-{p1:02d}-{p3:04d}")
+                    normalized_dates.append(f"{p2:02d}/{p1:02d}/{p3:04d}")
+                    normalized_dates.append(f"{p2:02d}.{p1:02d}.{p3:04d}")
+            
+            # Case 3: Year in middle (rare but possible)
+            if p2 >= 1900 and p2 <= 2100:
+                if 1 <= p1 <= 31 and 1 <= p3 <= 12:
+                    normalized_dates.append(f"{p2:04d}-{p3:02d}-{p1:02d}")
+                    normalized_dates.append(f"{p1:02d}-{p3:02d}-{p2:04d}")
+                    normalized_dates.append(f"{p1:02d}/{p3:02d}/{p2:04d}")
+                    normalized_dates.append(f"{p1:02d}.{p3:02d}.{p2:04d}")
+            
+            date_patterns.extend(normalized_dates)
+        
+        # Remove duplicates and return
+        return list(set(date_patterns))
+
+    def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
+        """
+        Search for text in OCR data and return matching entries with coordinates
+        
+        Args:
+            field_value (str): The text to search for
+            ocr_data (list): List of OCR entries with text and bounding box data
+            search_mode (str): Search strategy - 'exact', 'fuzzy', or 'contains'
+        
+        Returns:
+            list: Matching OCR entries with coordinates and confidence scores
+        """
+        import time
+        from difflib import SequenceMatcher
+        
+        logger.info(f"🔍 === STARTING OCR TEXT SEARCH ===")
+        logger.info(f"🎯 Target field value: '{field_value}'")
+        logger.info(f"🔧 Search mode: {search_mode}")
+        logger.info(f"📄 OCR entries to search: {len(ocr_data)}")
+        
+        if not field_value or not field_value.strip():
+            logger.warning("❌ Empty field value provided")
+            return []
+        
+        if not ocr_data:
+            logger.warning("❌ No OCR data provided")
+            return []
+        
+        field_value_lower = field_value.lower().strip()
+        matches = []
+        
+        # Check if field_value looks like a date and normalize it
+        field_date_patterns = normalize_date_for_search(field_value)
+        is_date_search = len(field_date_patterns) > 0
+        
+        if is_date_search:
+            logger.info(f"📅 Detected date search. Normalized patterns: {field_date_patterns}")
+        else:
+            logger.info(f"📝 Searching for phrase/sentence: '{field_value}'")
+        
+        # Search statistics
+        exact_matches = 0
+        fuzzy_matches = 0
+        contains_matches = 0
+        partial_matches = 0
+        date_matches = 0
+        no_matches = 0
+        
+        logger.info(f"🔎 Starting sentence/phrase search through {len(ocr_data)} OCR entries")
+        
+        for i, ocr_entry in enumerate(ocr_data):
+            ocr_text = ocr_entry.get('text', '').strip()
+            
+            if not ocr_text:
+                logger.debug(f"   Entry {i+1}: Skipping empty text")
+                continue
+                
+            ocr_text_lower = ocr_text.lower()
+            match_confidence = 0
+            match_type = 'none'
+            
+            logger.debug(f"   Entry {i+1}: Comparing '{field_value_lower}' with '{ocr_text_lower}'")
+            
+            # Date matching logic (highest priority for date searches)
+            if is_date_search and match_confidence < 100:
+                ocr_date_patterns = normalize_date_for_search(ocr_text)
+                if ocr_date_patterns:
+                    # Check if any normalized date patterns match
+                    for field_pattern in field_date_patterns:
+                        for ocr_pattern in ocr_date_patterns:
+                            if field_pattern == ocr_pattern:
+                                match_confidence = 100
+                                match_type = 'date_exact'
+                                date_matches += 1
+                                logger.debug(f"      ✅ DATE EXACT MATCH! '{field_pattern}' matches '{ocr_pattern}' - Confidence: 100%")
+                                break
+                        if match_confidence == 100:
+                            break
+            
+            # Regular exact match (high priority)
+            if match_confidence < 100 and search_mode in ['exact', 'fuzzy', 'contains']:
+                if field_value_lower == ocr_text_lower:
+                    match_confidence = 100
+                    match_type = 'exact'
+                    exact_matches += 1
+                    logger.debug(f"      ✅ EXACT MATCH! Confidence: 100%")
+                elif field_value_lower in ocr_text_lower:
+                    match_confidence = 90
+                    match_type = 'contains'
+                    contains_matches += 1
+                    logger.debug(f"      ✅ CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
+                elif ocr_text_lower in field_value_lower:
+                    match_confidence = 85
+                    match_type = 'partial'
+                    partial_matches += 1
+                    logger.debug(f"      ✅ PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
+            
+            # Fuzzy matching if enabled and no exact match
+            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
+                similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
+                logger.debug(f"      🔀 Fuzzy similarity: {similarity:.3f}")
+                if similarity >= 0.8:  # High similarity threshold
+                    fuzzy_confidence = similarity * 80
+                    if fuzzy_confidence > match_confidence:
+                        match_confidence = fuzzy_confidence
+                        match_type = 'fuzzy'
+                        fuzzy_matches += 1
+                        logger.debug(f"      ✅ FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
+            
+            if match_confidence < 80:
+                no_matches += 1
+                logger.debug(f"      ❌ No sufficient match (confidence: {match_confidence:.1f}%)")
+            
+            # Only include high-confidence matches
+            if match_confidence >= 80:
+                match_data = {
+                    'ocr_index': i,
+                    'matched_text': ocr_text,
+                    'field_value': field_value,
+                    'match_confidence': round(match_confidence, 1),
+                    'match_type': match_type,
+                    'bounding_box': ocr_entry.get('bounding_box', []),
+                    'bounding_page': ocr_entry.get('bounding_page', 1),
+                    'ocr_confidence': ocr_entry.get('confidence', 0)
+                }
+                matches.append(match_data)
+                
+                logger.info(f"✅ MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
+                logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
+        
+        # Sort matches by confidence (highest first)
+        matches.sort(key=lambda x: x['match_confidence'], reverse=True)
+        
+        # Log search summary
+        logger.info(f"📊 === SEARCH STATISTICS ===")
+        logger.info(f"   Date matches: {date_matches}")
+        logger.info(f"   Exact matches: {exact_matches}")
+        logger.info(f"   Contains matches: {contains_matches}")
+        logger.info(f"   Partial matches: {partial_matches}")
+        logger.info(f"   Fuzzy matches: {fuzzy_matches}")
+        logger.info(f"   No matches: {no_matches}")
+        logger.info(f"   Total qualifying matches: {len(matches)}")
+        
+        if matches:
+            best_match = matches[0]
+            logger.info(f"🎯 BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
+            logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
+        else:
+            logger.warning(f"❌ NO QUALIFYING MATCHES FOUND for '{field_value}'")
+            logger.info(f"💡 Search suggestions:")
+            if is_date_search:
+                logger.info(f"   - Date formats tried: {field_date_patterns}")
+                logger.info(f"   - Try different date separators (-, /, .)")
+                logger.info(f"   - Verify the date format in the document")
+            logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
+            logger.info(f"   - Check if the field value exactly matches the document text")
+            logger.info(f"   - Verify the document has been processed and OCR data is available")
+        
+        logger.info(f"📦 Search complete: returning {len(matches)} matches")
+        return matches
+
+    # ==================== Coordinate Search Routes ====================
+    @app.route('/api/test_coordinates', methods=['GET'])
+    @timing_aspect
+    def test_coordinates():
+        """Simple test route to verify route registration works"""
+        return jsonify({
+            'success': True,
+            'message': 'Test route is working!',
+            'timestamp': str(time.time())
+        })
+
+    @app.route('/api/search_field_coordinates', methods=['POST'])
+    @timing_aspect
+    def search_field_coordinates():
+        """Search for field coordinates in existing OCR data with absolute accuracy"""
+        try:
+            logger.info("🔍 === COORDINATE SEARCH API CALLED ===")
+            
+            data = request.get_json()
+            field_value = data.get('field_value', '').strip()
+            search_mode = data.get('search_mode', 'exact').lower()
+            current_page = data.get('current_page', None)  # Add page filtering support
+            
+            logger.info(f"📋 Received search request for: '{field_value}' (mode: {search_mode})")
+            if current_page:
+                logger.info(f"📄 Page-specific search requested: Page {current_page}")
+            else:
+                logger.info(f"📚 Multi-page search (all pages)")
+            
+            # Get OCR data from session
+            ocr_data = session.get('current_ocr_data', [])
+            logger.info(f"🗂️ Session OCR data check: Found {len(ocr_data) if ocr_data else 0} entries")
+            
+            # Debug session keys
+            session_keys = list(session.keys())
+            logger.info(f"🔑 Available session keys: {session_keys}")
+            
+            # Log page distribution in OCR data
+            if ocr_data:
+                page_counts = {}
+                for entry in ocr_data:
+                    page = entry.get('bounding_page', 'unknown')
+                    page_counts[page] = page_counts.get(page, 0) + 1
+                logger.info(f"📊 OCR data page distribution: {dict(sorted(page_counts.items()))}")
+            
+            # Filter OCR data by page if requested
+            if current_page and ocr_data:
+                original_count = len(ocr_data)
+                ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
+                logger.info(f"🔍 Page filtering: {original_count} -> {len(ocr_data)} entries (Page {current_page})")
+            
+            if not ocr_data:
+                # Try alternative session keys
+                alt_ocr_data = session.get('ocr_data', [])
+                logger.info(f"🔍 Checking alternative 'ocr_data' key: Found {len(alt_ocr_data) if alt_ocr_data else 0} entries")
+                
+                if alt_ocr_data:
+                    ocr_data = alt_ocr_data
+                    logger.info("✅ Using alternative OCR data from 'ocr_data' session key")
+                else:
+                    # Try loading from temporary file (workaround for session size limits)
+                    ocr_session_id = session.get('ocr_session_id')
+                    logger.info(f"🔍 Looking for OCR session ID: {ocr_session_id}")
+                    
+                    if ocr_session_id:
+                        import tempfile as temp_module
+                        import pickle
+                        ocr_temp_file = os.path.join(temp_module.gettempdir(), f"ocr_data_{ocr_session_id}.pkl")
+                        
+                        try:
+                            if os.path.exists(ocr_temp_file):
+                                with open(ocr_temp_file, 'rb') as f:
+                                    ocr_data = pickle.load(f)
+                                logger.info(f"✅ Loaded OCR data from temp file: {len(ocr_data)} entries")
+                                
+                                # Apply page filtering if requested
+                                if current_page:
+                                    original_count = len(ocr_data)
+                                    ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
+                                    logger.info(f"🔍 Page filtering (from temp file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
+                            else:
+                                logger.warning(f"❌ OCR temp file not found: {ocr_temp_file}")
+                        except Exception as e:
+                            logger.error(f"❌ Failed to load OCR data from temp file: {e}")
+                    else:
+                        # Fallback: Try to find the most recent OCR temp file
+                        logger.info("🔍 No OCR session ID found, searching for recent OCR temp files...")
+                        import tempfile as temp_module
+                        import pickle
+                        import glob
+                        
+                        try:
+                            temp_dir = temp_module.gettempdir()
+                            ocr_files = glob.glob(os.path.join(temp_dir, "ocr_data_*.pkl"))
+                            
+                            if ocr_files:
+                                # Sort by creation time, get the most recent
+                                ocr_files.sort(key=lambda x: os.path.getctime(x), reverse=True)
+                                most_recent_file = ocr_files[0]
+                                
+                                # Check if file is recent (less than 10 minutes old)
+                                file_age = time.time() - os.path.getctime(most_recent_file)
+                                if file_age < 600:  # 10 minutes
+                                    logger.info(f"🔍 Trying most recent OCR file: {most_recent_file} (age: {file_age:.1f}s)")
+                                    
+                                    with open(most_recent_file, 'rb') as f:
+                                        ocr_data = pickle.load(f)
+                                    logger.info(f"✅ Loaded OCR data from recent temp file: {len(ocr_data)} entries")
+                                    
+                                    # Apply page filtering if requested
+                                    if current_page:
+                                        original_count = len(ocr_data)
+                                        ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
+                                        logger.info(f"🔍 Page filtering (from recent file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
+                                else:
+                                    logger.warning(f"❌ Most recent OCR file is too old: {file_age:.1f}s")
+                            else:
+                                logger.warning("❌ No OCR temp files found")
+                        except Exception as e:
+                            logger.error(f"❌ Failed to search for recent OCR temp files: {e}")
+                    
+                    if not ocr_data:
+                        logger.warning("❌ No OCR data found in session under any key")
+                        return jsonify({
+                            'success': False,
+                            'message': 'No OCR data available. Please process a document first.',
+                            'matches': [],
+                            'debug_info': {
+                                'session_keys': session_keys,
+                                'current_ocr_data_length': len(session.get('current_ocr_data', [])),
+                                'ocr_data_length': len(session.get('ocr_data', [])),
+                                'ocr_session_id': session.get('ocr_session_id', 'Not found'),
+                                'temp_file_attempted': ocr_session_id is not None
+                            }
+                        }), 400
+            
+            # Use the search_text_in_ocr helper function
+            matches = search_text_in_ocr(field_value, ocr_data, search_mode)
+            
+            logger.info(f"📦 Search complete: Found {len(matches)} matches")
+            
+            # Prepare response in format expected by frontend
+            best_match = matches[0] if matches else None
+            
+            return jsonify({
+                'success': True,
+                'message': f'Found {len(matches)} matches for "{field_value}"',
+                'field_value': field_value,
+                'search_mode': search_mode,
+                'matches': matches,
+                'best_match': best_match,
+                'total_matches': len(matches),
+                'total_ocr_entries': len(ocr_data)
+            })
+            
+        except Exception as e:
+            logger.error(f"❌ Error in coordinate search API: {e}")
+            return jsonify({
+                'success': False, 
+                'message': f'Search error: {str(e)}',
+                'matches': []
+            }), 500
+
     # ==================== Document Categories Routes ====================
     @app.route('/document_categories')
     @timing_aspect
@@ -4497,11 +4898,48 @@ Return compliance status for each field.'''
             return {"error": str(e), "text_data": []}
 
     def organize_ocr_data_by_page(text_data):
+        """Organize OCR data by page number with enhanced debugging"""
+        logger.info(f"📊 === ORGANIZING OCR DATA BY PAGE ===")
+        logger.info(f"Input: {len(text_data)} OCR entries")
+        
+        # Debug: Check page distribution in raw data
+        page_counts = {}
+        missing_page_count = 0
+        
+        for i, entry in enumerate(text_data):
+            page = entry.get("bounding_page", None)
+            if page is None:
+                missing_page_count += 1
+                logger.warning(f"Entry {i}: Missing bounding_page field - {entry.get('text', '')[:30]}...")
+                page = 1  # Default fallback
+            
+            page_counts[page] = page_counts.get(page, 0) + 1
+        
+        logger.info(f"📈 Page distribution in raw OCR data:")
+        for page in sorted(page_counts.keys()):
+            logger.info(f"   Page {page}: {page_counts[page]} entries")
+        
+        if missing_page_count > 0:
+            logger.warning(f"⚠️ Found {missing_page_count} entries without page information")
+        
+        # Organize by page
         pages = defaultdict(list)
         for entry in text_data:
             page = entry.get("bounding_page", 1)
             pages[page].append(entry)
-        return [pages[k] for k in sorted(pages)]
+        
+        organized_pages = [pages[k] for k in sorted(pages)]
+        logger.info(f"✅ Organized into {len(organized_pages)} pages")
+        
+        # Debug: Log sample from each page
+        for page_idx, page_data in enumerate(organized_pages):
+            actual_page = page_idx + 1
+            logger.info(f"   Page {actual_page}: {len(page_data)} entries")
+            if page_data:
+                sample_text = page_data[0].get('text', '')[:30]
+                logger.info(f"      Sample: '{sample_text}...'")
+        
+        return organized_pages
 
     def calculate_text_token_count(text, model_name="gpt-3.5-turbo"):
         enc = tiktoken.encoding_for_model(model_name)
@@ -7352,18 +7790,10 @@ Guidelines:
                 extraction_time = time.time() - extraction_start
                 logger.info(f"✅ Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
 
-                # === MAP FIELD VALUES TO OCR COORDINATES ===
-                logger.info(f"🔗 Mapping field coordinates using OCR data ({len(group['ocr_data'])} OCR entries)")
-                coordinate_mapping_start = time.time()
-                
-                # Use coordinate mapper to find real bounding boxes
-                extracted_fields = coordinate_mapper.map_field_coordinates(
-                    extracted_fields, 
-                    group['ocr_data']
-                )
-                
-                coordinate_mapping_time = time.time() - coordinate_mapping_start
-                logger.info(f"✅ Coordinate mapping completed in {coordinate_mapping_time:.2f}s")
+                # === COORDINATE MAPPING DISABLED ===
+                # Note: Real-time coordinate mapping will be done on-demand via API calls
+                logger.info(f"📍 Coordinate mapping disabled - will be done on-demand for accuracy")
+                coordinate_mapping_time = 0.0
 
                 # === UCP600/SWIFT COMPLIANCE ANALYSIS ===
                 logger.info(f"🔍 Running UCP600/SWIFT compliance analysis for {group['document_type']}")
@@ -7685,6 +8115,102 @@ Guidelines:
                     compliance_status="Checked"
                 )
 
+            # Store OCR data in session for coordinate search API
+            logger.info(f"📦 === STORING OCR DATA FOR COORDINATE SEARCH ===")
+            all_ocr_data = []
+            ocr_stats = {'total_entries': 0, 'pages': 0, 'text_entries': 0, 'with_bbox': 0}
+            
+            for group_idx, group in enumerate(document_groups):
+                group_ocr = group.get('ocr_data', [])
+                logger.info(f"📄 Group {group_idx + 1} ({group.get('document_type', 'Unknown')}): {len(group_ocr)} OCR entries")
+                logger.info(f"   Group covers pages: {group.get('pages', 'Unknown')}")
+                
+                # Log sample entries from each group with detailed page info
+                if group_ocr:
+                    sample_entry = group_ocr[0]
+                    logger.info(f"   Sample entry: text='{sample_entry.get('text', '')[:30]}...', bbox={sample_entry.get('bounding_box', [])}, page={sample_entry.get('bounding_page', 'N/A')}")
+                
+                # Check page distribution within this group
+                group_page_counts = {}
+                for entry in group_ocr:
+                    ocr_stats['total_entries'] += 1
+                    page = entry.get('bounding_page', 'unknown')
+                    group_page_counts[page] = group_page_counts.get(page, 0) + 1
+                    
+                    if entry.get('text'):
+                        ocr_stats['text_entries'] += 1
+                    if entry.get('bounding_box'):
+                        ocr_stats['with_bbox'] += 1
+                
+                logger.info(f"   Page distribution in group: {dict(sorted(group_page_counts.items()))}")
+                
+                all_ocr_data.extend(group_ocr)
+                ocr_stats['pages'] = max(ocr_stats['pages'], group.get('pages', [0])[-1] if group.get('pages') else 0)
+            
+            session['current_ocr_data'] = all_ocr_data
+            
+            # WORKAROUND: Also store OCR data in a temporary file due to session size limits
+            import tempfile as temp_module
+            import pickle
+            import uuid
+            import glob
+            
+            # Clean up old OCR temp files (older than 1 hour)
+            try:
+                temp_dir = temp_module.gettempdir()
+                old_files = glob.glob(os.path.join(temp_dir, "ocr_data_*.pkl"))
+                current_time = time.time()
+                cleaned_count = 0
+                
+                for file_path in old_files:
+                    try:
+                        file_age = current_time - os.path.getctime(file_path)
+                        if file_age > 3600:  # 1 hour
+                            os.remove(file_path)
+                            cleaned_count += 1
+                    except Exception:
+                        pass  # Ignore cleanup errors
+                
+                if cleaned_count > 0:
+                    logger.info(f"🧹 Cleaned up {cleaned_count} old OCR temp files")
+            except Exception as e:
+                logger.warning(f"Failed to cleanup old OCR temp files: {e}")
+            
+            # Generate unique session identifier for OCR data
+            ocr_session_id = str(uuid.uuid4())
+            session['ocr_session_id'] = ocr_session_id
+            
+            # Store OCR data in temporary file
+            ocr_temp_file = os.path.join(temp_module.gettempdir(), f"ocr_data_{ocr_session_id}.pkl")
+            try:
+                with open(ocr_temp_file, 'wb') as f:
+                    pickle.dump(all_ocr_data, f)
+                logger.info(f"💾 OCR data also stored in temp file: {ocr_temp_file}")
+                logger.info(f"🔑 OCR session ID: {ocr_session_id}")
+            except Exception as e:
+                logger.error(f"Failed to store OCR data in temp file: {e}")
+            
+            logger.info(f"💾 OCR DATA STORAGE SUMMARY:")
+            logger.info(f"   Total OCR entries stored: {len(all_ocr_data)}")
+            logger.info(f"   Entries with text: {ocr_stats['text_entries']}")
+            logger.info(f"   Entries with bounding boxes: {ocr_stats['with_bbox']}")
+            logger.info(f"   Document pages: {ocr_stats['pages']}")
+            
+            # Final page distribution check
+            final_page_counts = {}
+            for entry in all_ocr_data:
+                page = entry.get('bounding_page', 'unknown')
+                final_page_counts[page] = final_page_counts.get(page, 0) + 1
+            logger.info(f"   Final page distribution: {dict(sorted(final_page_counts.items()))}")
+            
+            # Log a few sample entries for debugging
+            if all_ocr_data:
+                logger.info(f"📝 Sample OCR entries (first 3):")
+                for i, sample in enumerate(all_ocr_data[:3]):
+                    logger.info(f"   Entry {i+1}: '{sample.get('text', '')[:50]}...' (page: {sample.get('bounding_page', 'N/A')})")
+            
+            logger.info(f"✅ OCR data successfully stored in session for coordinate search API")
+
             return results
 
         except Exception as e:
@@ -7711,7 +8237,7 @@ Guidelines:
         Enhanced document classification using prompt config (YAML-based)
         Performs: OCR → Classification → Extraction with config-driven prompts
         """
-        logger.info("=== Starting ENHANCED document classification (config-based) ===")
+        logger.info("🚀 === ENHANCED DOCUMENT CLASSIFICATION ROUTE CALLED ===")
         try:
             # Load prompt configuration
             global prompt_config
@@ -10748,4 +11274,127 @@ def _save_document_categories(data):
         except Exception as e:
             logger.error(f"Error getting custom function {function_id}: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
+
+    def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
+        """
+        Search for text matches in OCR data with different matching strategies
+        
+        Args:
+            field_value: Text to search for
+            ocr_data: List of OCR entries with text and coordinates
+            search_mode: 'exact', 'fuzzy', or 'contains'
+        
+        Returns:
+            List of matches with coordinates, sorted by confidence
+        """
+        import re
+        from difflib import SequenceMatcher
+        
+        logger.info(f"🔎 === STARTING OCR TEXT SEARCH ===")
+        logger.info(f"📝 Search parameters:")
+        logger.info(f"   Field value: '{field_value}'")
+        logger.info(f"   Search mode: {search_mode}")
+        logger.info(f"   OCR entries to search: {len(ocr_data)}")
+        
+        matches = []
+        field_value_lower = field_value.lower().strip()
+        logger.info(f"🔤 Normalized field value: '{field_value_lower}'")
+        
+        # Track search statistics
+        exact_matches = 0
+        contains_matches = 0
+        partial_matches = 0
+        fuzzy_matches = 0
+        no_matches = 0
+        
+        logger.info(f"🔎 Searching in {len(ocr_data)} OCR entries...")
+        
+        for i, ocr_entry in enumerate(ocr_data):
+            ocr_text = ocr_entry.get('text', '').strip()
+            if not ocr_text:
+                logger.debug(f"   Entry {i+1}: Skipping empty text")
+                continue
+                
+            ocr_text_lower = ocr_text.lower()
+            match_confidence = 0
+            match_type = 'none'
+            
+            logger.debug(f"   Entry {i+1}: Comparing '{field_value_lower}' with '{ocr_text_lower}'")
+            
+            # Exact match (highest priority)
+            if search_mode in ['exact', 'fuzzy', 'contains']:
+                if field_value_lower == ocr_text_lower:
+                    match_confidence = 100
+                    match_type = 'exact'
+                    exact_matches += 1
+                    logger.debug(f"      ✅ EXACT MATCH! Confidence: 100%")
+                elif field_value_lower in ocr_text_lower:
+                    match_confidence = 90
+                    match_type = 'contains'
+                    contains_matches += 1
+                    logger.debug(f"      ✅ CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
+                elif ocr_text_lower in field_value_lower:
+                    match_confidence = 85
+                    match_type = 'partial'
+                    partial_matches += 1
+                    logger.debug(f"      ✅ PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
+            
+            # Fuzzy matching if enabled and no exact match
+            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
+                similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
+                logger.debug(f"      🔀 Fuzzy similarity: {similarity:.3f}")
+                if similarity >= 0.8:  # High similarity threshold
+                    fuzzy_confidence = similarity * 80
+                    if fuzzy_confidence > match_confidence:
+                        match_confidence = fuzzy_confidence
+                        match_type = 'fuzzy'
+                        fuzzy_matches += 1
+                        logger.debug(f"      ✅ FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
+            
+            if match_confidence < 80:
+                no_matches += 1
+                logger.debug(f"      ❌ No sufficient match (confidence: {match_confidence:.1f}%)")
+            
+            # Only include high-confidence matches
+            if match_confidence >= 80:
+                match_data = {
+                    'ocr_index': i,
+                    'matched_text': ocr_text,
+                    'field_value': field_value,
+                    'match_confidence': round(match_confidence, 1),
+                    'match_type': match_type,
+                    'bounding_box': ocr_entry.get('bounding_box', []),
+                    'bounding_page': ocr_entry.get('bounding_page', 1),
+                    'ocr_confidence': ocr_entry.get('confidence', 0)
+                }
+                matches.append(match_data)
+                
+                logger.info(f"✅ MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
+                logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
+        
+        # Sort by match confidence (highest first)
+        matches.sort(key=lambda x: x['match_confidence'], reverse=True)
+        
+        # Log search summary
+        logger.info(f"📊 === SEARCH SUMMARY ===")
+        logger.info(f"   Exact matches: {exact_matches}")
+        logger.info(f"   Contains matches: {contains_matches}")
+        logger.info(f"   Partial matches: {partial_matches}")
+        logger.info(f"   Fuzzy matches: {fuzzy_matches}")
+        logger.info(f"   No matches: {no_matches}")
+        logger.info(f"   Total qualifying matches: {len(matches)}")
+        
+        if matches:
+            best_match = matches[0]
+            logger.info(f"🎯 BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
+            logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
+        else:
+            logger.warning(f"❌ NO QUALIFYING MATCHES FOUND for '{field_value}'")
+            logger.info(f"💡 Search suggestions:")
+            logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
+            logger.info(f"   - Check if the field value exactly matches the document text")
+            logger.info(f"   - Verify the document has been processed and OCR data is available")
+        
+        logger.info(f"📦 Search complete: returning {len(matches)} matches")
+        return matches
 

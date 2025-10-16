@@ -2634,7 +2634,7 @@
                                         <i class="mdi mdi-chevron-left"></i>
                                     </button>
                                     <span class="px-3 py-1 bg-gray-100 rounded text-sm font-medium">
-                                        Page {% raw %}{{ currentPage + 1 }}{% endraw %} of {% raw %}{{ selectedResult.previewImages.length }}{% endraw %}
+                                        Page {% raw %}{{ getAbsolutePageNumber(currentPage) }}{% endraw %} of {% raw %}{{ getTotalPages() }}{% endraw %}
                                     </span>
                                     <button @click="nextPage" :disabled="currentPage === selectedResult.previewImages.length - 1"
                                             class="px-2 py-1 bg-gray-100 rounded hover:bg-gray-200 disabled:opacity-50 transition-colors">
@@ -2868,13 +2868,19 @@
                                             </h4>
                                         </div>
                                         <div class="flex items-center gap-2">
-                                            <button @click.stop="startFieldTextSelection(fieldKey)"
-                                                    :class="{ 'bg-purple-600 text-white': targetField === fieldKey }"
-                                                    class="px-2 py-1 rounded-md text-xs font-medium transition-all hover:bg-purple-600 hover:text-white"
-                                                    :title="targetField === fieldKey ? 'Selecting for this field' : 'Draw to extract text'"
+                                            <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value)"
+                                                    :disabled="!fieldData?.value || searchingField === fieldKey"
+                                                    class="px-2 py-1 rounded-md text-xs font-medium transition-all hover:bg-purple-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    :class="{ 
+                                                        'bg-purple-600 text-white': searchingField === fieldKey,
+                                                        'bg-purple-100 text-purple-700': searchingField !== fieldKey 
+                                                    }"
+                                                    :title="searchingField === fieldKey ? 'Searching...' : 'Search coordinates for this field'"
                                                     style="background: rgba(103, 126, 234, 0.1); color: #667eea;">
-                                                <i class="mdi mdi-draw text-sm"></i>
-                                                <span>Draw</span>
+                                                <i class="mdi text-sm" 
+                                                   :class="searchingField === fieldKey ? 'mdi-loading mdi-spin' : 'mdi-crosshairs-gps'"></i>
+                                                <span v-if="searchingField === fieldKey">Searching</span>
+                                                <span v-else>Find</span>
                                             </button>
                                             <div class="field-confidence"
                                                  :class="getConfidenceClass(fieldData?.confidence || 0)">
@@ -3348,6 +3354,9 @@
                     extractedText: '',
                     targetField: null,
                     isExtractingText: false,
+                    // Coordinate search properties
+                    searchingField: null,
+                    coordinateSearchResults: {},
                     // Document management features
                     currentUser: null,
                     isAllowed: false,
@@ -3418,6 +3427,39 @@
                 }
             },
             methods: {
+                // Helper methods for absolute page numbering
+                getAbsolutePageNumber(relativePageIndex) {
+                    // Convert relative page index (0-based) to absolute page number
+                    if (!this.selectedResult?.pages || this.selectedResult.pages.length === 0) {
+                        return relativePageIndex + 1; // Fallback to simple 1-based indexing
+                    }
+                    
+                    // Use the actual page numbers from the document
+                    if (relativePageIndex >= 0 && relativePageIndex < this.selectedResult.pages.length) {
+                        return this.selectedResult.pages[relativePageIndex];
+                    }
+                    
+                    return relativePageIndex + 1; // Fallback
+                },
+                getTotalPages() {
+                    // Get the highest page number in the document
+                    if (!this.selectedResult?.pages || this.selectedResult.pages.length === 0) {
+                        return this.selectedResult?.previewImages?.length || 1; // Fallback
+                    }
+                    
+                    // Return the maximum page number from the pages array
+                    return Math.max(...this.selectedResult.pages);
+                },
+                getRelativePageIndex(absolutePageNumber) {
+                    // Convert absolute page number to relative index within the group
+                    if (!this.selectedResult?.pages || this.selectedResult.pages.length === 0) {
+                        return absolutePageNumber - 1; // Fallback to simple conversion
+                    }
+                    
+                    // Find the index of the absolute page number in the pages array
+                    const index = this.selectedResult.pages.indexOf(absolutePageNumber);
+                    return index >= 0 ? index : 0; // Return 0 if not found
+                },
                 handleFileSelect(event) {
                     const files = Array.from(event.target.files);
                     this.selectedFiles = [...this.selectedFiles, ...files];
@@ -4373,6 +4415,229 @@
                         });
                     }
                 },
+                async searchFieldCoordinates(fieldKey, fieldValue) {
+                    console.log('🔍 === FRONTEND COORDINATE SEARCH STARTED ===');
+                    console.log(`📝 Search parameters:`, { fieldKey, fieldValue });
+                    
+                    if (!fieldValue || !fieldValue.trim()) {
+                        console.warn('❌ No value to search for this field');
+                        alert('No value to search for this field');
+                        return;
+                    }
+
+                    console.log(`🔎 Setting search state for field: ${fieldKey}`);
+                    this.searchingField = fieldKey;
+                    
+                    try {
+                        console.log(`🔍 Searching coordinates for field '${fieldKey}' with value '${fieldValue}'`);
+                        
+                        const requestData = {
+                            field_value: fieldValue.trim(),
+                            document_id: this.selectedResult?.fileName || 'current',
+                            search_mode: 'exact'  // Start with exact search, can make this configurable
+                        };
+                        
+                        console.log('📤 Sending API request:', requestData);
+                        
+                        const response = await fetch('/api/search_field_coordinates', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(requestData)
+                        });
+
+                        console.log('📥 API response status:', response.status);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        const data = await response.json();
+                        console.log('📊 API response data:', data);
+                        
+                        if (data.success && data.total_matches > 0) {
+                            console.log(`✅ Found ${data.total_matches} coordinate matches:`, data.matches);
+                            
+                            // Store all matches for this field
+                            this.coordinateSearchResults[fieldKey] = data.matches;
+                            console.log('💾 Stored all search results for field:', fieldKey);
+                            
+                            // Navigate to the page of the first match
+                            const firstMatch = data.matches[0];
+                            const targetPage = this.getRelativePageIndex(firstMatch.bounding_page);
+                            console.log(`📄 Navigation: Current page: ${this.currentPage}, Target page: ${targetPage}`);
+                            console.log(`📚 Available pages: ${this.selectedResult?.previewImages?.length || 0}`);
+                            console.log(`📋 Absolute page: ${firstMatch.bounding_page}, Relative index: ${targetPage}`);
+                            console.log(`🗂️ Group pages: ${JSON.stringify(this.selectedResult?.pages)}`);
+                            
+                            if (targetPage >= 0 && targetPage < this.selectedResult.previewImages.length) {
+                                console.log(`🧭 Navigating to relative page ${targetPage} (absolute page ${firstMatch.bounding_page})`);
+                                this.currentPage = targetPage;
+                                
+                                // Wait for page to load then highlight ALL matches
+                                this.$nextTick(() => {
+                                    console.log('⏱️ Waiting for page to load before highlighting...');
+                                    setTimeout(() => {
+                                        console.log('🎨 Highlighting ALL search results');
+                                        this.highlightAllSearchResults(data.matches);
+                                    }, 200);
+                                });
+                            } else {
+                                console.warn(`⚠️ Target page ${targetPage} is out of range (0-${this.selectedResult.previewImages.length - 1})`);
+                            }
+                            
+                            // Show success message with total count
+                            const message = `Found ${data.total_matches} coordinate matches for "${fieldValue}"`;
+                            console.log('📢 Showing success notification:', message);
+                            this.showNotification(message, 'success');
+                            
+                        } else {
+                            console.log('❌ No matches found in API response');
+                            const message = `No coordinates found for "${fieldValue}"`;
+                            console.log('📢 Showing warning notification:', message);
+                            this.showNotification(message, 'warning');
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ Error searching coordinates:', error);
+                        console.error('📍 Error details:', {
+                            message: error.message,
+                            stack: error.stack
+                        });
+                        this.showNotification('Error searching for coordinates', 'error');
+                    } finally {
+                        console.log(`🏁 Clearing search state for field: ${fieldKey}`);
+                        this.searchingField = null;
+                        console.log('🔍 === FRONTEND COORDINATE SEARCH COMPLETED ===');
+                    }
+                },
+                highlightSearchResult(searchResult) {
+                    console.log('🎨 === HIGHLIGHTING SEARCH RESULT ===');
+                    console.log('📊 Search result data:', searchResult);
+                    
+                    if (!searchResult.bounding_box || !this.$refs.drawingCanvas) {
+                        console.warn('❌ Cannot highlight: missing bounding box or canvas');
+                        console.log('   Bounding box:', searchResult.bounding_box);
+                        console.log('   Canvas ref exists:', !!this.$refs.drawingCanvas);
+                        return;
+                    }
+                    
+                    console.log('🖼️ Canvas and bounding box available');
+                    console.log('   Canvas element:', this.$refs.drawingCanvas);
+                    console.log('   Drawing context:', this.drawingContext);
+                    
+                    // Clear previous highlights
+                    const ctx = this.drawingContext;
+                    if (ctx) {
+                        console.log('🧽 Clearing previous highlights');
+                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    } else {
+                        console.warn('⚠️ No drawing context available');
+                    }
+                    
+                    // Highlight the found text
+                    const bbox = searchResult.bounding_box;
+                    console.log('📐 Highlighting bounding box:', bbox);
+                    console.log('📄 Target page:', searchResult.bounding_page);
+                    
+                    // Create a temporary field object for highlighting
+                    const tempField = {
+                        bounding_box: bbox,
+                        bounding_page: searchResult.bounding_page - 1,  // Convert to 0-based
+                        fieldKey: 'search_result',
+                        name: `Found: ${searchResult.matched_text}`,
+                        confidence: searchResult.match_confidence
+                    };
+                    
+                    console.log('🎯 Created temp field for highlighting:', tempField);
+                    console.log('🎨 Calling drawHighlight function...');
+                    
+                    try {
+                        this.drawHighlight(tempField);
+                        console.log('✅ Highlight drawing completed successfully');
+                    } catch (error) {
+                        console.error('❌ Error drawing highlight:', error);
+                    }
+                },
+                
+                highlightAllSearchResults(matches) {
+                    console.log('🎨 === HIGHLIGHTING ALL SEARCH RESULTS ===');
+                    console.log(`📦 Highlighting ${matches.length} matches`);
+                    
+                    // Clear previous highlights ONCE at the beginning
+                    const ctx = this.drawingContext;
+                    if (ctx) {
+                        console.log('🧽 Clearing previous highlights');
+                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    } else {
+                        console.warn('⚠️ No drawing context available');
+                        return;
+                    }
+                    
+                    // Highlight each match WITHOUT clearing between them
+                    matches.forEach((match, index) => {
+                        console.log(`🎯 Highlighting match ${index + 1}/${matches.length}:`, {
+                            text: match.matched_text,
+                            confidence: match.match_confidence,
+                            page: match.bounding_page,
+                            bbox: match.bounding_box
+                        });
+                        
+                        // Only highlight matches on the current page
+                        const matchPage = this.getRelativePageIndex(match.bounding_page);
+                        console.log(`🔍 Match absolute page: ${match.bounding_page}, relative page: ${matchPage}, current page: ${this.currentPage}`);
+                        
+                        if (matchPage === this.currentPage) {
+                            console.log(`✅ Match ${index + 1} is on current page ${this.currentPage}, highlighting...`);
+                            
+                            // Create a temporary field object for highlighting
+                            const tempField = {
+                                bounding_box: match.bounding_box,
+                                bounding_page: matchPage,
+                                fieldKey: `search_result_${index}`,
+                                name: `Found: ${match.matched_text}`,
+                                confidence: match.match_confidence
+                            };
+                            
+                            try {
+                                // Draw highlight WITHOUT clearing previous ones
+                                this.drawHighlight(tempField, false);
+                                console.log(`✅ Match ${index + 1} highlighted successfully`);
+                            } catch (error) {
+                                console.error(`❌ Error highlighting match ${index + 1}:`, error);
+                            }
+                        } else {
+                            console.log(`⏭️ Match ${index + 1} is on page ${matchPage}, current page is ${this.currentPage}, skipping...`);
+                        }
+                    });
+                    
+                    console.log('🎨 === ALL HIGHLIGHTS COMPLETED ===');
+                },
+                
+                showNotification(message, type = 'info') {
+                    // Simple notification - you could enhance this with a proper notification system
+                    const bgColor = {
+                        'success': 'bg-green-500',
+                        'warning': 'bg-yellow-500', 
+                        'error': 'bg-red-500',
+                        'info': 'bg-blue-500'
+                    }[type] || 'bg-blue-500';
+                    
+                    // Create a temporary notification element
+                    const notification = document.createElement('div');
+                    notification.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300`;
+                    notification.textContent = message;
+                    document.body.appendChild(notification);
+                    
+                    // Remove after 3 seconds
+                    setTimeout(() => {
+                        notification.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.removeChild(notification);
+                        }, 300);
+                    }, 3000);
+                },
                 getPageDocumentType() {
                     if (!this.selectedResult?.analysisResult?.per_page || !this.selectedResult.analysisResult.per_page[this.currentPage]) {
                         return this.selectedResult?.documentType || 'Unknown';
@@ -4510,24 +4775,42 @@
                     // This ensures the canvas is ready for annotations
                 },
 
-                drawHighlight(field) {
+                drawHighlight(field, clearPrevious = false) {
                     if (!this.drawingContext || !field?.bounding_box || !this.$refs.documentImage) return;
 
                     const box = field.bounding_box;
-                    if (!Array.isArray(box) || box.length !== 4) return;
+                    if (!Array.isArray(box) || (box.length !== 4 && box.length !== 8)) return;
 
                     const img = this.$refs.documentImage;
                     const ctx = this.drawingContext;
 
-                    // Clear previous highlights
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    // Only clear previous highlights if explicitly requested
+                    if (clearPrevious) {
+                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    }
+
+                    // Handle both 4-value [x1, y1, x2, y2] and 8-value [x1, y1, x2, y2, x3, y3, x4, y4] bounding boxes
+                    let x1, y1, x2, y2;
+                    if (box.length === 8) {
+                        // For 8-value boxes, use first two points to create rectangle
+                        x1 = Math.min(box[0], box[2], box[4], box[6]);
+                        y1 = Math.min(box[1], box[3], box[5], box[7]);
+                        x2 = Math.max(box[0], box[2], box[4], box[6]);
+                        y2 = Math.max(box[1], box[3], box[5], box[7]);
+                    } else {
+                        // For 4-value boxes, use as-is
+                        x1 = box[0];
+                        y1 = box[1];
+                        x2 = box[2];
+                        y2 = box[3];
+                    }
 
                     // Convert from inches to pixels
                     const DPI = 72;
-                    const x1 = box[0] * DPI;
-                    const y1 = box[1] * DPI;
-                    const x2 = box[2] * DPI;
-                    const y2 = box[3] * DPI;
+                    x1 = x1 * DPI;
+                    y1 = y1 * DPI;
+                    x2 = x2 * DPI;
+                    y2 = y2 * DPI;
 
                     // Calculate dimensions
                     const width = x2 - x1;
@@ -4537,10 +4820,8 @@
                     const scaleX = img.width / img.naturalWidth;
                     const scaleY = img.height / img.naturalHeight;
 
-                    // Draw highlight
-                    ctx.strokeStyle = '#667eea';
-                    ctx.lineWidth = 3;
-                    ctx.fillStyle = 'rgba(102, 126, 234, 0.3)';
+                    // Draw highlight only (no border box)
+                    ctx.fillStyle = 'rgba(255, 235, 59, 0.4)';  // Rich yellow highlight
 
                     const scaledX = x1 * scaleX;
                     const scaledY = y1 * scaleY;
@@ -4548,7 +4829,8 @@
                     const scaledHeight = height * scaleY;
 
                     ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
-                    ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                    
+                    console.log(`🎨 Drew highlight at (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) size ${scaledWidth.toFixed(1)}x${scaledHeight.toFixed(1)}`);
                 },
                 startDrawing(event) {
                     if (this.currentTool === 'select') return;
