@@ -3769,7 +3769,7 @@
                                             confidence: classification.confidence,
                                             fieldsExtracted: Object.keys(extractedFields).length,
                                             complianceScore: complianceScore,
-                                            processingTime: result.processing_time?.actual_total || result.processing_time?.total || '0.0',
+                                            processingTime: result.processing_time?.total || '0.0',
                                             qualityTime: result.processing_time?.quality_analysis || '0.0', // Quality analysis time
                                             classificationTime: result.processing_time?.classification || '0.0', // Document classification time
                                             ocrTime: result.processing_time?.ocr || '0.0', // OCR text extraction time

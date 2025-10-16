@@ -8098,6 +8098,16 @@ Guidelines:
             logger.info(f"✅ Page-by-page processing completed in {total_time:.2f}s - Found {len(results)} document types")
 
             # Add the actual total processing time to each result
+            # for result in results:
+            #     if "processing_time" in result:
+            #         result["processing_time"]["actual_total"] = f"{total_time:.1f}"
+            total_time = sum(
+                float(result["processing_time"]["total"])
+                for result in results
+                if "processing_time" in result and "total" in result["processing_time"]
+            )
+            logger.info(f"total_time:::{total_time:.2f}s")
+            # Step 2: assign to each result’s "processing_time" dict
             for result in results:
                 if "processing_time" in result:
                     result["processing_time"]["actual_total"] = f"{total_time:.1f}"
