@@ -2697,24 +2697,14 @@
                         <!-- Simple Document View -->
 
                         <!-- Drawing Help -->
-                        <div v-if="currentTool !== 'select'" class="absolute top-20 left-6 bg-black/75 text-white px-3 py-2 rounded-lg text-sm">
+                        <div v-if="currentTool !== 'select' && !targetField" class="absolute top-20 left-6 bg-black/75 text-white px-3 py-2 rounded-lg text-sm">
                             <i class="mdi mdi-information-outline mr-1"></i>
-                            <span v-if="currentTool === 'textSelect' && targetField">
-                                Selecting text for: <strong>{% raw %}{{ formatFieldName(targetField) }}{% endraw %}</strong>
-                            </span>
-                            <span v-else>
-                                {% raw %}{{ currentTool === 'draw' ? 'Click and drag to draw freely' : currentTool === 'rectangle' ? 'Click and drag to draw rectangle' : 'Click and drag to select text' }}{% endraw %}
+                            <span>
+                                {% raw %}{{ currentTool === 'draw' ? 'Click and drag to draw freely' : currentTool === 'rectangle' ? 'Click and drag to rectangle' : 'Click and drag to select text' }}{% endraw %}
                             </span>
                         </div>
 
-                        <!-- Target Field Indicator -->
-                        <div v-if="targetField" class="absolute top-20 right-6 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm shadow-lg flex items-center gap-2">
-                            <i class="mdi mdi-target"></i>
-                            <span>Selecting for: <strong>{% raw %}{{ formatFieldName(targetField) }}{% endraw %}</strong></span>
-                            <button @click="targetField = null; currentTool = 'select'" class="ml-2 hover:bg-purple-700 rounded p-1">
-                                <i class="mdi mdi-close"></i>
-                            </button>
-                        </div>
+
 
                         <!-- Document Image Viewer -->
                         <div class="flex-1 overflow-auto p-4"
@@ -2743,16 +2733,36 @@
                                         @mouseup="endDrawing"
                                         @mouseleave="endDrawing"></canvas>
 
-                                <!-- Bounding boxes -->
+                                <!-- Field Highlights -->
                                 <div v-for="(field, idx) in getFieldsWithBoundingBox()"
                                      :key="'bbox-' + idx"
                                      v-show="field && field.bounding_box && (field.bounding_page === currentPage || field.page === currentPage)"
-                                     class="bounding-box"
-                                     :class="{ active: activeFieldIndex === field.index }"
+                                     class="absolute border-2 border-blue-500 cursor-pointer hover:bg-blue-200 transition-all duration-200"
+                                     :class="{ 
+                                         'border-red-500 bg-red-100 bg-opacity-30': activeFieldIndex === field.index,
+                                         'bg-blue-100 bg-opacity-20': activeFieldIndex !== field.index
+                                     }"
                                      :style="getBoundingBoxStyle(field)"
                                      @click="highlightField(field.index, field)"
                                      :title="field.fieldKey || field.name">
-                                    <span class="bounding-box-label">{% raw %}{{ field.name }}{% endraw %}</span>
+                                    <span class="absolute -top-6 left-0 bg-blue-500 text-white px-2 py-1 text-xs rounded whitespace-nowrap">
+                                        {% raw %}{{ field.name }}{% endraw %}
+                                    </span>
+                                </div>
+
+                                <!-- Text Selection Highlight -->
+                                <div v-if="textSelectionBox"
+                                     class="absolute pointer-events-none"
+                                     :style="{
+                                         left: textSelectionBox.x + 'px',
+                                         top: textSelectionBox.y + 'px',
+                                         width: textSelectionBox.width + 'px',
+                                         height: textSelectionBox.height + 'px',
+                                         background: 'rgba(255, 235, 59, 0.5)',
+                                         border: '2px solid #FFC107',
+                                         borderRadius: '4px',
+                                         boxShadow: '0 0 0 2px rgba(255, 193, 7, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.8)'
+                                     }">
                                 </div>
                             </div>
 
@@ -2912,7 +2922,7 @@
                                                     <i :class="searchingField === fieldKey ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-magnify'" class="text-lg"></i>
                                                 </button>
                                                 
-                                                <button @click.stop="currentTool = 'textSelect'; targetField = fieldKey"
+                                                <button @click.stop="startFieldTextSelection(fieldKey)"
                                                         class="w-10 h-10 bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
                                                         title="Select text from document">
                                                     <i class="mdi mdi-cursor-text text-lg"></i>
@@ -2939,11 +2949,11 @@
                                             <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200">
                                                 <div class="flex items-center justify-between mb-2">
                                                     <label class="text-sm font-semibold text-gray-700">Extracted Value</label>
-                                                    <div v-if="fieldData?.confidence" 
+                                                    <div v-if="fieldData?.confidence && !manuallyEditedFields[fieldKey]" 
                                                          class="px-3 py-1 rounded-full text-xs font-bold"
                                                          :class="getConfidenceClass(fieldData.confidence)">
                                                         <i class="mdi mdi-chart-donut mr-1"></i>
-                                                        {% raw %}{{ Math.round(fieldData.confidence * 100) }}{% endraw %}% confidence
+                                                        {% raw %}{{ Math.round(fieldData.confidence) }}{% endraw %}% confidence
                                                     </div>
                                                 </div>
                                                 
@@ -3007,38 +3017,219 @@
                             <!-- Compliance Tab -->
                             <div v-if="activeTab === 'compliance'" class="p-6">
                                 <div v-if="selectedResult?.compliance">
-                                    <div class="flex items-center gap-3 mb-6">
-                                        <div class="w-12 h-12 rounded-full flex items-center justify-center"
-                                             :class="selectedResult.compliance.status === 'compliant' ? 'bg-green-100' : 'bg-red-100'">
-                                            <i class="text-2xl"
-                                               :class="selectedResult.compliance.status === 'compliant' ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'"></i>
-                                        </div>
-                                        <div>
-                                            <h4 class="font-semibold text-lg">
-                                                {% raw %}{{ selectedResult.compliance.status === 'compliant' ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                            </h4>
-                                            <p class="text-gray-600">Compliance Score: {% raw %}{{ selectedResult.complianceScore }}{% endraw %}%</p>
+                                    <!-- Overall Compliance Header -->
+                                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8 border border-indigo-100">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
+                                                     :class="selectedResult.compliance.status === 'compliant' ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-red-400 to-red-600'">
+                                                    <i class="text-3xl text-white"
+                                                       :class="selectedResult.compliance.status === 'compliant' ? 'mdi mdi-shield-check' : 'mdi mdi-shield-alert'"></i>
+                                                </div>
+                                                <div>
+                                                    <h3 class="text-2xl font-bold text-gray-800 mb-1">
+                                                        {% raw %}{{ selectedResult.compliance.status === 'compliant' ? 'Fully Compliant' : 'Compliance Issues Found' }}{% endraw %}
+                                                    </h3>
+                                                    <p class="text-gray-600">Overall compliance assessment completed</p>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-4xl font-bold mb-1"
+                                                     :class="selectedResult.complianceScore >= 90 ? 'text-green-600' : selectedResult.complianceScore >= 70 ? 'text-yellow-600' : 'text-red-600'">
+                                                    {% raw %}{{ selectedResult.complianceScore }}{% endraw %}%
+                                                </div>
+                                                <p class="text-sm text-gray-500">Compliance Score</p>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div v-if="selectedResult.compliance.violations && selectedResult.compliance.violations.length > 0" class="mb-6">
-                                        <h4 class="text-lg font-bold text-red-700 mb-4">Violations</h4>
-                                        <div v-for="(violation, idx) in selectedResult.compliance.violations" :key="'v-' + idx"
-                                             class="bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
-                                            <p class="text-red-800">{% raw %}{{ violation.description || violation }}{% endraw %}</p>
+                                    <!-- Detailed Entity Compliance Breakdown -->
+                                    <div class="space-y-6">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                                    <i class="mdi mdi-format-list-bulleted text-indigo-600 text-lg"></i>
+                                                </div>
+                                                <h4 class="text-xl font-bold text-gray-800">Field-by-Field Compliance Analysis</h4>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Navigation Help -->
+                                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
+                                                    <i class="mdi mdi-information text-blue-600 text-lg"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="text-blue-800 font-medium mb-2">Need More Details?</p>
+                                                    <p class="text-blue-700 text-sm">
+                                                        For detailed compliance rules and specific violations, check the 
+                                                        <button @click="activeTab = 'ucp600'" 
+                                                                class="font-semibold text-blue-800 hover:text-blue-900 underline hover:no-underline transition-all">
+                                                            UCP600
+                                                        </button>
+                                                        and 
+                                                        <button @click="activeTab = 'swift'" 
+                                                                class="font-semibold text-blue-800 hover:text-blue-900 underline hover:no-underline transition-all">
+                                                            SWIFT
+                                                        </button>
+                                                        tabs above for comprehensive rule analysis.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid gap-6">
+                                            <div v-for="(fieldData, fieldKey) in getExtractedFieldsWithDetails()" :key="'compliance-' + fieldKey"
+                                                 class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                                                
+                                                <!-- Entity Header -->
+                                                <div class="flex items-start justify-between mb-4">
+                                                    <div class="flex-1">
+                                                        <div class="flex items-center gap-2 mb-2">
+                                                            <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
+                                                            <h5 class="text-lg font-semibold text-gray-800">{% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}</h5>
+                                                        </div>
+                                                        <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                                                            <p class="text-gray-700 text-sm font-medium">{% raw %}{{ fieldData?.value || 'No value extracted' }}{% endraw %}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Compliance Standards Grid -->
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                                    <!-- UCP600 Compliance Card -->
+                                                    <div class="group">
+                                                        <div class="bg-gradient-to-br rounded-xl p-4 transition-all duration-300 hover:scale-105"
+                                                             :class="getUCP600Compliance(fieldKey) ? 'from-green-50 to-emerald-50 border-2 border-green-200 hover:border-green-300' : 'from-red-50 to-pink-50 border-2 border-red-200 hover:border-red-300'">
+                                                            <div class="flex items-center justify-between">
+                                                                <div class="flex items-center gap-3">
+                                                                    <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                                                                         :class="getUCP600Compliance(fieldKey) ? 'bg-green-100' : 'bg-red-100'">
+                                                                        <i class="text-xl"
+                                                                           :class="getUCP600Compliance(fieldKey) ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-close-circle text-red-600'"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p class="font-semibold text-gray-800">UCP600</p>
+                                                                        <p class="text-xs text-gray-600">Trade Rules</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="text-right">
+                                                                    <div class="px-3 py-1 rounded-full text-xs font-bold"
+                                                                         :class="getUCP600Compliance(fieldKey) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                                        {% raw %}{{ getUCP600Compliance(fieldKey) ? 'COMPLIANT' : 'NON-COMPLIANT' }}{% endraw %}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- SWIFT Compliance Card -->
+                                                    <div class="group">
+                                                        <div class="bg-gradient-to-br rounded-xl p-4 transition-all duration-300 hover:scale-105"
+                                                             :class="getSWIFTCompliance(fieldKey) ? 'from-blue-50 to-indigo-50 border-2 border-blue-200 hover:border-blue-300' : 'from-red-50 to-pink-50 border-2 border-red-200 hover:border-red-300'">
+                                                            <div class="flex items-center justify-between">
+                                                                <div class="flex items-center gap-3">
+                                                                    <div class="w-10 h-10 rounded-full flex items-center justify-center"
+                                                                         :class="getSWIFTCompliance(fieldKey) ? 'bg-blue-100' : 'bg-red-100'">
+                                                                        <i class="text-xl"
+                                                                           :class="getSWIFTCompliance(fieldKey) ? 'mdi mdi-check-circle text-blue-600' : 'mdi mdi-close-circle text-red-600'"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p class="font-semibold text-gray-800">SWIFT</p>
+                                                                        <p class="text-xs text-gray-600">Message Format</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="text-right">
+                                                                    <div class="px-3 py-1 rounded-full text-xs font-bold"
+                                                                         :class="getSWIFTCompliance(fieldKey) ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'">
+                                                                        {% raw %}{{ getSWIFTCompliance(fieldKey) ? 'COMPLIANT' : 'NON-COMPLIANT' }}{% endraw %}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div v-if="selectedResult.compliance.warnings && selectedResult.compliance.warnings.length > 0">
-                                        <h4 class="text-lg font-bold text-yellow-700 mb-4">Warnings</h4>
-                                        <div v-for="(warning, idx) in selectedResult.compliance.warnings" :key="'w-' + idx"
-                                             class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                                            <p class="text-yellow-800">{% raw %}{{ warning.description || warning }}{% endraw %}</p>
+                                    <!-- Summary Statistics -->
+                                    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                                    <i class="mdi mdi-check-all text-green-600 text-xl"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="text-2xl font-bold text-green-700">{% raw %}{{ Object.keys(getExtractedFieldsWithDetails()).filter(key => getUCP600Compliance(key) && getSWIFTCompliance(key)).length }}{% endraw %}</p>
+                                                    <p class="text-sm text-green-600">Fully Compliant</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                                                    <i class="mdi mdi-alert text-yellow-600 text-xl"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="text-2xl font-bold text-yellow-700">{% raw %}{{ Object.keys(getExtractedFieldsWithDetails()).filter(key => (getUCP600Compliance(key) && !getSWIFTCompliance(key)) || (!getUCP600Compliance(key) && getSWIFTCompliance(key))).length }}{% endraw %}</p>
+                                                    <p class="text-sm text-yellow-600">Partial Issues</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-gradient-to-br from-red-50 to-pink-50 border border-red-200 rounded-xl p-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                                    <i class="mdi mdi-close-circle text-red-600 text-xl"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="text-2xl font-bold text-red-700">{% raw %}{{ Object.keys(getExtractedFieldsWithDetails()).filter(key => !getUCP600Compliance(key) && !getSWIFTCompliance(key)).length }}{% endraw %}</p>
+                                                    <p class="text-sm text-red-600">Non-Compliant</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Legacy Violations and Warnings (if any) -->
+                                    <div v-if="selectedResult.compliance.violations && selectedResult.compliance.violations.length > 0" class="mt-8">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                                                <i class="mdi mdi-alert-circle text-red-600 text-lg"></i>
+                                            </div>
+                                            <h4 class="text-lg font-bold text-red-700">Additional Violations</h4>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <div v-for="(violation, idx) in selectedResult.compliance.violations" :key="'v-' + idx"
+                                                 class="bg-red-50 border-l-4 border-red-400 rounded-r-lg p-4">
+                                                <p class="text-red-800 font-medium">{% raw %}{{ violation.description || violation }}{% endraw %}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="selectedResult.compliance.warnings && selectedResult.compliance.warnings.length > 0" class="mt-6">
+                                        <div class="flex items-center gap-3 mb-4">
+                                            <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
+                                                <i class="mdi mdi-alert text-yellow-600 text-lg"></i>
+                                            </div>
+                                            <h4 class="text-lg font-bold text-yellow-700">Additional Warnings</h4>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <div v-for="(warning, idx) in selectedResult.compliance.warnings" :key="'w-' + idx"
+                                                 class="bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg p-4">
+                                                <p class="text-yellow-800 font-medium">{% raw %}{{ warning.description || warning }}{% endraw %}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-else class="text-center py-8 text-gray-600">
-                                    No compliance data available
+                                <div v-else class="text-center py-12">
+                                    <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                                        <i class="mdi mdi-file-document-outline text-gray-400 text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-600 mb-2">No Compliance Data Available</h3>
+                                    <p class="text-gray-500">No compliance analysis has been performed for this document.</p>
                                 </div>
                             </div>
 
@@ -3429,6 +3620,7 @@
                     drawingContext: null,
                     editingField: null,
                     editedFields: {},
+                    manuallyEditedFields: {},
                     rectangleStart: null,
                     pendingHighlight: null,
                     // Pan/drag properties
@@ -5158,6 +5350,7 @@
                 startFieldEdit(fieldKey, value) {
                     this.editingField = fieldKey;
                     this.editedFields[fieldKey] = value || '';
+                    this.manuallyEditedFields[fieldKey] = true; // Mark as manually edited to hide confidence
 
                     this.$nextTick(() => {
                         const input = this.$refs['fieldInput_' + fieldKey];
@@ -5314,52 +5507,33 @@
 
                     console.log(`Assigning text "${this.extractedText}" to field "${fieldKey}"`);
 
-                    // Update the field value and bounding box
+                    // Update the field value only (don't store bounding box for manual selections)
                     const extractedValue = this.extractedText;
-
-                    // Update bounding box if we have a selection
-                    let boundingBox = null;
-                    let boundingPage = this.currentPage;
-
-                    if (this.textSelectionBox) {
-                        const img = this.$refs.documentImage;
-                        if (img) {
-                            // Convert pixel coordinates to normalized coordinates
-                            const x1 = (this.textSelectionBox.x / this.zoomLevel) / img.clientWidth;
-                            const y1 = (this.textSelectionBox.y / this.zoomLevel) / img.clientHeight;
-                            const x2 = x1 + (this.textSelectionBox.width / this.zoomLevel) / img.clientWidth;
-                            const y2 = y1 + (this.textSelectionBox.height / this.zoomLevel) / img.clientHeight;
-
-                            boundingBox = [x1, y1, x2, y2];
-                        }
-                    }
 
                     // Update in the original result
                     if (this.selectedResult && this.selectedResult.extractedFields) {
                         if (typeof this.selectedResult.extractedFields[fieldKey] === 'object' && this.selectedResult.extractedFields[fieldKey] !== null) {
-                            // Update existing object
+                            // Update existing object - only update value, keep original bounding box if it exists
                             this.selectedResult.extractedFields[fieldKey].value = extractedValue;
-                            if (boundingBox) {
-                                this.selectedResult.extractedFields[fieldKey].bounding_box = boundingBox;
-                                this.selectedResult.extractedFields[fieldKey].bounding_page = boundingPage;
-                            }
+                            // Don't overwrite existing bounding box from automatic detection
                         } else {
-                            // Convert to object format to store bounding box
+                            // Convert to object format without bounding box for manual selections
                             this.selectedResult.extractedFields[fieldKey] = {
                                 value: extractedValue,
-                                bounding_box: boundingBox,
-                                bounding_page: boundingPage,
-                                confidence: 95
+                                confidence: 95,
+                                method: 'manual_selection'
                             };
                         }
 
                         console.log('Updated field:', fieldKey, this.selectedResult.extractedFields[fieldKey]);
                     }
 
-                    // Close the assignment dialog
+                    // Close the assignment dialog and clear all selection state
                     this.showFieldAssignment = false;
                     this.extractedText = '';
                     this.textSelectionBox = null;
+                    this.targetField = null;
+                    this.currentTool = 'select';
 
                     // Force re-render
                     this.$forceUpdate();
@@ -5367,6 +5541,7 @@
                 startFieldTextSelection(fieldKey) {
                     // Set the target field
                     this.targetField = fieldKey;
+                    this.manuallyEditedFields[fieldKey] = true; // Mark as manually edited to hide confidence
 
                     // Switch to text selection tool
                     this.currentTool = 'textSelect';
@@ -5456,6 +5631,81 @@
                     }
 
                     return filteredData;
+                },
+
+                // Compliance helper methods
+                getUCP600Compliance(fieldKey) {
+                    // Get the actual UCP600 data from the tab
+                    const ucp600Data = this.getUCP600TableData();
+                    
+                    if (!ucp600Data || !ucp600Data[fieldKey]) {
+                        return false; // No data means non-compliant
+                    }
+                    
+                    const fieldData = ucp600Data[fieldKey];
+                    
+                    // Check various compliance indicators
+                    if (typeof fieldData === 'object' && fieldData !== null) {
+                        // Check for explicit status
+                        if (fieldData.status) {
+                            return fieldData.status === 'compliant' || fieldData.status === 'pass' || fieldData.status === 'valid';
+                        }
+                        
+                        // Check for compliance field
+                        if (fieldData.compliance !== undefined) {
+                            return fieldData.compliance === true || fieldData.compliance === 'compliant';
+                        }
+                        
+                        // Check for valid field
+                        if (fieldData.valid !== undefined) {
+                            return fieldData.valid === true;
+                        }
+                        
+                        // If it has a value and no violations, consider it compliant
+                        if (fieldData.value && !fieldData.violations && !fieldData.errors) {
+                            return true;
+                        }
+                    }
+                    
+                    // For simple values, presence usually means compliant
+                    return fieldData === true || fieldData === 'compliant' || fieldData === 'valid';
+                },
+
+                getSWIFTCompliance(fieldKey) {
+                    // Get the actual SWIFT data from the tab
+                    const swiftData = this.getSWIFTTableData();
+                    
+                    if (!swiftData || !swiftData[fieldKey]) {
+                        return false; // No data means non-compliant
+                    }
+                    
+                    const fieldData = swiftData[fieldKey];
+                    
+                    // Check various compliance indicators
+                    if (typeof fieldData === 'object' && fieldData !== null) {
+                        // Check for explicit status
+                        if (fieldData.status) {
+                            return fieldData.status === 'compliant' || fieldData.status === 'pass' || fieldData.status === 'valid';
+                        }
+                        
+                        // Check for compliance field
+                        if (fieldData.compliance !== undefined) {
+                            return fieldData.compliance === true || fieldData.compliance === 'compliant';
+                        }
+                        
+                        // Check for valid field
+                        if (fieldData.valid !== undefined) {
+                            return fieldData.valid === true;
+                        }
+                        
+                        // If it has a value and no violations, consider it compliant
+                        if (fieldData.value && !fieldData.violations && !fieldData.errors) {
+                            return true;
+                        }
+                    }
+                    
+                    // For simple values, presence usually means compliant
+                    return fieldData === true || fieldData === 'compliant' || fieldData === 'valid';
                 },
 
                 // Admin methods
