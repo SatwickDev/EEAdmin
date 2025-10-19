@@ -411,7 +411,7 @@ def handle_follow_up_request(user_query: str, context: List[Dict[str, str]], fol
         logger.warning("No context history found.")
         return {"response": "No previous data available for refinement.", "error": "Missing context"}
 
-    # ✅ Build full conversation
+    # SUCCESS: Build full conversation
     full_conversation = []
     assistant_messages = []
     
@@ -432,7 +432,7 @@ def handle_follow_up_request(user_query: str, context: List[Dict[str, str]], fol
     
     conversation_history = "\n".join(full_conversation)
 
-    # ✅ Check if any table was ever returned before
+    # SUCCESS: Check if any table was ever returned before
     if all("No matching records found" in msg or "<table" not in str(msg)
            for msg in assistant_messages):
         logger.warning("No prior table found — skipping follow-up.")
@@ -1883,10 +1883,10 @@ def handle_creation_transaction_request(user_query, user_id, context, response):
 
             llm_output_str = llm_response["choices"][0]["message"]["content"].strip()
 
-            # 💡 FIX: Remove Markdown JSON wrapping (```json ... ```)
+            # FIX: Remove Markdown JSON wrapping (```json ... ```)
             cleaned_output = re.sub(r"^```(?:json)?\s*|```$", "", llm_output_str.strip(), flags=re.IGNORECASE).strip()
 
-            # 💡 Attempt JSON parse
+            # NOTE: Attempt JSON parse
             llm_output = json.loads(cleaned_output)
 
             # Modify the response message if it's about fetching details
@@ -2110,12 +2110,13 @@ def get_collection_for_repository(active_repository, user_query=None):
 
 def generate_rag_table_or_report_request(user_query, user_id, output_format="table", active_repository=None):
     try:
-        logger.info(f"🔍 [RAG Start] User: {user_id} | Query: {user_query} | Repository: {active_repository}")
+        user_info = f"User: {user_id} | Query: {user_query} | Repository: {active_repository}"
+        logger.info(f"SEARCH: [RAG Start] {user_info}")
 
         # Step 1: Generate embedding
-        logger.info("📌 Generating embedding for query...")
+        logger.info("INFO: Generating embedding for query...")
         query_emb = get_embedding(user_query)
-        logger.info(f"✅ Embedding generated (length: {len(query_emb)})")
+        logger.info(f"SUCCESS: Embedding generated (length: {len(query_emb)})")
 
         # Step 2: Connect to ChromaDB
         logger.info("🔗 Connecting to ChromaDB HttpClient (localhost:8000)...")
@@ -2126,10 +2127,10 @@ def generate_rag_table_or_report_request(user_query, user_id, output_format="tab
         logger.info(f"📚 Using collection: {collection_name}")
         
         collection = client.get_or_create_collection(collection_name)
-        logger.info("✅ ChromaDB collection loaded")
+        logger.info("SUCCESS: ChromaDB collection loaded")
 
         # Step 3: Query top 5 matching documents
-        logger.info("🔍 Querying ChromaDB for top 5 matching documents...")
+        logger.info("SEARCH: Querying ChromaDB for top 5 matching documents...")
         results = collection.query(query_embeddings=[query_emb], n_results=20)
         documents = results.get("documents", [[]])[0]
         logger.info(f"📄 Retrieved {len(documents)} documents before filtering")
@@ -2146,7 +2147,7 @@ def generate_rag_table_or_report_request(user_query, user_id, output_format="tab
             cleaned_documents.append(cleaned_doc)
 
         if not cleaned_documents:
-            logger.warning("⚠️ No documents found to include in context.")
+            logger.warning("WARNING: No documents found to include in context")
             return jsonify({
                 "response": "No matching records found.",
                 "intent": "RAG Request"
@@ -2169,7 +2170,7 @@ def generate_rag_table_or_report_request(user_query, user_id, output_format="tab
             token_count += len(doc_tokens)
 
         if token_count == 0:
-            logger.warning("⚠️ No documents fit within the token limit.")
+            logger.warning("WARNING: No documents fit within token limit")
             return jsonify({
                 "response": "Query returned documents, but none fit within token limits.",
                 "intent": "RAG Request"
@@ -2289,7 +2290,7 @@ Follow this with:
         )
 
         answer = response["choices"][0]["message"]["content"].strip()
-        logger.info("✅ OpenAI GPT response received")
+        logger.info("SUCCESS: OpenAI GPT response received")
         logger.debug(f"🧠 GPT Raw Response (first 500 chars):\n{answer[:500]}...")
 
         return jsonify({
@@ -2300,7 +2301,7 @@ Follow this with:
         })
 
     except Exception as e:
-        logger.error(f"❌ RAG handler failed: {str(e)}")
+        logger.error(f"ERROR: RAG handler failed: {str(e)}")
         logger.debug(traceback.format_exc())
         return jsonify({
             "response": "Failed to generate RAG-based output.",
@@ -2324,7 +2325,7 @@ def load_custom_rules(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"⚠️ Could not load custom rules from {file_path}: {e}")
+        print(f"WARNING: Could not load custom rules from {file_path}: {e}")
         return []
 
 
@@ -2371,7 +2372,7 @@ Return JSON only:
 "swift":{{"compliance":true,"severity":"medium",
 "reason":"Detailed SWIFT MT700 explanation with field references"}}}}]}}"""
 
-        print(f"🚀 ENHANCED UNIFIED: Analyzing {len(field_entries)} fields "
+        print(f"UNIFIED COMPLIANCE: Analyzing {len(field_entries)} fields "
               "with detailed rules")
         
         # Enhanced AI call with detailed descriptions but optimized parameters
@@ -2388,7 +2389,7 @@ Return JSON only:
         )
         
         reply = response.choices[0].message["content"].strip()
-        print(f"✅ OPTIMIZED reply received: {len(reply)} chars")
+        print(f"SUCCESS: OPTIMIZED reply received: {len(reply)} chars")
         
         # Clean the response
         if reply.startswith("```json"):
@@ -2427,14 +2428,16 @@ Return JSON only:
                 }
         
         processing_time = time.time() - start_time
-        print(f"✅ OPTIMIZED UNIFIED COMPLIANCE completed in {processing_time:.2f}s")
-        print(f"📊 Results: UCP600={len(ucp600_result)} fields, SWIFT={len(swift_result)} fields")
+        print(f"SUCCESS: OPTIMIZED UNIFIED COMPLIANCE completed in {processing_time:.2f}s")
+        ucp_fields = len(ucp600_result)
+        swift_fields = len(swift_result)
+        print(f"RESULTS: UCP600={ucp_fields}, SWIFT={swift_fields} fields")
         
         return ucp600_result, swift_result
         
     except json.JSONDecodeError as e:
-        print(f"❌ OPTIMIZED COMPLIANCE JSON parse error: {e}")
-        print(f"❌ Problematic reply: {reply[:500]}...")
+        print(f"ERROR: OPTIMIZED COMPLIANCE JSON parse error: {e}")
+        print(f"ERROR: Problematic reply: {reply[:500]}...")
         
         # Return error results in expected format
         error_ucp = {key: {"error": f"Optimized compliance JSON parse error: {str(e)}"} for key in fields}
@@ -2442,16 +2445,16 @@ Return JSON only:
         return error_ucp, error_swift
         
     except Exception as e:
-        print(f"❌ OPTIMIZED COMPLIANCE error: {e}")
+        print(f"ERROR: OPTIMIZED COMPLIANCE error: {e}")
         
         # Fallback to original separate analysis if unified fails
-        print("🔄 Falling back to separate UCP600/SWIFT analysis...")
+        print("FALLBACK: Falling back to separate UCP600/SWIFT analysis...")
         try:
             ucp600_result = analyze_ucp_compliance_chromaRAG(fields)
             swift_result = analyze_swift_compliance_chromaRAG(fields)
             return ucp600_result, swift_result
         except Exception as fallback_error:
-            print(f"❌ Fallback analysis also failed: {fallback_error}")
+            print(f"ERROR: Fallback analysis also failed: {fallback_error}")
             error_ucp = {key: {"error": str(e)} for key in fields}
             error_swift = {key: {"error": str(e)} for key in fields}
             return error_ucp, error_swift
@@ -2496,11 +2499,11 @@ Instructions:
             temperature=0.3
         )
         reply = response.choices[0].message["content"]
-        print("✅ UCP600 GPT reply:\n", reply)
+        print("SUCCESS: UCP600 GPT reply:\n", reply)
         
         # Check if reply is empty or None
         if not reply or not reply.strip():
-            print("❌ UCP600 GPT returned empty response")
+            print("ERROR: UCP600 GPT returned empty response")
             return {key: {"error": "Empty response from UCP600 analysis"} for key in fields}
 
         # Try to clean the reply (remove any markdown, extra text)
@@ -2511,7 +2514,7 @@ Instructions:
             reply = reply[:-3]
         reply = reply.strip()
         
-        print(f"✅ UCP600 cleaned reply: {reply[:200]}...")
+        print(f"SUCCESS: UCP600 cleaned reply: {reply[:200]}...")
 
         parsed = json.loads(reply)
 
@@ -2525,11 +2528,11 @@ Instructions:
         }
 
     except json.JSONDecodeError as e:
-        print(f"❌ UCP600 JSON parse error: {e}")
-        print(f"❌ UCP600 problematic reply: {reply[:500]}...")
+        print(f"ERROR: UCP600 JSON parse error: {e}")
+        print(f"ERROR: UCP600 problematic reply: {reply[:500]}...")
         return {key: {"error": f"JSON parse error: {str(e)}"} for key in fields}
     except Exception as e:
-        print(f"❌ UCP600 compliance check error: {e}")
+        print(f"ERROR: UCP600 compliance check error: {e}")
         return {key: {"error": str(e)} for key in fields}
 
 def analyze_swift_compliance_chromaRAG(fields):
@@ -2570,10 +2573,10 @@ IMPORTANT: Return ONLY the JSON array exactly as specified, with no extra text, 
             temperature=0.3
         )
         reply = response.choices[0].message["content"].strip()
-        print("✅ SWIFT GPT reply:\n", reply)
+        print("SUCCESS: SWIFT GPT reply:\n", reply)
         
         if not reply:
-            print("❌ SWIFT GPT returned empty response")
+            print("ERROR: SWIFT GPT returned empty response")
             return {key: {"error": "Empty response from SWIFT analysis"} for key in fields}
         
         # Try to clean the reply (remove any markdown, extra text)
@@ -2583,7 +2586,7 @@ IMPORTANT: Return ONLY the JSON array exactly as specified, with no extra text, 
             reply = reply[:-3]
         reply = reply.strip()
         
-        print(f"✅ SWIFT cleaned reply: {reply[:200]}...")
+        print(f"SUCCESS: SWIFT cleaned reply: {reply[:200]}...")
 
         # Directly parse JSON
         parsed = json.loads(reply)
@@ -2598,11 +2601,11 @@ IMPORTANT: Return ONLY the JSON array exactly as specified, with no extra text, 
         }
 
     except json.JSONDecodeError as e:
-        print(f"❌ SWIFT JSON parse error: {e}")
-        print(f"❌ SWIFT problematic reply: {reply[:500]}...")
+        print(f"ERROR: SWIFT JSON parse error: {e}")
+        print(f"ERROR: SWIFT problematic reply: {reply[:500]}...")
         return {key: {"error": f"JSON parse error: {str(e)}"} for key in fields}
     except Exception as e:
-        print(f"❌ SWIFT compliance check error: {e}")
+        print(f"ERROR: SWIFT compliance check error: {e}")
         return {key: {"error": str(e)} for key in fields}
 
 def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
@@ -2610,7 +2613,7 @@ def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
     try:
         chunk_id = chunk.get("id")
         if not chunk_id:
-            print("❌ Missing chunk ID for direct update.")
+            print("ERROR: Missing chunk ID for direct update.")
             return
 
         original_text = chunk["text"]
@@ -2621,7 +2624,7 @@ def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
         existing_reasons.append(reason)
         updated_metadata["compliance_reasons"] = existing_reasons
 
-        # ⚠️ Recompute embedding using the same function used at storage time
+        # NOTE: Recompute embedding using the same function used at storage time
         updated_embedding = get_embedding(original_text)
 
         # Replace old chunk with updated metadata and consistent embedding
@@ -2632,15 +2635,15 @@ def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
             embeddings=[updated_embedding],
             ids=[chunk_id]
         )
-        print(f"✅ Updated UCP chunk {chunk_id} directly with new reason.")
+        print(f"SUCCESS: Updated UCP chunk {chunk_id} directly with new reason.")
     except Exception as e:
-        print(f"❌ Failed to update UCP chunk directly: {e}")
+        print(f"ERROR: Failed to update UCP chunk directly: {e}")
 
 def update_swift_compliance_reason_in_chromadb_direct(chunk, reason):
     try:
         chunk_id = chunk.get("id")
         if not chunk_id:
-            print("❌ Missing chunk ID for direct update.")
+            print("ERROR: Missing chunk ID for direct update.")
             return
 
         original_text = chunk["text"]
@@ -2651,7 +2654,7 @@ def update_swift_compliance_reason_in_chromadb_direct(chunk, reason):
         existing_reasons.append(reason)
         updated_metadata["compliance_reasons"] = existing_reasons
 
-        # ✅ Recompute embedding
+        # NOTE: Recompute embedding
         updated_embedding = get_embedding(original_text)
 
         collection_swift_rules.delete(ids=[chunk_id])
@@ -2661,9 +2664,9 @@ def update_swift_compliance_reason_in_chromadb_direct(chunk, reason):
             embeddings=[updated_embedding],
             ids=[chunk_id]
         )
-        print(f"✅ Updated SWIFT chunk {chunk_id} directly with new reason.")
+        print(f"SUCCESS: Updated SWIFT chunk {chunk_id} directly with new reason.")
     except Exception as e:
-        print(f"❌ Failed to update SWIFT chunk directly: {e}")
+        print(f"ERROR: Failed to update SWIFT chunk directly: {e}")
 
 def build_compliance_prompt(fields, rule_chunks, custom_rules, prior_suggestions=None):
     field_entries = [{"field": label, **data} for label, data in fields.items()]
@@ -2702,7 +2705,7 @@ def build_compliance_prompt(fields, rule_chunks, custom_rules, prior_suggestions
     {prior_suggestions_text}
     ---
 
-    ## 🔍 Step-by-Step Instructions:
+    ## INSTRUCTIONS: Step-by-Step Instructions:
 
     1. **Classify the Document Type**
        - One of: "LC" (Letter of Credit), "Guarantee", "Collection", or "Unclear".
@@ -2761,7 +2764,7 @@ def build_compliance_prompt(fields, rule_chunks, custom_rules, prior_suggestions
     ## 📜 Rule Chunks:
     {chunk_text}
 
-    ## 🛡️ Custom Rules:
+    ## SECURITY: Custom Rules:
     {custom_rule_text}
 
     ---
@@ -2946,7 +2949,7 @@ def handle_ai_check(data, history):
         reply = response.choices[0].message["content"]
 
         # DEBUG PRINTS
-        print("\n🔍 Raw GPT reply:")
+        print("\nINFO: Raw GPT reply:")
         print(reply)
 
         # Clean markdown-wrapped JSON
@@ -2958,7 +2961,7 @@ def handle_ai_check(data, history):
         try:
             parsed = json.loads(reply_clean)
         except json.JSONDecodeError as je:
-            print(f"❌ JSON decoding error: {je}")
+            print(f"ERROR: JSON decoding error: {je}")
             return {"error": "Invalid JSON returned from GPT", "raw_reply": reply}, 500
 
         # Validate structure: make sure non-compliant fields have suggestions
@@ -2976,7 +2979,7 @@ def handle_ai_check(data, history):
         }, 200
 
     except Exception as e:
-        print(f"❌ AI Compliance Check Error: {e}")
+        print(f"ERROR: AI Compliance Check Error: {e}")
         return {"error": str(e)}, 500
 
 

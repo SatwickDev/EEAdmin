@@ -158,7 +158,7 @@ def get_yaml_retry_config():
         
         max_retries = retry_config['max_retries']
         delay = retry_config['retry_delay_seconds']
-        logger.debug(f"📄 Loaded YAML retry config: max_retries={max_retries}, "
+        logger.debug(f"Loaded YAML retry config: max_retries={max_retries}, "
                     f"delay={delay}s")
         return retry_config
         
@@ -185,7 +185,7 @@ YAML_RETRY_CONFIG = get_yaml_retry_config()
 ADMIN_MAX_RETRIES = YAML_RETRY_CONFIG['max_retries']
 ADMIN_RETRY_DELAY = YAML_RETRY_CONFIG['retry_delay_seconds']
 
-logger.info(f"📋 Admin retry config: Max={ADMIN_MAX_RETRIES}, "
+logger.info(f"Admin retry config: Max={ADMIN_MAX_RETRIES}, "
            f"Delay={ADMIN_RETRY_DELAY}s (configurable via UI)")
 
 # SQLAlchemy Engine

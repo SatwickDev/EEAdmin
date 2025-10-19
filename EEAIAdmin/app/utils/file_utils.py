@@ -113,7 +113,7 @@ def extract_text_from_file(file_path, file_type):
             for line in read_result.lines:
                 words = line.words  # Extract words
 
-                # ✅ Compute average confidence score from words
+                # Compute average confidence score from words
                 if words:
                     confidence_scores = [word.confidence for word in words if hasattr(word, "confidence")]
                     avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 1.0
@@ -124,7 +124,7 @@ def extract_text_from_file(file_path, file_type):
                     "text": line.text,
                     "bounding_box": line.bounding_box,  # Coordinates of the text
                     "bounding_page": page_num,  # Page number
-                    "confidence": avg_confidence  # ✅ Use average confidence from words
+                    "confidence": avg_confidence  # Use average confidence from words
                 })
 
         if not text_data:
@@ -156,8 +156,8 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
             logging.error(f"Unsupported file type: {file_type}")
             return {"error": f"Unsupported file type: {file_type}", "text_data": []}
 
-        logging.info(f"🚀 OPTIMIZED OCR processing: {file_path}")
-        logging.info(f"📊 Quality verdict: {quality_verdict}, Pages: {page_count}")
+        logging.info(f"OPTIMIZED OCR processing: {file_path}")
+        logging.info(f"Quality verdict: {quality_verdict}, Pages: {page_count}")
 
         # OPTIMIZATION 1: Dynamic timeout calculation
         dynamic_timeout = OCR_TIMEOUT_BASE + (page_count * OCR_TIMEOUT_PER_PAGE)
@@ -166,9 +166,9 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
         fast_mode = OCR_FAST_MODE and quality_verdict in ["direct_analysis", "good"]
         if fast_mode:
             dynamic_timeout = max(10, dynamic_timeout * 0.7)  # Reduce timeout for high quality docs
-            logging.info("⚡ Fast mode enabled for high-quality document")
+            logging.info("Fast mode enabled for high-quality document")
 
-        logging.info(f"⏰ Dynamic timeout: {dynamic_timeout}s (base: {OCR_TIMEOUT_BASE}s + {page_count}*{OCR_TIMEOUT_PER_PAGE}s)")
+        logging.info(f"Dynamic timeout: {dynamic_timeout}s (base: {OCR_TIMEOUT_BASE}s + {page_count}*{OCR_TIMEOUT_PER_PAGE}s)")
 
         # Read file and send to Azure OCR
         with open(file_path, "rb") as file_stream:
@@ -193,7 +193,7 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
             # OPTIMIZATION 4: Early termination for completed operations
             if result.status not in ["notStarted", "running"]:
                 processing_time = time.time() - start_time
-                logging.info(f"✅ OCR completed in {processing_time:.2f}s after {poll_count} polls")
+                logging.info(f"OCR completed in {processing_time:.2f}s after {poll_count} polls")
                 break
 
             # OPTIMIZATION 5: Timeout check
@@ -256,8 +256,8 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
         overall_confidence = total_confidence / line_count if line_count > 0 else 0.0
         processing_time = time.time() - start_time
         
-        logging.info(f"📊 OCR Results: {len(text_data)} lines, avg confidence: {overall_confidence:.3f}")
-        logging.info(f"⚡ Total processing time: {processing_time:.2f}s")
+        logging.info(f"OCR Results: {len(text_data)} lines, avg confidence: {overall_confidence:.3f}")
+        logging.info(f"Total processing time: {processing_time:.2f}s")
         
         return {
             "text_data": text_data,
@@ -1010,7 +1010,7 @@ def retrieve_relevant_chunksRAG_for_ucp(query_text, top_k=5):
         return chunks
 
     except Exception as e:
-        print(f"❌ Error retrieving UCP600 chunks: {e}")
+        print(f"Error retrieving UCP600 chunks: {e}")
         return []
 
 
@@ -1031,7 +1031,7 @@ def retrieve_relevant_chunksRAG_for_swift(query_text, top_k=5):
         return chunks
 
     except Exception as e:
-        print(f"❌ Error retrieving SWIFT chunks: {e}")
+        print(f"Error retrieving SWIFT chunks: {e}")
         return []
 
 def retrieve_relevant_chunksRAG_for_clause_tag(query_text, top_k=5):
@@ -1051,7 +1051,7 @@ def retrieve_relevant_chunksRAG_for_clause_tag(query_text, top_k=5):
         return chunks
 
     except Exception as e:
-        print(f"❌ Error retrieving SWIFT chunks: {e}")
+        print(f"Error retrieving SWIFT chunks: {e}")
         return []
 
 
@@ -1060,7 +1060,7 @@ def load_custom_rules(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"⚠️ Failed to load custom rules: {e}")
+        print(f"Failed to load custom rules: {e}")
         return []
 
 

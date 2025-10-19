@@ -109,10 +109,10 @@ def load_prompt_config():
         config_path = os.path.join('data', 'document_classification_config.yaml')
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
-        logger.info(f"✅ Loaded prompt config from {config_path}")
+        logger.info(f"SUCCESS: Loaded prompt config from {config_path}")
         return config
     except Exception as e:
-        logger.error(f"❌ Failed to load prompt config: {e}")
+        logger.error(f"ERROR: Failed to load prompt config: {e}")
         return None
 
 def build_classification_prompt_from_config(ocr_text, function_description=None):
@@ -209,11 +209,12 @@ OCR Text to Classify:
 {response_template}
 """
 
-        logger.info(f"✅ Built classification prompt from config ({len(complete_prompt)} chars)")
+        prompt_chars = len(complete_prompt)
+        logger.info(f"SUCCESS: Built classification prompt from config ({prompt_chars} chars)")
         return complete_prompt
 
     except Exception as e:
-        logger.error(f"❌ Error building prompt from config: {e}")
+        logger.error(f"ERROR: Error building prompt from config: {e}")
         return None
 
 def load_custom_functions_from_json():
@@ -292,23 +293,27 @@ def load_document_field_mappings(document_type):
 
         # Format as comprehensive field structure - SHOW ALL FIELDS (no limits)
         example = f"\n{'='*80}\n"
-        example += f"📋 COMPLETE FIELD STRUCTURE FOR: {entity_data.get('documentName', document_type).upper()}\n"
+        doc_name = entity_data.get('documentName', document_type).upper()
+        example += f"STRUCTURE: COMPLETE FIELD STRUCTURE FOR: {doc_name}\n"
         example += f"{'='*80}\n"
         example += f"Total Fields: {len(mandatory_fields)} Mandatory + {len(optional_fields)} Optional + {len(conditional_fields)} Conditional\n"
         example += f"{'='*80}\n"
 
         if mandatory_fields:
-            example += f"\n🔴 MANDATORY FIELDS ({len(mandatory_fields)}) - MUST EXTRACT:\n"
+            mandatory_count = len(mandatory_fields)
+            example += f"\nMANDATORY FIELDS ({mandatory_count}) - MUST EXTRACT:\n"
             for idx, field in enumerate(mandatory_fields, 1):
                 example += f"  {idx}. {field['name']} (Category: {field['category']})\n"
 
         if optional_fields:
-            example += f"\n🟡 OPTIONAL FIELDS ({len(optional_fields)}) - Extract if present:\n"
+            optional_count = len(optional_fields)
+            example += f"\nOPTIONAL FIELDS ({optional_count}) - Extract if present:\n"
             for idx, field in enumerate(optional_fields, 1):
                 example += f"  {idx}. {field['name']} (Category: {field['category']})\n"
 
         if conditional_fields:
-            example += f"\n🟢 CONDITIONAL FIELDS ({len(conditional_fields)}) - Extract if applicable:\n"
+            conditional_count = len(conditional_fields)
+            example += f"\nCONDITIONAL FIELDS ({conditional_count}) - Extract if applicable:\n"
             for idx, field in enumerate(conditional_fields, 1):
                 example += f"  {idx}. {field['name']} (Category: {field['category']})\n"
 
@@ -321,7 +326,11 @@ def load_document_field_mappings(document_type):
         example += "5. If a field is not found, DO NOT include it in the response\n"
         example += f"{'='*80}\n"
 
-        logger.info(f"✅ Loaded ALL field mappings for {document_type}: {len(mandatory_fields)}M, {len(optional_fields)}O, {len(conditional_fields)}C")
+        m_count = len(mandatory_fields)
+        o_count = len(optional_fields)
+        c_count = len(conditional_fields)
+        mapping_info = f"{m_count}M, {o_count}O, {c_count}C"
+        logger.info(f"SUCCESS: Loaded ALL field mappings for {document_type}: {mapping_info}")
         
         # Return both the example text and the structured mappings
         return {
@@ -452,10 +461,10 @@ def load_trade_document_elements():
         elements_path = os.path.join(os.path.dirname(__file__), 'prompts', 'trade_document_data_elements.json')
         with open(elements_path, 'r', encoding='utf-8') as f:
             trade_document_elements = json.load(f)
-        logger.info("✅ Trade document data elements mapping loaded successfully")
+        logger.info("SUCCESS: Trade document data elements mapping loaded successfully")
         return trade_document_elements
     except Exception as e:
-        logger.error(f"❌ Error loading trade document data elements: {str(e)}")
+        logger.error(f"ERROR: Error loading trade document data elements: {str(e)}")
         return None
 
 # Load Prompt Configuration from YAML
@@ -467,10 +476,10 @@ def load_prompt_config():
         config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'document_classification_config.yaml')
         with open(config_path, 'r', encoding='utf-8') as f:
             prompt_config = yaml.safe_load(f)
-        logger.info("✅ Prompt configuration loaded successfully")
+        logger.info("SUCCESS: Prompt configuration loaded successfully")
         return prompt_config
     except Exception as e:
-        logger.warning(f"⚠️  Error loading prompt configuration: {str(e)}, using defaults")
+        logger.warning(f"WARNING: Error loading prompt configuration: {str(e)}, using defaults")
         # Return default minimal config if file not found
         return {
             'prompts': {},
@@ -497,14 +506,14 @@ def get_prompt_template(category, subcategory=None):
         if subcategory:
             template = prompt_config.get('prompts', {}).get(subcategory, {}).get('template')
             if template:
-                logger.info(f"📝 Using {subcategory} template from YAML config")
+                logger.info(f"INFO: Using {subcategory} template from YAML config")
             return template
         else:
             template = prompt_config.get('prompts', {}).get(category, {}).get('template')
             if template:
-                logger.info(f"📝 Using {category} template from YAML config")
+                logger.info(f"INFO: Using {category} template from YAML config")
             else:
-                logger.warning(f"⚠️  No {category} template found in YAML, using fallback")
+                logger.warning(f"WARNING: No {category} template found in YAML, using fallback")
             return template
     except Exception as e:
         logger.error(f"Error getting prompt template for {category}/{subcategory}: {e}")
@@ -1732,7 +1741,7 @@ def setup_routes(app: Flask):
             global prompt_config
             prompt_config = load_prompt_config()
 
-            logger.info("✅ Prompt configuration updated and reloaded successfully")
+            logger.info("SUCCESS: Prompt configuration updated and reloaded successfully")
             return jsonify({'success': True, 'message': 'Configuration updated successfully'}), 200
 
         except Exception as e:
@@ -1945,7 +1954,7 @@ Return compliance status for each field.'''
             prompt_config = None
             load_prompt_config()
 
-            logger.info("✅ Prompt configuration manually reloaded")
+            logger.info("SUCCESS: Prompt configuration manually reloaded")
             return jsonify({'success': True, 'message': 'Configuration reloaded successfully'}), 200
 
         except Exception as e:
@@ -2044,17 +2053,17 @@ Return compliance status for each field.'''
         import time
         from difflib import SequenceMatcher
         
-        logger.info(f"🔍 === STARTING OCR TEXT SEARCH ===")
-        logger.info(f"🎯 Target field value: '{field_value}'")
-        logger.info(f"🔧 Search mode: {search_mode}")
-        logger.info(f"📄 OCR entries to search: {len(ocr_data)}")
+        logger.info("SEARCH: === STARTING OCR TEXT SEARCH ===")
+        logger.info(f"TARGET: Target field value: '{field_value}'")
+        logger.info(f" Search mode: {search_mode}")
+        logger.info(f" OCR entries to search: {len(ocr_data)}")
         
         if not field_value or not field_value.strip():
-            logger.warning("❌ Empty field value provided")
+            logger.warning("ERROR: Empty field value provided")
             return []
         
         if not ocr_data:
-            logger.warning("❌ No OCR data provided")
+            logger.warning("ERROR: No OCR data provided")
             return []
         
         field_value_lower = field_value.lower().strip()
@@ -2065,9 +2074,9 @@ Return compliance status for each field.'''
         is_date_search = len(field_date_patterns) > 0
         
         if is_date_search:
-            logger.info(f"📅 Detected date search. Normalized patterns: {field_date_patterns}")
+            logger.info(f"Detected date search. Normalized patterns: {field_date_patterns}")
         else:
-            logger.info(f"📝 Searching for phrase/sentence: '{field_value}'")
+            logger.info(f"INFO: Searching for phrase/sentence: '{field_value}'")
         
         # Search statistics
         exact_matches = 0
@@ -2077,7 +2086,7 @@ Return compliance status for each field.'''
         date_matches = 0
         no_matches = 0
         
-        logger.info(f"🔎 Starting sentence/phrase search through {len(ocr_data)} OCR entries")
+        logger.info(f"Starting sentence/phrase search through {len(ocr_data)} OCR entries")
         
         for i, ocr_entry in enumerate(ocr_data):
             ocr_text = ocr_entry.get('text', '').strip()
@@ -2103,7 +2112,8 @@ Return compliance status for each field.'''
                                 match_confidence = 100
                                 match_type = 'date_exact'
                                 date_matches += 1
-                                logger.debug(f"      ✅ DATE EXACT MATCH! '{field_pattern}' matches '{ocr_pattern}' - Confidence: 100%")
+                                match_info = f"'{field_pattern}' matches '{ocr_pattern}'"
+                                logger.debug(f"      SUCCESS: DATE EXACT MATCH! {match_info} - Confidence: 100%")
                                 break
                         if match_confidence == 100:
                             break
@@ -2114,33 +2124,35 @@ Return compliance status for each field.'''
                     match_confidence = 100
                     match_type = 'exact'
                     exact_matches += 1
-                    logger.debug(f"      ✅ EXACT MATCH! Confidence: 100%")
+                    logger.debug("      SUCCESS: EXACT MATCH! Confidence: 100%")
                 elif field_value_lower in ocr_text_lower:
                     match_confidence = 90
                     match_type = 'contains'
                     contains_matches += 1
-                    logger.debug(f"      ✅ CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
+                    contains_info = f"'{field_value_lower}' found in '{ocr_text_lower}'"
+                    logger.debug(f"      SUCCESS: CONTAINS MATCH! {contains_info} - Confidence: 90%")
                 elif ocr_text_lower in field_value_lower:
                     match_confidence = 85
                     match_type = 'partial'
                     partial_matches += 1
-                    logger.debug(f"      ✅ PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
+                    partial_info = f"'{ocr_text_lower}' found in '{field_value_lower}'"
+                    logger.debug(f"      SUCCESS: PARTIAL MATCH! {partial_info} - Confidence: 85%")
             
             # Fuzzy matching if enabled and no exact match
             if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
                 similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
-                logger.debug(f"      🔀 Fuzzy similarity: {similarity:.3f}")
+                logger.debug(f"Fuzzy similarity: {similarity:.3f}")
                 if similarity >= 0.8:  # High similarity threshold
                     fuzzy_confidence = similarity * 80
                     if fuzzy_confidence > match_confidence:
                         match_confidence = fuzzy_confidence
                         match_type = 'fuzzy'
                         fuzzy_matches += 1
-                        logger.debug(f"      ✅ FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
+                        logger.debug(f"      SUCCESS:FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
             
             if match_confidence < 80:
                 no_matches += 1
-                logger.debug(f"      ❌ No sufficient match (confidence: {match_confidence:.1f}%)")
+                logger.debug(f"No sufficient match (confidence: {match_confidence:.1f}%)")
             
             # Only include high-confidence matches
             if match_confidence >= 80:
@@ -2156,14 +2168,14 @@ Return compliance status for each field.'''
                 }
                 matches.append(match_data)
                 
-                logger.info(f"✅ MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
+                logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
                 logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
         
         # Sort matches by confidence (highest first)
         matches.sort(key=lambda x: x['match_confidence'], reverse=True)
         
         # Log search summary
-        logger.info(f"📊 === SEARCH STATISTICS ===")
+        logger.info(f"ANALYTICS: === SEARCH STATISTICS ===")
         logger.info(f"   Date matches: {date_matches}")
         logger.info(f"   Exact matches: {exact_matches}")
         logger.info(f"   Contains matches: {contains_matches}")
@@ -2174,11 +2186,11 @@ Return compliance status for each field.'''
         
         if matches:
             best_match = matches[0]
-            logger.info(f"🎯 BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
+            logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
             logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
         else:
-            logger.warning(f"❌ NO QUALIFYING MATCHES FOUND for '{field_value}'")
-            logger.info(f"💡 Search suggestions:")
+            logger.warning(f"ERROR: NO QUALIFYING MATCHES FOUND for '{field_value}'")
+            logger.info(f"IDEA: Search suggestions:")
             if is_date_search:
                 logger.info(f"   - Date formats tried: {field_date_patterns}")
                 logger.info(f"   - Try different date separators (-, /, .)")
@@ -2187,7 +2199,7 @@ Return compliance status for each field.'''
             logger.info(f"   - Check if the field value exactly matches the document text")
             logger.info(f"   - Verify the document has been processed and OCR data is available")
         
-        logger.info(f"📦 Search complete: returning {len(matches)} matches")
+        logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
         return matches
 
     # ==================== Coordinate Search Routes ====================
@@ -2206,26 +2218,26 @@ Return compliance status for each field.'''
     def search_field_coordinates():
         """Search for field coordinates in existing OCR data with absolute accuracy"""
         try:
-            logger.info("🔍 === COORDINATE SEARCH API CALLED ===")
+            logger.info("SEARCH: === COORDINATE SEARCH API CALLED ===")
             
             data = request.get_json()
             field_value = data.get('field_value', '').strip()
             search_mode = data.get('search_mode', 'exact').lower()
             current_page = data.get('current_page', None)  # Add page filtering support
             
-            logger.info(f"📋 Received search request for: '{field_value}' (mode: {search_mode})")
+            logger.info(f" Received search request for: '{field_value}' (mode: {search_mode})")
             if current_page:
-                logger.info(f"📄 Page-specific search requested: Page {current_page}")
+                logger.info(f" Page-specific search requested: Page {current_page}")
             else:
-                logger.info(f"📚 Multi-page search (all pages)")
+                logger.info(f"Multi-page search (all pages)")
             
             # Get OCR data from session
             ocr_data = session.get('current_ocr_data', [])
-            logger.info(f"🗂️ Session OCR data check: Found {len(ocr_data) if ocr_data else 0} entries")
+            logger.info(f" Session OCR data check: Found {len(ocr_data) if ocr_data else 0} entries")
             
             # Debug session keys
             session_keys = list(session.keys())
-            logger.info(f"🔑 Available session keys: {session_keys}")
+            logger.info(f" Available session keys: {session_keys}")
             
             # Log page distribution in OCR data
             if ocr_data:
@@ -2233,26 +2245,26 @@ Return compliance status for each field.'''
                 for entry in ocr_data:
                     page = entry.get('bounding_page', 'unknown')
                     page_counts[page] = page_counts.get(page, 0) + 1
-                logger.info(f"📊 OCR data page distribution: {dict(sorted(page_counts.items()))}")
+                logger.info(f"ANALYTICS: OCR data page distribution: {dict(sorted(page_counts.items()))}")
             
             # Filter OCR data by page if requested
             if current_page and ocr_data:
                 original_count = len(ocr_data)
                 ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
-                logger.info(f"🔍 Page filtering: {original_count} -> {len(ocr_data)} entries (Page {current_page})")
+                logger.info(f"SEARCH: Page filtering: {original_count} -> {len(ocr_data)} entries (Page {current_page})")
             
             if not ocr_data:
                 # Try alternative session keys
                 alt_ocr_data = session.get('ocr_data', [])
-                logger.info(f"🔍 Checking alternative 'ocr_data' key: Found {len(alt_ocr_data) if alt_ocr_data else 0} entries")
+                logger.info(f"SEARCH: Checking alternative 'ocr_data' key: Found {len(alt_ocr_data) if alt_ocr_data else 0} entries")
                 
                 if alt_ocr_data:
                     ocr_data = alt_ocr_data
-                    logger.info("✅ Using alternative OCR data from 'ocr_data' session key")
+                    logger.info("SUCCESS:Using alternative OCR data from 'ocr_data' session key")
                 else:
                     # Try loading from temporary file (workaround for session size limits)
                     ocr_session_id = session.get('ocr_session_id')
-                    logger.info(f"🔍 Looking for OCR session ID: {ocr_session_id}")
+                    logger.info(f"SEARCH: Looking for OCR session ID: {ocr_session_id}")
                     
                     if ocr_session_id:
                         import tempfile as temp_module
@@ -2263,20 +2275,20 @@ Return compliance status for each field.'''
                             if os.path.exists(ocr_temp_file):
                                 with open(ocr_temp_file, 'rb') as f:
                                     ocr_data = pickle.load(f)
-                                logger.info(f"✅ Loaded OCR data from temp file: {len(ocr_data)} entries")
+                                logger.info(f"SUCCESS:Loaded OCR data from temp file: {len(ocr_data)} entries")
                                 
                                 # Apply page filtering if requested
                                 if current_page:
                                     original_count = len(ocr_data)
                                     ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
-                                    logger.info(f"🔍 Page filtering (from temp file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
+                                    logger.info(f"SEARCH: Page filtering (from temp file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
                             else:
-                                logger.warning(f"❌ OCR temp file not found: {ocr_temp_file}")
+                                logger.warning(f"ERROR: OCR temp file not found: {ocr_temp_file}")
                         except Exception as e:
-                            logger.error(f"❌ Failed to load OCR data from temp file: {e}")
+                            logger.error(f"ERROR: Failed to load OCR data from temp file: {e}")
                     else:
                         # Fallback: Try to find the most recent OCR temp file
-                        logger.info("🔍 No OCR session ID found, searching for recent OCR temp files...")
+                        logger.info("SEARCH: No OCR session ID found, searching for recent OCR temp files...")
                         import tempfile as temp_module
                         import pickle
                         import glob
@@ -2293,26 +2305,26 @@ Return compliance status for each field.'''
                                 # Check if file is recent (less than 10 minutes old)
                                 file_age = time.time() - os.path.getctime(most_recent_file)
                                 if file_age < 600:  # 10 minutes
-                                    logger.info(f"🔍 Trying most recent OCR file: {most_recent_file} (age: {file_age:.1f}s)")
+                                    logger.info(f"SEARCH: Trying most recent OCR file: {most_recent_file} (age: {file_age:.1f}s)")
                                     
                                     with open(most_recent_file, 'rb') as f:
                                         ocr_data = pickle.load(f)
-                                    logger.info(f"✅ Loaded OCR data from recent temp file: {len(ocr_data)} entries")
+                                    logger.info(f"SUCCESS:Loaded OCR data from recent temp file: {len(ocr_data)} entries")
                                     
                                     # Apply page filtering if requested
                                     if current_page:
                                         original_count = len(ocr_data)
                                         ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
-                                        logger.info(f"🔍 Page filtering (from recent file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
+                                        logger.info(f"SEARCH: Page filtering (from recent file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
                                 else:
-                                    logger.warning(f"❌ Most recent OCR file is too old: {file_age:.1f}s")
+                                    logger.warning(f"ERROR: Most recent OCR file is too old: {file_age:.1f}s")
                             else:
-                                logger.warning("❌ No OCR temp files found")
+                                logger.warning("ERROR: No OCR temp files found")
                         except Exception as e:
-                            logger.error(f"❌ Failed to search for recent OCR temp files: {e}")
+                            logger.error(f"ERROR: Failed to search for recent OCR temp files: {e}")
                     
                     if not ocr_data:
-                        logger.warning("❌ No OCR data found in session under any key")
+                        logger.warning("ERROR: No OCR data found in session under any key")
                         return jsonify({
                             'success': False,
                             'message': 'No OCR data available. Please process a document first.',
@@ -2329,7 +2341,7 @@ Return compliance status for each field.'''
             # Use the search_text_in_ocr helper function
             matches = search_text_in_ocr(field_value, ocr_data, search_mode)
             
-            logger.info(f"📦 Search complete: Found {len(matches)} matches")
+            logger.info(f"SAVE: Search complete: Found {len(matches)} matches")
             
             # Prepare response in format expected by frontend
             best_match = matches[0] if matches else None
@@ -2346,7 +2358,7 @@ Return compliance status for each field.'''
             })
             
         except Exception as e:
-            logger.error(f"❌ Error in coordinate search API: {e}")
+            logger.error(f"ERROR: Error in coordinate search API: {e}")
             return jsonify({
                 'success': False, 
                 'message': f'Search error: {str(e)}',
@@ -3358,7 +3370,7 @@ Return compliance status for each field.'''
                     missing_fields.append("user_id")
                 return jsonify({"response": f"Missing fields: {', '.join(missing_fields)}.", "intent": "unknown"}), 400
 
-            logger.info(f"🔍 product: {productName}, function: {functionName}")
+            logger.info(f"SEARCH: product: {productName}, function: {functionName}")
 
             # Initialize progress tracker if client_id is provided (for file uploads)
             progress_tracker = None
@@ -3368,7 +3380,7 @@ Return compliance status for each field.'''
                     ws_handler = get_websocket_handler()
                     if ws_handler:
                         progress_tracker = DocumentProcessingTracker(ws_handler, client_id)
-                        logger.info(f"✅ Progress tracker initialized for client: {client_id}")
+                        logger.info(f"SUCCESS:Progress tracker initialized for client: {client_id}")
                     else:
                         logger.warning("WebSocket handler not available, progress tracking disabled")
                 except Exception as e:
@@ -4070,7 +4082,7 @@ Return compliance status for each field.'''
                            functionName=None):
         try:
             results = []
-            logger.info(f"🔍 handle_file_upload called with product: {productName}, function: {functionName}")
+            logger.info(f"SEARCH: handle_file_upload called with product: {productName}, function: {functionName}")
 
             if not isinstance(uploaded_files, list):
                 uploaded_files = [uploaded_files]
@@ -4166,7 +4178,7 @@ Return compliance status for each field.'''
                         "annotated_filetype": file_type
                     })
 
-                    logging.info("🔎 Final analysis result for file %s:\n%s", file_name, json.dumps({
+                    logging.info("SEARCH Final analysis result for file %s:\n%s", file_name, json.dumps({
                         "file_name": file_name,
                         "page_classifications": page_classifications,
                         "analysis_result": {
@@ -4511,19 +4523,19 @@ Return compliance status for each field.'''
             from app.utils.app_config import COMPUTER_VISION_ENDPOINT, COMPUTER_VISION_KEY
             
             if not COMPUTER_VISION_ENDPOINT or not COMPUTER_VISION_KEY:
-                logger.error("❌ Azure Computer Vision credentials not configured")
+                logger.error("ERROR: Azure Computer Vision credentials not configured")
                 return False
                 
             # Test if endpoint is reachable (basic validation)
             if not COMPUTER_VISION_ENDPOINT.startswith(('http://', 'https://')):
-                logger.error("❌ Invalid Azure Computer Vision endpoint format")
+                logger.error("ERROR: Invalid Azure Computer Vision endpoint format")
                 return False
                 
-            logger.info("✅ Azure Computer Vision configuration validated")
+            logger.info("SUCCESS:Azure Computer Vision configuration validated")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Azure Computer Vision configuration error: {e}")
+            logger.error(f"ERROR: Azure Computer Vision configuration error: {e}")
             return False
 
     def validate_uploaded_file(uploaded_file, file_type):
@@ -4558,11 +4570,11 @@ Return compliance status for each field.'''
             if file_ext not in allowed_extensions:
                 return f"Invalid file extension: {file_ext}. Allowed: {', '.join(allowed_extensions)}"
             
-            logger.debug(f"✅ File validation passed: {uploaded_file.filename} ({file_size / 1024:.1f} KB)")
+            logger.debug(f"SUCCESS:File validation passed: {uploaded_file.filename} ({file_size / 1024:.1f} KB)")
             return None  # No error
             
         except Exception as e:
-            logger.error(f"❌ File validation error: {e}")
+            logger.error(f"ERROR: File validation error: {e}")
             return f"File validation failed: {str(e)}"
 
     def extract_text_with_retry_optimized(temp_file_path, file_type, quality_verdict=None, page_count=1, max_retries=None):
@@ -4592,37 +4604,37 @@ Return compliance status for each field.'''
         if quality_verdict == "direct_analysis":
             max_retries = max(1, max_retries - 1)  # Reduce retries for high-quality docs
             
-        logger.info(f"🚀 OPTIMIZED OCR retry: max_retries={max_retries}, quality={quality_verdict}, pages={page_count}")
+        logger.info(f"SPEED: OPTIMIZED OCR retry: max_retries={max_retries}, quality={quality_verdict}, pages={page_count}")
         
         for attempt in range(max_retries):
             try:
-                logger.debug(f"🔄 OCR attempt {attempt + 1}/{max_retries} for file: {temp_file_path}")
+                logger.debug(f"MODE: OCR attempt {attempt + 1}/{max_retries} for file: {temp_file_path}")
                 result = extract_text_from_file_optimized(temp_file_path, file_type, quality_verdict, page_count)
                 
                 # Check if OCR was successful
                 if "error" not in result:
                     processing_time = result.get("processing_time", 0)
                     confidence = result.get("overall_confidence", 0)
-                    logger.info(f"✅ OPTIMIZED OCR succeeded on attempt {attempt + 1} in {processing_time:.2f}s (confidence: {confidence:.3f})")
+                    logger.info(f"SUCCESS:OPTIMIZED OCR succeeded on attempt {attempt + 1} in {processing_time:.2f}s (confidence: {confidence:.3f})")
                     return result
                     
                 # If it's the last attempt, return the error
                 if attempt == max_retries - 1:
-                    logger.error(f"❌ OCR failed after {max_retries} attempts: {result.get('error')}")
+                    logger.error(f"ERROR: OCR failed after {max_retries} attempts: {result.get('error')}")
                     return result
                     
                 # Wait before retry with exponential backoff
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE
-                logger.warning(f"⚠️ OCR attempt {attempt + 1} failed: {result.get('error')} | Retrying in {wait_time}s...")
+                logger.warning(f"WARNINGS: OCR attempt {attempt + 1} failed: {result.get('error')} | Retrying in {wait_time}s...")
                 time.sleep(wait_time)
                 
             except Exception as e:
-                logger.error(f"❌ OCR attempt {attempt + 1} threw exception: {str(e)}")
+                logger.error(f"ERROR: OCR attempt {attempt + 1} threw exception: {str(e)}")
                 if attempt == max_retries - 1:
                     return {"error": f"OCR extraction failed: {str(e)}", "text_data": []}
                     
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE
-                logger.warning(f"⚠️ Retrying in {wait_time}s...")
+                logger.warning(f"WARNINGS: Retrying in {wait_time}s...")
                 time.sleep(wait_time)
         """
         Extract text from file with exponential backoff retry logic.
@@ -4648,35 +4660,35 @@ Return compliance status for each field.'''
         if max_retries is None:
             max_retries = OCR_MAX_RETRIES
         
-        logger.info(f"🔧 OCR retry configuration: max_retries={max_retries}, base_delay={OCR_RETRY_DELAY_BASE}s")
+        logger.info(f"OCR retry configuration: max_retries={max_retries}, base_delay={OCR_RETRY_DELAY_BASE}s")
         
         for attempt in range(max_retries):
             try:
-                logger.debug(f"🔄 OCR attempt {attempt + 1}/{max_retries} for file: {temp_file_path}")
+                logger.debug(f"MODE: OCR attempt {attempt + 1}/{max_retries} for file: {temp_file_path}")
                 result = extract_text_from_file(temp_file_path, file_type)
                 
                 # Check if OCR was successful
                 if "error" not in result:
-                    logger.debug(f"✅ OCR succeeded on attempt {attempt + 1}")
+                    logger.debug(f"SUCCESS:OCR succeeded on attempt {attempt + 1}")
                     return result
                     
                 # If it's the last attempt, return the error
                 if attempt == max_retries - 1:
-                    logger.error(f"❌ OCR failed after {max_retries} attempts: {result.get('error')}")
+                    logger.error(f"ERROR: OCR failed after {max_retries} attempts: {result.get('error')}")
                     return result
                     
                 # Wait before retry with exponential backoff
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE  # Configurable base delay
-                logger.warning(f"⚠️ OCR attempt {attempt + 1} failed: {result.get('error')}. Retrying in {wait_time}s...")
+                logger.warning(f"WARNINGS: OCR attempt {attempt + 1} failed: {result.get('error')}. Retrying in {wait_time}s...")
                 time.sleep(wait_time)
                 
             except Exception as e:
                 if attempt == max_retries - 1:
-                    logger.error(f"❌ OCR failed after {max_retries} attempts with exception: {e}")
+                    logger.error(f"ERROR: OCR failed after {max_retries} attempts with exception: {e}")
                     return {"error": f"OCR failed after {max_retries} attempts: {str(e)}", "text_data": []}
                 
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE
-                logger.warning(f"⚠️ OCR attempt {attempt + 1} failed with exception: {e}. Retrying in {wait_time}s...")
+                logger.warning(f"WARNINGS: OCR attempt {attempt + 1} failed with exception: {e}. Retrying in {wait_time}s...")
                 time.sleep(wait_time)
                 
         return {"error": "OCR failed after all retry attempts", "text_data": []}
@@ -4688,22 +4700,22 @@ Return compliance status for each field.'''
                                functionName=None, documentType=None, progress_tracker=None):
         try:
             results = []
-            logger.info(f"🔍 process_uploaded_files called with product: {productName}, function: {functionName}, documentType: {documentType}")
+            logger.info(f"SEARCH: process_uploaded_files called with product: {productName}, function: {functionName}, documentType: {documentType}")
 
             if not isinstance(uploaded_files, list):
                 uploaded_files = [uploaded_files]
 
             # Initialize progress tracking
             if progress_tracker:
-                logger.info(f"📊 Starting progress tracking for {len(uploaded_files)} file(s)")
+                logger.info(f"ANALYTICS: Starting progress tracking for {len(uploaded_files)} file(s)")
                 progress_tracker.start_upload(f"{len(uploaded_files)} file(s)")
 
             for idx, uploaded_file in enumerate(uploaded_files):
                 file_type = getattr(uploaded_file, "content_type", "unknown")
                 file_name = getattr(uploaded_file, "filename", "unnamed")
                 
-                logger.info(f"🔧 DEBUG: Processing file {idx+1}/{len(uploaded_files)}: {file_name}")
-                logger.info(f"🔧 DEBUG: progress_tracker is {'available' if progress_tracker else 'None'}")
+                logger.info(f"DEBUG: Processing file {idx+1}/{len(uploaded_files)}: {file_name}")
+                logger.info(f"DEBUG: progress_tracker is {'available' if progress_tracker else 'None'}")
                 
                 # Update upload progress for multiple files
                 if progress_tracker and len(uploaded_files) > 1:
@@ -4723,16 +4735,16 @@ Return compliance status for each field.'''
 
                 # Mark upload complete for this file IMMEDIATELY after saving
                 if progress_tracker:
-                    logger.info(f"📤 Upload complete for file: {file_name}")
-                    logger.info(f"🔧 DEBUG: Calling progress_tracker.upload_complete() now...")
+                    logger.info(f"UPLOAD: Upload complete for file: {file_name}")
+                    logger.info(f"DEBUG: Calling progress_tracker.upload_complete() now...")
                     progress_tracker.upload_complete()
-                    logger.info(f"✅ DEBUG: upload_complete() called successfully")
+                    logger.info(f"SUCCESS:DEBUG: upload_complete() called successfully")
                     
                     # Start quality analysis stage (fast version)
-                    logger.info(f"🔍 Starting quality analysis for: {file_name}")
-                    logger.info(f"🔧 DEBUG: Calling progress_tracker.start_quality_analysis() now...")
+                    logger.info(f"SEARCH: Starting quality analysis for: {file_name}")
+                    logger.info(f"DEBUG: Calling progress_tracker.start_quality_analysis() now...")
                     progress_tracker.start_quality_analysis()
-                    logger.info(f"✅ DEBUG: start_quality_analysis() called successfully")
+                    logger.info(f"SUCCESS:DEBUG: start_quality_analysis() called successfully")
 
                 # Perform quality analysis (ultra-fast version to avoid hanging)
                 if progress_tracker:
@@ -4742,7 +4754,7 @@ Return compliance status for each field.'''
                         quality_verdict = "processed"
                         quality_score = 0.8
                         
-                        logger.info(f"✅ Instant quality check: {quality_verdict} (size: {file_size} bytes)")
+                        logger.info(f"SUCCESS:Instant quality check: {quality_verdict} (size: {file_size} bytes)")
                             
                     except Exception as quality_error:
                         logger.warning(f"Quality check error: {quality_error}")
@@ -4750,11 +4762,11 @@ Return compliance status for each field.'''
                         quality_score = 0.7
                     
                     # Mark quality analysis complete immediately
-                    logger.info(f"✅ Quality analysis complete for: {file_name}")
+                    logger.info(f"SUCCESS:Quality analysis complete for: {file_name}")
                     progress_tracker.quality_complete(quality_verdict, quality_score)
                     
                     # Start OCR stage
-                    logger.info(f"📄 Starting OCR extraction for: {file_name}")
+                    logger.info(f" Starting OCR extraction for: {file_name}")
                     progress_tracker.start_ocr()
 
                 try:
@@ -4859,7 +4871,7 @@ Return compliance status for each field.'''
                         # Finalize processing
                         progress_tracker.finalize()
 
-                    logging.info("🔎 Final analysis result for file %s:\n%s", file_name, json.dumps({
+                    logging.info("SEARCH Final analysis result for file %s:\n%s", file_name, json.dumps({
                         "file_name": file_name,
                         "page_classifications": results[-1]["page_classifications"],
                         "analysis_result": {
@@ -4899,7 +4911,7 @@ Return compliance status for each field.'''
 
     def organize_ocr_data_by_page(text_data):
         """Organize OCR data by page number with enhanced debugging"""
-        logger.info(f"📊 === ORGANIZING OCR DATA BY PAGE ===")
+        logger.info(f"ANALYTICS: === ORGANIZING OCR DATA BY PAGE ===")
         logger.info(f"Input: {len(text_data)} OCR entries")
         
         # Debug: Check page distribution in raw data
@@ -4915,12 +4927,12 @@ Return compliance status for each field.'''
             
             page_counts[page] = page_counts.get(page, 0) + 1
         
-        logger.info(f"📈 Page distribution in raw OCR data:")
+        logger.info(f"ANALYTICS: Page distribution in raw OCR data:")
         for page in sorted(page_counts.keys()):
             logger.info(f"   Page {page}: {page_counts[page]} entries")
         
         if missing_page_count > 0:
-            logger.warning(f"⚠️ Found {missing_page_count} entries without page information")
+            logger.warning(f"WARNINGS: Found {missing_page_count} entries without page information")
         
         # Organize by page
         pages = defaultdict(list)
@@ -4929,7 +4941,7 @@ Return compliance status for each field.'''
             pages[page].append(entry)
         
         organized_pages = [pages[k] for k in sorted(pages)]
-        logger.info(f"✅ Organized into {len(organized_pages)} pages")
+        logger.info(f"SUCCESS:Organized into {len(organized_pages)} pages")
         
         # Debug: Log sample from each page
         for page_idx, page_data in enumerate(organized_pages):
@@ -5031,7 +5043,7 @@ Return compliance status for each field.'''
         if not prompt_config:
             prompt_config = load_prompt_config()
             if prompt_config:
-                logger.info(f"✅ Loaded prompt configuration from YAML")
+                logger.info(f"SUCCESS:Loaded prompt configuration from YAML")
 
         page_text = " ".join([entry["text"] for entry in page_ocr_data])
         token_count = calculate_text_token_count(page_text)
@@ -5059,7 +5071,7 @@ Return compliance status for each field.'''
         # Use provided documentType if available (this takes highest priority)
         if documentType:
             document_type = documentType
-            logger.info(f"🔖 Using explicitly provided document type: {documentType}")
+            logger.info(f" Using explicitly provided document type: {documentType}")
 
         # STEP 2: Map classified document type to UN/CEFACT code
         def map_document_type_to_uncefact_code(doc_type):
@@ -5100,16 +5112,16 @@ Return compliance status for each field.'''
         uncefact_code = map_document_type_to_uncefact_code(document_type)
 
         if uncefact_code:
-            logger.info(f"🗺️  Mapped '{document_type}' → UN/CEFACT code: '{uncefact_code}'")
+            logger.info(f"Mapped '{document_type}' → UN/CEFACT code: '{uncefact_code}'")
         else:
-            logger.info(f"ℹ️  No UN/CEFACT mapping found for document type: '{document_type}'")
+            logger.info(f"No UN/CEFACT mapping found for document type: '{document_type}'")
 
         # STEP 4: Get fields from entity_mappings (document_entity_maintenance.json)
         doc_type_normalized = classification_result.get("document_type", "").replace(" ", "_")
         if not doc_type_normalized:
             doc_type_normalized = document_type.replace(" ", "_")
 
-        logger.info(f"📋 Getting entity fields for: {doc_type_normalized}")
+        logger.info(f" Getting entity fields for: {doc_type_normalized}")
         entity_info = document_classifier.get_enhanced_entity_fields(doc_type_normalized)
 
         field_list = []
@@ -5131,7 +5143,7 @@ Return compliance status for each field.'''
             field_list.append(field_name)
             field_definitions[field_name] = f"{field_name} (Conditional)"
 
-        logger.info(f"✅ Using entity_mappings: {len(field_list)} fields ({len(entity_info['mandatory_fields'])} mandatory, {len(entity_info['optional_fields'])} optional, {len(entity_info['conditional_fields'])} conditional)")
+        logger.info(f"SUCCESS:Using entity_mappings: {len(field_list)} fields ({len(entity_info['mandatory_fields'])} mandatory, {len(entity_info['optional_fields'])} optional, {len(entity_info['conditional_fields'])} conditional)")
 
         # Store for later use
         trade_doc_fields = {
@@ -5142,19 +5154,19 @@ Return compliance status for each field.'''
 
         try:
             # Use DocumentClassifier to build extraction prompt from config and entity_mappings
-            logger.info(f"🔍 Building extraction prompt using DocumentClassifier for page {page_number}")
+            logger.info(f"SEARCH: Building extraction prompt using DocumentClassifier for page {page_number}")
             prompt = document_classifier.build_extraction_prompt(
                 document_type=document_type,
                 ocr_text=page_text,
                 page_number=page_number
             )
-            logger.info(f"✅ Extraction prompt built successfully using entity_mappings")
+            logger.info(f"SUCCESS:Extraction prompt built successfully using entity_mappings")
 
             # === ENHANCEMENT: Add field mapping examples from document_entities ===
             field_mapping_example = load_document_field_mappings(document_type)
             if field_mapping_example:
                 prompt += f"\n\n{field_mapping_example}"
-                logger.info(f"📋 Enhanced prompt with field mapping examples for {document_type}")
+                logger.info(f" Enhanced prompt with field mapping examples for {document_type}")
 
             # Load prompt configuration for model settings (already declared global at function start)
             if not prompt_config:
@@ -5162,7 +5174,7 @@ Return compliance status for each field.'''
 
             # Fallback if build_extraction_prompt fails
             if not prompt:
-                logger.error("❌ Failed to build extraction prompt from DocumentClassifier, using basic fallback")
+                logger.error("ERROR: Failed to build extraction prompt from DocumentClassifier, using basic fallback")
                 prompt = f"Extract fields from this {document_type} document:\n\n{page_text}"
 
             # Get model settings from config (with fallback to defaults)
@@ -5172,7 +5184,7 @@ Return compliance status for each field.'''
                 temperature = prompt_config.get('extraction', {}).get('temperature', 0.0)
                 model = prompt_config.get('extraction', {}).get('model', deployment_name)
 
-            logger.info(f"📝 Using extraction config - Model: {model}, Temperature: {temperature}")
+            logger.info(f"PARAMETERS: Using extraction config - Model: {model}, Temperature: {temperature}")
 
             # Send prompt to LLM (note: build_extraction_prompt already includes system prompt)
             response = openai.ChatCompletion.create(
@@ -5194,28 +5206,28 @@ Return compliance status for each field.'''
             # Enhanced logging for trade document field extraction
             if trade_doc_fields and parsed_json.get("extracted_fields"):
                 extracted_field_names = list(parsed_json["extracted_fields"].keys())
-                logger.info(f"📊 Page {page_number} - Extracted {len(extracted_field_names)} fields from document")
+                logger.info(f"ANALYTICS: Page {page_number} - Extracted {len(extracted_field_names)} fields from document")
 
                 # Log mandatory fields that were found
                 mandatory_found = [f['entityName'] for f in trade_doc_fields['mandatory']
                                  if any(f['entityName'] in field or f['entityName'].lower().replace(' ', '_') in field.lower()
                                        for field in extracted_field_names)]
                 if mandatory_found:
-                    logger.info(f"✅ Mandatory fields found: {', '.join(mandatory_found[:5])}{'...' if len(mandatory_found) > 5 else ''}")
+                    logger.info(f"SUCCESS:Mandatory fields found: {', '.join(mandatory_found[:5])}{'...' if len(mandatory_found) > 5 else ''}")
 
                 # Log optional fields that were found
                 optional_found = [f['entityName'] for f in trade_doc_fields['optional']
                                 if any(f['entityName'] in field or f['entityName'].lower().replace(' ', '_') in field.lower()
                                       for field in extracted_field_names)]
                 if optional_found:
-                    logger.info(f"ℹ️  Optional fields found: {', '.join(optional_found[:5])}{'...' if len(optional_found) > 5 else ''}")
+                    logger.info(f"Optional fields found: {', '.join(optional_found[:5])}{'...' if len(optional_found) > 5 else ''}")
 
                 # Log which mandatory fields are missing
                 mandatory_missing = [f['entityName'] for f in trade_doc_fields['mandatory']
                                    if not any(f['entityName'] in field or f['entityName'].lower().replace(' ', '_') in field.lower()
                                             for field in extracted_field_names)]
                 if mandatory_missing:
-                    logger.warning(f"⚠️  Missing mandatory fields: {', '.join(mandatory_missing[:5])}{'...' if len(mandatory_missing) > 5 else ''}")
+                    logger.warning(f"WARNINGS:  Missing mandatory fields: {', '.join(mandatory_missing[:5])}{'...' if len(mandatory_missing) > 5 else ''}")
 
             logging.info(f"Comprehensive analysis result for page {page_number}: {parsed_json}")
             return parsed_json
@@ -6711,7 +6723,7 @@ Return compliance status for each field.'''
     #                 ws_handler = get_websocket_handler()
     #                 if ws_handler:
     #                     progress = DocumentProcessingTracker(ws_handler, client_id)
-    #                     logger.info(f"✅ Progress tracker initialized for client: {client_id}")
+    #                     logger.info(f"SUCCESS:Progress tracker initialized for client: {client_id}")
     #                 else:
     #                     logger.warning("WebSocket handler not available, progress tracking disabled")
     #             except Exception as e:
@@ -6820,7 +6832,7 @@ Return compliance status for each field.'''
             if progress_tracker:
                 progress_tracker.start_quality_analysis()
 
-            logger.info(f"🔍 STEP 1/4: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
+            logger.info(f"SEARCH: STEP 1/4: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
             quality_start = time.time()
             
             # Import quality analyzer
@@ -6836,13 +6848,13 @@ Return compliance status for each field.'''
             if quality_result.get("success", False):
                 verdict = quality_result.get("verdict", "pre_processing")
                 quality_score = quality_result.get("quality_score", 0.5)
-                logger.info(f"✅ Quality analysis completed in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
+                logger.info(f"SUCCESS:Quality analysis completed in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
                 
                 if progress_tracker:
                     progress_tracker.quality_complete(verdict, quality_score)
             else:
                 # Quality analysis failed - proceed with standard processing
-                logger.warning(f"⚠️ Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
+                logger.warning(f"WARNINGS: Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
                 verdict = "pre_processing"  # Default fallback
                 quality_score = 0.5
                 
@@ -6853,7 +6865,7 @@ Return compliance status for each field.'''
             if progress_tracker:
                 progress_tracker.start_ocr()
 
-            logger.info(f"📄 STEP 2/4: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
+            logger.info(f" STEP 2/4: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
             ocr_start = time.time()
             
             # OPTIMIZATION: Estimate page count for timeout calculation
@@ -6872,13 +6884,13 @@ Return compliance status for each field.'''
             # Enhanced logging with optimization stats
             if "optimization_stats" in extracted_text_data:
                 stats = extracted_text_data["optimization_stats"]
-                logger.info(f"✅ OPTIMIZED OCR completed in {ocr_time:.2f}s - "
+                logger.info(f"SUCCESS:OPTIMIZED OCR completed in {ocr_time:.2f}s - "
                            f"Extracted {len(text_data)} text entries | "
                            f"FastMode: {stats.get('fast_mode', False)}, "
                            f"Polls: {stats.get('poll_count', 'N/A')}, "
                            f"Timeout: {stats.get('dynamic_timeout', 'N/A')}s")
             else:
-                logger.info(f"✅ OCR completed in {ocr_time:.2f}s - Extracted {len(text_data)} text entries")
+                logger.info(f"SUCCESS:OCR completed in {ocr_time:.2f}s - Extracted {len(text_data)} text entries")
 
             if progress_tracker:
                 progress_tracker.ocr_complete(extracted_entries=len(text_data))
@@ -6936,13 +6948,13 @@ Return compliance status for each field.'''
 
             # Organize by pages
             pages_ocr_data = organize_ocr_data_by_page(text_data)
-            logger.info(f"📋 Organized into {len(pages_ocr_data)} pages")
+            logger.info(f" Organized into {len(pages_ocr_data)} pages")
 
             # === STEP 4: CLASSIFICATION (Using Document Classifier) ===
             if progress_tracker:
                 progress_tracker.start_classification()
 
-            logger.info(f"🔍 STEP 3/4: CLASSIFICATION - Identifying document type")
+            logger.info(f"SEARCH: STEP 3/4: CLASSIFICATION - Identifying document type")
             classification_start = time.time()
 
             # Use existing DocumentClassifier for classification
@@ -6950,7 +6962,7 @@ Return compliance status for each field.'''
 
             classification_result = document_classifier.classify_document(page_text)
 
-            logger.info(f"📊 Classification result: {str(classification_result)[:200]}...")
+            logger.info(f"ANALYTICS: Classification result: {str(classification_result)[:200]}...")
 
             # Extract document type and confidence
             detected_doc_type = classification_result.get('document_type', document_type or 'Unknown')
@@ -6962,7 +6974,7 @@ Return compliance status for each field.'''
                 confidence = raw_confidence
 
             classification_time = time.time() - classification_start
-            logger.info(f"✅ Classification completed in {classification_time:.2f}s - Type: {detected_doc_type}, Confidence: {confidence}")
+            logger.info(f"SUCCESS:Classification completed in {classification_time:.2f}s - Type: {detected_doc_type}, Confidence: {confidence}")
 
             if progress_tracker:
                 progress_tracker.classification_complete(
@@ -6971,7 +6983,7 @@ Return compliance status for each field.'''
                 )
 
             # === STEP 4: EXTRACTION (Using Config Prompts + Field Mappings) ===
-            logger.info(f"📤 STEP 4/4: EXTRACTION - Extracting fields using config prompts + field mappings")
+            logger.info(f"UPLOAD: STEP 4/4: EXTRACTION - Extracting fields using config prompts + field mappings")
             extraction_start = time.time()
 
             if progress_tracker:
@@ -6987,7 +6999,7 @@ Return compliance status for each field.'''
             extraction_temp = extraction_config.get('temperature', 0.0)
             extraction_max_tokens = extraction_config.get('max_tokens', 4000)
 
-            logger.info(f"📝 Using extraction config - Model: {extraction_model}, Temp: {extraction_temp}, MaxTokens: {extraction_max_tokens}")
+            logger.info(f"PARAMETERS: Using extraction config - Model: {extraction_model}, Temp: {extraction_temp}, MaxTokens: {extraction_max_tokens}")
 
             # Build extraction prompt using DocumentClassifier
             extraction_prompt = document_classifier.build_extraction_prompt(
@@ -7002,9 +7014,9 @@ Return compliance status for each field.'''
             if field_mapping_data:
                 field_mapping_example = field_mapping_data.get('example', '')
                 extraction_prompt += f"\n\n{field_mapping_example}"
-                logger.info(f"📋 Enhanced extraction prompt with field mapping examples for {detected_doc_type}")
+                logger.info(f" Enhanced extraction prompt with field mapping examples for {detected_doc_type}")
 
-            logger.info(f"📋 Built extraction prompt ({len(extraction_prompt)} chars)")
+            logger.info(f" Built extraction prompt ({len(extraction_prompt)} chars)")
 
             # Call LLM for extraction
             extraction_response = openai.ChatCompletion.create(
@@ -7015,7 +7027,7 @@ Return compliance status for each field.'''
             )
 
             extraction_result = extraction_response.choices[0].message.content
-            logger.info(f"📊 Extraction result: {extraction_result[:200]}...")
+            logger.info(f"ANALYTICS: Extraction result: {extraction_result[:200]}...")
 
             # Parse extraction result
             try:
@@ -7025,13 +7037,13 @@ Return compliance status for each field.'''
                 extracted_fields = {}
 
             extraction_time = time.time() - extraction_start
-            logger.info(f"✅ Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
+            logger.info(f"SUCCESS:Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
 
             if progress_tracker:
                 progress_tracker.field_extraction_complete(extracted_count=len(extracted_fields))
 
             # === UCP600/SWIFT COMPLIANCE ANALYSIS ===
-            logger.info(f"🔍 STEP 5/6: UCP600/SWIFT COMPLIANCE ANALYSIS")
+            logger.info(f"SEARCH: STEP 5/6: UCP600/SWIFT COMPLIANCE ANALYSIS")
             
             # Start compliance check progress tracking
             if progress_tracker:
@@ -7056,22 +7068,22 @@ Return compliance status for each field.'''
                     # PERFORMANCE OPTIMIZATION: Use unified compliance analysis instead of separate calls
                     from app.utils.query_utils import analyze_unified_compliance_fast
                     
-                    logger.info(f"🚀 UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields with single AI call")
+                    logger.info(f"SPEED: UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields with single AI call")
                     logger.info(f"Compliance fields: {list(compliance_fields.keys())}")
                     
                     # Single call for both UCP600 and SWIFT analysis (saves 8-12 seconds)
                     ucp600_result, swift_result = analyze_unified_compliance_fast(compliance_fields)
                     
-                    logger.info(f"✅ Unified compliance completed: UCP600={len(ucp600_result)} fields, SWIFT={len(swift_result)} fields")
+                    logger.info(f"SUCCESS:Unified compliance completed: UCP600={len(ucp600_result)} fields, SWIFT={len(swift_result)} fields")
                     logger.info(f"UCP600 sample: {str(ucp600_result)[:150]}...")
                     logger.info(f"SWIFT sample: {str(swift_result)[:150]}...")
                     
                 except Exception as e:
-                    logger.error(f"❌ Unified compliance analysis failed: {e}")
+                    logger.error(f"ERROR: Unified compliance analysis failed: {e}")
                     logger.error(f"Traceback: {traceback.format_exc()}")
                     
                     # Fallback to original separate analysis
-                    logger.info("🔄 Falling back to separate UCP600/SWIFT analysis...")
+                    logger.info("MODE: Falling back to separate UCP600/SWIFT analysis...")
                     ucp600_result = {}
                     swift_result = {}
                     
@@ -7092,7 +7104,7 @@ Return compliance status for each field.'''
                         swift_result = {}
             
             compliance_analysis_time = time.time() - compliance_analysis_start
-            logger.info(f"✅ Compliance analysis completed in {compliance_analysis_time:.2f}s")
+            logger.info(f"SUCCESS:Compliance analysis completed in {compliance_analysis_time:.2f}s")
 
             # Complete compliance check progress tracking
             if progress_tracker:
@@ -7103,7 +7115,7 @@ Return compliance status for each field.'''
             # Transform compliance data for UI consumption
             def transform_compliance_for_ui(compliance_data, compliance_type):
                 """Transform field-level compliance data to UI-expected format"""
-                logger.info(f"🔄 Transforming {compliance_type} compliance data: {type(compliance_data)}")
+                logger.info(f"MODE: Transforming {compliance_type} compliance data: {type(compliance_data)}")
                 
                 if not compliance_data:
                     logger.warning(f"No {compliance_type} compliance data to transform")
@@ -7177,25 +7189,25 @@ Return compliance status for each field.'''
             ucp600_compliance = transform_compliance_for_ui(ucp600_result, "ucp600")
 
             # Debug compliance scores
-            logger.info(f"🔍 SWIFT compliance result: {swift_compliance}")
-            logger.info(f"🔍 UCP600 compliance result: {ucp600_compliance}")
+            logger.info(f"SEARCH: SWIFT compliance result: {swift_compliance}")
+            logger.info(f"SEARCH: UCP600 compliance result: {ucp600_compliance}")
 
             # Calculate overall compliance score
             compliance_scores = []
             if swift_compliance and swift_compliance.get('compliance_percentage') is not None:
                 swift_score = swift_compliance['compliance_percentage']
                 compliance_scores.append(swift_score)
-                logger.info(f"📊 SWIFT compliance percentage: {swift_score}%")
+                logger.info(f"ANALYTICS: SWIFT compliance percentage: {swift_score}%")
             if ucp600_compliance and ucp600_compliance.get('compliance_percentage') is not None:
                 ucp600_score = ucp600_compliance['compliance_percentage']
                 compliance_scores.append(ucp600_score)
-                logger.info(f"📊 UCP600 compliance percentage: {ucp600_score}%")
+                logger.info(f"ANALYTICS: UCP600 compliance percentage: {ucp600_score}%")
             
-            logger.info(f"📊 All compliance scores: {compliance_scores}")
+            logger.info(f"ANALYTICS: All compliance scores: {compliance_scores}")
             
             # Calculate average compliance score, default to 85 if no compliance data
             overall_compliance_score = round(sum(compliance_scores) / len(compliance_scores)) if compliance_scores else 85
-            logger.info(f"📊 Overall compliance score: {overall_compliance_score}%")
+            logger.info(f"ANALYTICS: Overall compliance score: {overall_compliance_score}%")
 
             # === Generate preview images ===
             preview_images = []
@@ -7320,11 +7332,11 @@ Return compliance status for each field.'''
                 "field_mapping_enhanced": bool(field_mapping_data)
             }
 
-            logger.info(f"✅ Config-based processing completed for {file_name} in {total_time:.1f}s")
+            logger.info(f"SUCCESS:Config-based processing completed for {file_name} in {total_time:.1f}s")
             return result
 
         except Exception as e:
-            logger.error(f"❌ Error in config-based processing: {str(e)}")
+            logger.error(f"ERROR: Error in config-based processing: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
             
@@ -7363,9 +7375,9 @@ Return compliance status for each field.'''
             if temp_file_path and os.path.exists(temp_file_path):
                 try:
                     os.remove(temp_file_path)
-                    logger.info(f"🗑️ Cleaned up temporary file: {temp_file_path}")
+                    logger.info(f"Cleaned up temporary file: {temp_file_path}")
                 except Exception as cleanup_error:
-                    logger.warning(f"⚠️ Failed to cleanup temp file {temp_file_path}: {cleanup_error}")
+                    logger.warning(f"WARNINGS: Failed to cleanup temp file {temp_file_path}: {cleanup_error}")
 
     def process_document_page_by_page(uploaded_file, function_name=None, product_name=None,
                                       document_type=None, progress_tracker=None, config=None):
@@ -7416,7 +7428,7 @@ Return compliance status for each field.'''
             if progress_tracker:
                 progress_tracker.start_quality_analysis()
 
-            logger.info(f"🔍 STEP 1/5: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
+            logger.info(f"SEARCH: STEP 1/5: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
             quality_start = time.time()
             
             # Import quality analyzer
@@ -7432,13 +7444,13 @@ Return compliance status for each field.'''
             if quality_result.get("success", False):
                 verdict = quality_result.get("verdict", "pre_processing")
                 quality_score = quality_result.get("quality_score", 0.5)
-                logger.info(f"✅ Quality analysis completed in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
+                logger.info(f"SUCCESS:Quality analysis completed in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
                 
                 if progress_tracker:
                     progress_tracker.quality_complete(verdict, quality_score)
             else:
                 # Quality analysis failed - proceed with standard processing
-                logger.warning(f"⚠️ Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
+                logger.warning(f"WARNINGS: Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
                 verdict = "pre_processing"  # Default fallback
                 quality_score = 0.5
                 
@@ -7449,7 +7461,7 @@ Return compliance status for each field.'''
             if progress_tracker:
                 progress_tracker.start_ocr()
 
-            logger.info(f"📄 STEP 2/5: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
+            logger.info(f" STEP 2/5: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
             ocr_start = time.time()
             
             # OPTIMIZATION: Estimate page count for timeout calculation
@@ -7468,13 +7480,13 @@ Return compliance status for each field.'''
             # Enhanced logging with optimization stats
             if "optimization_stats" in extracted_text_data:
                 stats = extracted_text_data["optimization_stats"]
-                logger.info(f"✅ OPTIMIZED OCR completed in {ocr_time:.2f}s - "
+                logger.info(f"SUCCESS:OPTIMIZED OCR completed in {ocr_time:.2f}s - "
                            f"Extracted {len(text_data)} text entries | "
                            f"FastMode: {stats.get('fast_mode', False)}, "
                            f"Polls: {stats.get('poll_count', 'N/A')}, "
                            f"Timeout: {stats.get('dynamic_timeout', 'N/A')}s")
             else:
-                logger.info(f"✅ OCR completed in {ocr_time:.2f}s - Extracted {len(text_data)} text entries")
+                logger.info(f"SUCCESS:OCR completed in {ocr_time:.2f}s - Extracted {len(text_data)} text entries")
 
             if progress_tracker:
                 progress_tracker.ocr_complete(extracted_entries=len(text_data))
@@ -7496,10 +7508,10 @@ Return compliance status for each field.'''
 
             # Organize by pages
             pages_ocr_data = organize_ocr_data_by_page(text_data)
-            logger.info(f"📋 Organized into {len(pages_ocr_data)} pages")
+            logger.info(f" Organized into {len(pages_ocr_data)} pages")
 
             # === STEP 4: CLASSIFY EACH PAGE ===
-            logger.info(f"🔍 STEP 3/5: PAGE-BY-PAGE CLASSIFICATION")
+            logger.info(f"SEARCH: STEP 3/5: PAGE-BY-PAGE CLASSIFICATION")
             classification_start = time.time()
 
             page_classifications = []
@@ -7508,7 +7520,7 @@ Return compliance status for each field.'''
 
                 # Skip pages with very little text
                 if len(page_text.strip()) < 50:
-                    logger.info(f"⏭️  Page {page_num}: Skipping (insufficient text)")
+                    logger.info(f"Page {page_num}: Skipping (insufficient text)")
                     page_classifications.append({
                         'page': page_num,
                         'document_type': 'Empty/Insufficient Text',
@@ -7609,12 +7621,12 @@ Guidelines:
                         if is_continuation and prev_type not in ['Empty/Insufficient Text', 'Unknown']:
                             final_document_type = prev_type
                             confidence = max(raw_confidence * 100, 75)  # Boost confidence for continuation
-                            logger.info(f"📄 Page {page_num}: CONTINUATION of {prev_type} (original: {detected_type}, confidence: {confidence:.0f}%)")
+                            logger.info(f" Page {page_num}: CONTINUATION of {prev_type} (original: {detected_type}, confidence: {confidence:.0f}%)")
                             logger.info(f"   ↳ Reasoning: {reasoning}")
                         else:
                             final_document_type = detected_type
                             confidence = raw_confidence * 100 if raw_confidence <= 1.0 else raw_confidence
-                            logger.info(f"📄 Page {page_num}: FRESH {final_document_type} (confidence: {confidence:.0f}%)")
+                            logger.info(f" Page {page_num}: FRESH {final_document_type} (confidence: {confidence:.0f}%)")
                             logger.info(f"   ↳ Reasoning: {reasoning}")
                         
                     except json.JSONDecodeError as e:
@@ -7625,7 +7637,7 @@ Guidelines:
                         final_document_type = classification_result.get('document_type', 'Unknown')
                         confidence = classification_result.get('confidence', 0) * 100
                         is_continuation = False
-                        logger.info(f"📄 Page {page_num}: FALLBACK {final_document_type} (confidence: {confidence:.0f}%)")
+                        logger.info(f" Page {page_num}: FALLBACK {final_document_type} (confidence: {confidence:.0f}%)")
                     except Exception as e:
                         logger.error(f"Error in contextual classification for page {page_num}: {e}")
                         # Fallback to regular classification
@@ -7633,7 +7645,7 @@ Guidelines:
                         final_document_type = classification_result.get('document_type', 'Unknown')
                         confidence = classification_result.get('confidence', 0) * 100
                         is_continuation = False
-                        logger.info(f"📄 Page {page_num}: FALLBACK {final_document_type} (confidence: {confidence:.0f}%)")
+                        logger.info(f" Page {page_num}: FALLBACK {final_document_type} (confidence: {confidence:.0f}%)")
                 
                 else:
                     # First page - use regular classification
@@ -7642,7 +7654,7 @@ Guidelines:
                     raw_confidence = classification_result.get('confidence', 0)
                     confidence = raw_confidence * 100 if raw_confidence <= 1.0 else raw_confidence
                     is_continuation = False
-                    logger.info(f"📄 Page {page_num}: FIRST PAGE {final_document_type} (confidence: {confidence:.0f}%)")
+                    logger.info(f" Page {page_num}: FIRST PAGE {final_document_type} (confidence: {confidence:.0f}%)")
                 
                 page_classifications.append({
                     'page': page_num,
@@ -7654,13 +7666,13 @@ Guidelines:
                 })
 
             classification_time = time.time() - classification_start
-            logger.info(f"✅ Classification completed in {classification_time:.2f}s")
+            logger.info(f"SUCCESS:Classification completed in {classification_time:.2f}s")
 
             # === STEP 4: GROUP CONSECUTIVE PAGES BY DOCUMENT TYPE ===
-            logger.info(f"📑 STEP 4/5: GROUPING pages by document type")
+            logger.info(f"STEP 4/5: GROUPING pages by document type")
             
             # Debug: Log all page classifications before grouping
-            logger.info("🔍 DEBUG: Page classifications before grouping:")
+            logger.info("SEARCH: DEBUG: Page classifications before grouping:")
             for i, page_class in enumerate(page_classifications):
                 logger.info(f"  Page {page_class.get('page', i+1)}: '{page_class.get('document_type', 'Unknown')}' (confidence: {page_class.get('confidence', 0):.0f}%)")
 
@@ -7671,7 +7683,7 @@ Guidelines:
 
             for page_class in page_classifications:
                 if page_class['document_type'] in ['Empty/Insufficient Text', 'Unknown']:
-                    logger.info(f"⏭️  Skipping page {page_class['page']} with type: {page_class['document_type']}")
+                    logger.info(f"Skipping page {page_class['page']} with type: {page_class['document_type']}")
                     continue
 
                 # Check if we should add to existing group (exact document type match only)
@@ -7682,10 +7694,10 @@ Guidelines:
                 if current_group is None or not should_group_with_current:
                     # Start new group
                     if current_group:
-                        logger.info(f"📋 Completed group: {current_group['document_type']} (Pages: {current_group['pages']})")
+                        logger.info(f" Completed group: {current_group['document_type']} (Pages: {current_group['pages']})")
                         document_groups.append(current_group)
                     
-                    logger.info(f"🆕 Starting new group: {page_class['document_type']} (Page {page_class['page']})")
+                    logger.info(f"Starting new group: {page_class['document_type']} (Page {page_class['page']})")
                     current_group = {
                         'document_type': page_class['document_type'],
                         'pages': [page_class['page']],
@@ -7704,33 +7716,33 @@ Guidelines:
                     current_group['individual_pages'].append(page_class)  # Keep individual page data
 
             if current_group:
-                logger.info(f"📋 Completed final group: {current_group['document_type']} (Pages: {current_group['pages']})")
+                logger.info(f" Completed final group: {current_group['document_type']} (Pages: {current_group['pages']})")
                 document_groups.append(current_group)
 
             # Add page_range to each group for consistent access
             for group in document_groups:
                 group['page_range'] = f"Page {group['pages'][0]}" if len(group['pages']) == 1 else f"Pages {group['pages'][0]}-{group['pages'][-1]}"
 
-            logger.info(f"📊 Found {len(document_groups)} distinct document types:")
+            logger.info(f"ANALYTICS: Found {len(document_groups)} distinct document types:")
             for group in document_groups:
                 logger.info(f"  - {group['document_type']} ({group['page_range']}, confidence: {group['confidence']:.0f}%)")
 
             # === STEP 5A: GENERATE PREVIEW IMAGES ===
-            logger.info(f"📸 Generating preview images for document")
+            logger.info(f"Generating preview images for document")
             all_preview_images = []
             if file_type == "application/pdf":
                 pdf_result = convert_pdf_to_images_opencv(temp_file_path)
                 if pdf_result["type"] == "image":
                     all_preview_images = pdf_result["data"]
-                    logger.info(f"✅ Generated {len(all_preview_images)} preview images")
+                    logger.info(f"SUCCESS:Generated {len(all_preview_images)} preview images")
             else:
                 encoded_image = encode_image_to_base64(temp_file_path)
                 if encoded_image:
                     all_preview_images = [encoded_image]
-                    logger.info(f"✅ Generated 1 preview image")
+                    logger.info(f"SUCCESS:Generated 1 preview image")
 
             # === STEP 5B: EXTRACT FIELDS FOR EACH DOCUMENT TYPE ===
-            logger.info(f"📤 STEP 5/5: EXTRACTING fields for each document type")
+            logger.info(f"UPLOAD: STEP 5/5: EXTRACTING fields for each document type")
 
             # Progress: Start field extraction
             if progress_tracker:
@@ -7745,7 +7757,7 @@ Guidelines:
             results = []
 
             for idx, group in enumerate(document_groups, 1):
-                logger.info(f"🔄 Extracting fields for {group['document_type']} (Group {idx}/{len(document_groups)})")
+                logger.info(f"MODE: Extracting fields for {group['document_type']} (Group {idx}/{len(document_groups)})")
                 
                 # Progress: Update field extraction progress
                 if progress_tracker:
@@ -7766,9 +7778,9 @@ Guidelines:
                 if field_mapping_data:
                     field_mapping_example = field_mapping_data.get('example', '')
                     extraction_prompt += f"\n\n{field_mapping_example}"
-                    logger.info(f"📋 Enhanced extraction prompt with field mapping examples for {group['document_type']}")
+                    logger.info(f" Enhanced extraction prompt with field mapping examples for {group['document_type']}")
 
-                logger.info(f"📋 Built extraction prompt ({len(extraction_prompt)} chars)")
+                logger.info(f" Built extraction prompt ({len(extraction_prompt)} chars)")
 
                 # Call LLM for extraction
                 extraction_response = openai.ChatCompletion.create(
@@ -7788,15 +7800,15 @@ Guidelines:
                     extracted_fields = {}
 
                 extraction_time = time.time() - extraction_start
-                logger.info(f"✅ Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
+                logger.info(f"SUCCESS:Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
 
                 # === COORDINATE MAPPING DISABLED ===
                 # Note: Real-time coordinate mapping will be done on-demand via API calls
-                logger.info(f"📍 Coordinate mapping disabled - will be done on-demand for accuracy")
+                logger.info(f"Coordinate mapping disabled - will be done on-demand for accuracy")
                 coordinate_mapping_time = 0.0
 
                 # === UCP600/SWIFT COMPLIANCE ANALYSIS ===
-                logger.info(f"🔍 Running UCP600/SWIFT compliance analysis for {group['document_type']}")
+                logger.info(f"SEARCH: Running UCP600/SWIFT compliance analysis for {group['document_type']}")
                 
                 # Start compliance check progress tracking
                 if progress_tracker:
@@ -7821,22 +7833,22 @@ Guidelines:
                         # PERFORMANCE OPTIMIZATION: Use unified compliance analysis for page-by-page mode
                         from app.utils.query_utils import analyze_unified_compliance_fast
                         
-                        logger.info(f"🚀 PAGE-BY-PAGE UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields")
+                        logger.info(f"SPEED: PAGE-BY-PAGE UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields")
                         logger.info(f"Compliance fields: {list(compliance_fields.keys())}")
                         
                         # Single call for both UCP600 and SWIFT analysis (saves 8-12 seconds per page)
                         ucp600_result, swift_result = analyze_unified_compliance_fast(compliance_fields)
                         
-                        logger.info(f"✅ Page unified compliance completed: UCP600={len(ucp600_result)}, SWIFT={len(swift_result)}")
+                        logger.info(f"SUCCESS:Page unified compliance completed: UCP600={len(ucp600_result)}, SWIFT={len(swift_result)}")
                         logger.info(f"UCP600 sample: {str(ucp600_result)[:150]}...")
                         logger.info(f"SWIFT sample: {str(swift_result)[:150]}...")
                         
                     except Exception as e:
-                        logger.error(f"❌ Page unified compliance analysis failed: {e}")
+                        logger.error(f"ERROR: Page unified compliance analysis failed: {e}")
                         logger.error(f"Traceback: {traceback.format_exc()}")
                         
                         # Fallback to original separate analysis
-                        logger.info("🔄 Page fallback to separate UCP600/SWIFT analysis...")
+                        logger.info("MODE: Page fallback to separate UCP600/SWIFT analysis...")
                         ucp600_result = {}
                         swift_result = {}
                         
@@ -7857,12 +7869,12 @@ Guidelines:
                             swift_result = {}
                 
                 compliance_analysis_time = time.time() - compliance_analysis_start
-                logger.info(f"✅ Compliance analysis completed in {compliance_analysis_time:.2f}s")
+                logger.info(f"SUCCESS:Compliance analysis completed in {compliance_analysis_time:.2f}s")
 
                 # Transform compliance data for UI consumption
                 def transform_compliance_for_ui(compliance_data, compliance_type):
                     """Transform field-level compliance data to UI-expected format"""
-                    logger.info(f"🔄 Transforming {compliance_type} compliance data: {type(compliance_data)}")
+                    logger.info(f"MODE: Transforming {compliance_type} compliance data: {type(compliance_data)}")
                     
                     if not compliance_data:
                         logger.warning(f"No {compliance_type} compliance data to transform")
@@ -7944,25 +7956,25 @@ Guidelines:
                 ucp600_compliance = transform_compliance_for_ui(ucp600_result, "ucp600")
 
                 # Debug compliance scores
-                logger.info(f"🔍 SWIFT compliance result: {swift_compliance}")
-                logger.info(f"🔍 UCP600 compliance result: {ucp600_compliance}")
+                logger.info(f"SEARCH: SWIFT compliance result: {swift_compliance}")
+                logger.info(f"SEARCH: UCP600 compliance result: {ucp600_compliance}")
 
                 # Calculate overall compliance score
                 compliance_scores = []
                 if swift_compliance and swift_compliance.get('compliance_percentage') is not None:
                     swift_score = swift_compliance['compliance_percentage']
                     compliance_scores.append(swift_score)
-                    logger.info(f"📊 SWIFT compliance percentage: {swift_score}%")
+                    logger.info(f"ANALYTICS: SWIFT compliance percentage: {swift_score}%")
                 if ucp600_compliance and ucp600_compliance.get('compliance_percentage') is not None:
                     ucp600_score = ucp600_compliance['compliance_percentage']
                     compliance_scores.append(ucp600_score)
-                    logger.info(f"📊 UCP600 compliance percentage: {ucp600_score}%")
+                    logger.info(f"ANALYTICS: UCP600 compliance percentage: {ucp600_score}%")
                 
-                logger.info(f"📊 All compliance scores: {compliance_scores}")
+                logger.info(f"ANALYTICS: All compliance scores: {compliance_scores}")
                 
                 # Calculate average compliance score, default to 85 if no compliance data
                 overall_compliance_score = round(sum(compliance_scores) / len(compliance_scores)) if compliance_scores else 85
-                logger.info(f"📊 Overall compliance score: {overall_compliance_score}%")
+                logger.info(f"ANALYTICS: Overall compliance score: {overall_compliance_score}%")
 
                 # === Categorize fields by type (mandatory/optional/conditional) ===
                 mandatory_fields = {}
@@ -8095,7 +8107,7 @@ Guidelines:
                 progress_tracker.finalize()
 
             total_time = time.time() - start_time
-            logger.info(f"✅ Page-by-page processing completed in {total_time:.2f}s - Found {len(results)} document types")
+            logger.info(f"SUCCESS:Page-by-page processing completed in {total_time:.2f}s - Found {len(results)} document types")
 
             # Add the actual total processing time to each result
             # for result in results:
@@ -8126,13 +8138,13 @@ Guidelines:
                 )
 
             # Store OCR data in session for coordinate search API
-            logger.info(f"📦 === STORING OCR DATA FOR COORDINATE SEARCH ===")
+            logger.info(f"SAVE: === STORING OCR DATA FOR COORDINATE SEARCH ===")
             all_ocr_data = []
             ocr_stats = {'total_entries': 0, 'pages': 0, 'text_entries': 0, 'with_bbox': 0}
             
             for group_idx, group in enumerate(document_groups):
                 group_ocr = group.get('ocr_data', [])
-                logger.info(f"📄 Group {group_idx + 1} ({group.get('document_type', 'Unknown')}): {len(group_ocr)} OCR entries")
+                logger.info(f" Group {group_idx + 1} ({group.get('document_type', 'Unknown')}): {len(group_ocr)} OCR entries")
                 logger.info(f"   Group covers pages: {group.get('pages', 'Unknown')}")
                 
                 # Log sample entries from each group with detailed page info
@@ -8182,7 +8194,7 @@ Guidelines:
                         pass  # Ignore cleanup errors
                 
                 if cleaned_count > 0:
-                    logger.info(f"🧹 Cleaned up {cleaned_count} old OCR temp files")
+                    logger.info(f"Cleaned up {cleaned_count} old OCR temp files")
             except Exception as e:
                 logger.warning(f"Failed to cleanup old OCR temp files: {e}")
             
@@ -8195,12 +8207,12 @@ Guidelines:
             try:
                 with open(ocr_temp_file, 'wb') as f:
                     pickle.dump(all_ocr_data, f)
-                logger.info(f"💾 OCR data also stored in temp file: {ocr_temp_file}")
-                logger.info(f"🔑 OCR session ID: {ocr_session_id}")
+                logger.info(f"OCR data also stored in temp file: {ocr_temp_file}")
+                logger.info(f" OCR session ID: {ocr_session_id}")
             except Exception as e:
                 logger.error(f"Failed to store OCR data in temp file: {e}")
             
-            logger.info(f"💾 OCR DATA STORAGE SUMMARY:")
+            logger.info(f"OCR DATA STORAGE SUMMARY:")
             logger.info(f"   Total OCR entries stored: {len(all_ocr_data)}")
             logger.info(f"   Entries with text: {ocr_stats['text_entries']}")
             logger.info(f"   Entries with bounding boxes: {ocr_stats['with_bbox']}")
@@ -8215,16 +8227,16 @@ Guidelines:
             
             # Log a few sample entries for debugging
             if all_ocr_data:
-                logger.info(f"📝 Sample OCR entries (first 3):")
+                logger.info(f"PARAMETERS: Sample OCR entries (first 3):")
                 for i, sample in enumerate(all_ocr_data[:3]):
                     logger.info(f"   Entry {i+1}: '{sample.get('text', '')[:50]}...' (page: {sample.get('bounding_page', 'N/A')})")
             
-            logger.info(f"✅ OCR data successfully stored in session for coordinate search API")
+            logger.info(f"SUCCESS:OCR data successfully stored in session for coordinate search API")
 
             return results
 
         except Exception as e:
-            logger.error(f"❌ Error in page-by-page processing: {str(e)}")
+            logger.error(f"ERROR: Error in page-by-page processing: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
             return [{
@@ -8237,9 +8249,9 @@ Guidelines:
             if temp_file_path and os.path.exists(temp_file_path):
                 try:
                     os.remove(temp_file_path)
-                    logger.info(f"🗑️ Cleaned up temporary file: {temp_file_path}")
+                    logger.info(f"Cleaned up temporary file: {temp_file_path}")
                 except Exception as cleanup_error:
-                    logger.warning(f"⚠️ Failed to cleanup temp file {temp_file_path}: {cleanup_error}")
+                    logger.warning(f"WARNINGS: Failed to cleanup temp file {temp_file_path}: {cleanup_error}")
 
     @app.route('/api/document/classify-enhanced', methods=['POST'])
     def classify_document_enhanced():
@@ -8247,16 +8259,16 @@ Guidelines:
         Enhanced document classification using prompt config (YAML-based)
         Performs: OCR → Classification → Extraction with config-driven prompts
         """
-        logger.info("🚀 === ENHANCED DOCUMENT CLASSIFICATION ROUTE CALLED ===")
+        logger.info("SPEED: === ENHANCED DOCUMENT CLASSIFICATION ROUTE CALLED ===")
         try:
             # Load prompt configuration
             global prompt_config
             if not prompt_config:
                 prompt_config = load_prompt_config()
                 if prompt_config:
-                    logger.info("✅ Loaded prompt configuration from YAML")
+                    logger.info("SUCCESS:Loaded prompt configuration from YAML")
                 else:
-                    logger.warning("⚠️ Prompt config not available, using defaults")
+                    logger.warning("WARNINGS: Prompt config not available, using defaults")
 
             # Get uploaded files
             uploaded_files = request.files.getlist('files')
@@ -8280,7 +8292,7 @@ Guidelines:
                     ws_handler = get_websocket_handler()
                     if ws_handler:
                         progress = DocumentProcessingTracker(ws_handler, client_id)
-                        logger.info(f"✅ Progress tracker initialized for client: {client_id}")
+                        logger.info(f"SUCCESS:Progress tracker initialized for client: {client_id}")
                 except Exception as e:
                     logger.error(f"Failed to initialize progress tracker: {e}")
 
@@ -8294,7 +8306,7 @@ Guidelines:
                 # Choose processing mode based on page_by_page parameter
                 if page_by_page:
                     # Page-by-page mode: Can detect multiple document types
-                    logger.info("🔄 Using PAGE-BY-PAGE mode (multi-document detection)")
+                    logger.info("MODE: Using PAGE-BY-PAGE mode (multi-document detection)")
                     page_results = process_document_page_by_page(
                         uploaded_file=uploaded_file,
                         function_name=function_name,
@@ -8307,7 +8319,7 @@ Guidelines:
                     results.extend(page_results)
                 else:
                     # Single document mode (original behavior)
-                    logger.info("📄 Using SINGLE DOCUMENT mode")
+                    logger.info(" Using SINGLE DOCUMENT mode")
                     result = process_document_with_config(
                         uploaded_file=uploaded_file,
                         function_name=function_name,
@@ -11300,15 +11312,15 @@ def _save_document_categories(data):
         import re
         from difflib import SequenceMatcher
         
-        logger.info(f"🔎 === STARTING OCR TEXT SEARCH ===")
-        logger.info(f"📝 Search parameters:")
+        logger.info(f"SEARCH === STARTING OCR TEXT SEARCH ===")
+        logger.info(f"PARAMETERS: Search parameters:")
         logger.info(f"   Field value: '{field_value}'")
         logger.info(f"   Search mode: {search_mode}")
         logger.info(f"   OCR entries to search: {len(ocr_data)}")
         
         matches = []
         field_value_lower = field_value.lower().strip()
-        logger.info(f"🔤 Normalized field value: '{field_value_lower}'")
+        logger.info(f"Normalized field value: '{field_value_lower}'")
         
         # Track search statistics
         exact_matches = 0
@@ -11317,7 +11329,7 @@ def _save_document_categories(data):
         fuzzy_matches = 0
         no_matches = 0
         
-        logger.info(f"🔎 Searching in {len(ocr_data)} OCR entries...")
+        logger.info(f"SEARCH Searching in {len(ocr_data)} OCR entries...")
         
         for i, ocr_entry in enumerate(ocr_data):
             ocr_text = ocr_entry.get('text', '').strip()
@@ -11337,17 +11349,17 @@ def _save_document_categories(data):
                     match_confidence = 100
                     match_type = 'exact'
                     exact_matches += 1
-                    logger.debug(f"      ✅ EXACT MATCH! Confidence: 100%")
+                    logger.debug(f"      SUCCESS:EXACT MATCH! Confidence: 100%")
                 elif field_value_lower in ocr_text_lower:
                     match_confidence = 90
                     match_type = 'contains'
                     contains_matches += 1
-                    logger.debug(f"      ✅ CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
+                    logger.debug(f"      SUCCESS:CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
                 elif ocr_text_lower in field_value_lower:
                     match_confidence = 85
                     match_type = 'partial'
                     partial_matches += 1
-                    logger.debug(f"      ✅ PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
+                    logger.debug(f"      SUCCESS:PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
             
             # Fuzzy matching if enabled and no exact match
             if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
@@ -11359,11 +11371,11 @@ def _save_document_categories(data):
                         match_confidence = fuzzy_confidence
                         match_type = 'fuzzy'
                         fuzzy_matches += 1
-                        logger.debug(f"      ✅ FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
+                        logger.debug(f"      SUCCESS:FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
             
             if match_confidence < 80:
                 no_matches += 1
-                logger.debug(f"      ❌ No sufficient match (confidence: {match_confidence:.1f}%)")
+                logger.debug(f"      ERROR: No sufficient match (confidence: {match_confidence:.1f}%)")
             
             # Only include high-confidence matches
             if match_confidence >= 80:
@@ -11379,14 +11391,14 @@ def _save_document_categories(data):
                 }
                 matches.append(match_data)
                 
-                logger.info(f"✅ MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
+                logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
                 logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
         
         # Sort by match confidence (highest first)
         matches.sort(key=lambda x: x['match_confidence'], reverse=True)
         
         # Log search summary
-        logger.info(f"📊 === SEARCH SUMMARY ===")
+        logger.info(f"ANALYTICS: === SEARCH SUMMARY ===")
         logger.info(f"   Exact matches: {exact_matches}")
         logger.info(f"   Contains matches: {contains_matches}")
         logger.info(f"   Partial matches: {partial_matches}")
@@ -11396,15 +11408,15 @@ def _save_document_categories(data):
         
         if matches:
             best_match = matches[0]
-            logger.info(f"🎯 BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
+            logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
             logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
         else:
-            logger.warning(f"❌ NO QUALIFYING MATCHES FOUND for '{field_value}'")
-            logger.info(f"💡 Search suggestions:")
+            logger.warning(f"ERROR: NO QUALIFYING MATCHES FOUND for '{field_value}'")
+            logger.info(f"IDEA: Search suggestions:")
             logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
             logger.info(f"   - Check if the field value exactly matches the document text")
             logger.info(f"   - Verify the document has been processed and OCR data is available")
         
-        logger.info(f"📦 Search complete: returning {len(matches)} matches")
+        logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
         return matches
 

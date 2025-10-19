@@ -42,7 +42,7 @@ class WebSocketHandler:
                 'room': client_id
             }
             join_room(client_id)
-            logger.info(f"✅ WebSocket client connected: {client_id}")
+            logger.info(f"SUCCESS: WebSocket client connected: {client_id}")
 
             emit('connection_established', {
                 'client_id': client_id,
@@ -68,7 +68,7 @@ class WebSocketHandler:
         def handle_ai_request(data):
             """Handle AI request from client"""
             client_id = self._get_client_id()
-            logger.info(f"📨 AI request received from {client_id}")
+            logger.info(f"AI request received from {client_id}")
 
             try:
                 # Validate request data
@@ -99,7 +99,7 @@ class WebSocketHandler:
                     self.emit_error(client_id, f"Unknown request type: {request_type}")
 
             except Exception as e:
-                logger.error(f"❌ Error handling AI request: {e}")
+                logger.error(f"ERROR: Error handling AI request: {e}")
                 self.emit_error(client_id, str(e))
 
     def _get_client_id(self) -> str:
@@ -124,7 +124,7 @@ class WebSocketHandler:
         try:
             self.socketio.emit(event, data, room=client_id)
         except Exception as e:
-            logger.error(f"❌ Error emitting message to {client_id}: {e}")
+            logger.error(f"ERROR: Error emitting message to {client_id}: {e}")
 
     def emit_error(self, client_id: str, error_message: str):
         """
@@ -184,10 +184,11 @@ class WebSocketHandler:
                 'timestamp': datetime.now().isoformat()
             })
 
-            logger.info(f"✅ Streamed {chunk_count} chunks to {client_id}")
+            chunk_info = f"Streamed {chunk_count} chunks to {client_id}"
+            logger.info(f"SUCCESS: {chunk_info}")
 
         except Exception as e:
-            logger.error(f"❌ Error streaming response: {e}")
+            logger.error(f"ERROR: Error streaming response: {e}")
             self.emit_error(client_id, f"Stream error: {str(e)}")
 
     def emit_progress(self, client_id: str, task_id: str, stage: str, message: str, progress: int, metadata: Optional[dict] = None):
@@ -240,9 +241,9 @@ class WebSocketHandler:
         """
         try:
             self.socketio.emit(event, data, broadcast=True)
-            logger.info(f"📢 Broadcasted {event} to all clients")
+            logger.info(f"Broadcasted {event} to all clients")
         except Exception as e:
-            logger.error(f"❌ Error broadcasting message: {e}")
+            logger.error(f"ERROR: Error broadcasting message: {e}")
 
     def get_connection_count(self) -> int:
         """Get number of active connections"""
@@ -271,10 +272,10 @@ def init_websocket_handler(socketio):
     logger.info("🔌 Initializing WebSocket handler...")
     try:
         ws_handler = WebSocketHandler(socketio)
-        logger.info("✅ WebSocket handler initialized successfully")
+        logger.info("SUCCESS: WebSocket handler initialized successfully")
         return ws_handler
     except Exception as e:
-        logger.error(f"❌ Failed to initialize WebSocket handler: {e}")
+        logger.error(f"ERROR: Failed to initialize WebSocket handler: {e}")
         raise
 
 
