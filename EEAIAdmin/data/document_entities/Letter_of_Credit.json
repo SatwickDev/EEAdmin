@@ -3,20 +3,6 @@
   "documentName": "Letter Of Credit",
   "mappings": [
     {
-      "id": "2",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "18",
-      "entityName": "LC Expiry Date",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "846",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter of Credit",
@@ -115,48 +101,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "853",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "314",
-      "entityName": "Payment term",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "855",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "142",
-      "entityName": "Documentary Credit Identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
-      "id": "856",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "6",
-      "entityName": "Invoice Number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "858",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter of Credit",
@@ -198,20 +142,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
       "fieldType": "optional"
-    },
-    {
-      "id": "863",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "142",
-      "entityName": "Documentary Credit Identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
     },
 
     {
@@ -268,7 +198,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
      {
       "id": "868",
@@ -282,20 +212,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
-      "fieldType": "optional"
-    },
-    {
-      "id": "869",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "324",
-      "entityName": "Documentary credit amount",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts",
       "fieldType": "optional"
     },
       {

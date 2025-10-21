@@ -72,34 +72,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-    {
-      "id": "526",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "407",
-      "entityName": "Consignment destination country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "527",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "358",
-      "entityName": "Exportation country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
+
     {
       "id": "528",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -112,34 +85,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "529",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "5",
-      "documentCategoryName": "Quality and Compliance Processes",
-      "entityId": "408",
-      "entityName": "Certification",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "530",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "412",
-      "entityName": "Nature of transaction",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
     {
@@ -184,21 +129,21 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-
     {
-      "id": "535",
+      "id": "534",
       "documentId": "Preferential_Certificate_of_Origin",
       "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "53",
-      "entityName": "Quantity",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "51",
+      "entityName": "Net Weight",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
+
     {
       "id": "536",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -268,34 +213,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "542",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "332",
-      "entityName": "Package length",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "optional"
-    },
-    {
-      "id": "543",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "333",
-      "entityName": "Package width",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
       "fieldType": "optional"
     },
     {
@@ -382,48 +299,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-    {
-      "id": "550",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "6",
-      "entityName": "Invoice Number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "553",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "333",
-      "entityName": "Package width",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "555",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "56",
-      "entityName": "Number of Packages",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "conditional"
-    },
+
     {
       "id": "556",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -521,50 +397,9 @@
       "mappingFormDescription": "",
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "565",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "51",
-      "entityName": "Net Weight",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "567",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "142",
-      "entityName": "Documentary Credit Identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-     {
-      "id": "568",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "119",
-      "entityName": "Contract Number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
+
      {
       "id": "566",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -578,6 +413,35 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
+    },
+    {
+      "id": "568",
+      "documentId": "Preferential_Certificate_of_Origin",
+      "documentName": "Preferential Certificate of Origin",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "119",
+      "entityName": "Contract Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
+    },
+    {
+      "id": "569",
+      "documentId": "Preferential_Certificate_of_Origin",
+      "documentName": "Preferential Certificate of Origin",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "142",
+      "entityName": "Documentary Credit Identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
     }
   ]
 }
+

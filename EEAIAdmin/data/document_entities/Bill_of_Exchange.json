@@ -28,7 +28,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
     {
       "id": "884",
@@ -192,20 +192,6 @@
       "documentCategoryName": "Commercial Processes",
       "entityId": "172",
       "entityName": "Invoicee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "896",
-      "documentId": "Bill_of_Exchange",
-      "documentName": "Bill of Exchange",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "216",
-      "entityName": "Drawee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -465,20 +451,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "944",
-      "documentId": "Bill_of_Exchange",
-      "documentName": "Bill Of Exchange",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "119",
-      "entityName": "Contract Number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-     {
       "id": "914",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
@@ -507,9 +479,38 @@
       "fieldType": "conditional"
     },
     {
-      "id": "945",
+      "id": "916",
       "documentId": "Bill_of_Exchange",
-      "documentName": "Bill Of Exchange",
+      "documentName": "Bill of Exchange",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "142",
+      "entityName": "Documentary Credit Identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "conditional"
+    },
+     {
+      "id": "917",
+      "documentId": "Bill_of_Exchange",
+      "documentName": "Bill of Exchange",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "119",
+      "entityName": "Contract Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
+    },
+
+    {
+      "id": "918",
+      "documentId": "Bill_of_Exchange",
+      "documentName": "Bill of Exchange",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "141",

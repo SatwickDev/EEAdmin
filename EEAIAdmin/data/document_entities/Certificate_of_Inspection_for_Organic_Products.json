@@ -45,20 +45,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "700",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "405",
-      "entityName": "Permit/Certificate/Carnet expiry date",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "701",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
       "documentName": "Certificate of Inspection for Organic Products",
@@ -80,34 +66,6 @@
       "documentCategoryName": "Border and Regulatory Processes",
       "entityId": "138",
       "entityName": "Exporter",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "703",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "704",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "135",
-      "entityName": "Consignor",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -184,20 +142,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-    {
-      "id": "710",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "50",
-      "entityName": "Gross Weight",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "mandatory"
-    },
+
     {
       "id": "711",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
@@ -240,34 +185,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-    {
-      "id": "714",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "349",
-      "entityName": "Mode of Transport",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "715",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "338",
-      "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
+
     {
       "id": "716",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
@@ -311,35 +229,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "722",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "128",
-      "entityName": "Product Identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "720",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate_of_Inspection_for_Organic_Products",
-      "documentCategoryId": "",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "6",
-      "entityName": "Invoice Number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-
-    {
       "id": "719",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
       "documentName": "Certificate of Inspection for Organic Products",
@@ -351,6 +240,34 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+     {
+      "id": "720",
+      "documentId": "Certificate_of_Inspection_for_Organic_Products",
+      "documentName": "Certificate of Inspection for Organic Products",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "6",
+      "entityName": "Invoice Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+     {
+      "id": "721",
+      "documentId": "Certificate_of_Inspection_for_Organic_Products",
+      "documentName": "Certificate of Inspection for Organic Products",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "128",
+      "entityName": "Product Identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
       "fieldType": "mandatory"
     }
   ]
