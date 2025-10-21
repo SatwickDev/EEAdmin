@@ -4067,6 +4067,24 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "454",
+      "name": "discharge place",
+      "description": "asdfghjk",
+      "mappingFormField": "doc_identifier",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "455",
+      "name": "Discharge location",
+      "description": "sdfghjkl;",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
     }
   ]
 }
