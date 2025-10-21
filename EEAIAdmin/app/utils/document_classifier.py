@@ -36,10 +36,12 @@ class DocumentClassifier:
         self.doc_list_path = base_dir / "prompts" / "EE" / "DOC_LIST"
         self.function_fields_path = base_dir / "prompts" / "EE" / "function_fields.json"
         self.entity_maintenance_path = project_root / "data" / "document_entity_maintenance.json"
+        self.entities_path = project_root / "data" / "entities.json"  # Add entities.json path
 
         self.document_fields_cache = {}
         self.function_fields = self._load_function_fields()
         self.entity_mappings = self._load_entity_mappings()  # Load entity maintenance data
+        self.entity_descriptions = self._load_entity_descriptions()  # Load entity descriptions
         self.document_categories = self._load_document_categories()  # Load categories
         self._load_document_fields()
         logging.info("DocumentClassifier initialized successfully")
@@ -103,6 +105,34 @@ class DocumentClassifier:
                 return doc_mappings
         except Exception as e:
             logging.error(f"Failed to load entity mappings: {e}")
+            return {}
+
+    def _load_entity_descriptions(self) -> Dict:
+        """Load entity descriptions from entities.json."""
+        try:
+            with open(str(self.entities_path), 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                entities = data.get('entities', [])
+                
+                # Create mapping from entity name to description
+                entity_desc_map = {}
+                for entity in entities:
+                    entity_name = entity.get('name', '')
+                    entity_desc = entity.get('description', '')
+                    if entity_name and entity_desc:
+                        entity_desc_map[entity_name] = entity_desc
+                
+                logging.info(f"SUCCESS: Loaded descriptions for {len(entity_desc_map)} entities from entities.json")
+                
+                # Log a few sample descriptions for verification
+                sample_count = min(3, len(entity_desc_map))
+                sample_entities = list(entity_desc_map.items())[:sample_count]
+                for entity_name, desc in sample_entities:
+                    logging.info(f"SAMPLE_DESC: '{entity_name}' -> '{desc[:100]}{'...' if len(desc) > 100 else ''}'")
+                
+                return entity_desc_map
+        except Exception as e:
+            logging.error(f"Failed to load entity descriptions: {e}")
             return {}
 
     def _load_document_categories(self) -> Dict:
@@ -533,7 +563,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
             }
 
     def get_enhanced_entity_fields(self, document_id: str) -> Dict:
-        """Get organized entity fields for a document type."""
+        """Get organized entity fields for a document type with descriptions."""
         # Try exact match first
         if document_id in self.entity_mappings:
             mapping = self.entity_mappings[document_id]
@@ -555,18 +585,40 @@ Return ONLY this JSON structure (no markdown, no additional text):
                     'fields_by_category': {}
                 }
 
-        # Organize fields by data category
+        # Enhance fields with descriptions from entities.json
+        def enhance_field_with_description(field):
+            entity_name = field.get('entityName', '')
+            description = self.entity_descriptions.get(entity_name, '')
+            enhanced_field = field.copy()
+            enhanced_field['description'] = description
+            
+            # Log field enhancement for debugging
+            if description:
+                logging.info(f"FIELD_ENHANCED: '{entity_name}' -> Description: '{description[:80]}{'...' if len(description) > 80 else ''}'")
+            else:
+                logging.warning(f"FIELD_NO_DESC: '{entity_name}' -> No description found in entities.json")
+            
+            return enhanced_field
+
+        # Enhance all field types with descriptions
+        enhanced_mandatory = [enhance_field_with_description(f) for f in mapping['mandatory_fields']]
+        enhanced_optional = [enhance_field_with_description(f) for f in mapping['optional_fields']]
+        enhanced_conditional = [enhance_field_with_description(f) for f in mapping['conditional_fields']]
+
+        logging.info(f"ENHANCEMENT_COMPLETE: Enhanced {len(enhanced_mandatory)} mandatory, {len(enhanced_optional)} optional, {len(enhanced_conditional)} conditional fields with descriptions")
+
+        # Organize fields by data category with descriptions
         fields_by_category = {}
-        for field in mapping['mandatory_fields'] + mapping['optional_fields'] + mapping['conditional_fields']:
+        for field in enhanced_mandatory + enhanced_optional + enhanced_conditional:
             category = field.get('dataCategoryValue', 'Other')
             if category not in fields_by_category:
                 fields_by_category[category] = []
             fields_by_category[category].append(field)
 
         return {
-            'mandatory_fields': mapping['mandatory_fields'],
-            'optional_fields': mapping['optional_fields'],
-            'conditional_fields': mapping['conditional_fields'],
+            'mandatory_fields': enhanced_mandatory,
+            'optional_fields': enhanced_optional,
+            'conditional_fields': enhanced_conditional,
             'fields_by_category': fields_by_category
         }
 
@@ -590,7 +642,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
                     doc_category = self.entity_mappings[key].get('documentCategoryName', 'Unknown')
                     break
 
-        # Build field sections organized by category
+        # Build field sections organized by category with descriptions
         field_sections = []
 
         if entity_info['fields_by_category']:
@@ -598,18 +650,29 @@ Return ONLY this JSON structure (no markdown, no additional text):
                 field_items = []
                 for field in fields:
                     field_name = field.get('entityName', '')
+                    field_desc = field.get('description', '')
+                    
+                    # Build field entry with description for better LLM understanding
+                    if field_desc:
+                        desc_text = f" - {field_desc}"
+                    else:
+                        desc_text = " - No specific description available"
+                    
                     # Determine field type indicator
                     if field in entity_info['mandatory_fields']:
-                        field_items.append(f"  - **{field_name}** (REQUIRED)")
+                        field_items.append(f"  - **{field_name}** (REQUIRED){desc_text}")
                     elif field in entity_info['conditional_fields']:
-                        field_items.append(f"  - **{field_name}** (conditional)")
+                        field_items.append(f"  - **{field_name}** (conditional){desc_text}")
                     else:
-                        field_items.append(f"  - **{field_name}** (optional)")
+                        field_items.append(f"  - **{field_name}** (optional){desc_text}")
 
                 if field_items:
                     field_sections.append(f"**{category}:**\n" + "\n".join(field_items))
 
         fields_text = "\n\n".join(field_sections) if field_sections else "No specific fields configured for this document type."
+        
+        # Log sample of fields_text to show descriptions being included
+        logging.info(f"PROMPT_FIELDS_PREVIEW: Generated fields section with descriptions (first 300 chars): {fields_text[:300]}{'...' if len(fields_text) > 300 else ''}")
 
         # Build mandatory fields summary
         mandatory_summary = ""
@@ -638,7 +701,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
                 total_mandatory=len(entity_info['mandatory_fields'])
             )
         else:
-            # Fallback to hardcoded template
+            # Fallback to hardcoded template with enhanced field descriptions
             prompt = f"""
 {system_prompt}
 
@@ -647,9 +710,22 @@ Return ONLY this JSON structure (no markdown, no additional text):
 - **Category**: {doc_category} (USE THIS EXACT VALUE in response)
 - **Page**: {page_number}
 
+### Entity Extraction Instructions:
+**CRITICAL: We are providing you with enhanced field definitions that include detailed descriptions from our entity database. Each field below follows the format:**
+**Field Name (Type) - Detailed Description**
+
+**These descriptions are sourced from our entities.json database and provide precise definitions of what each field represents. Use these descriptions as your primary guide for accurate field identification and extraction.**
+
 ### Fields to Extract (organized by data category):
 
 {fields_text}{mandatory_summary}
+
+### Extraction Guidelines:
+1. **Entity Descriptions**: Each field above includes a detailed description from our entity database explaining exactly what information to look for in the document.
+2. **Definition-Based Extraction**: Use the provided descriptions as the authoritative definition of each field. If you're unsure about a field, refer back to its description.
+3. **Precision**: The descriptions help you distinguish between similar-looking fields and ensure you extract the exact data element we need.
+4. **Context Matching**: Match the OCR text against the field descriptions to identify the correct business entities.
+5. **Field Type Priority**: Pay attention to (REQUIRED), (conditional), and (optional) indicators along with the descriptions.
 
 ### OCR Text (Page {page_number}):
 {ocr_text[:25000]}
@@ -678,6 +754,12 @@ Return ONLY valid JSON (no markdown, no commentary):
   "extraction_completeness": <percentage 0-100>
 }}
 """
+        
+        # Log final prompt statistics
+        prompt_length = len(prompt)
+        description_count = prompt.count(' - ') - prompt.count(' - No specific description available')
+        logging.info(f"PROMPT_COMPLETE: Generated extraction prompt with descriptions - Length: {prompt_length} chars, Descriptions included: {description_count}")
+        
         return prompt
 
     def check_compliance(self, document_type: str, extracted_fields: Dict) -> Dict:

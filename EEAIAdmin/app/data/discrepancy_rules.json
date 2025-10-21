@@ -10011,6 +10011,56 @@
       "priority": "Mandatory",
       "createdAt": "2025-10-14T20:28:27.208838",
       "updatedAt": "2025-10-14T20:28:27.208838"
+    },
+    {
+      "id": "po-rule-001",
+      "code": "PO-DEL-001",
+      "documentType": "Purchase Order",
+      "description": "Delivery Date is mandatory and cannot be left blank",
+      "basis": "ISBP 821 A2",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-21T10:00:00",
+      "updatedAt": "2025-10-21T10:00:00"
+    },
+    {
+      "id": "po-rule-002",
+      "code": "PO-BUY-002",
+      "documentType": "Purchase Order",
+      "description": "Buyer information must include complete name and address",
+      "basis": "UCP 600 Art. 14",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-21T10:00:00",
+      "updatedAt": "2025-10-21T10:00:00"
+    },
+    {
+      "id": "po-rule-003",
+      "code": "PO-QTY-003",
+      "documentType": "Purchase Order",
+      "description": "Quantity ordered must be specified in appropriate units",
+      "basis": "ISBP 821 B1",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-21T10:00:00",
+      "updatedAt": "2025-10-21T10:00:00"
+    },
+    {
+      "id": "po-rule-004",
+      "code": "PO-NUM-004",
+      "documentType": "Purchase Order",
+      "description": "Purchase Order number must be unique and clearly visible",
+      "basis": "Standard Practice",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-21T10:00:00",
+      "updatedAt": "2025-10-21T10:00:00"
+    },
+    {
+      "id": "po-rule-005",
+      "code": "PO-SEL-005",
+      "documentType": "Purchase Order",
+      "description": "Seller information should include contact details for verification",
+      "basis": "Bank Practice",
+      "priority": "Optional",
+      "createdAt": "2025-10-21T10:00:00",
+      "updatedAt": "2025-10-21T10:00:00"
     }
   ]
 }

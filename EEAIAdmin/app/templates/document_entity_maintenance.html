@@ -965,12 +965,12 @@
             <table class="mappings-table">
                 <thead>
                 <tr>
-                    <th style="width: 7%;">Code</th>
-                    <th style="width: 20%;">Document Name</th>
-                    <th style="width: 18%;">Process Type</th>
-                    <th style="width: 20%;">Sender</th>
-                    <th style="width: 20%;">Receiver</th>
-                    <th style="width: 15%;">Actions</th>
+                    <th style="width: 8%;">ID</th>
+				  <th style="width: 12%;">Code</th>
+				  <th style="width: 28%;">Document Name</th>
+				  <th style="width: 22%;">Process Type</th>
+				  <th style="width: 20%;">Sender</th>
+				  <th style="width: 10%;">Actions</th>
                 </tr>
                 </thead>
                 <tbody id="documentTypesTableBody"></tbody>
@@ -2900,7 +2900,7 @@
         select.innerHTML = '<option value="">All Process Types</option>';
 
         // Use categories array for the filter dropdown
-        categories.forEach(cat => {
+        documentCategories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat.name;
             option.textContent = cat.name;
@@ -2926,7 +2926,7 @@
         const processTypeFilter = document.getElementById('processTypeFilter').value;
         const searchTerm = document.getElementById('documentTypeSearchInput').value.toLowerCase();
 
-        filteredDocumentTypes = documentCategories.filter(dt => {
+        filteredDocumentTypes = documentTypes.filter(dt => {
             const matchesProcessType = !processTypeFilter || dt.processType === processTypeFilter;
             const matchesSearch = !searchTerm ||
                 dt.name?.toLowerCase().includes(searchTerm) ||
@@ -2953,7 +2953,8 @@
         document.getElementById('visibleDocumentTypes').textContent = filteredDocumentTypes.length;
         const uniqueProcessTypes = new Set(filteredDocumentTypes.map(dt => dt.processType)).size;
         document.getElementById('processTypeCount').textContent = uniqueProcessTypes;
-
+        console.log(filteredDocumentTypes)
+        console.log(documentTypes)
         if (filteredDocumentTypes.length === 0) {
             const message = documentTypes.length === 0 ?
                 'No document types yet. Click "Add Document Type" to create one.' :
@@ -3014,7 +3015,8 @@
 
     function renderDocumentCategories() {
         const tbody = document.getElementById('documentTypesTableBody');
-
+        console.log(filteredDocumentTypes)
+        console.log(documentTypes)
         if (categories.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="mdi mdi-inbox"></i><p>No documents yet. Click "Add Category" to create one.</p></td></tr>';
             return;
@@ -3250,6 +3252,9 @@
     function populateDocuments() {
         const select = document.getElementById('documentId');
         select.innerHTML = '<option value="">Select document...</option>';
+        console.log('filteredDocumentTypes>>'+filteredDocumentTypes)
+        console.log(documents)
+        console.log('documentTypes>>'+documentTypes)
         documents.forEach(doc => {
             const option = document.createElement('option');
             option.value = doc.id;
@@ -3594,7 +3599,8 @@
         const documentCategory = documentCategories.find(c => c.id === Number(documentCategoryId));
         const entity = entities.find(e => e.id === entityId);
         const dataCategory = dataCategories.find(c => c.id === dataCategoryId);
-
+        console.log('documentCategory>>'+documentCategory?.name)
+        console.log('documentCategories>>'+documentCategories)
         const mappingData = {
             documentId,
             documentName: selectedDocument?.name || '',
@@ -3609,7 +3615,7 @@
             fieldType
         };
         ///console.log(documentCategories);
-        //console.log(mappingData);
+        console.log(mappingData);
         try {
             let response;
             if (mappingId) {

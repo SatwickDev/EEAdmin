@@ -56,8 +56,7 @@ from app.utils.progress_tracker import DocumentProcessingTracker
 from app.utils import (
     process_user_query, handle_api_request, trigger_proactive_alerts, extract_text_from_file,
     generate_sql_query, execute_sql_and_format, generate_visualization_with_inference,
-    analyze_ucp_compliance_chromaRAG, analyze_swift_compliance_chromaRAG, analyze_document_with_gpt,
-    handle_follow_up_request, insert_trx_file_upload, insert_trx_file_detail,
+    analyze_document_with_gpt, handle_follow_up_request, insert_trx_file_upload, insert_trx_file_detail,
     insert_trx_sub_files, insert_faef_em_inv, handle_creation_transaction_request,
     generate_rag_table_or_report_request, load_faiss_index, generate_response,
     classify_document_gpt
@@ -4634,19 +4633,15 @@ Return compliance status for each field.'''
                                 "original_text",
                                 " ".join([entry["text"] for entry in pages_ocr_data[i]])
                             )
-                            future_ucp600 = executor.submit(
-                                analyze_ucp_compliance_chromaRAG,
-                                page_extracted_fields
+                            future_unified = executor.submit(
+                                analyze_unified_compliance_fast,
+                                page_extracted_fields,
+                                document_type
                             )
-                            future_swift = executor.submit(
-                                analyze_swift_compliance_chromaRAG,
-                                page_extracted_fields
-                            )
-                            compliance_futures.append((future_ucp600, future_swift))
+                            compliance_futures.append(future_unified)
 
-                        for i, (future_ucp600, future_swift) in enumerate(compliance_futures):
-                            page_analysis_results[i]["ucp600_result"] = future_ucp600.result()
-                            page_analysis_results[i]["swift_result"] = future_swift.result()
+                        for i, future_unified in enumerate(compliance_futures):
+                            page_analysis_results[i]["unified_compliance"] = future_unified.result()
 
                     def classify_page_task(page_tuple):
                         page_number, page_data = page_tuple
@@ -5316,17 +5311,12 @@ Return compliance status for each field.'''
                         progress_tracker.start_field_extraction(field_count=total_fields)
 
                     # Aggregate compliance results
-                    combined_swift_result = {}
-                    combined_ucp600_result = {}
+                    combined_unified_result = {}
 
                     for page_result in page_analysis_results:
-                        # Aggregate SWIFT compliance results
-                        if "swift_result" in page_result:
-                            combined_swift_result.update(page_result["swift_result"])
-
-                        # Aggregate UCP600 compliance results
-                        if "ucp600_result" in page_result:
-                            combined_ucp600_result.update(page_result["ucp600_result"])
+                        # Aggregate unified compliance results
+                        if "unified_compliance" in page_result:
+                            combined_unified_result.update(page_result["unified_compliance"])
 
                     # PDF/Image preview
                     annotated_image_base64 = None
@@ -5345,8 +5335,9 @@ Return compliance status for each field.'''
                             {"page_number": pr["page_number"], **pr["classification"]}
                             for pr in page_analysis_results
                         ],
-                        "swift_result": combined_swift_result,
-                        "ucp600_result": combined_ucp600_result,
+                        "compliance": {
+                            "unified": combined_unified_result
+                        },
                         "analysis_result": {
                             "per_page": page_analysis_results
                         },
@@ -5364,10 +5355,8 @@ Return compliance status for each field.'''
                         
                         # Count compliance issues
                         compliance_issues = 0
-                        if combined_swift_result:
-                            compliance_issues += len([k for k, v in combined_swift_result.items() if not v.get("compliant", True)])
-                        if combined_ucp600_result:
-                            compliance_issues += len([k for k, v in combined_ucp600_result.items() if not v.get("compliant", True)])
+                        if combined_unified_result:
+                            compliance_issues += len([k for k, v in combined_unified_result.items() if not v.get("compliant", True)])
                         
                         # Mark compliance complete
                         progress_tracker.compliance_complete(compliance_issues)
@@ -5631,23 +5620,41 @@ Return compliance status for each field.'''
         field_list = []
         field_definitions = {}
 
-        # Build field list from entity mappings
+        # Build field list from entity mappings with enhanced descriptions
         for field in entity_info['mandatory_fields']:
             field_name = field['entityName']
+            field_desc = field.get('description', '')
             field_list.append(field_name)
-            field_definitions[field_name] = f"{field_name} (Mandatory)"
+            if field_desc:
+                field_definitions[field_name] = f"{field_name} (Mandatory) - {field_desc}"
+            else:
+                field_definitions[field_name] = f"{field_name} (Mandatory)"
 
         for field in entity_info['optional_fields']:
             field_name = field['entityName']
+            field_desc = field.get('description', '')
             field_list.append(field_name)
-            field_definitions[field_name] = f"{field_name} (Optional)"
+            if field_desc:
+                field_definitions[field_name] = f"{field_name} (Optional) - {field_desc}"
+            else:
+                field_definitions[field_name] = f"{field_name} (Optional)"
 
         for field in entity_info['conditional_fields']:
             field_name = field['entityName']
+            field_desc = field.get('description', '')
             field_list.append(field_name)
-            field_definitions[field_name] = f"{field_name} (Conditional)"
+            if field_desc:
+                field_definitions[field_name] = f"{field_name} (Conditional) - {field_desc}"
+            else:
+                field_definitions[field_name] = f"{field_name} (Conditional)"
 
-        logger.info(f"SUCCESS:Using entity_mappings: {len(field_list)} fields ({len(entity_info['mandatory_fields'])} mandatory, {len(entity_info['optional_fields'])} optional, {len(entity_info['conditional_fields'])} conditional)")
+        logger.info(f"SUCCESS:Using entity_mappings with descriptions: {len(field_list)} fields ({len(entity_info['mandatory_fields'])} mandatory, {len(entity_info['optional_fields'])} optional, {len(entity_info['conditional_fields'])} conditional)")
+
+        # Log sample field with description for verification
+        if field_list:
+            sample_field_name = field_list[0]
+            sample_field_def = field_definitions.get(sample_field_name, '')
+            logger.info(f"ANALYTICS: Sample field with description: {sample_field_def}")
 
         # Store for later use
         trade_doc_fields = {
@@ -7555,9 +7562,8 @@ Return compliance status for each field.'''
             
             compliance_analysis_start = time.time()
             
-            # Initialize compliance results
-            ucp600_result = {}
-            swift_result = {}
+            # Initialize unified compliance result
+            unified_compliance = {}  # NEW: Unified compliance result
             
             # Perform UCP600 and SWIFT compliance analysis if we have extracted fields
             if extracted_fields:
@@ -7569,51 +7575,45 @@ Return compliance status for each field.'''
                 logger.info(f"Original fields: {len(extracted_fields)}, Compliance fields: {len(compliance_fields)}")
                 
                 try:
-                    # PERFORMANCE OPTIMIZATION: Use unified compliance analysis instead of separate calls
-                    from app.utils.query_utils import analyze_unified_compliance_fast
+                    # RULE-BASED UNIFIED COMPLIANCE: Use document-specific rules from discrepancy_rules.json
+                    from app.utils.query_utils import analyze_unified_compliance_fast, get_unified_compliance_result, clear_unified_compliance_result
                     
-                    logger.info(f"SPEED: UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields with single AI call")
+                    # Clear any previous compliance results
+                    clear_unified_compliance_result()
+                    
+                    logger.info(f"SPEED: RULE-BASED UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields with document-specific rules")
+                    logger.info(f"Document type: {document_type}")
                     logger.info(f"Compliance fields: {list(compliance_fields.keys())}")
                     
-                    # Single call for both UCP600 and SWIFT analysis (saves 8-12 seconds)
-                    ucp600_result, swift_result = analyze_unified_compliance_fast(compliance_fields)
+                    # Single unified compliance call using document-specific rules
+                    analyze_unified_compliance_fast(compliance_fields, document_type)
                     
-                    logger.info(f"SUCCESS:Unified compliance completed: UCP600={len(ucp600_result)} fields, SWIFT={len(swift_result)} fields")
-                    logger.info(f"UCP600 sample: {str(ucp600_result)[:150]}...")
-                    logger.info(f"SWIFT sample: {str(swift_result)[:150]}...")
+                    # Get the actual unified compliance result
+                    unified_compliance = get_unified_compliance_result()
+                    
+                    logger.info(f"SUCCESS:Unified compliance completed: {len(unified_compliance)} fields analyzed")
+                    logger.info(f"Unified compliance sample: {str(unified_compliance)[:150]}...")
                     
                 except Exception as e:
                     logger.error(f"ERROR: Unified compliance analysis failed: {e}")
                     logger.error(f"Traceback: {traceback.format_exc()}")
                     
-                    # Fallback to original separate analysis
-                    logger.info("MODE: Falling back to separate UCP600/SWIFT analysis...")
-                    ucp600_result = {}
-                    swift_result = {}
-                    
-                    try:
-                        logger.info(f"Running fallback UCP600 analysis on {len(compliance_fields)} fields")
-                        ucp600_result = analyze_ucp_compliance_chromaRAG(compliance_fields)
-                        logger.info(f"Fallback UCP600 analysis completed: {len(ucp600_result)} results")
-                    except Exception as ucp_error:
-                        logger.error(f"Fallback UCP600 analysis failed: {ucp_error}")
-                        ucp600_result = {}
-                    
-                    try:
-                        logger.info(f"Running fallback SWIFT analysis on {len(compliance_fields)} fields")
-                        swift_result = analyze_swift_compliance_chromaRAG(compliance_fields)
-                        logger.info(f"Fallback SWIFT analysis completed: {len(swift_result)} results")
-                    except Exception as swift_error:
-                        logger.error(f"Fallback SWIFT analysis failed: {swift_error}")
-                        swift_result = {}
+                    # Fallback: Create empty compliance
+                    logger.info("MODE: Falling back to empty compliance results...")
+                    unified_compliance = {}
             
             compliance_analysis_time = time.time() - compliance_analysis_start
             logger.info(f"SUCCESS:Compliance analysis completed in {compliance_analysis_time:.2f}s")
 
             # Complete compliance check progress tracking
             if progress_tracker:
-                # Count compliance issues for progress tracking
-                compliance_issues = len(ucp600_result) + len(swift_result)
+                # Count compliance issues from unified compliance for progress tracking
+                compliance_issues = 0
+                if unified_compliance:
+                    # Count non-compliant fields
+                    for field_data in unified_compliance.values():
+                        if isinstance(field_data, dict) and not field_data.get("compliant", True):
+                            compliance_issues += 1
                 progress_tracker.compliance_complete(compliance_issues)
 
             # Transform compliance data for UI consumption
@@ -7658,7 +7658,7 @@ Return compliance status for each field.'''
                 
                 for field_name, field_data in compliance_data.items():
                     if isinstance(field_data, dict):
-                        is_compliant = field_data.get("compliance", True)
+                        is_compliant = field_data.get("compliant", True)
                         severity = field_data.get("severity", "medium")
                         reason = field_data.get("reason", "Compliance check completed")
                         
@@ -7688,30 +7688,23 @@ Return compliance status for each field.'''
                     "compliant_fields": compliant_count
                 }
 
-            # Transform compliance results for UI
-            swift_compliance = transform_compliance_for_ui(swift_result, "swift")
-            ucp600_compliance = transform_compliance_for_ui(ucp600_result, "ucp600")
-
-            # Debug compliance scores
-            logger.info(f"SEARCH: SWIFT compliance result: {swift_compliance}")
-            logger.info(f"SEARCH: UCP600 compliance result: {ucp600_compliance}")
-
-            # Calculate overall compliance score
-            compliance_scores = []
-            if swift_compliance and swift_compliance.get('compliance_percentage') is not None:
-                swift_score = swift_compliance['compliance_percentage']
-                compliance_scores.append(swift_score)
-                logger.info(f"ANALYTICS: SWIFT compliance percentage: {swift_score}%")
-            if ucp600_compliance and ucp600_compliance.get('compliance_percentage') is not None:
-                ucp600_score = ucp600_compliance['compliance_percentage']
-                compliance_scores.append(ucp600_score)
-                logger.info(f"ANALYTICS: UCP600 compliance percentage: {ucp600_score}%")
-            
-            logger.info(f"ANALYTICS: All compliance scores: {compliance_scores}")
-            
-            # Calculate average compliance score, default to 85 if no compliance data
-            overall_compliance_score = round(sum(compliance_scores) / len(compliance_scores)) if compliance_scores else 85
-            logger.info(f"ANALYTICS: Overall compliance score: {overall_compliance_score}%")
+            # Calculate overall compliance score from unified compliance
+            overall_compliance_score = 85  # Default score
+            if unified_compliance:
+                compliant_count = 0
+                total_count = len(unified_compliance)
+                
+                for field_data in unified_compliance.values():
+                    if isinstance(field_data, dict) and field_data.get("compliant", True):
+                        compliant_count += 1
+                
+                if total_count > 0:
+                    overall_compliance_score = round((compliant_count / total_count) * 100)
+                    logger.info(f"ANALYTICS: Unified compliance: {compliant_count}/{total_count} fields compliant = {overall_compliance_score}%")
+                else:
+                    logger.info(f"ANALYTICS: No unified compliance data, using default score: {overall_compliance_score}%")
+            else:
+                logger.info(f"ANALYTICS: No unified compliance result, using default score: {overall_compliance_score}%")
 
             # === Generate preview images ===
             preview_images = []
@@ -7789,12 +7782,8 @@ Return compliance status for each field.'''
                     "document_id": document_id or detected_doc_type
                 },
                 "compliance": {
-                    "swift": swift_compliance,
-                    "ucp600": ucp600_compliance,
-                    "legacy": compliance_result
+                    "unified": unified_compliance   # Unified rule-based compliance
                 },
-                "swift_result": swift_result,
-                "ucp600_result": ucp600_result,
                 "preview_images": preview_images,
                 "processing_time": {
                     "total": f"{total_time:.1f}",
@@ -8311,8 +8300,8 @@ Guidelines:
                 logger.info(f"Coordinate mapping disabled - will be done on-demand for accuracy")
                 coordinate_mapping_time = 0.0
 
-                # === UCP600/SWIFT COMPLIANCE ANALYSIS ===
-                logger.info(f"SEARCH: Running UCP600/SWIFT compliance analysis for {group['document_type']}")
+                # === UNIFIED COMPLIANCE ANALYSIS ===
+                logger.info(f"SEARCH: Running unified compliance analysis for {group['document_type']}")
                 
                 # Start compliance check progress tracking
                 if progress_tracker:
@@ -8320,9 +8309,8 @@ Guidelines:
                 
                 compliance_analysis_start = time.time()
                 
-                # Initialize compliance results
-                ucp600_result = {}
-                swift_result = {}
+                # Initialize unified compliance result
+                unified_compliance = {}  # NEW: Unified compliance result
                 
                 # Perform UCP600 and SWIFT compliance analysis if we have extracted fields
                 if extracted_fields:
@@ -8334,43 +8322,32 @@ Guidelines:
                     logger.info(f"Original fields: {len(extracted_fields)}, Compliance fields: {len(compliance_fields)}")
                     
                     try:
-                        # PERFORMANCE OPTIMIZATION: Use unified compliance analysis for page-by-page mode
-                        from app.utils.query_utils import analyze_unified_compliance_fast
+                        # RULE-BASED UNIFIED COMPLIANCE: Use document-specific rules for page-by-page mode
+                        from app.utils.query_utils import analyze_unified_compliance_fast, get_unified_compliance_result, clear_unified_compliance_result
                         
-                        logger.info(f"SPEED: PAGE-BY-PAGE UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields")
+                        # Clear any previous compliance results
+                        clear_unified_compliance_result()
+                        
+                        logger.info(f"SPEED: PAGE-BY-PAGE RULE-BASED UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields")
+                        logger.info(f"Document type: {group['document_type']}")
                         logger.info(f"Compliance fields: {list(compliance_fields.keys())}")
                         
-                        # Single call for both UCP600 and SWIFT analysis (saves 8-12 seconds per page)
-                        ucp600_result, swift_result = analyze_unified_compliance_fast(compliance_fields)
+                        # Single unified compliance call using document-specific rules
+                        analyze_unified_compliance_fast(compliance_fields, group['document_type'])
                         
-                        logger.info(f"SUCCESS:Page unified compliance completed: UCP600={len(ucp600_result)}, SWIFT={len(swift_result)}")
-                        logger.info(f"UCP600 sample: {str(ucp600_result)[:150]}...")
-                        logger.info(f"SWIFT sample: {str(swift_result)[:150]}...")
+                        # Get the actual unified compliance result
+                        unified_compliance = get_unified_compliance_result()
+                        
+                        logger.info(f"SUCCESS:Page unified compliance completed: {len(unified_compliance)} fields analyzed")
+                        logger.info(f"Unified compliance sample: {str(unified_compliance)[:150]}...")
                         
                     except Exception as e:
                         logger.error(f"ERROR: Page unified compliance analysis failed: {e}")
                         logger.error(f"Traceback: {traceback.format_exc()}")
                         
-                        # Fallback to original separate analysis
-                        logger.info("MODE: Page fallback to separate UCP600/SWIFT analysis...")
-                        ucp600_result = {}
-                        swift_result = {}
-                        
-                        try:
-                            logger.info(f"Running page fallback UCP600 analysis on {len(compliance_fields)} fields")
-                            ucp600_result = analyze_ucp_compliance_chromaRAG(compliance_fields)
-                            logger.info(f"Page fallback UCP600 completed: {len(ucp600_result)} results")
-                        except Exception as ucp_error:
-                            logger.error(f"Page fallback UCP600 failed: {ucp_error}")
-                            ucp600_result = {}
-                        
-                        try:
-                            logger.info(f"Running page fallback SWIFT analysis on {len(compliance_fields)} fields")
-                            swift_result = analyze_swift_compliance_chromaRAG(compliance_fields)
-                            logger.info(f"Page fallback SWIFT completed: {len(swift_result)} results")
-                        except Exception as swift_error:
-                            logger.error(f"Page fallback SWIFT failed: {swift_error}")
-                            swift_result = {}
+                        # Fallback: Create empty compliance
+                        logger.info("MODE: Page fallback to empty compliance results...")
+                        unified_compliance = {}
                 
                 compliance_analysis_time = time.time() - compliance_analysis_start
                 logger.info(f"SUCCESS:Compliance analysis completed in {compliance_analysis_time:.2f}s")
@@ -8425,7 +8402,7 @@ Guidelines:
                     
                     for field_name, field_data in compliance_data.items():
                         if isinstance(field_data, dict):
-                            is_compliant = field_data.get("compliance", True)
+                            is_compliant = field_data.get("compliant", True)
                             severity = field_data.get("severity", "medium")
                             reason = field_data.get("reason", "Compliance check completed")
                             
@@ -8455,30 +8432,23 @@ Guidelines:
                         "compliant_fields": compliant_count
                     }
 
-                # Transform compliance results for UI
-                swift_compliance = transform_compliance_for_ui(swift_result, "swift")
-                ucp600_compliance = transform_compliance_for_ui(ucp600_result, "ucp600")
-
-                # Debug compliance scores
-                logger.info(f"SEARCH: SWIFT compliance result: {swift_compliance}")
-                logger.info(f"SEARCH: UCP600 compliance result: {ucp600_compliance}")
-
-                # Calculate overall compliance score
-                compliance_scores = []
-                if swift_compliance and swift_compliance.get('compliance_percentage') is not None:
-                    swift_score = swift_compliance['compliance_percentage']
-                    compliance_scores.append(swift_score)
-                    logger.info(f"ANALYTICS: SWIFT compliance percentage: {swift_score}%")
-                if ucp600_compliance and ucp600_compliance.get('compliance_percentage') is not None:
-                    ucp600_score = ucp600_compliance['compliance_percentage']
-                    compliance_scores.append(ucp600_score)
-                    logger.info(f"ANALYTICS: UCP600 compliance percentage: {ucp600_score}%")
-                
-                logger.info(f"ANALYTICS: All compliance scores: {compliance_scores}")
-                
-                # Calculate average compliance score, default to 85 if no compliance data
-                overall_compliance_score = round(sum(compliance_scores) / len(compliance_scores)) if compliance_scores else 85
-                logger.info(f"ANALYTICS: Overall compliance score: {overall_compliance_score}%")
+                # Calculate overall compliance score from unified compliance
+                overall_compliance_score = 85  # Default score
+                if unified_compliance:
+                    compliant_count = 0
+                    total_count = len(unified_compliance)
+                    
+                    for field_data in unified_compliance.values():
+                        if isinstance(field_data, dict) and field_data.get("compliant", True):
+                            compliant_count += 1
+                    
+                    if total_count > 0:
+                        overall_compliance_score = round((compliant_count / total_count) * 100)
+                        logger.info(f"ANALYTICS: Page unified compliance: {compliant_count}/{total_count} fields compliant = {overall_compliance_score}%")
+                    else:
+                        logger.info(f"ANALYTICS: No unified compliance data, using default score: {overall_compliance_score}%")
+                else:
+                    logger.info(f"ANALYTICS: No unified compliance result, using default score: {overall_compliance_score}%")
 
                 # === Categorize fields by type (mandatory/optional/conditional) ===
                 mandatory_fields = {}
@@ -8539,12 +8509,8 @@ Guidelines:
                         "document_id": group['document_type']
                     },
                     "compliance": {
-                        "swift": swift_compliance,
-                        "ucp600": ucp600_compliance,
-                        "legacy": compliance_result
+                        "unified": unified_compliance   # Unified rule-based compliance
                     },
-                    "swift_result": swift_result,
-                    "ucp600_result": ucp600_result,
                     "preview_images": [all_preview_images[page-1] for page in group['pages'] if page-1 < len(all_preview_images)],
                     "processing_time": {
                         "total": f"{quality_time + ocr_time + classification_time + extraction_time + coordinate_mapping_time + compliance_analysis_time:.1f}",
@@ -9020,18 +8986,13 @@ Guidelines:
 
                 llm_time = time.time() - llm_start
 
-                # Aggregate SWIFT and UCP600 compliance results
-                combined_swift_result = {}
-                combined_ucp600_result = {}
+                # Aggregate unified compliance results
+                combined_unified_result = {}
 
                 for page_result in page_analysis_results:
-                    # Aggregate SWIFT compliance results
-                    if "swift_result" in page_result:
-                        combined_swift_result.update(page_result["swift_result"])
-
-                    # Aggregate UCP600 compliance results
-                    if "ucp600_result" in page_result:
-                        combined_ucp600_result.update(page_result["ucp600_result"])
+                    # Aggregate unified compliance results
+                    if "unified_compliance" in page_result:
+                        combined_unified_result.update(page_result["unified_compliance"])
 
                 # Start classification timing
                 classification_start = time.time()
@@ -9110,8 +9071,9 @@ Guidelines:
                     "confidence": confidence,
                     "preview_images": preview_images,
                     "page_classifications": page_classifications,
-                    "swift_result": combined_swift_result,
-                    "ucp600_result": combined_ucp600_result,
+                    "compliance": {
+                        "unified": combined_unified_result
+                    },
                     "analysis_result": {
                         "per_page": page_analysis_results
                     },

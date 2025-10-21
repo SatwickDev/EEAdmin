@@ -717,6 +717,70 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
 
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        }
+
+        /* Enhanced Compliance Analysis Button */
+        .compliance-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .compliance-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .compliance-btn:hover::before {
+            left: 100%;
+        }
+
+        .compliance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5);
+            background: linear-gradient(135deg, #3730a3 0%, #6b21a8 50%, #be185d 100%);
+        }
+
         /* Animate float from index.html */
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -1952,10 +2016,14 @@
                                                 <p v-if="result.pageRange" class="text-xs text-purple-600 font-medium">{% raw %}{{ result.pageRange }}{% endraw %}</p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center gap-4">
+                                        <div class="flex items-center gap-3">
                                             <button @click="viewDetails(index)" class="btn-primary text-sm px-4 py-2 group">
                                                 <i class="mdi mdi-eye mr-1 group-hover:animate-pulse"></i>
                                                 View Details
+                                            </button>
+                                            <button @click="viewDiscrepancies(result, index)" class="compliance-btn text-sm px-4 py-2 group">
+                                                <i class="mdi mdi-shield-check-outline mr-1 group-hover:animate-pulse"></i>
+                                                Compliance Analysis
                                             </button>
                                             <button @click="toggleInsights(index)" class="btn-secondary text-sm px-4 py-2 group">
                                                 <i :class="result.insightsExpanded ? 'mdi mdi-chevron-up' : 'mdi mdi-chart-line'" class="mr-1 group-hover:animate-bounce"></i>
@@ -2574,7 +2642,7 @@
                                 <div class="flex items-center justify-between mb-3">
                                     <div>
                                         <h4 class="font-semibold text-gray-700">LLM Analysis</h4>
-                                        <p class="text-xs text-gray-500">UCP600 & SWIFT Validation</p>
+                                        <p class="text-xs text-gray-500">Unified Compliance Validation</p>
                                     </div>
                                     <i class="mdi mdi-brain text-3xl text-green-500"></i>
                                 </div>
@@ -2828,61 +2896,12 @@
                             </div>
                         </div>
 
-                        <!-- Modern Navigation Tabs -->
-                        <div class="bg-white border-b border-gray-200 sticky top-0 z-10">
-                            <nav class="flex px-6">
-                                <button @click="activeTab = 'fields'"
-                                        :class="{ 
-                                            'border-indigo-500 text-indigo-600 bg-indigo-50': activeTab === 'fields', 
-                                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'fields' 
-                                        }"
-                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
-                                    <i class="mdi mdi-format-list-bulleted text-lg"></i>
-                                    <span>Fields</span>
-                                    <div v-if="selectedResult?.extractedFields" 
-                                         class="ml-1 px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">
-                                        {% raw %}{{ Object.keys(selectedResult.extractedFields).length }}{% endraw %}
-                                    </div>
-                                </button>
-                                
-                                {#<button @click="selectedResult?.compliance?.ucp600 ? activeTab = 'ucp600' : null"
-                                        :class="[
-                                            activeTab === 'ucp600' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500',
-                                            selectedResult?.compliance?.ucp600 ? 'hover:text-gray-700 hover:border-gray-300 cursor-pointer' : 'opacity-50 cursor-not-allowed'
-                                        ]"
-                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
-                                    <i class="mdi mdi-bank text-lg"></i>
-                                    <span>UCP600</span>
-                                </button>
-                                
-                                <button @click="selectedResult?.compliance?.swift ? activeTab = 'swift' : null"
-                                        :class="[
-                                            activeTab === 'swift' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500',
-                                            selectedResult?.compliance?.swift ? 'hover:text-gray-700 hover:border-gray-300 cursor-pointer' : 'opacity-50 cursor-not-allowed'
-                                        ]"
-                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
-                                    <i class="mdi mdi-swap-horizontal text-lg"></i>
-                                    <span>SWIFT</span>
-                                </button>
-                                
-                                <button @click="activeTab = 'compliance'"
-                                        :class="{ 
-                                            'border-indigo-500 text-indigo-600 bg-indigo-50': activeTab === 'compliance', 
-                                            'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'compliance' 
-                                        }"
-                                        class="flex-1 whitespace-nowrap py-4 px-4 border-b-2 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2">
-                                    <i class="mdi mdi-shield-check text-lg"></i>
-                                    <span>Compliance</span>
-                                </button>#}
-                            </nav>
-                        </div>
-
                         
-                        <!-- Tab Content Area -->
+                        <!-- Fields Content Area -->
                         <div class="flex-1 overflow-y-auto">
                             
-                            <!-- Enhanced Fields Tab -->
-                            <div v-if="activeTab === 'fields'" class="p-6">
+                            <!-- Enhanced Fields Display -->
+                            <div class="p-6">
                                 <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="space-y-6">
                                     <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
                                          :key="fieldKey"
@@ -3014,524 +3033,342 @@
                                 </div>
                             </div>
 
-                            <!-- Compliance Tab -->
-                            <div v-if="activeTab === 'compliance'" class="p-6">
-                                <div v-if="selectedResult?.compliance">
-                                    <!-- Overall Compliance Header -->
-                                    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8 border border-indigo-100">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-lg"
-                                                     :class="selectedResult.compliance.status === 'compliant' ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-red-400 to-red-600'">
-                                                    <i class="text-3xl text-white"
-                                                       :class="selectedResult.compliance.status === 'compliant' ? 'mdi mdi-shield-check' : 'mdi mdi-shield-alert'"></i>
-                                                </div>
-                                                <div>
-                                                    <h3 class="text-2xl font-bold text-gray-800 mb-1">
-                                                        {% raw %}{{ selectedResult.compliance.status === 'compliant' ? 'Fully Compliant' : 'Compliance Issues Found' }}{% endraw %}
-                                                    </h3>
-                                                    <p class="text-gray-600">Overall compliance assessment completed</p>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-4xl font-bold mb-1"
-                                                     :class="selectedResult.complianceScore >= 90 ? 'text-green-600' : selectedResult.complianceScore >= 70 ? 'text-yellow-600' : 'text-red-600'">
-                                                    {% raw %}{{ selectedResult.complianceScore }}{% endraw %}%
-                                                </div>
-                                                <p class="text-sm text-gray-500">Compliance Score</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Detailed Entity Compliance Breakdown -->
-                                    <div class="space-y-6">
-                                        <div class="flex items-center justify-between mb-6">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-                                                    <i class="mdi mdi-format-list-bulleted text-indigo-600 text-lg"></i>
-                                                </div>
-                                                <h4 class="text-xl font-bold text-gray-800">Field-by-Field Compliance Analysis</h4>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Navigation Help -->
-                                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                                            <div class="flex items-start gap-3">
-                                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
-                                                    <i class="mdi mdi-information text-blue-600 text-lg"></i>
-                                                </div>
-                                                <div class="flex-1">
-                                                    <p class="text-blue-800 font-medium mb-2">Need More Details?</p>
-                                                    <p class="text-blue-700 text-sm">
-                                                        For detailed compliance rules and specific violations, check the 
-                                                        <button @click="activeTab = 'ucp600'" 
-                                                                class="font-semibold text-blue-800 hover:text-blue-900 underline hover:no-underline transition-all">
-                                                            UCP600
-                                                        </button>
-                                                        and 
-                                                        <button @click="activeTab = 'swift'" 
-                                                                class="font-semibold text-blue-800 hover:text-blue-900 underline hover:no-underline transition-all">
-                                                            SWIFT
-                                                        </button>
-                                                        tabs above for comprehensive rule analysis.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="grid gap-6">
-                                            <div v-for="(fieldData, fieldKey) in getExtractedFieldsWithDetails()" :key="'compliance-' + fieldKey"
-                                                 class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-                                                
-                                                <!-- Entity Header -->
-                                                <div class="flex items-start justify-between mb-4">
-                                                    <div class="flex-1">
-                                                        <div class="flex items-center gap-2 mb-2">
-                                                            <div class="w-3 h-3 rounded-full bg-indigo-500"></div>
-                                                            <h5 class="text-lg font-semibold text-gray-800">{% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}</h5>
-                                                        </div>
-                                                        <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                                            <p class="text-gray-700 text-sm font-medium">{% raw %}{{ fieldData?.value || 'No value extracted' }}{% endraw %}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Compliance Standards Grid -->
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                                    <!-- UCP600 Compliance Card -->
-                                                    <div class="group">
-                                                        <div class="bg-gradient-to-br rounded-xl p-4 transition-all duration-300 hover:scale-105"
-                                                             :class="getUCP600Compliance(fieldKey) ? 'from-green-50 to-emerald-50 border-2 border-green-200 hover:border-green-300' : 'from-red-50 to-pink-50 border-2 border-red-200 hover:border-red-300'">
-                                                            <div class="flex items-center justify-between">
-                                                                <div class="flex items-center gap-3">
-                                                                    <div class="w-10 h-10 rounded-full flex items-center justify-center"
-                                                                         :class="getUCP600Compliance(fieldKey) ? 'bg-green-100' : 'bg-red-100'">
-                                                                        <i class="text-xl"
-                                                                           :class="getUCP600Compliance(fieldKey) ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-close-circle text-red-600'"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <p class="font-semibold text-gray-800">UCP600</p>
-                                                                        <p class="text-xs text-gray-600">Trade Rules</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="text-right">
-                                                                    <div class="px-3 py-1 rounded-full text-xs font-bold"
-                                                                         :class="getUCP600Compliance(fieldKey) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                                                        {% raw %}{{ getUCP600Compliance(fieldKey) ? 'COMPLIANT' : 'NON-COMPLIANT' }}{% endraw %}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- SWIFT Compliance Card -->
-                                                    <div class="group">
-                                                        <div class="bg-gradient-to-br rounded-xl p-4 transition-all duration-300 hover:scale-105"
-                                                             :class="getSWIFTCompliance(fieldKey) ? 'from-blue-50 to-indigo-50 border-2 border-blue-200 hover:border-blue-300' : 'from-red-50 to-pink-50 border-2 border-red-200 hover:border-red-300'">
-                                                            <div class="flex items-center justify-between">
-                                                                <div class="flex items-center gap-3">
-                                                                    <div class="w-10 h-10 rounded-full flex items-center justify-center"
-                                                                         :class="getSWIFTCompliance(fieldKey) ? 'bg-blue-100' : 'bg-red-100'">
-                                                                        <i class="text-xl"
-                                                                           :class="getSWIFTCompliance(fieldKey) ? 'mdi mdi-check-circle text-blue-600' : 'mdi mdi-close-circle text-red-600'"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <p class="font-semibold text-gray-800">SWIFT</p>
-                                                                        <p class="text-xs text-gray-600">Message Format</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="text-right">
-                                                                    <div class="px-3 py-1 rounded-full text-xs font-bold"
-                                                                         :class="getSWIFTCompliance(fieldKey) ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'">
-                                                                        {% raw %}{{ getSWIFTCompliance(fieldKey) ? 'COMPLIANT' : 'NON-COMPLIANT' }}{% endraw %}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Summary Statistics -->
-                                    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                                                    <i class="mdi mdi-check-all text-green-600 text-xl"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="text-2xl font-bold text-green-700">{% raw %}{{ Object.keys(getExtractedFieldsWithDetails()).filter(key => getUCP600Compliance(key) && getSWIFTCompliance(key)).length }}{% endraw %}</p>
-                                                    <p class="text-sm text-green-600">Fully Compliant</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                                                    <i class="mdi mdi-alert text-yellow-600 text-xl"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="text-2xl font-bold text-yellow-700">{% raw %}{{ Object.keys(getExtractedFieldsWithDetails()).filter(key => (getUCP600Compliance(key) && !getSWIFTCompliance(key)) || (!getUCP600Compliance(key) && getSWIFTCompliance(key))).length }}{% endraw %}</p>
-                                                    <p class="text-sm text-yellow-600">Partial Issues</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="bg-gradient-to-br from-red-50 to-pink-50 border border-red-200 rounded-xl p-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                                                    <i class="mdi mdi-close-circle text-red-600 text-xl"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="text-2xl font-bold text-red-700">{% raw %}{{ Object.keys(getExtractedFieldsWithDetails()).filter(key => !getUCP600Compliance(key) && !getSWIFTCompliance(key)).length }}{% endraw %}</p>
-                                                    <p class="text-sm text-red-600">Non-Compliant</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Legacy Violations and Warnings (if any) -->
-                                    <div v-if="selectedResult.compliance.violations && selectedResult.compliance.violations.length > 0" class="mt-8">
-                                        <div class="flex items-center gap-3 mb-4">
-                                            <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
-                                                <i class="mdi mdi-alert-circle text-red-600 text-lg"></i>
-                                            </div>
-                                            <h4 class="text-lg font-bold text-red-700">Additional Violations</h4>
-                                        </div>
-                                        <div class="space-y-3">
-                                            <div v-for="(violation, idx) in selectedResult.compliance.violations" :key="'v-' + idx"
-                                                 class="bg-red-50 border-l-4 border-red-400 rounded-r-lg p-4">
-                                                <p class="text-red-800 font-medium">{% raw %}{{ violation.description || violation }}{% endraw %}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div v-if="selectedResult.compliance.warnings && selectedResult.compliance.warnings.length > 0" class="mt-6">
-                                        <div class="flex items-center gap-3 mb-4">
-                                            <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
-                                                <i class="mdi mdi-alert text-yellow-600 text-lg"></i>
-                                            </div>
-                                            <h4 class="text-lg font-bold text-yellow-700">Additional Warnings</h4>
-                                        </div>
-                                        <div class="space-y-3">
-                                            <div v-for="(warning, idx) in selectedResult.compliance.warnings" :key="'w-' + idx"
-                                                 class="bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg p-4">
-                                                <p class="text-yellow-800 font-medium">{% raw %}{{ warning.description || warning }}{% endraw %}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="text-center py-12">
-                                    <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                                        <i class="mdi mdi-file-document-outline text-gray-400 text-3xl"></i>
-                                    </div>
-                                    <h3 class="text-lg font-semibold text-gray-600 mb-2">No Compliance Data Available</h3>
-                                    <p class="text-gray-500">No compliance analysis has been performed for this document.</p>
-                                </div>
-                            </div>
-
-                            <!-- UCP600 Tab -->
-                            <div v-if="activeTab === 'ucp600' && selectedResult?.compliance?.ucp600" class="p-6">
-                                <!-- Display compliance data regardless of structure -->
-                                <div v-if="typeof selectedResult.compliance.ucp600 === 'object'" class="space-y-4">
-                                <!-- Header with icon -->
-                                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
-                                            <i class="mdi mdi-file-certificate text-3xl text-purple-600"></i>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-xl font-bold text-gray-800">UCP600 Compliance Analysis</h4>
-                                            <p class="text-gray-600 text-sm mt-1">Uniform Customs and Practice for Documentary Credits (UCP 600)</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- If it has status property -->
-                                <div v-if="selectedResult.compliance.ucp600.status" class="bg-white rounded-xl shadow-sm border p-6">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-14 h-14 rounded-full flex items-center justify-center"
-                                                 :class="selectedResult.compliance.ucp600.status === 'compliant' ? 'bg-green-100' : 'bg-red-100'">
-                                                <i class="text-2xl"
-                                                   :class="selectedResult.compliance.ucp600.status === 'compliant' ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="text-lg font-bold text-gray-900"
-                                                    :class="selectedResult.compliance.ucp600.status === 'compliant' ? 'text-green-700' : 'text-red-700'">
-                                                    {% raw %}{{ selectedResult.compliance.ucp600.status === 'compliant' ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                </h4>
-                                                <p class="text-sm text-gray-500">Overall compliance status</p>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                                  :class="selectedResult.compliance.ucp600.status === 'compliant' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                                <i class="mdi mdi-shield-check mr-1"></i>
-                                                Verified
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Display all properties as single row cards -->
-                                <div class="space-y-4">
-                                    <div v-for="(value, key) in getUCP600TableData()" :key="'ucp-card-' + key"
-                                         class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
-                                        <div class="flex items-start justify-between">
-                                            <div class="flex-1">
-                                                <!-- Field Name -->
-                                                <div class="flex items-center gap-3 mb-4">
-                                                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                                                        <i class="mdi mdi-tag text-white text-lg"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h4 class="text-lg font-bold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h4>
-                                                        <p class="text-sm text-gray-500">UCP600 compliance field</p>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Value Information -->
-                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-4">
-                                                    <!-- Actual Value -->
-                                                    <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200">
-                                                        <label class="text-sm font-semibold text-gray-700 mb-2 block">Field Value</label>
-                                                        <div class="min-h-[60px] text-gray-900 bg-white rounded-lg px-4 py-3 border border-gray-200 font-medium">
-                                                            {% raw %}{{ value.value || 'Not provided' }}{% endraw %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Compliance Status -->
-                                                <div class="mb-3">
-                                                    <span v-if="typeof value === 'object' && value.compliance !== undefined"
-                                                          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                                          :class="value.compliance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                                        <i :class="value.compliance ? 'mdi mdi-check-circle mr-2' : 'mdi mdi-alert-circle mr-2'"></i>
-                                                        {% raw %}{{ value.compliance ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                    </span>
-                                                    <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
-                                                        <i class="mdi mdi-information mr-2"></i>
-                                                        {% raw %}{{ typeof value === 'string' ? value : JSON.stringify(value) }}{% endraw %}
-                                                    </span>
-                                                </div>
-
-                                                <!-- Reason/Description -->
-                                                <div v-if="typeof value === 'object' && value.reason" class="mt-2">
-                                                    <label class="block text-xs font-medium text-gray-500 mb-1">Compliance Reason</label>
-                                                    <p class="text-sm text-gray-700 bg-gray-50 rounded-md p-3">
-                                                        <i class="mdi mdi-text-box-outline mr-2"></i>
-                                                        {% raw %}{{ value.reason }}{% endraw %}
-                                                    </p>
-                                                </div>
-
-                                                <!-- Additional metadata if available -->
-                                                <div v-if="typeof value === 'object' && value.severity" class="mt-3">
-                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
-                                                          :class="{
-                                                              'bg-red-100 text-red-700': value.severity === 'high',
-                                                              'bg-yellow-100 text-yellow-700': value.severity === 'medium',
-                                                              'bg-blue-100 text-blue-700': value.severity === 'low'
-                                                          }">
-                                                        <i class="mdi mdi-alert mr-1"></i>
-                                                        Severity: {% raw %}{{ value.severity }}{% endraw %}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Status Icon -->
-                                            <div class="ml-4">
-                                                <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                                                     :class="typeof value === 'object' && value.compliance !== undefined ? 
-                                                             (value.compliance ? 'bg-green-100' : 'bg-red-100') : 'bg-gray-100'">
-                                                    <i class="text-lg"
-                                                       :class="typeof value === 'object' && value.compliance !== undefined ? 
-                                                               (value.compliance ? 'mdi mdi-check text-green-600' : 'mdi mdi-close text-red-600') : 'mdi mdi-help text-gray-500'"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div v-if="selectedResult.compliance.ucp600.violations && selectedResult.compliance.ucp600.violations.length > 0" class="mb-6">
-                                <h5 class="font-medium text-red-700 mb-3">Violations</h5>
-                                <div v-for="(violation, idx) in selectedResult.compliance.ucp600.violations" :key="'ucp-v-' + idx"
-                                     class="bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
-                                    <p class="text-red-800"><strong>{% raw %}{{ violation.field }}{% endraw %}:</strong> {% raw %}{{ violation.description }}{% endraw %}</p>
-                                    <p v-if="violation.article" class="text-red-700 text-sm mt-1">Article: {% raw %}{{ violation.article }}{% endraw %}</p>
-                                </div>
-                            </div>
-
-                            <div v-if="selectedResult.compliance.ucp600.warnings && selectedResult.compliance.ucp600.warnings.length > 0">
-                                <h5 class="font-medium text-yellow-700 mb-3">Warnings</h5>
-                                <div v-for="(warning, idx) in selectedResult.compliance.ucp600.warnings" :key="'ucp-w-' + idx"
-                                     class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                                    <p class="text-yellow-800"><strong>{% raw %}{{ warning.field }}{% endraw %}:</strong> {% raw %}{{ warning.description }}{% endraw %}</p>
-                                    <p v-if="warning.article" class="text-yellow-700 text-sm mt-1">Article: {% raw %}{{ warning.article }}{% endraw %}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SWIFT Tab -->
-                        <div v-if="activeTab === 'swift' && selectedResult?.compliance?.swift" class="space-y-4">
-                            <!-- Display compliance data regardless of structure -->
-                            <div v-if="typeof selectedResult.compliance.swift === 'object'" class="space-y-4">
-                                <!-- Header with icon -->
-                                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center">
-                                            <i class="mdi mdi-bank-transfer text-3xl text-blue-600"></i>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-xl font-bold text-gray-800">SWIFT Compliance Analysis</h4>
-                                            <p class="text-gray-600 text-sm mt-1">Society for Worldwide Interbank Financial Telecommunication Standards</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- If it has status property -->
-                                <div v-if="selectedResult.compliance.swift.status" class="bg-white rounded-xl shadow-sm border p-6">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-14 h-14 rounded-full flex items-center justify-center"
-                                                 :class="selectedResult.compliance.swift.status === 'compliant' ? 'bg-green-100' : 'bg-red-100'">
-                                                <i class="text-2xl"
-                                                   :class="selectedResult.compliance.swift.status === 'compliant' ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="text-lg font-bold text-gray-900"
-                                                    :class="selectedResult.compliance.swift.status === 'compliant' ? 'text-green-700' : 'text-red-700'">
-                                                    {% raw %}{{ selectedResult.compliance.swift.status === 'compliant' ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                </h4>
-                                                <p class="text-sm text-gray-500">Overall compliance status</p>
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                                  :class="selectedResult.compliance.swift.status === 'compliant' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                                <i class="mdi mdi-shield-check mr-1"></i>
-                                                Verified
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Display all properties as single row cards -->
-                                <div class="space-y-4">
-                                    <div v-for="(value, key) in getSWIFTTableData()" :key="'swift-card-' + key"
-                                         class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200">
-                                        <div class="flex items-start justify-between">
-                                            <div class="flex-1">
-                                                <!-- Field Name -->
-                                                <div class="flex items-center gap-3 mb-4">
-                                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                                                        <i class="mdi mdi-tag text-white text-lg"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h4 class="text-lg font-bold text-gray-900">{% raw %}{{ formatFieldName(key) }}{% endraw %}</h4>
-                                                        <p class="text-sm text-gray-500">SWIFT compliance field</p>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Value Information -->
-                                                <div v-if="typeof value === 'object' && value.value !== undefined" class="mb-4">
-                                                    <!-- Actual Value -->
-                                                    <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200">
-                                                        <label class="text-sm font-semibold text-gray-700 mb-2 block">Field Value</label>
-                                                        <div class="min-h-[60px] text-gray-900 bg-white rounded-lg px-4 py-3 border border-gray-200 font-medium">
-                                                            {% raw %}{{ value.value || 'Not provided' }}{% endraw %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Compliance Status -->
-                                                <div class="mb-3">
-                                                    <span v-if="typeof value === 'object' && value.compliance !== undefined"
-                                                          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                                          :class="value.compliance ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                                        <i :class="value.compliance ? 'mdi mdi-check-circle mr-2' : 'mdi mdi-alert-circle mr-2'"></i>
-                                                        {% raw %}{{ value.compliance ? 'Compliant' : 'Non-Compliant' }}{% endraw %}
-                                                    </span>
-                                                    <span v-else class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
-                                                        <i class="mdi mdi-information mr-2"></i>
-                                                        {% raw %}{{ typeof value === 'string' ? value : JSON.stringify(value) }}{% endraw %}
-                                                    </span>
-                                                </div>
-
-                                                <!-- Reason/Description -->
-                                                <div v-if="typeof value === 'object' && value.reason" class="mt-2">
-                                                    <label class="block text-xs font-medium text-gray-500 mb-1">Compliance Reason</label>
-                                                    <p class="text-sm text-gray-700 bg-gray-50 rounded-md p-3">
-                                                        <i class="mdi mdi-text-box-outline mr-2"></i>
-                                                        {% raw %}{{ value.reason }}{% endraw %}
-                                                    </p>
-                                                </div>
-
-                                                <!-- Additional metadata if available -->
-                                                <div class="flex flex-wrap gap-2 mt-3">
-                                                    <span v-if="typeof value === 'object' && value.severity"
-                                                          class="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
-                                                          :class="{
-                                                              'bg-red-100 text-red-700': value.severity === 'high',
-                                                              'bg-yellow-100 text-yellow-700': value.severity === 'medium',
-                                                              'bg-blue-100 text-blue-700': value.severity === 'low'
-                                                          }">
-                                                        <i class="mdi mdi-alert mr-1"></i>
-                                                        Severity: {% raw %}{{ value.severity }}{% endraw %}
-                                                    </span>
-
-                                                    <!-- SWIFT Standard if available -->
-                                                    <span v-if="typeof value === 'object' && value.standard"
-                                                          class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-indigo-50 text-indigo-700">
-                                                        <i class="mdi mdi-book-open-variant mr-1"></i>
-                                                        Standard: {% raw %}{{ value.standard }}{% endraw %}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Status Icon -->
-                                            <div class="ml-4">
-                                                <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                                                     :class="typeof value === 'object' && value.compliance !== undefined ? 
-                                                             (value.compliance ? 'bg-green-100' : 'bg-red-100') : 'bg-gray-100'">
-                                                    <i class="text-lg"
-                                                       :class="typeof value === 'object' && value.compliance !== undefined ? 
-                                                               (value.compliance ? 'mdi mdi-check text-green-600' : 'mdi mdi-close text-red-600') : 'mdi mdi-help text-gray-500'"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div v-if="selectedResult.compliance.swift.violations && selectedResult.compliance.swift.violations.length > 0" class="mb-6">
-                                <h5 class="font-medium text-red-700 mb-3">Violations</h5>
-                                <div v-for="(violation, idx) in selectedResult.compliance.swift.violations" :key="'swift-v-' + idx"
-                                     class="bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
-                                    <p class="text-red-800"><strong>{% raw %}{{ violation.field }}{% endraw %}:</strong> {% raw %}{{ violation.description }}{% endraw %}</p>
-                                    <p v-if="violation.standard" class="text-red-700 text-sm mt-1">Standard: {% raw %}{{ violation.standard }}{% endraw %}</p>
-                                </div>
-                            </div>
-
-                            <div v-if="selectedResult.compliance.swift.warnings && selectedResult.compliance.swift.warnings.length > 0">
-                                <h5 class="font-medium text-yellow-700 mb-3">Warnings</h5>
-                                <div v-for="(warning, idx) in selectedResult.compliance.swift.warnings" :key="'swift-w-' + idx"
-                                     class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-2">
-                                    <p class="text-yellow-800"><strong>{% raw %}{{ warning.field }}{% endraw %}:</strong> {% raw %}{{ warning.description }}{% endraw %}</p>
-                                    <p v-if="warning.standard" class="text-yellow-700 text-sm mt-1">Standard: {% raw %}{{ warning.standard }}{% endraw %}</p>
-                                </div>
-                            </div>
-                        </div>
-                        
                         </div>
                     </div>
 
                 </div>
 
+            </div>
+        </div>
+
+        <!-- Modern Compliance Analysis Modal -->
+        <div v-if="showDiscrepancyModal" class="fixed inset-0 bg-gradient-to-br from-slate-900/95 to-gray-900/95 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-7xl h-full max-h-[95vh] overflow-hidden border border-gray-100 relative">
+                
+                <!-- Modern Header with Glassmorphism Effect -->
+                <div class="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 overflow-hidden">
+                    <!-- Subtle Background Pattern -->
+                    <div class="absolute inset-0 opacity-10">
+                        <svg class="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+                            </pattern>
+                            <rect width="100" height="100" fill="url(#grid)" />
+                        </svg>
+                    </div>
+                    
+                    <div class="relative z-10 px-8 py-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-14 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center border border-white/20">
+                                    <i class="mdi mdi-shield-check text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h1 class="text-2xl font-bold text-white mb-1">Compliance Analysis Dashboard</h1>
+                                    <p class="text-blue-100 text-sm">Advanced regulatory compliance assessment</p>
+                                </div>
+                            </div>
+                            <button @click="closeDiscrepancyModal()" 
+                                    class="w-10 h-10 bg-white/20 backdrop-blur-lg rounded-xl flex items-center justify-center border border-white/20 hover:bg-white/30 transition-all group">
+                                <i class="mdi mdi-close text-white text-xl group-hover:rotate-90 transition-transform"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Modern Stats Grid -->
+                        <div class="mt-6 grid grid-cols-4 gap-4">
+                            <div class="bg-white/15 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-2xl font-bold text-white">{% raw %}{{ selectedResult && selectedResult.discrepancies ? selectedResult.discrepancies.length : 0 }}{% endraw %}</div>
+                                        <div class="text-xs text-blue-100 mt-1">Total Fields</div>
+                                    </div>
+                                    <div class="w-10 h-10 bg-blue-500/30 rounded-xl flex items-center justify-center">
+                                        <i class="mdi mdi-file-document text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/15 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-2xl font-bold text-green-300">{% raw %}{{ selectedResult && selectedResult.discrepancies ? selectedResult.discrepancies.filter(d => d.status === 'compliant').length : 0 }}{% endraw %}</div>
+                                        <div class="text-xs text-blue-100 mt-1">Compliant</div>
+                                    </div>
+                                    <div class="w-10 h-10 bg-green-500/30 rounded-xl flex items-center justify-center">
+                                        <i class="mdi mdi-check-circle text-green-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/15 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-2xl font-bold text-red-300">{% raw %}{{ selectedResult && selectedResult.discrepancies ? selectedResult.discrepancies.filter(d => d.status === 'non-compliant').length : 0 }}{% endraw %}</div>
+                                        <div class="text-xs text-blue-100 mt-1">Issues Found</div>
+                                    </div>
+                                    <div class="w-10 h-10 bg-red-500/30 rounded-xl flex items-center justify-center">
+                                        <i class="mdi mdi-alert-circle text-red-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white/15 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-2xl font-bold text-yellow-300">{% raw %}{{ selectedResult && selectedResult.discrepancies ? Math.round((selectedResult.discrepancies.filter(d => d.status === 'compliant').length / selectedResult.discrepancies.length) * 100) || 0 : 0 }}{% endraw %}%</div>
+                                        <div class="text-xs text-blue-100 mt-1">Success Rate</div>
+                                    </div>
+                                    <div class="w-10 h-10 bg-yellow-500/30 rounded-xl flex items-center justify-center">
+                                        <i class="mdi mdi-chart-line text-yellow-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content with Split Layout -->
+                <div class="flex h-full bg-gray-50" style="height: calc(100% - 140px);">
+                    
+                    <!-- Enhanced Sidebar -->
+                    <div class="w-80 bg-white border-r border-gray-200 flex flex-col">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Field Analysis</h3>
+                                <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                                    {% raw %}{{ selectedResult && selectedResult.discrepancies ? selectedResult.discrepancies.length : 0 }}{% endraw %} Fields
+                                </span>
+                            </div>
+                            
+                            <!-- Filter Tabs -->
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 text-xs rounded-lg bg-blue-100 text-blue-700 font-medium">All</button>
+                                <button class="px-3 py-1 text-xs rounded-lg text-gray-500 hover:bg-gray-100">Issues Only</button>
+                                <button class="px-3 py-1 text-xs rounded-lg text-gray-500 hover:bg-gray-100">Mandatory</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div class="space-y-3">
+                                <div v-for="(field, index) in selectedResult.discrepancies" :key="index" 
+                                     @click="selectedFieldIndex = index"
+                                     :class="selectedFieldIndex === index ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'"
+                                     class="p-4 border rounded-2xl cursor-pointer transition-all group">
+                                    
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-medium text-gray-900 text-sm truncate group-hover:text-blue-600 transition-colors">
+                                                {% raw %}{{ field.field_name }}{% endraw %}
+                                            </h4>
+                                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                {% raw %}{{ field.field_value || 'No value detected' }}{% endraw %}
+                                            </p>
+                                        </div>
+                                        <div class="ml-3 flex items-center">
+                                            <div class="w-3 h-3 rounded-full flex-shrink-0"
+                                                 :class="field.status === 'compliant' ? 'bg-green-500' : 'bg-red-500'"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs px-2 py-1 rounded-lg font-medium"
+                                              :class="field.priority === 'Mandatory' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'">
+                                            {% raw %}{{ field.priority }}{% endraw %}
+                                        </span>
+                                        <span class="text-xs text-gray-400">{% raw %}{{ field.rule_code }}{% endraw %}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Panel -->
+                    <div class="flex-1 overflow-y-auto">
+                        <div v-if="selectedResult && selectedResult.discrepancies && selectedResult.discrepancies.length > 0" class="p-8">
+                            
+                            <div v-if="selectedResult.discrepancies[selectedFieldIndex || 0]" class="max-w-none">
+                                
+                                <!-- Compact Field Header with Navigation -->
+                                <div class="mb-4 pb-3 border-b border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                                 :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'bg-green-100' : 'bg-red-100'">
+                                                <i :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'mdi mdi-check text-green-600' : 'mdi mdi-alert text-red-600'" class="text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <h2 class="text-2xl font-bold text-gray-900">
+                                                    {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].field_name }}{% endraw %}
+                                                </h2>
+                                                <div class="flex items-center space-x-2 mt-1">
+                                                    <span class="px-2 py-0.5 rounded-lg text-xs font-medium"
+                                                          :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                        {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'COMPLIANT' : 'NON-COMPLIANT' }}{% endraw %}
+                                                    </span>
+                                                    <span class="px-2 py-0.5 rounded-lg text-xs font-medium"
+                                                          :class="selectedResult.discrepancies[selectedFieldIndex || 0].priority === 'Mandatory' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'">
+                                                        {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].priority }}{% endraw %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-xs text-gray-500">{% raw %}{{ (selectedFieldIndex || 0) + 1 }}{% endraw %} of {% raw %}{{ selectedResult.discrepancies.length }}{% endraw %}</span>
+                                            <div class="flex space-x-1">
+                                                <button @click="selectedFieldIndex = Math.max(0, (selectedFieldIndex || 0) - 1)" 
+                                                        :disabled="(selectedFieldIndex || 0) === 0"
+                                                        class="w-7 h-7 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 rounded-lg flex items-center justify-center transition-all">
+                                                    <i class="mdi mdi-chevron-left text-sm"></i>
+                                                </button>
+                                                <button @click="selectedFieldIndex = Math.min(selectedResult.discrepancies.length - 1, (selectedFieldIndex || 0) + 1)"
+                                                        :disabled="(selectedFieldIndex || 0) === selectedResult.discrepancies.length - 1"
+                                                        class="w-7 h-7 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 rounded-lg flex items-center justify-center transition-all">
+                                                    <i class="mdi mdi-chevron-right text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Enhanced 2x2 Cards Grid -->
+                                <div class="grid grid-cols-2 gap-4" style="height: 480px;">
+                                    
+                                    <!-- Field Value Card -->
+                                    <div class="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl p-4 border border-gray-200 flex flex-col">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-lg font-semibold text-gray-900 flex items-center">
+                                                <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
+                                                    <i class="mdi mdi-text-box text-blue-600 text-sm"></i>
+                                                </div>
+                                                Field Value
+                                            </h4>
+                                            <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-lg">
+                                                {% raw %}{{ (selectedResult.discrepancies[selectedFieldIndex || 0].field_value || '').length }}{% endraw %} chars
+                                            </span>
+                                        </div>
+                                        <div class="bg-white rounded-xl p-3 border border-gray-200 flex-1 overflow-hidden">
+                                            <div class="font-mono text-sm text-gray-800 break-words leading-relaxed overflow-y-auto h-full">
+                                                {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].field_value || 'No value detected' }}{% endraw %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Compliance Status Card -->
+                                    <div class="rounded-2xl p-4 border flex flex-col"
+                                         :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200' : 'bg-gradient-to-br from-red-50 to-rose-100 border-red-200'">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-lg font-semibold flex items-center"
+                                                :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'text-green-900' : 'text-red-900'">
+                                                <div class="w-6 h-6 rounded-lg flex items-center justify-center mr-2"
+                                                     :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'bg-green-200' : 'bg-red-200'">
+                                                    <i :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'mdi mdi-check text-green-700 text-sm' : 'mdi mdi-alert text-red-700 text-sm'"></i>
+                                                </div>
+                                                Status
+                                            </h4>
+                                            <span class="text-sm px-2 py-1 rounded-lg font-medium"
+                                                  :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'">
+                                                {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].severity || 'Medium' }}{% endraw %}
+                                            </span>
+                                        </div>
+                                        <div class="bg-white rounded-xl p-3 border flex-1 overflow-hidden"
+                                             :class="selectedResult.discrepancies[selectedFieldIndex || 0].status === 'compliant' ? 'border-green-200' : 'border-red-200'">
+                                            <p class="text-sm leading-relaxed text-gray-800 overflow-y-auto h-full">
+                                                {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].reason }}{% endraw %}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Applied Rule Card -->
+                                    <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-4 border border-blue-200 flex flex-col">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-lg font-semibold text-blue-900 flex items-center">
+                                                <div class="w-6 h-6 bg-blue-200 rounded-lg flex items-center justify-center mr-2">
+                                                    <i class="mdi mdi-gavel text-blue-700 text-sm"></i>
+                                                </div>
+                                                Applied Rule
+                                            </h4>
+                                            <span class="font-mono text-sm bg-blue-200 text-blue-800 px-2 py-1 rounded-lg">
+                                                {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].rule_code || 'GENERAL' }}{% endraw %}
+                                            </span>
+                                        </div>
+                                        <div class="bg-white rounded-xl p-3 border border-blue-200 flex-1 overflow-hidden">
+                                            <p class="text-sm text-gray-800 leading-relaxed overflow-y-auto h-full">
+                                                {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].rule_description || 'Standard compliance verification applied according to regulatory requirements.' }}{% endraw %}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Regulatory Basis Card -->
+                                    <div class="bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl p-4 border border-purple-200 flex flex-col">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-lg font-semibold text-purple-900 flex items-center">
+                                                <div class="w-6 h-6 bg-purple-200 rounded-lg flex items-center justify-center mr-2">
+                                                    <i class="mdi mdi-library text-purple-700 text-sm"></i>
+                                                </div>
+                                                Regulatory Basis
+                                            </h4>
+                                            <span class="text-sm bg-purple-200 text-purple-800 px-2 py-1 rounded-lg font-medium">
+                                                {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].priority }}{% endraw %}
+                                            </span>
+                                        </div>
+                                        <div class="bg-white rounded-xl p-3 border border-purple-200 flex-1 overflow-hidden">
+                                            <p class="text-sm text-purple-700 leading-relaxed overflow-y-auto h-full">
+                                                <span class="font-semibold text-purple-900">{% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].basis || 'Standard Practice' }}{% endraw %}</span><br>
+                                                Regulatory standard governing this compliance requirement
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Suggestion Card (Full Width) -->
+                                <div v-if="selectedResult.discrepancies[selectedFieldIndex || 0].suggestion" 
+                                     class="mt-4 bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl p-4 border border-amber-200">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-6 h-6 bg-amber-200 rounded-lg flex items-center justify-center mr-2">
+                                            <i class="mdi mdi-lightbulb text-amber-700 text-sm"></i>
+                                        </div>
+                                        <h4 class="text-base font-semibold text-amber-900">Suggested Action</h4>
+                                    </div>
+                                    <div class="bg-white rounded-xl p-3 border border-amber-200">
+                                        <p class="text-xs text-gray-800 leading-relaxed">
+                                            {% raw %}{{ selectedResult.discrepancies[selectedFieldIndex || 0].suggestion }}{% endraw %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Analysis Data State -->
+                        <div v-else class="flex items-center justify-center h-full">
+                            <div class="text-center py-16 max-w-md">
+                                <div class="w-20 h-20 bg-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                    <i class="mdi mdi-shield-check text-blue-600 text-3xl"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-3">No Compliance Data Available</h3>
+                                <p class="text-gray-500">The compliance analysis data is not available for this document. Please ensure the document has been processed with compliance checking enabled.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modern Action Bar -->
+                <div class="border-t border-gray-200 bg-gray-50 px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-3">
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all flex items-center space-x-2 text-sm font-medium">
+                                <i class="mdi mdi-download text-sm"></i>
+                                <span>Export Report</span>
+                            </button>
+                            <button class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all flex items-center space-x-2 text-sm font-medium">
+                                <i class="mdi mdi-printer text-sm"></i>
+                                <span>Print Analysis</span>
+                            </button>
+                        </div>
+                        <button @click="closeDiscrepancyModal()" 
+                                class="px-6 py-2 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all flex items-center space-x-2 text-sm font-medium">
+                            <i class="mdi mdi-close text-sm"></i>
+                            <span>Close</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -3603,8 +3440,9 @@
                     ],
                     results: null,
                     showDetailsModal: false,
+                    showDiscrepancyModal: false,
+                    selectedFieldIndex: 0,
                     selectedResult: null,
-                    activeTab: 'fields',
                     // Tab navigation for grouped pages
                     activePageTab: 0,  // Index of currently active page tab within a grouped result
                     // Enhanced modal properties
@@ -4410,10 +4248,114 @@
                         this.activeTab = 'fields'; // Start with fields tab
                     }
                 },
+
+                viewDiscrepancies(result, index) {
+                    console.log('=== DEBUG: View Compliance Analysis ===');
+                    console.log('Full result object:', result);
+                    console.log('Result keys:', Object.keys(result || {}));
+                    console.log('Compliance object:', result?.compliance);
+                    if (result?.compliance) {
+                        console.log('Compliance keys:', Object.keys(result.compliance));
+                    }
+                    console.log('Unified compliance:', result?.compliance?.unified);
+                    if (result?.compliance?.unified) {
+                        console.log('Unified compliance keys:', Object.keys(result.compliance.unified));
+                        console.log('Unified compliance sample:', JSON.stringify(result.compliance.unified, null, 2));
+                    }
+                    
+                    // Try multiple possible paths for compliance data
+                    let complianceData = null;
+                    
+                    // Path 1: result._rawResult.compliance.unified (ACTUAL LOCATION!)
+                    if (result?._rawResult?.compliance?.unified && typeof result._rawResult.compliance.unified === 'object' && Object.keys(result._rawResult.compliance.unified).length > 0) {
+                        complianceData = result._rawResult.compliance.unified;
+                        console.log('✅ Found compliance data in: result._rawResult.compliance.unified');
+                    }
+                    // Path 2: result.compliance.unified (expected structure)
+                    else if (result?.compliance?.unified && typeof result.compliance.unified === 'object' && Object.keys(result.compliance.unified).length > 0) {
+                        complianceData = result.compliance.unified;
+                        console.log('✅ Found compliance data in: result.compliance.unified');
+                    }
+                    // Path 3: result.unified_compliance (alternative structure)
+                    else if (result?.unified_compliance && typeof result.unified_compliance === 'object' && Object.keys(result.unified_compliance).length > 0) {
+                        complianceData = result.unified_compliance;
+                        console.log('✅ Found compliance data in: result.unified_compliance');
+                    }
+                    // Path 4: result.complianceResult or similar
+                    else if (result?.complianceResult && typeof result.complianceResult === 'object' && Object.keys(result.complianceResult).length > 0) {
+                        complianceData = result.complianceResult;
+                        console.log('✅ Found compliance data in: result.complianceResult');
+                    }
+                    // Path 5: Look in analysisResult
+                    else if (result?.analysisResult?.compliance && typeof result.analysisResult.compliance === 'object' && Object.keys(result.analysisResult.compliance).length > 0) {
+                        complianceData = result.analysisResult.compliance;
+                        console.log('✅ Found compliance data in: result.analysisResult.compliance');
+                    }
+                    else {
+                        console.log('❌ No compliance data found in any expected location');
+                        console.log('Available result structure:', JSON.stringify(result, null, 2));
+                    }
+                    
+                    if (!complianceData) {
+                        console.log('Available result keys:', Object.keys(result || {}));
+                        alert('No compliance data found. Debug info logged to console.');
+                        return;
+                    }
+                    
+                    console.log('Using compliance data:', complianceData);
+                    
+                    // Create comprehensive compliance analysis array for ALL fields
+                    const complianceAnalysis = [];
+                    
+                    // Iterate through ALL compliance data fields
+                    for (const [fieldKey, fieldData] of Object.entries(complianceData)) {
+                        if (fieldData && typeof fieldData === 'object') {
+                            console.log(`Processing field: ${fieldKey}`, fieldData);
+                            
+                            // Backend sends: field, value, compliance, severity, reason, rule_code, basis, priority, etc.
+                            // Determine compliance status from backend format
+                            const isCompliant = fieldData.compliance === true;
+                            
+                            const analysis = {
+                                field_name: fieldData.field || fieldKey || 'Unknown Field',
+                                field_value: fieldData.value || fieldData.field_value || 'No value detected',
+                                status: isCompliant ? 'compliant' : 'non-compliant',
+                                reason: fieldData.reason || (isCompliant ? 'Field meets compliance requirements' : 'Compliance violation detected'),
+                                severity: fieldData.severity || (isCompliant ? 'low' : 'medium'),
+                                rule_code: fieldData.rule_code || null,
+                                basis: fieldData.basis || 'Standard Practice',
+                                priority: fieldData.priority || 'Optional',
+                                rule_description: fieldData.rule_description || null,
+                                suggestion: fieldData.suggestion || fieldData.correction || null,
+                                confidence: fieldData.confidence || null,
+                                category: fieldData.category || fieldData.type || 'general'
+                            };
+                            complianceAnalysis.push(analysis);
+                            console.log(`Added analysis for ${fieldKey}:`, analysis);
+                        }
+                    }
+                    
+                    console.log('Complete compliance analysis:', complianceAnalysis);
+                    
+                    if (complianceAnalysis.length === 0) {
+                        alert('No compliance analysis data available for this document.');
+                        return;
+                    }
+                    
+                    // Set selected result and open modal
+                    this.selectedResult = result;
+                    this.selectedResult.discrepancies = complianceAnalysis; // Reusing discrepancies for all compliance data
+                    this.showDiscrepancyModal = true;
+                },
+
+                closeDiscrepancyModal() {
+                    this.showDiscrepancyModal = false;
+                    this.selectedResult = null;
+                },
+
                 closeDetailsModal() {
                     this.showDetailsModal = false;
                     this.selectedResult = null;
-                    this.activeTab = 'fields';
                     this.activePageTab = 0;  // Reset page tab
                     this.currentPage = 0;
                     this.zoomLevel = 1;
@@ -5574,139 +5516,6 @@
                         imageViewer.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 },
-                // UCP600 data processing
-                getUCP600TableData() {
-                    if (!this.selectedResult?.compliance?.ucp600) return {};
-
-                    const ucp600Data = this.selectedResult.compliance.ucp600;
-                    const filteredData = {};
-
-                    // Process each field and remove unwanted fields
-                    for (const [key, value] of Object.entries(ucp600Data)) {
-                        if (key === 'status' || key === 'violations' || key === 'warnings' || 
-                            key === 'coordinate_mapping' || key === 'coordinate_mapping_stats' ||
-                            key.includes('coordinate_mapping')) {
-                            continue; // Skip these as they're handled separately or unwanted
-                        }
-
-                        if (typeof value === 'object' && value !== null) {
-                            // Create a copy without unwanted properties
-                            const cleanValue = { ...value };
-                            delete cleanValue.severity;
-                            delete cleanValue.coordinate_mapping;
-                            delete cleanValue.coordinate_mapping_stats;
-                            filteredData[key] = cleanValue;
-                        } else {
-                            filteredData[key] = value;
-                        }
-                    }
-
-                    return filteredData;
-                },
-                // SWIFT data processing
-                getSWIFTTableData() {
-                    if (!this.selectedResult?.compliance?.swift) return {};
-
-                    const swiftData = this.selectedResult.compliance.swift;
-                    const filteredData = {};
-
-                    // Process each field and remove unwanted fields
-                    for (const [key, value] of Object.entries(swiftData)) {
-                        if (key === 'status' || key === 'violations' || key === 'warnings' || 
-                            key === 'coordinate_mapping' || key === 'coordinate_mapping_stats' ||
-                            key.includes('coordinate_mapping')) {
-                            continue; // Skip these as they're handled separately or unwanted
-                        }
-
-                        if (typeof value === 'object' && value !== null) {
-                            // Create a copy without unwanted properties
-                            const cleanValue = { ...value };
-                            delete cleanValue.severity;
-                            delete cleanValue.coordinate_mapping;
-                            delete cleanValue.coordinate_mapping_stats;
-                            filteredData[key] = cleanValue;
-                        } else {
-                            filteredData[key] = value;
-                        }
-                    }
-
-                    return filteredData;
-                },
-
-                // Compliance helper methods
-                getUCP600Compliance(fieldKey) {
-                    // Get the actual UCP600 data from the tab
-                    const ucp600Data = this.getUCP600TableData();
-                    
-                    if (!ucp600Data || !ucp600Data[fieldKey]) {
-                        return false; // No data means non-compliant
-                    }
-                    
-                    const fieldData = ucp600Data[fieldKey];
-                    
-                    // Check various compliance indicators
-                    if (typeof fieldData === 'object' && fieldData !== null) {
-                        // Check for explicit status
-                        if (fieldData.status) {
-                            return fieldData.status === 'compliant' || fieldData.status === 'pass' || fieldData.status === 'valid';
-                        }
-                        
-                        // Check for compliance field
-                        if (fieldData.compliance !== undefined) {
-                            return fieldData.compliance === true || fieldData.compliance === 'compliant';
-                        }
-                        
-                        // Check for valid field
-                        if (fieldData.valid !== undefined) {
-                            return fieldData.valid === true;
-                        }
-                        
-                        // If it has a value and no violations, consider it compliant
-                        if (fieldData.value && !fieldData.violations && !fieldData.errors) {
-                            return true;
-                        }
-                    }
-                    
-                    // For simple values, presence usually means compliant
-                    return fieldData === true || fieldData === 'compliant' || fieldData === 'valid';
-                },
-
-                getSWIFTCompliance(fieldKey) {
-                    // Get the actual SWIFT data from the tab
-                    const swiftData = this.getSWIFTTableData();
-                    
-                    if (!swiftData || !swiftData[fieldKey]) {
-                        return false; // No data means non-compliant
-                    }
-                    
-                    const fieldData = swiftData[fieldKey];
-                    
-                    // Check various compliance indicators
-                    if (typeof fieldData === 'object' && fieldData !== null) {
-                        // Check for explicit status
-                        if (fieldData.status) {
-                            return fieldData.status === 'compliant' || fieldData.status === 'pass' || fieldData.status === 'valid';
-                        }
-                        
-                        // Check for compliance field
-                        if (fieldData.compliance !== undefined) {
-                            return fieldData.compliance === true || fieldData.compliance === 'compliant';
-                        }
-                        
-                        // Check for valid field
-                        if (fieldData.valid !== undefined) {
-                            return fieldData.valid === true;
-                        }
-                        
-                        // If it has a value and no violations, consider it compliant
-                        if (fieldData.value && !fieldData.violations && !fieldData.errors) {
-                            return true;
-                        }
-                    }
-                    
-                    // For simple values, presence usually means compliant
-                    return fieldData === true || fieldData === 'compliant' || fieldData === 'valid';
-                },
 
                 // Admin methods
                 async fetchCurrentUser() {
@@ -5979,6 +5788,33 @@
                 this.fetchTradeDocuments();
             }
         }).mount('#app');
+
+        // Smart Capture Modal Functions
+        function hideSmartCaptureLoading() {
+            // This function is called when the Smart Capture iframe loads
+            // to hide any loading indicators in the parent window
+            const modal = document.getElementById('smartCaptureModal');
+            if (modal) {
+                setTimeout(() => {
+                    modal.classList.remove('loading');
+                }, 300);
+            }
+            
+            // Also try to hide loading in parent window if this is in an iframe
+            if (window.parent && window.parent !== window) {
+                try {
+                    if (window.parent.hideSmartCaptureLoading) {
+                        window.parent.hideSmartCaptureLoading();
+                    }
+                } catch (e) {
+                    // Cross-origin access might be blocked, that's okay
+                    console.log('Could not access parent window:', e.message);
+                }
+            }
+        }
+
+        // Make the function globally available
+        window.hideSmartCaptureLoading = hideSmartCaptureLoading;
 
         // Chart Functions - Define immediately after Vue app mount
         

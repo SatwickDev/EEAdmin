@@ -28,6 +28,28 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 from app.utils.rag_swift import collection_swift_rules
+
+# Global variable to store unified compliance results for route access
+unified_compliance_result = {}
+
+
+def get_unified_compliance_result():
+    """
+    Get the current unified compliance result.
+    
+    Returns:
+        Dictionary containing the unified compliance results
+    """
+    global unified_compliance_result
+    return unified_compliance_result.copy()
+
+
+def clear_unified_compliance_result():
+    """
+    Clear the unified compliance result.
+    """
+    global unified_compliance_result
+    unified_compliance_result = {}
 from app.utils.rag_ucp600 import collection_ucp_rules
 import chromadb
 
@@ -2329,24 +2351,62 @@ def load_custom_rules(file_path):
         return []
 
 
-def analyze_unified_compliance_fast(fields):
+def load_discrepancy_rules_for_document(document_type):
     """
-    PERFORMANCE OPTIMIZATION: Unified compliance analysis combining UCP600 and SWIFT 
-    in a single AI call instead of two separate calls. This reduces processing time 
-    from ~15 seconds to ~4-6 seconds.
+    Load specific discrepancy rules for the given document type from the rules file.
     
-    Optimizations:
-    - Single AI call for both UCP600 and SWIFT analysis
-    - Shorter, more efficient prompts to reduce token usage
-    - Lower temperature for faster, more deterministic results
-    - Reduced max_tokens for faster processing
-    - Robust fallback to original separate analysis if needed
+    Args:
+        document_type: The classified document type (e.g., "Commercial Invoice", "Bill of Lading")
+        
+    Returns:
+        List of rules specific to the document type
+    """
+    import json
+    import os
+    
+    try:
+        # Path to the discrepancy rules file
+        rules_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "discrepancy_rules.json")
+        
+        if not os.path.exists(rules_file_path):
+            print(f"WARNING: Discrepancy rules file not found: {rules_file_path}")
+            return []
+        
+        with open(rules_file_path, 'r', encoding='utf-8') as f:
+            rules_data = json.load(f)
+        
+        # Extract rules for the specific document type
+        document_rules = []
+        for rule in rules_data.get("rules", []):
+            if rule.get("documentType", "").lower() == document_type.lower():
+                document_rules.append(rule)
+        
+        print(f"RULES: Loaded {len(document_rules)} rules for document type: {document_type}")
+        return document_rules
+        
+    except Exception as e:
+        print(f"ERROR: Failed to load discrepancy rules: {e}")
+        return []
+
+
+def analyze_unified_compliance_fast(fields, document_type=None):
+    """
+    RULE-BASED COMPLIANCE VALIDATION: Uses document-specific discrepancy rules 
+    from discrepancy_rules.json to perform comprehensive compliance analysis.
+    
+    NEW APPROACH:
+    - Single unified compliance check (no separate UCP600/SWIFT)
+    - Uses actual discrepancy rules from rules file
+    - Document-type specific rule application
+    - Returns unified compliance result and empty UCP600/SWIFT for backward compatibility
     
     Args:
         fields: Dictionary of extracted fields to analyze
+        document_type: The classified document type for loading specific rules
         
     Returns:
-        Tuple of (ucp600_result, swift_result) in the same format as original functions
+        Tuple of (ucp600_result, swift_result) - both empty for backward compatibility
+        The actual compliance result is added separately to the response
     """
     import json
     import openai
@@ -2355,41 +2415,64 @@ def analyze_unified_compliance_fast(fields):
     start_time = time.time()
     
     try:
-        # Prepare fields for analysis (streamlined format)
+        # Load document-specific rules
+        if document_type:
+            document_rules = load_discrepancy_rules_for_document(document_type)
+        else:
+            print("WARNING: No document type provided, using generic compliance analysis")
+            document_rules = []
+        
+        # Prepare fields for analysis
         field_entries = [{"field": key, "value": info.get("value", "")} for key, info in fields.items()]
         
-        # ENHANCED: Optimized prompt with detailed rule descriptions
-        unified_prompt = f"""Analyze these {len(field_entries)} trade finance fields for UCP600 and SWIFT MT700 compliance:
+        # Build comprehensive rules context
+        rules_context = ""
+        if document_rules:
+            rules_context = f"\n\nAPPLICABLE COMPLIANCE RULES FOR {document_type.upper()}:\n"
+            for idx, rule in enumerate(document_rules[:25], 1):  # Limit to 25 rules to avoid token overflow
+                rules_context += f"{idx}. {rule.get('code', 'N/A')}: {rule.get('description', '')}\n"
+                rules_context += f"   Basis: {rule.get('basis', 'N/A')} | Priority: {rule.get('priority', 'N/A')}\n"
+        else:
+            rules_context = "\n\nUsing standard trade finance compliance guidelines."
+        
+        # UNIFIED COMPLIANCE PROMPT - stores result in global variable for route access
+        unified_prompt = f"""You are a trade finance compliance expert. Analyze these {len(field_entries)} fields for compliance violations based on the specific rules provided.
 
+DOCUMENT TYPE: {document_type or 'Unknown'}
+
+EXTRACTED FIELDS:
 {json.dumps(field_entries, separators=(',', ':'))}
+{rules_context}
 
-For each field, provide detailed compliance analysis with specific references:
+INSTRUCTIONS:
+1. Check each field against the applicable rules above
+2. Identify any compliance violations or discrepancies
+3. Reference specific rule codes and bases when violations are found
+4. Use "high" severity for mandatory rule violations, "medium" for operational issues, "low" for minor discrepancies
+5. Provide a single unified compliance result
 
 Return JSON only:
-{{"results":[{{"field":"<name>","value":"<val>",
-"ucp600":{{"compliance":true,"severity":"high",
-"reason":"Detailed UCP600 explanation with specific article references"}},
-"swift":{{"compliance":true,"severity":"medium",
-"reason":"Detailed SWIFT MT700 explanation with field references"}}}}]}}"""
+{{"results":[{{"field":"<field_name>","value":"<field_value>",
+"compliance":true/false,"severity":"high/medium/low",
+"reason":"Detailed explanation with specific rule reference if violated",
+"rule_code":"<rule_code_if_violated>"}}]}}"""
 
-        print(f"UNIFIED COMPLIANCE: Analyzing {len(field_entries)} fields "
-              "with detailed rules")
+        print(f"UNIFIED COMPLIANCE: Analyzing {len(field_entries)} fields with {len(document_rules)} rules for {document_type}")
         
-        # Enhanced AI call with detailed descriptions but optimized parameters
+        # AI call for unified compliance analysis
         response = openai.ChatCompletion.create(
             engine=deployment_name,
             messages=[
-                {"role": "system", "content": "You are a trade finance "
-                 "compliance expert. Be concise and accurate."},
+                {"role": "system", "content": "You are an expert trade finance compliance analyst. Focus on identifying actual discrepancies against the provided rules."},
                 {"role": "user", "content": unified_prompt}
             ],
-            temperature=0.1,  # Lower for faster, more deterministic results
-            max_tokens=1500,  # Reduced tokens for faster processing
-            top_p=0.9        # Reduced for more focused responses
+            temperature=0.1,
+            max_tokens=2000,
+            top_p=0.9
         )
         
         reply = response.choices[0].message["content"].strip()
-        print(f"SUCCESS: OPTIMIZED reply received: {len(reply)} chars")
+        print(f"SUCCESS: Unified compliance reply received: {len(reply)} chars")
         
         # Clean the response
         if reply.startswith("```json"):
@@ -2400,213 +2483,71 @@ Return JSON only:
         
         # Parse unified response
         parsed_response = json.loads(reply)
-        analysis_results = parsed_response.get(
-            "results", parsed_response.get("analysis_results", []))
+        analysis_results = parsed_response.get("results", parsed_response.get("analysis_results", []))
         
-        # Separate results into UCP600 and SWIFT formats (maintaining backward compatibility)
-        ucp600_result = {}
-        swift_result = {}
+        # Store the unified compliance result globally for access by routes
+        global unified_compliance_result
+        unified_compliance_result = {}
         
         for item in analysis_results:
             field_key = item["field"]
-            field_value = item["value"]
+            rule_code = item.get("rule_code", "")
             
-            # Build UCP600 result in original format
-            if "ucp600" in item:
-                ucp600_result[field_key] = {
-                    "field": field_key,
-                    "value": field_value,
-                    **item["ucp600"]
-                }
+            # Find the complete rule information from discrepancy_rules.json
+            rule_info = None
+            if rule_code and document_rules:
+                for rule in document_rules:
+                    if rule.get("code") == rule_code:
+                        rule_info = rule
+                        break
             
-            # Build SWIFT result in original format  
-            if "swift" in item:
-                swift_result[field_key] = {
-                    "field": field_key,
-                    "value": field_value,
-                    **item["swift"]
-                }
+            # Build comprehensive compliance data
+            unified_compliance_result[field_key] = {
+                "field": field_key,
+                "value": item["value"],
+                "compliance": item.get("compliance", True),
+                "severity": item.get("severity", "low"),
+                "reason": item.get("reason", "No issues found"),
+                "rule_code": rule_code,
+                # Enhanced fields for UI display
+                "basis": rule_info.get("basis", "Standard Practice") if rule_info else "Standard Practice",
+                "priority": rule_info.get("priority", "Optional") if rule_info else "Optional", 
+                "rule_description": rule_info.get("description", "") if rule_info else "",
+                "rule_id": rule_info.get("id", "") if rule_info else "",
+                "status": "compliant" if item.get("compliance", True) else "non-compliant",
+                "category": "compliance_check"
+            }
         
         processing_time = time.time() - start_time
-        print(f"SUCCESS: OPTIMIZED UNIFIED COMPLIANCE completed in {processing_time:.2f}s")
-        ucp_fields = len(ucp600_result)
-        swift_fields = len(swift_result)
-        print(f"RESULTS: UCP600={ucp_fields}, SWIFT={swift_fields} fields")
+        print(f"SUCCESS: UNIFIED COMPLIANCE completed in {processing_time:.2f}s")
+        print(f"RESULTS: {len(unified_compliance_result)} fields analyzed using {len(document_rules)} rules")
         
-        return ucp600_result, swift_result
+        # Return empty UCP600/SWIFT results for backward compatibility
+        # The unified result is stored globally and accessed separately
+        return {}, {}
         
     except json.JSONDecodeError as e:
-        print(f"ERROR: OPTIMIZED COMPLIANCE JSON parse error: {e}")
+        print(f"ERROR: Unified compliance JSON parse error: {e}")
         print(f"ERROR: Problematic reply: {reply[:500]}...")
         
-        # Return error results in expected format
-        error_ucp = {key: {"error": f"Optimized compliance JSON parse error: {str(e)}"} for key in fields}
-        error_swift = {key: {"error": f"Optimized compliance JSON parse error: {str(e)}"} for key in fields}
-        return error_ucp, error_swift
+        # Store empty result and return empty UCP600/SWIFT
+        unified_compliance_result = {}
+        return {}, {}
         
     except Exception as e:
-        print(f"ERROR: OPTIMIZED COMPLIANCE error: {e}")
+        print(f"ERROR: Unified compliance error: {e}")
         
-        # Fallback to original separate analysis if unified fails
-        print("FALLBACK: Falling back to separate UCP600/SWIFT analysis...")
-        try:
-            ucp600_result = analyze_ucp_compliance_chromaRAG(fields)
-            swift_result = analyze_swift_compliance_chromaRAG(fields)
-            return ucp600_result, swift_result
-        except Exception as fallback_error:
-            print(f"ERROR: Fallback analysis also failed: {fallback_error}")
-            error_ucp = {key: {"error": str(e)} for key in fields}
-            error_swift = {key: {"error": str(e)} for key in fields}
-            return error_ucp, error_swift
+        # Store empty result and return empty UCP600/SWIFT
+        unified_compliance_result = {}
+        return {}, {}
 
 
-def analyze_ucp_compliance_chromaRAG(fields):
-    import json
-    import openai
 
-    try:
-        # Prepare fields
-        field_entries = [{"field": key, "value": info.get("value", "")} for key, info in fields.items()]
-
-        # Prompt
-        prompt = f"""
-You are a trade finance compliance expert. Evaluate the following fields for compliance with **UCP600 rules**.
-
-Fields to Evaluate:
-{json.dumps(field_entries, indent=2)}
-
-Instructions:
-- Assess each field for compliance using UCP600 rules and any applicable custom rules.
-- For each field, return exactly:
-
-[
-  {{
-    "field": "<field key>",
-    "value": "<field value>",
-    "ucp600": {{
-      "compliance": true | false,
-      "severity": "high" | "medium" | "low",
-      "reason": "Short explanation referencing any relevant UCP600 article(s) and/or custom rule description."
-    }}
-  }},
-  ...
-]
-"""
-
-        response = openai.ChatCompletion.create(
-            engine=deployment_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3
-        )
-        reply = response.choices[0].message["content"]
-        print("SUCCESS: UCP600 GPT reply:\n", reply)
-        
-        # Check if reply is empty or None
-        if not reply or not reply.strip():
-            print("ERROR: UCP600 GPT returned empty response")
-            return {key: {"error": "Empty response from UCP600 analysis"} for key in fields}
-
-        # Try to clean the reply (remove any markdown, extra text)
-        reply = reply.strip()
-        if reply.startswith("```json"):
-            reply = reply[7:]
-        if reply.endswith("```"):
-            reply = reply[:-3]
-        reply = reply.strip()
-        
-        print(f"SUCCESS: UCP600 cleaned reply: {reply[:200]}...")
-
-        parsed = json.loads(reply)
-
-        return {
-            item["field"]: {
-                "field": item["field"],
-                "value": item["value"],
-                **item["ucp600"]
-            }
-            for item in parsed
-        }
-
-    except json.JSONDecodeError as e:
-        print(f"ERROR: UCP600 JSON parse error: {e}")
-        print(f"ERROR: UCP600 problematic reply: {reply[:500]}...")
-        return {key: {"error": f"JSON parse error: {str(e)}"} for key in fields}
-    except Exception as e:
-        print(f"ERROR: UCP600 compliance check error: {e}")
-        return {key: {"error": str(e)} for key in fields}
-
-def analyze_swift_compliance_chromaRAG(fields):
-    try:
-        # Prepare fields
-        field_entries = [{"field": key, "value": info.get("value", "")} for key, info in fields.items()]
-
-        # Prompt
-        prompt = f"""
-You are a trade finance compliance expert. Evaluate the following fields for compliance with **SWIFT MT700 rules**.
-
-Fields to Evaluate:
-{json.dumps(field_entries, indent=2)}
-
-Instructions:
-- Assess each field for compliance using SWIFT MT700 rules and any applicable custom rules.
-- For each field, return exactly:
-
-[
-  {{
-    "field": "<field key>",
-    "value": "<field value>",
-    "swift": {{
-      "compliance": true | false,
-      "severity": "high" | "medium" | "low",
-      "reason": "Short explanation referencing any relevant SWIFT clause(s) and/or custom rule description."
-    }}
-  }},
-  ...
-]
-
-IMPORTANT: Return ONLY the JSON array exactly as specified, with no extra text, no explanations, no markdown, and no formatting.
-"""
-
-        response = openai.ChatCompletion.create(
-            engine=deployment_name,  # Make sure this is set in your environment
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3
-        )
-        reply = response.choices[0].message["content"].strip()
-        print("SUCCESS: SWIFT GPT reply:\n", reply)
-        
-        if not reply:
-            print("ERROR: SWIFT GPT returned empty response")
-            return {key: {"error": "Empty response from SWIFT analysis"} for key in fields}
-        
-        # Try to clean the reply (remove any markdown, extra text)
-        if reply.startswith("```json"):
-            reply = reply[7:]
-        if reply.endswith("```"):
-            reply = reply[:-3]
-        reply = reply.strip()
-        
-        print(f"SUCCESS: SWIFT cleaned reply: {reply[:200]}...")
-
-        # Directly parse JSON
-        parsed = json.loads(reply)
-
-        return {
-            item["field"]: {
-                "field": item["field"],
-                "value": item["value"],
-                **item["swift"]
-            }
-            for item in parsed
-        }
-
-    except json.JSONDecodeError as e:
-        print(f"ERROR: SWIFT JSON parse error: {e}")
-        print(f"ERROR: SWIFT problematic reply: {reply[:500]}...")
-        return {key: {"error": f"JSON parse error: {str(e)}"} for key in fields}
-    except Exception as e:
-        print(f"ERROR: SWIFT compliance check error: {e}")
-        return {key: {"error": str(e)} for key in fields}
+# OLD COMPLIANCE FUNCTIONS REMOVED - NOW USING UNIFIED RULE-BASED APPROACH
+# The following functions have been replaced by analyze_unified_compliance_fast():
+# - analyze_ucp_compliance_chromaRAG() - REMOVED
+# - analyze_swift_compliance_chromaRAG() - REMOVED
+# All compliance now uses document-specific rules from discrepancy_rules.json
 
 def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
     """Update a UCP600 chunk in ChromaDB with a new reason, using consistent embedding."""
