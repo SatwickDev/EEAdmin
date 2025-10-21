@@ -96,6 +96,266 @@ conversation_manager = ConversationManager(db)
 # Initialize vetting rule engine (will be set in setup_routes)
 vetting_engine = None
 
+
+
+
+
+# DISCREPANCY RULE MANAGEMENT ROUTES
+# =============================================
+# DISCREPANCY RULE MANAGEMENT ROUTES
+# =============================================
+
+class DiscrepancyRuleManager:
+    """Manages discrepancy rules with XML and JSON storage"""
+
+    def __init__(self):
+        self.rules = []
+        self.rules_xml_path = os.path.join(os.path.dirname(__file__), 'data', 'discrepancy_rules.xml')
+        self.rules_json_path = os.path.join(os.path.dirname(__file__), 'data', 'discrepancy_rules.json')
+
+        # Ensure data directory exists
+        os.makedirs(os.path.dirname(self.rules_xml_path), exist_ok=True)
+        self.load_rules()
+
+    def load_rules(self):
+        """Load rules from XML file, fallback to JSON if XML doesn't exist"""
+        try:
+            if os.path.exists(self.rules_xml_path):
+                self.rules = self._load_from_xml()
+            elif os.path.exists(self.rules_json_path):
+                self.rules = self._load_from_json()
+            else:
+                self.rules = []
+                self._create_sample_rules()
+        except Exception as e:
+            logger.error(f"Error loading discrepancy rules: {e}")
+            self.rules = []
+
+    def _load_from_xml(self):
+        """Load rules from XML file"""
+        try:
+            import xml.etree.ElementTree as ET
+            tree = ET.parse(self.rules_xml_path)
+            root = tree.getroot()
+            rules = []
+
+            for rule_elem in root.findall('rule'):
+                rule = {
+                    'id': rule_elem.get('id', str(uuid.uuid4())),
+                    'code': rule_elem.find('code').text if rule_elem.find('code') is not None else '',
+                    'documentType': rule_elem.find('documentType').text if rule_elem.find('documentType') is not None else '',
+                    'description': rule_elem.find('description').text if rule_elem.find('description') is not None else '',
+                    'basis': rule_elem.find('basis').text if rule_elem.find('basis') is not None else '',
+                    'priority': rule_elem.find('priority').text if rule_elem.find('priority') is not None else 'Mandatory',
+                    'createdAt': rule_elem.find('createdAt').text if rule_elem.find('createdAt') is not None else datetime.now().isoformat(),
+                    'updatedAt': rule_elem.find('updatedAt').text if rule_elem.find('updatedAt') is not None else datetime.now().isoformat()
+                }
+                rules.append(rule)
+
+            return rules
+        except Exception as e:
+            logger.error(f"Error loading from XML: {e}")
+            return []
+
+    def _load_from_json(self):
+        """Load rules from JSON file"""
+        try:
+            with open(self.rules_json_path, 'r') as f:
+                data = json.load(f)
+                return data.get('rules', [])
+        except Exception as e:
+            logger.error(f"Error loading from JSON: {e}")
+            return []
+
+    def _create_sample_rules(self):
+        """Create sample rules based on the provided data"""
+        sample_rules = [
+            {
+                'id': str(uuid.uuid4()),
+                'code': 'R-0002',
+                'documentType': 'Bill of Lading',
+                'description': 'must be signed by the authorized signatory',
+                'basis': 'ISBP 821 A1',
+                'priority': 'Mandatory',
+                'createdAt': datetime.now().isoformat(),
+                'updatedAt': datetime.now().isoformat()
+            },
+            {
+                'id': str(uuid.uuid4()),
+                'code': 'R-0003',
+                'documentType': 'Air Waybill',
+                'description': 'must be an original when originals are stipulated in the LC; additionally, named shipper must match LC.',
+                'basis': 'UCP 600 Art. 18',
+                'priority': 'Mandatory',
+                'createdAt': datetime.now().isoformat(),
+                'updatedAt': datetime.now().isoformat()
+            },
+            {
+                'id': str(uuid.uuid4()),
+                'code': 'R-0036',
+                'documentType': 'Bill of Lading',
+                'description': 'certificate must reference the invoice/BL number; additionally, incoterms must be consistent.',
+                'basis': 'Bank Practice',
+                'priority': 'Mandatory',
+                'createdAt': datetime.now().isoformat(),
+                'updatedAt': datetime.now().isoformat()
+            },
+            {
+                'id': str(uuid.uuid4()),
+                'code': 'R-0037',
+                'documentType': 'Air Waybill',
+                'description': 'document must show description matching HS code if required',
+                'basis': 'Customs / LC',
+                'priority': 'Mandatory',
+                'createdAt': datetime.now().isoformat(),
+                'updatedAt': datetime.now().isoformat()
+            },
+            {
+                'id': str(uuid.uuid4()),
+                'code': 'R-0070',
+                'documentType': 'Bill of Lading',
+                'description': 'notify party must match LC or be allowed by LC terms',
+                'basis': 'ISBP 821',
+                'priority': 'Mandatory',
+                'createdAt': datetime.now().isoformat(),
+                'updatedAt': datetime.now().isoformat()
+            }
+        ]
+
+        self.rules = sample_rules
+        self.save_rules()
+
+    def save_rules(self):
+        """Save rules to both XML and JSON formats"""
+        try:
+            self._save_to_xml()
+            self._save_to_json()
+        except Exception as e:
+            logger.error(f"Error saving rules: {e}")
+            raise
+
+    def _save_to_xml(self):
+        """Save rules to XML file"""
+        import xml.etree.ElementTree as ET
+        import xml.dom.minidom
+
+        root = ET.Element('discrepancyRules')
+        root.set('version', '1.0')
+        root.set('lastUpdated', datetime.now().isoformat())
+
+        for rule in self.rules:
+            rule_elem = ET.SubElement(root, 'rule')
+            rule_elem.set('id', rule['id'])
+            ET.SubElement(rule_elem, 'code').text = rule['code']
+            ET.SubElement(rule_elem, 'documentType').text = rule['documentType']
+            ET.SubElement(rule_elem, 'description').text = rule['description']
+            ET.SubElement(rule_elem, 'basis').text = rule['basis']
+            ET.SubElement(rule_elem, 'priority').text = rule['priority']
+            ET.SubElement(rule_elem, 'createdAt').text = rule['createdAt']
+            ET.SubElement(rule_elem, 'updatedAt').text = rule['updatedAt']
+
+        xml_str = ET.tostring(root, encoding='unicode')
+        dom = xml.dom.minidom.parseString(xml_str)
+        pretty_xml = dom.toprettyxml(indent='  ')
+        pretty_xml = '\n'.join([line for line in pretty_xml.split('\n') if line.strip()])
+
+        with open(self.rules_xml_path, 'w', encoding='utf-8') as f:
+            f.write(pretty_xml)
+
+    def _save_to_json(self):
+        """Save rules to JSON file as backup"""
+        data = {
+            'version': '1.0',
+            'lastUpdated': datetime.now().isoformat(),
+            'rules': self.rules
+        }
+
+        with open(self.rules_json_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+    def get_all_rules(self):
+        """Get all rules"""
+        return self.rules
+
+    def get_rule_by_id(self, rule_id):
+        """Get rule by ID"""
+        return next((rule for rule in self.rules if rule['id'] == rule_id), None)
+
+    def add_rule(self, rule_data):
+        """Add new rule"""
+        new_rule = {
+            'id': str(uuid.uuid4()),
+            'code': rule_data['code'],
+            'documentType': rule_data['documentType'],
+            'description': rule_data['description'],
+            'basis': rule_data['basis'],
+            'priority': rule_data['priority'],
+            'createdAt': datetime.now().isoformat(),
+            'updatedAt': datetime.now().isoformat()
+        }
+        self.rules.append(new_rule)
+        self.save_rules()
+        return new_rule
+
+    def update_rule(self, rule_id, rule_data):
+        """Update existing rule"""
+        rule = self.get_rule_by_id(rule_id)
+        if not rule:
+            return None
+
+        rule.update({
+            'code': rule_data['code'],
+            'documentType': rule_data['documentType'],
+            'description': rule_data['description'],
+            'basis': rule_data['basis'],
+            'priority': rule_data['priority'],
+            'updatedAt': datetime.now().isoformat()
+        })
+        self.save_rules()
+        return rule
+
+    def delete_rule(self, rule_id):
+        """Delete rule"""
+        rule = self.get_rule_by_id(rule_id)
+        if not rule:
+            return False
+
+        self.rules.remove(rule)
+        self.save_rules()
+        return True
+
+    def export_to_xml(self):
+        """Export rules to XML format and return the XML string"""
+        import xml.etree.ElementTree as ET
+        import xml.dom.minidom
+
+        root = ET.Element('discrepancyRules')
+        root.set('version', '1.0')
+        root.set('lastUpdated', datetime.now().isoformat())
+
+        for rule in self.rules:
+            rule_elem = ET.SubElement(root, 'rule')
+            rule_elem.set('id', rule['id'])
+            ET.SubElement(rule_elem, 'code').text = rule['code']
+            ET.SubElement(rule_elem, 'documentType').text = rule['documentType']
+            ET.SubElement(rule_elem, 'description').text = rule['description']
+            ET.SubElement(rule_elem, 'basis').text = rule['basis']
+            ET.SubElement(rule_elem, 'priority').text = rule['priority']
+            ET.SubElement(rule_elem, 'createdAt').text = rule['createdAt']
+            ET.SubElement(rule_elem, 'updatedAt').text = rule['updatedAt']
+
+        # Convert to string with pretty formatting
+        xml_str = ET.tostring(root, encoding='unicode')
+        dom = xml.dom.minidom.parseString(xml_str)
+        pretty_xml = dom.toprettyxml(indent='  ')
+        return '\n'.join([line for line in pretty_xml.split('\n') if line.strip()])
+    
+# Initialize rule manager
+discrepancy_rule_manager = DiscrepancyRuleManager()
+
+
+
+
 # ========================
 # PROMPT CONFIG HELPERS
 # ========================
@@ -1446,6 +1706,250 @@ def _get_visualization_recommendations(averaged_metrics):
 def setup_routes(app: Flask):
     """Data Categories Management Routes"""
     custom_functions_routes.register_custom_functions_routes(app)
+    
+    @app.route('/api/discrepancy-rules', methods=['GET'])
+    @timing_aspect
+    def get_discrepancy_rules():
+        """Get all discrepancy rules"""
+        try:
+            rules = discrepancy_rule_manager.get_all_rules()
+            return jsonify({
+                'success': True,
+                'rules': rules,
+                'total': len(rules)
+            })
+        except Exception as e:
+            logger.error(f"Error getting discrepancy rules: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/discrepancy-rules/<rule_id>', methods=['GET'])
+    @timing_aspect
+    def get_discrepancy_rule(rule_id):
+        """Get specific rule by ID"""
+        try:
+            rule = discrepancy_rule_manager.get_rule_by_id(rule_id)
+            if not rule:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rule not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'rule': rule
+            })
+        except Exception as e:
+            logger.error(f"Error getting discrepancy rule: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/discrepancy-rules', methods=['POST'])
+    @timing_aspect
+    def create_discrepancy_rule():
+        """Create new discrepancy rule"""
+        try:
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = ['code', 'documentType', 'description', 'basis', 'priority']
+            for field in required_fields:
+                if not data.get(field):
+                    return jsonify({
+                        'success': False,
+                        'error': f'Missing required field: {field}'
+                    }), 400
+            
+            # Check if rule code already exists
+            existing = next((r for r in discrepancy_rule_manager.rules if r['code'] == data['code']), None)
+            if existing:
+                return jsonify({
+                    'success': False,
+                    'error': f'Rule with code {data["code"]} already exists'
+                }), 400
+            
+            new_rule = discrepancy_rule_manager.add_rule(data)
+            return jsonify({
+                'success': True,
+                'rule': new_rule
+            }), 201
+        
+        except Exception as e:
+            logger.error(f"Error creating discrepancy rule: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/discrepancy-rules/<rule_id>', methods=['PUT'])
+    @timing_aspect
+    def update_discrepancy_rule(rule_id):
+        """Update existing discrepancy rule"""
+        try:
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = ['code', 'documentType', 'description', 'basis', 'priority']
+            for field in required_fields:
+                if not data.get(field):
+                    return jsonify({
+                        'success': False,
+                        'error': f'Missing required field: {field}'
+                    }), 400
+            
+            # Check if rule code already exists for different rule
+            existing = next((r for r in discrepancy_rule_manager.rules if r['code'] == data['code'] and r['id'] != rule_id), None)
+            if existing:
+                return jsonify({
+                    'success': False,
+                    'error': f'Rule with code {data["code"]} already exists'
+                }), 400
+            
+            updated_rule = discrepancy_rule_manager.update_rule(rule_id, data)
+            if not updated_rule:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rule not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'rule': updated_rule
+            })
+        
+        except Exception as e:
+            logger.error(f"Error updating discrepancy rule: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/discrepancy-rules/<rule_id>', methods=['DELETE'])
+    @timing_aspect
+    def delete_discrepancy_rule(rule_id):
+        """Delete discrepancy rule"""
+        try:
+            success = discrepancy_rule_manager.delete_rule(rule_id)
+            if not success:
+                return jsonify({
+                    'success': False,
+                    'error': 'Rule not found'
+                }), 404
+            
+            return jsonify({
+                'success': True,
+                'message': 'Rule deleted successfully'
+            })
+        
+        except Exception as e:
+            logger.error(f"Error deleting discrepancy rule: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/discrepancy-rules/import', methods=['POST'])
+    @timing_aspect
+    def import_discrepancy_rules():
+        """Import rules from uploaded file"""
+        try:
+            data = request.get_json()
+            content = data.get('content', '')
+            file_type = data.get('type', 'txt')
+            
+            if not content:
+                return jsonify({
+                    'success': False,
+                    'error': 'No content provided'
+                }), 400
+            
+            imported_count = 0
+            
+            if file_type == 'txt':
+                imported_count = discrepancy_rule_manager.import_from_text(content)
+            elif file_type == 'json':
+                # Parse JSON and import
+                try:
+                    json_data = json.loads(content)
+                    rules_data = json_data.get('rules', [])
+                    for rule_data in rules_data:
+                        if all(field in rule_data for field in ['code', 'documentType', 'description', 'basis', 'priority']):
+                            existing = next((r for r in discrepancy_rule_manager.rules if r['code'] == rule_data['code']), None)
+                            if not existing:
+                                discrepancy_rule_manager.add_rule(rule_data)
+                                imported_count += 1
+                except json.JSONDecodeError:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Invalid JSON format'
+                    }), 400
+            elif file_type == 'xml':
+                # Parse XML and import
+                try:
+                    import xml.etree.ElementTree as ET
+                    root = ET.fromstring(content)
+                    for rule_elem in root.findall('.//rule'):
+                        rule_data = {
+                            'code': rule_elem.find('code').text if rule_elem.find('code') is not None else rule_elem.get('code', ''),
+                            'documentType': rule_elem.find('documentType').text if rule_elem.find('documentType') is not None else '',
+                            'description': rule_elem.find('description').text if rule_elem.find('description') is not None else '',
+                            'basis': rule_elem.find('basis').text if rule_elem.find('basis') is not None else '',
+                            'priority': rule_elem.find('priority').text if rule_elem.find('priority') is not None else 'Mandatory'
+                        }
+                        
+                        if all(rule_data.values()):
+                            existing = next((r for r in discrepancy_rule_manager.rules if r['code'] == rule_data['code']), None)
+                            if not existing:
+                                discrepancy_rule_manager.add_rule(rule_data)
+                                imported_count += 1
+                except ET.ParseError:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Invalid XML format'
+                    }), 400
+            
+            return jsonify({
+                'success': True,
+                'imported': imported_count,
+                'message': f'Successfully imported {imported_count} rules'
+            })
+        
+        except Exception as e:
+            logger.error(f"Error importing discrepancy rules: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/discrepancy-rules/export', methods=['GET'])
+    @timing_aspect
+    def export_discrepancy_rules():
+        """Export rules to XML file"""
+        try:
+            xml_content = discrepancy_rule_manager.export_to_xml()
+            
+            # Create response with XML content
+            response = Response(
+                xml_content,
+                mimetype='application/xml',
+                headers={
+                    'Content-Disposition': f'attachment; filename=discrepancy_rules_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xml'
+                }
+            )
+            return response
+        
+        except Exception as e:
+            logger.error(f"Error exporting discrepancy rules: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+
 
     @app.route('/data_categories')
     @timing_aspect
