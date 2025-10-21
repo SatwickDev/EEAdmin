@@ -1,0 +1,240 @@
+{
+  "inconsistency_analysis_config": {
+    "version": "2.0",
+    "llm_integration": {
+      "enabled": true,
+      "model": "gpt-4",
+      "temperature": 0.1,
+      "max_tokens": 2000,
+      "use_for": [
+        "contextual_analysis",
+        "business_logic_validation", 
+        "pattern_recognition",
+        "semantic_similarity",
+        "inconsistency_explanation"
+      ]
+    },
+    "field_mappings": [
+      {
+        "lc_field": "applicant",
+        "swift_field": "50",
+        "display_name": "Applicant Name",
+        "data_type": "entity_name",
+        "critical": true,
+        "similarity_threshold": 0.90,
+        "normalization_rules": [
+          "remove_legal_suffixes",
+          "standardize_company_names",
+          "handle_abbreviations"
+        ],
+        "validation_patterns": [
+          "company_name_pattern",
+          "legal_entity_validation"
+        ],
+        "business_rules": [
+          "must_be_registered_entity",
+          "validate_against_sanctions_list"
+        ]
+      },
+      {
+        "lc_field": "amount",
+        "swift_field": "32B",
+        "display_name": "LC Amount",
+        "data_type": "monetary_amount",
+        "critical": true,
+        "similarity_threshold": 1.0,
+        "normalization_rules": [
+          "extract_numeric_value",
+          "standardize_currency_format",
+          "handle_decimal_separators"
+        ],
+        "validation_patterns": [
+          "currency_amount_pattern",
+          "decimal_precision_validation"
+        ],
+        "business_rules": [
+          "amount_must_match_exactly",
+          "validate_currency_consistency",
+          "check_credit_limit"
+        ]
+      },
+      {
+        "lc_field": "beneficiary",
+        "swift_field": "59",
+        "display_name": "Beneficiary Name",
+        "data_type": "entity_name",
+        "critical": true,
+        "similarity_threshold": 0.90,
+        "normalization_rules": [
+          "remove_legal_suffixes",
+          "standardize_company_names",
+          "handle_abbreviations"
+        ],
+        "validation_patterns": [
+          "company_name_pattern",
+          "legal_entity_validation"
+        ],
+        "business_rules": [
+          "must_be_registered_entity",
+          "validate_against_sanctions_list"
+        ]
+      },
+      {
+        "lc_field": "goods_description",
+        "swift_field": "45A",
+        "display_name": "Description of Goods",
+        "data_type": "text_description",
+        "critical": false,
+        "similarity_threshold": 0.75,
+        "normalization_rules": [
+          "standardize_product_names",
+          "handle_technical_terms",
+          "normalize_units"
+        ],
+        "validation_patterns": [
+          "goods_description_pattern",
+          "hs_code_validation"
+        ],
+        "business_rules": [
+          "validate_restricted_goods",
+          "check_export_compliance"
+        ]
+      }
+    ],
+    "inconsistency_types": {
+      "value_mismatch": {
+        "description": "Direct value comparison mismatch",
+        "severity_rules": {
+          "critical_fields": "HIGH",
+          "monetary_fields": "HIGH",
+          "default": "MEDIUM"
+        },
+        "llm_analysis": true
+      },
+      "format_inconsistency": {
+        "description": "Same data in different formats",
+        "severity_rules": {
+          "default": "LOW"
+        },
+        "llm_analysis": true
+      },
+      "semantic_inconsistency": {
+        "description": "Different meanings or interpretations",
+        "severity_rules": {
+          "default": "MEDIUM"
+        },
+        "llm_analysis": true
+      },
+      "business_logic_violation": {
+        "description": "Violates trade finance business rules",
+        "severity_rules": {
+          "default": "HIGH"
+        },
+        "llm_analysis": true
+      },
+      "contextual_inconsistency": {
+        "description": "Inconsistent within document context",
+        "severity_rules": {
+          "default": "MEDIUM"
+        },  
+        "llm_analysis": true
+      }
+    },
+    "llm_prompts": {
+      "field_comparison": {
+        "system_prompt": "You are an expert trade finance analyst specializing in Letter of Credit and SWIFT message analysis. Your task is to identify and analyze field inconsistencies between LC applications and SWIFT MT700 messages.",
+        "user_prompt_template": "Analyze the following field comparison for inconsistencies:\n\nField: {field_name}\nLC Application Value: '{lc_value}'\nSWIFT MT700 Value: '{swift_value}'\nField Type: {data_type}\n\nContext:\n- This is a {field_criticality} field in trade finance\n- Business rules: {business_rules}\n- Previous analysis: {context}\n\nProvide a detailed analysis including:\n1. Whether this is a true inconsistency or acceptable variation\n2. Severity level (CRITICAL/HIGH/MEDIUM/LOW) with reasoning\n3. Business impact assessment\n4. Recommended resolution steps\n5. Confidence score (0-100%)\n\nFormat your response as JSON with fields: is_inconsistency, severity, reasoning, business_impact, recommendation, confidence_score"
+      },
+      "contextual_analysis": {
+        "system_prompt": "You are a trade finance compliance expert analyzing document consistency across multiple trade documents.",
+        "user_prompt_template": "Perform contextual analysis of the following trade finance documents:\n\nLC Application Data: {lc_data}\nSWIFT MT700 Data: {swift_data}\nSupporting Documents: {document_data}\n\nAnalyze for:\n1. Cross-document consistency issues\n2. Business logic violations\n3. Regulatory compliance concerns\n4. Missing critical information\n5. Potential fraud indicators\n\nProvide structured analysis with specific inconsistencies, severity levels, and recommendations."
+      },
+      "pattern_recognition": {
+        "system_prompt": "You are a pattern recognition expert specializing in trade finance document analysis.",
+        "user_prompt_template": "Identify patterns and anomalies in the following trade finance data:\n\nData Set: {analysis_data}\nField History: {field_history}\nIndustry Patterns: {industry_context}\n\nLook for:\n1. Unusual patterns that might indicate errors\n2. Deviations from industry standards\n3. Potential data entry mistakes\n4. Systematic inconsistencies\n5. Fraud risk indicators\n\nProvide detailed pattern analysis with risk assessments."
+      }
+    },
+    "business_rules": {
+      "amount_validation": {
+        "rule": "LC amount must exactly match SWIFT 32B field",
+        "tolerance": 0,
+        "severity_if_violated": "CRITICAL"
+      },
+      "entity_name_matching": {
+        "rule": "Entity names should be substantially similar after normalization",
+        "tolerance": 0.90,
+        "severity_if_violated": "HIGH"
+      },
+      "date_consistency": {
+        "rule": "Dates must be logically consistent (issue < expiry < shipment)",
+        "tolerance": 0,
+        "severity_if_violated": "HIGH"
+      },
+      "currency_consistency": {
+        "rule": "Currency must be consistent across all monetary fields",
+        "tolerance": 0,
+        "severity_if_violated": "MEDIUM"
+      }
+    },
+    "normalization_patterns": {
+      "company_names": {
+        "suffixes_to_remove": ["ltd", "limited", "inc", "incorporated", "corp", "corporation", "llc", "co"],
+        "abbreviation_mappings": {
+          "&": "and",
+          "intl": "international",
+          "mfg": "manufacturing",
+          "corp": "corporation"
+        }
+      },
+      "monetary_amounts": {
+        "decimal_separators": [",", "."],
+        "thousands_separators": [",", " ", "."],
+        "currency_symbols": ["$", "€", "£", "¥", "USD", "EUR", "GBP", "JPY"]
+      },
+      "addresses": {
+        "standardization_rules": [
+          "uppercase_country_codes",
+          "standardize_street_abbreviations",
+          "normalize_postal_codes"
+        ]
+      }
+    },
+    "confidence_calculation": {
+      "exact_match": 100,
+      "high_similarity": 90,
+      "medium_similarity": 70,
+      "low_similarity": 50,
+      "no_match": 0,
+      "adjustment_factors": {
+        "critical_field": 1.2,
+        "llm_confirmed": 1.1,
+        "pattern_matched": 1.05,
+        "business_rule_validated": 1.1
+      }
+    },
+    "reporting": {
+      "categories": [
+        "critical_inconsistencies",
+        "high_priority_issues", 
+        "medium_priority_issues",
+        "low_priority_issues",
+        "format_variations",
+        "contextual_concerns"
+      ],
+      "output_fields": [
+        "field_name",
+        "inconsistency_type",
+        "severity",
+        "confidence_score",
+        "lc_value",
+        "swift_value",
+        "normalized_lc_value",
+        "normalized_swift_value",
+        "business_impact",
+        "recommendation",
+        "llm_reasoning",
+        "resolution_steps"
+      ]
+    }
+  }
+}

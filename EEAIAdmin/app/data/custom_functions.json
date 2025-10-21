@@ -1,0 +1,41 @@
+{
+  "functions": [
+    {
+      "id": "1",
+      "name": "Register LC",
+      "description": "Register Letter of Credit with required documents",
+      "category": "Trade Finance",
+      "documentRequirements": [
+        {
+          "documentName": "Purchase Order",
+          "documentType": "Purchase_Order",
+          "maxCount": 1,
+          "minCount": 1,
+          "requirementType": "mandatory"
+        },
+        {
+          "documentName": "Commercial Invoice",
+          "documentType": "Commercial_Invoice",
+          "maxCount": 5,
+          "minCount": 0,
+          "requirementType": "optional"
+        },
+        {
+          "documentName": "Letter of Credit",
+          "documentType": "Letter_of_Credit",
+          "maxCount": 1,
+          "minCount": 1,
+          "requirementType": "mandatory"
+        }
+      ],
+      "llmPrompts": {
+        "customPrompt": "test. prompt"
+      },
+      "workflowSteps": [],
+      "createdBy": "admin",
+      "createdAt": "2025-10-07T07:00:00Z",
+      "updatedAt": "2025-10-07T06:26:57.718693Z",
+      "isActive": true
+    }
+  ]
+}
