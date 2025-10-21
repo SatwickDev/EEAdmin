@@ -8,7 +8,7 @@ import os
 from datetime import datetime, timedelta
 import tiktoken
 
-# ✅ Azure OpenAI Configuration
+# SUCCESS: Azure OpenAI Configuration
 openai.api_type = "azure"
 openai.api_base = "https://newfinaiapp.openai.azure.com"
 openai.api_version = "2024-10-01-preview"
@@ -17,7 +17,7 @@ openai.api_key = "GPbELdmNOZA6LlMHgYyjcOPWeU9VIEYh0jo1hggpB4urTfDoJMijJQQJ99BAAC
 EMBEDDING_MODEL = "text-embedding-3-large"
 CHAT_MODEL = "gpt-4o"
 
-# ✅ Oracle DB Configuration
+# CONFIG: Oracle DB Configuration
 ORACLE_CLIENT_LIB_DIR = r"C:\Users\vijayan\Downloads\instantclient-basic-windows.x64-23.6.0.24.10\instantclient_23_6"
 USERNAME = "EXIMTRX"
 PASSWORD = "EXIMTRX"
@@ -27,11 +27,11 @@ SERVICE = "DADIB"
 
 cx_Oracle.init_oracle_client(lib_dir=ORACLE_CLIENT_LIB_DIR)
 
-# ✅ Paths
+# CONFIG: Paths
 EMBEDDED_JSON_PATH = Path(r"C:\Users\vijayan\PycharmProjects\PythonProject_Copy\app\utils\adibv6ee_eximtrx_chroma.json")
 CHROMA_DB_PATH = r"C:\Users\vijayan\PycharmProjects\PythonProject_Copy\app\utils\adibv6ee_eximtrx_chromdb"
 
-# ✅ Table Descriptions
+# INFO: Table Descriptions
 TABLE_HINTS = {
     "EXIMTRX.IPLC_MASTER": "Master record for Import LC under EXIMTRX module.",
     "EXIMTRX.IPLC_LEDGER": "Ledger entries tracking lifecycle of Import LCs in EXIMTRX module.",
@@ -112,7 +112,7 @@ cutoff_date = (datetime.today() - timedelta(days=100)).strftime('%Y-%m-%d')
 
 # 🔹 Get all EXIMTRX reference IDs
 def get_all_refs():
-    print("🔍 Fetching EXIMTRX reference IDs...")
+    print("SEARCH: Fetching EXIMTRX reference IDs...")
     #conn = cx_Oracle.connect(USERNAME, PASSWORD, f"{HOST}:{PORT}:{SERVICE}")
     dsn = cx_Oracle.makedsn("ADIBV6", 1521, sid="DADIB")  # or your actual values
     conn = cx_Oracle.connect("EXIMTRX", "EXIMTRX", dsn)
@@ -123,14 +123,15 @@ def get_all_refs():
         WHERE C_MAIN_REF IS NOT NULL AND TRX_DT >= TO_DATE('{cutoff_date}', 'YYYY-MM-DD')
     """)
     exim_refs = [row[0] for row in cursor.fetchall()]
-    print(f"⚙️ Found {len(exim_refs)} EXIMTRX references.")
+    ref_count = len(exim_refs)
+    print(f"INFO: Found {ref_count} EXIMTRX references.")
 
     conn.close()
     return {"EXIMTRX": exim_refs}
 
 # 🔹 Fetch EXIMTRX records for each reference
 def fetch_eximtrx_records(c_main_ref: str):
-    print(f"🔍 Fetching EXIMTRX records for C_MAIN_REF = {c_main_ref}...")
+    print(f"SEARCH: Fetching EXIMTRX records for C_MAIN_REF = {c_main_ref}...")
     dsn = cx_Oracle.makedsn("ADIBV6", 1521, sid="DADIB")  # or your actual values
     conn = cx_Oracle.connect("EXIMTRX", "EXIMTRX", dsn)
     cursor = conn.cursor()
@@ -164,7 +165,8 @@ def fetch_eximtrx_records(c_main_ref: str):
             cursor.execute(query)
             columns = [col[0] for col in cursor.description]
             rows = cursor.fetchall()
-            print(f"⚙️ Found {len(rows)} records in {table_name}.")
+            record_count = len(rows)
+            print(f"INFO: Found {record_count} records in {table_name}.")
             for row in rows:
                 converted = [val.read() if isinstance(val, cx_Oracle.LOB) else val for val in row]
                 record = dict(zip(columns, converted))

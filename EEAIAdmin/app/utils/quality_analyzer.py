@@ -162,13 +162,13 @@ class DocumentQualityAnalyzer:
             
             # Determine file type from original filename and convert to images
             file_extension = os.path.splitext(file_name)[1].lower()
-            logger.info(f"📄 Processing file with extension: {file_extension}")
+            logger.info(f"Processing file with extension: {file_extension}")
             
             if file_extension == '.pdf':
-                logger.info("🔄 Converting PDF to images for quality analysis")
+                logger.info("Converting PDF to images for quality analysis")
                 page_images = self._convert_pdf_to_images(file_path)
             elif file_extension in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif']:
-                logger.info("🖼️ Processing image file directly")
+                logger.info("Processing image file directly")
                 page_images = [self._load_image_file(file_path)]
             else:
                 logger.warning(f"⚠️ Unsupported file type: {file_extension}")
@@ -177,7 +177,7 @@ class DocumentQualityAnalyzer:
             if not page_images:
                 return self._create_error_result("Failed to load document images", file_name)
             
-            logger.info(f"📄 Processing {len(page_images)} pages for quality analysis")
+            logger.info(f"Processing {len(page_images)} pages for quality analysis")
             
             # Analyze each page
             page_results = []
@@ -223,7 +223,7 @@ class DocumentQualityAnalyzer:
                 "recommendations": self._get_processing_recommendations(verdict, overall_score)
             }
             
-            logger.info(f"✅ Quality analysis completed: {verdict} (score: {overall_score:.3f}) in {processing_time:.2f}s")
+            logger.info(f"Quality analysis completed: {verdict} (score: {overall_score:.3f}) in {processing_time:.2f}s")
             
             if progress_tracker:
                 progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, f"Quality analysis complete: {verdict}", 100)
@@ -231,7 +231,7 @@ class DocumentQualityAnalyzer:
             return result
             
         except Exception as e:
-            logger.error(f"❌ Quality analysis failed for {file_name}: {str(e)}")
+            logger.error(f"Quality analysis failed for {file_name}: {str(e)}")
             return self._create_error_result(str(e), file_name)
 
     def _convert_pdf_to_images(self, pdf_path: str) -> List[str]:
@@ -255,7 +255,7 @@ class DocumentQualityAnalyzer:
             return images
             
         except Exception as e:
-            logger.error(f"❌ Failed to convert PDF to images: {str(e)}")
+            logger.error(f"Failed to convert PDF to images: {str(e)}")
             return []
 
     def _load_image_file(self, image_path: str) -> Optional[str]:
@@ -263,7 +263,7 @@ class DocumentQualityAnalyzer:
         try:
             # Check if file exists
             if not os.path.exists(image_path):
-                logger.error(f"❌ Image file not found: {image_path}")
+                logger.error(f"Image file not found: {image_path}")
                 return None
                 
             with open(image_path, 'rb') as img_file:
@@ -274,7 +274,7 @@ class DocumentQualityAnalyzer:
                 img = Image.open(io.BytesIO(img_data))
                 img.verify()  # Verify the image is not corrupted
             except Exception as verify_error:
-                logger.error(f"❌ Invalid image file {image_path}: {str(verify_error)}")
+                logger.error(f"Invalid image file {image_path}: {str(verify_error)}")
                 return None
             
             # Re-open for processing (verify() closes the image)
@@ -282,7 +282,7 @@ class DocumentQualityAnalyzer:
             
             # Optionally resize large images for API efficiency
             if img.width > 2048 or img.height > 2048:
-                logger.info(f"📏 Resizing large image from {img.width}x{img.height} to fit 2048x2048")
+                logger.info(f"Resizing large image from {img.width}x{img.height} to fit 2048x2048")
                 img.thumbnail((2048, 2048), Image.Resampling.LANCZOS)
                 output = io.BytesIO()
                 img.save(output, format='PNG')
@@ -291,7 +291,7 @@ class DocumentQualityAnalyzer:
             return base64.b64encode(img_data).decode('utf-8')
             
         except Exception as e:
-            logger.error(f"❌ Failed to load image file: {str(e)}")
+            logger.error(f"Failed to load image file: {str(e)}")
             return None
 
     def _analyze_page_quality(self, img_base64: str, page_num: int) -> Optional[Dict]:
@@ -368,7 +368,7 @@ Quality Guidelines:
             }
             
         except Exception as e:
-            logger.error(f"❌ Failed to analyze page {page_num}: {str(e)}")
+            logger.error(f"Failed to analyze page {page_num}: {str(e)}")
             return None
 
     def _parse_gpt_response(self, content: str) -> Optional[Dict]:
@@ -387,7 +387,7 @@ Quality Guidelines:
             return json.loads(clean_content)
             
         except json.JSONDecodeError as e:
-            logger.error(f"❌ Failed to parse GPT response: {e}")
+            logger.error(f"Failed to parse GPT response: {e}")
             logger.error(f"Response content: {content}")
             return None
 
@@ -435,23 +435,23 @@ Quality Guidelines:
         recommendations = []
         
         if verdict == "direct_analysis":
-            recommendations.append("✅ Excellent quality - proceed with standard OCR processing")
-            recommendations.append("📝 Document is suitable for high-accuracy text extraction")
+            recommendations.append("Excellent quality - proceed with standard OCR processing")
+            recommendations.append("Document is suitable for high-accuracy text extraction")
             
         elif verdict == "pre_processing":
-            recommendations.append("⚡ Apply image enhancement before OCR")
-            recommendations.append("🔧 Consider contrast/brightness adjustments")
-            recommendations.append("📐 Check for skew correction needs")
+            recommendations.append("Apply image enhancement before OCR")
+            recommendations.append("Consider contrast/brightness adjustments")
+            recommendations.append("Check for skew correction needs")
             
         elif verdict == "azure_analysis":
-            recommendations.append("🔍 Use Azure Document Intelligence for better results")
-            recommendations.append("📄 Document quality requires advanced OCR capabilities")
-            recommendations.append("⚠️ Standard OCR may produce lower accuracy")
+            recommendations.append("Use Azure Document Intelligence for better results")
+            recommendations.append("Document quality requires advanced OCR capabilities")
+            recommendations.append("Standard OCR may produce lower accuracy")
             
         else:  # reupload
-            recommendations.append("❌ Poor quality detected - recommend document reupload")
-            recommendations.append("📸 Try rescanning with better lighting/focus")
-            recommendations.append("🔄 Current quality may result in poor text extraction")
+            recommendations.append("Poor quality detected - recommend document reupload")
+            recommendations.append("Try rescanning with better lighting/focus")
+            recommendations.append("Current quality may result in poor text extraction")
             
         return recommendations
 
@@ -471,7 +471,7 @@ Quality Guidelines:
         start_time = time.time()
         
         try:
-            logger.info(f"🚀 FAST quality analysis for: {file_name}")
+            logger.info(f"FAST quality analysis for: {file_name}")
             
             if progress_tracker:
                 progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, "Fast quality analysis...", 10)
@@ -522,7 +522,7 @@ Quality Guidelines:
                 "recommendations": self._get_processing_recommendations(verdict, overall_score)
             }
             
-            logger.info(f"✅ FAST quality analysis: {verdict} (score: {overall_score:.3f}) in {processing_time:.2f}s")
+            logger.info(f"FAST quality analysis: {verdict} (score: {overall_score:.3f}) in {processing_time:.2f}s")
             
             if progress_tracker:
                 progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, f"Fast analysis complete: {verdict}", 100)
@@ -530,7 +530,7 @@ Quality Guidelines:
             return result
             
         except Exception as e:
-            logger.error(f"❌ Fast quality analysis failed for {file_name}: {str(e)}")
+            logger.error(f"Fast quality analysis failed for {file_name}: {str(e)}")
             return self._create_error_result(str(e), file_name)
 
     def _convert_pdf_to_images_fast(self, pdf_path: str) -> List[str]:
@@ -554,7 +554,7 @@ Quality Guidelines:
             return images
             
         except Exception as e:
-            logger.error(f"❌ Failed to convert PDF to images (fast): {str(e)}")
+            logger.error(f"Failed to convert PDF to images (fast): {str(e)}")
             return []
 
     def _load_image_file_fast(self, image_path: str) -> Optional[str]:
@@ -578,7 +578,7 @@ Quality Guidelines:
                 return base64.b64encode(img_byte_arr).decode('utf-8')
                 
         except Exception as e:
-            logger.error(f"❌ Failed to load image file (fast): {str(e)}")
+            logger.error(f"Failed to load image file (fast): {str(e)}")
             return None
 
     def _analyze_page_fast(self, img_base64: str, page_num: int) -> Optional[Dict]:
@@ -655,7 +655,7 @@ Guidelines: 0.0=poor, 0.5=fair, 0.7=good, 0.9=excellent, 1.0=perfect'''
             }
             
         except Exception as e:
-            logger.error(f"❌ Failed to analyze page {page_num} (fast): {str(e)}")
+            logger.error(f"Failed to analyze page {page_num} (fast): {str(e)}")
             return self._create_fallback_page_result_fast(page_num)
 
     def _parse_fast_response(self, content: str) -> Optional[Dict]:
@@ -682,7 +682,7 @@ Guidelines: 0.0=poor, 0.5=fair, 0.7=good, 0.9=excellent, 1.0=perfect'''
             return metrics
             
         except (json.JSONDecodeError, ValueError, KeyError) as e:
-            logger.error(f"❌ Failed to parse fast analysis response: {str(e)}")
+            logger.error(f"Failed to parse fast analysis response: {str(e)}")
             return None
 
     def _calculate_fast_score(self, metrics: Dict) -> float:
@@ -747,7 +747,7 @@ Guidelines: 0.0=poor, 0.5=fair, 0.7=good, 0.9=excellent, 1.0=perfect'''
             "pages_analyzed": 0,
             "page_results": [],
             "processing_time": 0.0,
-            "recommendations": ["❌ Quality analysis failed - proceeding with standard processing"]
+            "recommendations": ["Quality analysis failed - proceeding with standard processing"]
         }
 
 

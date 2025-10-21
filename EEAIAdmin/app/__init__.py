@@ -76,14 +76,14 @@ def create_app():
 
     # Initialize Flask-SocketIO
     socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
-    logger.info("✅ Flask-SocketIO initialized")
+    logger.info("SUCCESS: Flask-SocketIO initialized")
 
     # Initialize WebSocket handler
     try:
         init_websocket_handler(socketio)
-        logger.info("✅ WebSocket handler initialized successfully.")
+        logger.info("SUCCESS: WebSocket handler initialized successfully.")
     except Exception as e:
-        logger.error(f"❌ Failed to initialize WebSocket handler: {e}")
+        logger.error(f"ERROR: Failed to initialize WebSocket handler: {e}")
         # Continue without WebSocket handler
         pass
 
