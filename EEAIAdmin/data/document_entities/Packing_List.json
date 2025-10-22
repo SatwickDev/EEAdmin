@@ -129,20 +129,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "129",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "4",
-      "entityName": "House waybill document identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "130",
       "documentId": "Packing_List",
       "documentName": "Packing List",
@@ -171,48 +157,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "132",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "161",
-      "entityName": "Freight forwarder",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "133",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "330",
-      "entityName": "Despatch",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "optional"
-    },
-    {
-      "id": "134",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "133",
-      "entityName": "Trade Terms Conditions Code",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
-      "fieldType": "optional"
-    },
-    {
       "id": "135",
       "documentId": "Packing_List",
       "documentName": "Packing List",
@@ -225,20 +169,6 @@
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
-    },
-    {
-      "id": "136",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "128",
-      "entityName": "Product Identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
     },
     {
       "id": "137",
@@ -269,20 +199,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "139",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "24",
-      "entityName": "Notify Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-    {
       "id": "140",
       "documentId": "Packing_List",
       "documentName": "Packing List",
@@ -308,20 +224,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "142",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "328",
-      "entityName": "Border and Regulatory Processes",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "9",
-      "dataCategoryValue": "Goods",
       "fieldType": "conditional"
     },
     {

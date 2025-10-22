@@ -143,20 +143,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "153",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "322",
-      "entityName": "Original Loading Location",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "154",
       "documentId": "Bill_of_Lading",
       "documentName": "Bill of Lading",
@@ -169,20 +155,6 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
-    },
-    {
-      "id": "155",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "346",
-      "entityName": "Place or departure",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
     },
     {
       "id": "156",
@@ -227,20 +199,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "159",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "347",
-      "entityName": "Consignment summary description",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "9",
-      "dataCategoryValue": "Goods",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "160",
       "documentId": "Bill_of_Lading",
       "documentName": "Bill of Lading",
@@ -281,20 +239,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "optional"
-    },
-    {
-      "id": "163",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "349",
-      "entityName": "Mode of Transport",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
-      "fieldType": "mandatory"
     },
     {
       "id": "164",
