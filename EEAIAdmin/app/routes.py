@@ -3057,6 +3057,111 @@ Return compliance status for each field.'''
             logger.error(f"Error saving document entity mappings: {e}")
             return False
 
+    def _update_or_delete_common_mapping(mapping_data, operation='update'):
+        """Update or delete record in common JSON (document_entity_maintenance.json)"""
+        try:
+            # common_path = os.path.join(os.path.dirname(__file__), 'data', 'document_entity_maintenance.json')
+            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+            common_path = os.path.join(base_dir, 'document_entity_maintenance.json')
+            # Load or initialize
+            if os.path.exists(common_path):
+                with open(common_path, 'r', encoding='utf-8') as f:
+                    common_data = json.load(f)
+            else:
+                common_data = {"mappings": []}
+
+            mappings = common_data.get('mappings', [])
+            updated = False
+
+            if operation == 'delete':
+                new_mappings = []
+                for cm in mappings:
+                    if not (
+                            cm.get('documentId') == mapping_data.get('documentId') and
+                            cm.get('entityId') == mapping_data.get('entityId') and
+                            cm.get('documentCategoryId') == mapping_data.get('documentCategoryId') and
+                            cm.get('dataCategoryId') == mapping_data.get('dataCategoryId')
+                    ):
+                        new_mappings.append(cm)
+                common_data['mappings'] = new_mappings
+                updated = True
+
+            elif operation == 'update':
+                for cm in mappings:
+                    if (
+                        cm.get('documentId') == mapping_data.get('documentId') and
+                        cm.get('entityId') == mapping_data.get('entityId') and
+                        cm.get('documentCategoryId') == mapping_data.get('documentCategoryId') and
+                        cm.get('dataCategoryId') == mapping_data.get('dataCategoryId')
+                    ):
+                        cm.update(mapping_data)
+                        updated = True
+                        break
+
+                if not updated:
+                    common_data['mappings'].append(mapping_data)
+                    updated = True
+
+            if updated:
+                with open(common_path, 'w', encoding='utf-8') as f:
+                    json.dump(common_data, f, indent=2, ensure_ascii=False)
+
+            logger.info(f"Common JSON {operation} successful for entityId={mapping_data.get('entityId')}")
+
+        except Exception as e:
+            logger.error(f"Error during common JSON {operation}: {e}")
+
+    def _load_document_entity_maintenance_mappings():
+        """Load all document entity maintenance mappings from a single JSON file"""
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+        filepath = os.path.join(base_dir, 'document_entity_maintenance.json')
+        try:
+            if not os.path.exists(filepath):
+                return {'mappings': []}
+
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return {'mappings': data.get('mappings', [])}
+
+        except Exception as e:
+            logger.error(f"Error loading document entity maintenance mappings: {e}")
+            return {'mappings': []}
+
+    def _load_document_entity_maintenance_by_document(document_id):
+        """Load entity maintenance mappings for a specific document"""
+        #filepath = os.path.join(os.path.dirname(__file__), 'data', 'document_entity_maintenance.json')
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+        filepath = os.path.join(base_dir, 'document_entity_maintenance.json')
+        try:
+            if os.path.exists(filepath):
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            else:
+                # Create default empty structure for this document
+                return {
+                    'mappings': []
+                }
+        except Exception as e:
+            logger.error(f"Error loading mappings for document {document_id}: {e}")
+            return {'documentId': document_id, 'documentName': '', 'mappings': []}
+
+    def _save_document_entity_maintenance_mapping_by_document(document_id, doc_data):
+        """Update or add entity mappings for a specific document in the master JSON file"""
+        #filepath = os.path.join(os.path.dirname(__file__), 'data', 'document_entity_maintenance.json')
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
+        filepath = os.path.join(base_dir, 'document_entity_maintenance.json')
+
+        logger.info(f"✅ Successfully saved mapping for {filepath}")
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(doc_data, f, indent=2, ensure_ascii=False)
+            logger.info(f"✅ Successfully saved mapping for {document_id}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error saving mappings for document {document_id}: {e}")
+            return False
+
+
     @app.route('/api/documents', methods=['GET'])
     @timing_aspect
     def get_all_documents():
@@ -3162,7 +3267,7 @@ Return compliance status for each field.'''
     @app.route('/api/document_entity_maintenance/<mapping_id>', methods=['PUT'])
     @timing_aspect
     def update_document_entity_mapping(mapping_id):
-        """Update an existing document entity mapping"""
+        """Update a document entity mapping and sync with common JSON"""
         try:
             mapping_data = request.get_json()
             document_id = mapping_data.get('documentId')
@@ -3170,14 +3275,13 @@ Return compliance status for each field.'''
             if not document_id:
                 return jsonify({'success': False, 'message': 'Missing documentId'}), 400
 
-            # Load only the specific document's data
+            # Load the document-specific file
             doc_data = _load_document_entity_mapping_by_document(document_id)
 
-            # Find and update mapping
             found = False
             for i, mapping in enumerate(doc_data.get('mappings', [])):
                 if mapping.get('id') == mapping_id:
-                    doc_data['mappings'][i] = {
+                    updated_mapping = {
                         'id': mapping_id,
                         'documentId': mapping_data.get('documentId'),
                         'documentName': mapping_data.get('documentName', ''),
@@ -3191,46 +3295,60 @@ Return compliance status for each field.'''
                         'dataCategoryValue': mapping_data.get('dataCategoryValue', ''),
                         'fieldType': mapping_data.get('fieldType')
                     }
+
+                    # Update document-specific mapping
+                    doc_data['mappings'][i] = updated_mapping
                     found = True
 
-                    if _save_document_entity_mapping_by_document(document_id, doc_data):
-                        return jsonify({'success': True, 'mapping': doc_data['mappings'][i]}), 200
-                    else:
+                    # Save document JSON
+                    if not _save_document_entity_mapping_by_document(document_id, doc_data):
                         return jsonify({'success': False, 'message': 'Failed to save mapping'}), 500
 
+                    # ✅ Update the common JSON (shared helper)
+                    _update_or_delete_common_mapping(updated_mapping, operation='update')
+
+                    return jsonify({'success': True, 'mapping': updated_mapping}), 200
+
             if not found:
-                return jsonify({'success': False, 'message': 'Mapping not found'}), 404
+                return jsonify({'success': False, 'message': f'Mapping ID {mapping_id} not found'}), 404
 
         except Exception as e:
             logger.error(f"Error updating document entity mapping {mapping_id}: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
 
+
     @app.route('/api/document_entity_maintenance/<mapping_id>', methods=['DELETE'])
     @timing_aspect
     def delete_document_entity_mapping(mapping_id):
-        """Delete a document entity mapping"""
+        """Delete a document entity mapping and remove from common JSON"""
         try:
             # Need to find which document this mapping belongs to
             all_data = _load_document_entity_mappings()
             document_id = None
+            mapping_to_delete = None
 
             for mapping in all_data.get('mappings', []):
                 if mapping.get('id') == mapping_id:
                     document_id = mapping.get('documentId')
+                    mapping_to_delete = mapping
                     break
 
             if not document_id:
                 return jsonify({'success': False, 'message': 'Mapping not found'}), 404
 
-            # Load only the specific document's data
+            # Load the specific document JSON
             doc_data = _load_document_entity_mapping_by_document(document_id)
 
-            # Find and remove mapping
+            # Remove the mapping
             original_length = len(doc_data.get('mappings', []))
             doc_data['mappings'] = [m for m in doc_data.get('mappings', []) if m.get('id') != mapping_id]
 
             if len(doc_data['mappings']) < original_length:
                 if _save_document_entity_mapping_by_document(document_id, doc_data):
+                    # ✅ Delete from common JSON (shared helper)
+                    if mapping_to_delete:
+                        _update_or_delete_common_mapping(mapping_to_delete, operation='delete')
+
                     return jsonify({'success': True, 'message': 'Mapping deleted successfully'}), 200
                 else:
                     return jsonify({'success': False, 'message': 'Failed to save changes'}), 500
