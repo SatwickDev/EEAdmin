@@ -13,10 +13,12 @@ from app.utils.websocket_handler import init_websocket_handler
 
 # Load environment variables
 load_dotenv()
+json_data_cache = {}
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 def validate_env_vars():
     """Validate required environment variables."""
@@ -24,6 +26,7 @@ def validate_env_vars():
     # missing = [var for var in required_vars if not os.getenv(var)]
     # if missing:
     #     raise ValueError(f"Missing environment variables: {', '.join(missing)}")
+
 
 def create_app():
     """
@@ -47,7 +50,7 @@ def create_app():
     # Enable CORS with restricted origins
     # Temporarily disabled due to recursion error
     # CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-    
+
     # CORS disabled to fix recursion error - add manual headers instead
     @app.after_request
     def after_request(response):
@@ -56,6 +59,25 @@ def create_app():
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         return response
+
+    # --- ✅ NEW: Automatic JSON reload hook ---
+    @app.after_request
+    def auto_reload_on_modify(response):
+        """Automatically reload JSONs after successful POST/PUT/DELETE."""
+        from flask import request
+        import logging
+        logger = logging.getLogger(__name__)
+
+        try:
+            if request.method in ['POST', 'PUT', 'DELETE'] and response.status_code in [200, 201]:
+                from app.utils.reload_helper import reload_all_jsons
+                reload_all_jsons()
+                logger.info("✅ Auto JSON reload triggered after data change")
+        except Exception as e:
+            logger.warning(f"⚠️ Auto reload failed: {e}")
+        return response
+
+    # -----------------------------------------
 
     # Load schema dynamically
     try:

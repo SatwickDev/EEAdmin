@@ -359,20 +359,20 @@ discrepancy_rule_manager = DiscrepancyRuleManager()
 # PROMPT CONFIG HELPERS
 # ========================
 
-def load_prompt_config():
-    """
-    Load prompt configuration from YAML file.
-    This reads the document_classification_config.yaml and extracts prompt templates.
-    """
-    try:
-        config_path = os.path.join('data', 'document_classification_config.yaml')
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = yaml.safe_load(f)
-        logger.info(f"SUCCESS: Loaded prompt config from {config_path}")
-        return config
-    except Exception as e:
-        logger.error(f"ERROR: Failed to load prompt config: {e}")
-        return None
+# def load_prompt_config():
+#     """
+#     Load prompt configuration from YAML file.
+#     This reads the document_classification_config.yaml and extracts prompt templates.
+#     """
+#     try:
+#         config_path = os.path.join('data', 'document_classification_config.yaml')
+#         with open(config_path, 'r', encoding='utf-8') as f:
+#             config = yaml.safe_load(f)
+#         logger.info(f"SUCCESS: Loaded prompt config from {config_path}")
+#         return config
+#     except Exception as e:
+#         logger.error(f"ERROR: Failed to load prompt config: {e}")
+#         return None
 
 def build_classification_prompt_from_config(ocr_text, function_description=None):
     """
@@ -8730,6 +8730,8 @@ Guidelines:
         Performs: OCR → Classification → Extraction with config-driven prompts
         """
         logger.info("SPEED: === ENHANCED DOCUMENT CLASSIFICATION ROUTE CALLED ===")
+        from app.utils.reload_helper import reload_all_jsons
+        reload_all_jsons()
         try:
             # Load prompt configuration
             global prompt_config
