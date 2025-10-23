@@ -11,10 +11,8 @@ def reload_all_jsons():
     """
     try:
         # Folder path where your JSON files live
-        base_path = r"C:\Users\saipr\Downloads\EEAIAdmin\EEAIAdmin"
-        data_folder = os.path.join(base_path, 'data')
+        data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
         logger.info(f"✅ JSON folder path:: {data_folder}")
-        data_folder = os.path.abspath(data_folder)
 
         # Import the global cache (make sure it’s defined in app/__init__.py or main.py)
         from app import json_data_cache
