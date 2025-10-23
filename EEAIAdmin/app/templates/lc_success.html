@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC Submission Success</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --success-light: #ecfdf5;
+            --success-border: #a7f3d0;
+            --bg-color: #f8f9fa;
+            --text-color: #2d3748;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --surface: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --focus-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-color);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTE2djJIMjR2LTJoMTJ6Ii8+PC9nPjwvZz48L3N2Zz4=');
+            pointer-events: none;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .success-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            z-index: 1;
+        }
+
+        .success-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color), var(--primary-color));
+            background-size: 200% 100%;
+            animation: gradientShift 3s linear infinite;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 200% 0%;
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--success-light);
+            border: 3px solid var(--success-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: successBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .success-icon i {
+            font-size: 36px;
+            color: var(--success-color);
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .success-message {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .transaction-details {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .status-completed {
+            color: var(--success-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-completed i {
+            font-size: 16px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-muted);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-outline:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        @keyframes successBounce {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .success-container {
+                padding: 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* SWIFT Preview Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(30, 41, 59, 0.4));
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(24px) saturate(1.5);
+            border-radius: 24px;
+            width: 94%;
+            max-width: 960px;
+            max-height: 92vh;
+            overflow: hidden;
+            box-shadow: 0 24px 48px rgba(99, 102, 241, 0.15), 0 12px 24px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(229, 231, 235, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 28px 36px;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(24px);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 20px;
+        }
+
+        .modal-close:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-body {
+            padding: 28px;
+            max-height: 66vh;
+            overflow-y: auto;
+        }
+
+        .swift-preview {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            border: 1px solid #334155;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner i {
+            font-size: 24px;
+            color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        /* Enhanced SWIFT Modal Styles */
+        .swift-info {
+            background: rgba(248, 250, 252, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .swift-info p {
+            margin: 8px 0;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .swift-info strong {
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        /* View Toggle Controls */
+        .swift-view-controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .view-toggle-group {
+            display: flex;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .view-toggle-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-toggle-btn.active {
+            background: var(--surface);
+            color: var(--text-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .view-toggle-btn:hover:not(.active) {
+            color: var(--text-color);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Formatted SWIFT Display */
+        .swift-formatted-display {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .swift-field {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            border-left: 3px solid var(--primary-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .swift-field-header {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 13px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .swift-field-tag {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .swift-field-content {
+            color: var(--text-color);
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .swift-message-container {
+            margin-bottom: 24px;
+        }
+
+        .swift-message-container label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* Enhanced Button Styles */
+        .swift-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .btn-muted {
+            background: linear-gradient(135deg, #94a3b8 0%, #7e8d9f 100%);
+            color: white;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-muted:hover {
+            background: linear-gradient(135deg, #828fa2 0%, #6c7b8d 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+        }
+
+        .btn-primary-muted {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            color: white;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary-muted:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="success-container">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <h1 class="success-title">LC Submitted Successfully!</h1>
+        <p class="success-message">
+            Your Letter of Credit has been submitted and is now being processed.
+            You will receive notifications on the status updates.
+        </p>
+
+        <div class="transaction-details">
+            <div class="detail-row">
+                <span class="detail-label">LC Number:</span>
+                <span class="detail-value" id="lcNumber">{{ lcNumber or 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Transaction ID:</span>
+                <span class="detail-value" id="transactionId">{{ transactionId or 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value status-completed">
+                    <i class="fas fa-check-circle"></i>
+                    Completed
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Submitted:</span>
+                <span class="detail-value" id="submissionTime"></span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="showSwiftPreview()">
+                <i class="fas fa-eye"></i>
+                View SWIFT Preview
+            </button>
+            <button class="btn btn-primary" onclick="goToDocumentRegister()">
+                <i class="fas fa-file-upload"></i>
+                Register Documents
+            </button>
+            <a href="/trade_finance_lc_form" class="btn btn-secondary">
+                <i class="fas fa-plus"></i>
+                New LC
+            </a>
+            <a href="/trade_finance_dashboard" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- SWIFT Preview Modal v2.0 -->
+    <div class="modal-overlay" id="swiftModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">SWIFT MT700 Preview</h3>
+                <button class="modal-close" onclick="closeSwiftModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="loading-spinner" id="loadingSpinner">
+                    <i class="fas fa-spinner"></i>
+                    <p>Generating SWIFT message...</p>
+                </div>
+                <div id="swiftContent" style="display: none;">
+                    <div class="swift-info">
+                        <p><strong>LC Number:</strong> <span id="modalLcNumber">{{ lc_number }}</span></p>
+                        <p><strong>Message Type:</strong> MT700 - Issue of a Documentary Credit</p>
+                        <p><strong>Status:</strong> Preview</p>
+                    </div>
+                    <div class="swift-view-controls">
+                        <div class="view-toggle-group">
+                            <button type="button" id="formatViewBtn" class="view-toggle-btn active"
+                                onclick="switchToFormattedView()">
+                                <i class="fas fa-eye"></i> User Friendly
+                            </button>
+                            <button type="button" id="rawViewBtn" class="view-toggle-btn" onclick="switchToRawView()">
+                                <i class="fas fa-code"></i> RAW Message
+                            </button>
+                        </div>
+                    </div>
+                    <div class="swift-message-container">
+                        <div id="formattedView" class="swift-view-content" style="display: block;">
+                            <label>Formatted SWIFT MT700 Message:</label>
+                            <div id="swiftFormattedContent" class="swift-formatted-display"></div>
+                        </div>
+                        <div id="rawView" class="swift-view-content" style="display: none;">
+                            <label>RAW SWIFT MT700 Message:</label>
+                            <div id="swiftRawContent" class="swift-preview"></div>
+                        </div>
+                    </div>
+                    <div class="swift-actions">
+                        <button type="button" class="btn btn-muted" onclick="copySwiftMessage()">
+                            <i class="fas fa-copy"></i> Copy Message
+                        </button>
+                        <button type="button" class="btn btn-primary-muted" onclick="downloadSwiftMessage()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get LC data from URL parameters or session storage
+        const urlParams = new URLSearchParams(window.location.search);
+        const lcNumber = urlParams.get('lcNumber') || document.getElementById('lcNumber').textContent;
+        const transactionId = urlParams.get('transactionId') || document.getElementById('transactionId').textContent;
+
+        // Set current time
+        document.getElementById('submissionTime').textContent = new Date().toLocaleString();
+
+        // Store form data for SWIFT preview (from session storage if available)
+        let formData = null;
+        try {
+            formData = JSON.parse(sessionStorage.getItem('lcFormData') || '{}');
+        } catch (e) {
+            console.log('No form data in session storage');
+        }
+
+        function showSwiftPreview() {
+            console.log('SWIFT Preview v2.0 - Starting preview');
+            const modal = document.getElementById('swiftModal');
+            const loading = document.getElementById('loadingSpinner');
+            const content = document.getElementById('swiftContent');
+            const errorDiv = document.getElementById('errorMessage');
+
+            modal.style.display = 'flex';
+            loading.style.display = 'block';
+            content.style.display = 'none'; // Ensure it starts hidden
+            errorDiv.style.display = 'none';
+
+            // Use form data if available, otherwise create minimal data for preview
+            const previewData = formData || {
+                lcNumber: lcNumber,
+                applicant: 'Sample Applicant Company',
+                beneficiary: 'Sample Beneficiary Company',
+                amount: '100000.00',
+                currency: 'USD',
+                issueDate: new Date().toISOString().split('T')[0],
+                expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                latestShipmentDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                lcType: 'irrevocable',
+                goodsDescription: 'Trade goods as per contract',
+                partialShipment: 'allowed',
+                transhipment: 'not_allowed'
+            };
+
+            fetch('/api/lc/swift-preview-form', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(previewData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.success) {
+                        console.log('SWIFT message received:', data.swift_message); // Debug log
+
+                        // Show content first to make elements accessible
+                        content.style.display = 'block';
+
+                        // Use requestAnimationFrame to ensure DOM is updated
+                        requestAnimationFrame(() => {
+                            // Update the modal content with null checks
+                            const modalLcNumberEl = document.getElementById('modalLcNumber');
+                            const swiftRawContentEl = document.getElementById('swiftRawContent');
+                            const swiftFormattedContentEl = document.getElementById('swiftFormattedContent');
+
+                            if (modalLcNumberEl) {
+                                modalLcNumberEl.textContent = lcNumber;
+                            }
+
+                            if (swiftRawContentEl) {
+                                swiftRawContentEl.textContent = data.swift_message;
+                                console.log('Raw content set:', swiftRawContentEl.textContent.substring(0, 100) + '...'); // Debug log
+                            }
+
+                            if (swiftFormattedContentEl) {
+                                // Format the SWIFT message for user-friendly display
+                                const formattedContent = formatSwiftMessage(data.swift_message);
+                                console.log('Formatted content:', formattedContent.substring(0, 200) + '...'); // Debug log
+                                swiftFormattedContentEl.innerHTML = formattedContent;
+                            }
+
+                            // Default to formatted view (no switching needed)
+                            console.log('SWIFT content loaded successfully, formatted view is default');
+
+                            // Debug: Check if elements exist now
+                            console.log('Debug - Elements check:', {
+                                formatBtn: !!document.getElementById('formatViewBtn'),
+                                rawBtn: !!document.getElementById('rawViewBtn'),
+                                formattedView: !!document.getElementById('formattedView'),
+                                rawView: !!document.getElementById('rawView'),
+                                swiftContent: !!document.getElementById('swiftContent'),
+                                contentVisible: document.getElementById('swiftContent').style.display
+                            });
+                        });
+                    } else {
+                        errorDiv.textContent = data.message || 'Failed to generate SWIFT preview';
+                        errorDiv.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                    errorDiv.textContent = 'Error generating SWIFT preview. Please try again.';
+                    errorDiv.style.display = 'block';
+                });
+        }
+
+        function closeSwiftModal() {
+            document.getElementById('swiftModal').style.display = 'none';
+        }
+
+        // Switch to formatted view
+        function switchToFormattedView() {
+            try {
+                const formatBtn = document.getElementById('formatViewBtn');
+                const rawBtn = document.getElementById('rawViewBtn');
+                const formattedView = document.getElementById('formattedView');
+                const rawView = document.getElementById('rawView');
+
+                if (formatBtn && rawBtn && formattedView && rawView) {
+                    formatBtn.classList.add('active');
+                    rawBtn.classList.remove('active');
+                    formattedView.style.display = 'block';
+                    rawView.style.display = 'none';
+                } else {
+                    console.warn('Some elements not found for view switching');
+                }
+            } catch (error) {
+                console.error('Error switching to formatted view:', error);
+            }
+        }
+
+        // Switch to raw view
+        function switchToRawView() {
+            console.log('switchToRawView called');
+            try {
+                // Add a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    const formatBtn = document.getElementById('formatViewBtn');
+                    const rawBtn = document.getElementById('rawViewBtn');
+                    const formattedView = document.getElementById('formattedView');
+                    const rawView = document.getElementById('rawView');
+
+                    console.log('Elements found:', {
+                        formatBtn: !!formatBtn,
+                        rawBtn: !!rawBtn,
+                        formattedView: !!formattedView,
+                        rawView: !!rawView
+                    });
+
+                    if (formatBtn && rawBtn && formattedView && rawView) {
+                        rawBtn.classList.add('active');
+                        formatBtn.classList.remove('active');
+                        rawView.style.display = 'block';
+                        formattedView.style.display = 'none';
+                        console.log('Successfully switched to raw view');
+                    } else {
+                        console.log('Elements not ready for view switching - this is normal on first load');
+                    }
+                }, 50);
+            } catch (error) {
+                console.error('Error switching to raw view:', error);
+            }
+        }
+
+        // Format SWIFT message for user-friendly display
+        function formatSwiftMessage(swiftMessage) {
+            if (!swiftMessage) return '<div class="swift-field"><div class="swift-field-content">No SWIFT message available</div></div>';
+
+            console.log('Formatting SWIFT message:', swiftMessage.substring(0, 200)); // Debug log
+
+            let formattedContent = '';
+            let currentField = null;
+            let currentValue = '';
+
+            // Split message into lines and process
+            const lines = swiftMessage.split('\n');
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+
+                // Skip message headers and footers
+                if (line.startsWith('{') || line.startsWith('}') || line === '-') {
+                    continue;
+                }
+
+                // Check if this line starts a new SWIFT field (format: :TAG:VALUE)
+                const fieldMatch = line.match(/^:(\d+[A-Z]?):(.*)/);
+                if (fieldMatch) {
+                    // Save previous field if exists
+                    if (currentField) {
+                        const fieldInfo = getSWIFTFieldInfo(currentField);
+                        formattedContent += `
+                            <div class="swift-field">
+                                <div class="swift-field-header">
+                                    <span class="swift-field-tag">${currentField}</span>
+                                    ${fieldInfo.name}
+                                </div>
+                                <div class="swift-field-content">${currentValue.trim() || 'Not specified'}</div>
+                            </div>
+                        `;
+                    }
+
+                    // Start new field
+                    currentField = fieldMatch[1];
+                    currentValue = fieldMatch[2] || '';
+                } else if (currentField && line.length > 0) {
+                    // This is a continuation line for the current field
+                    currentValue += '\n' + line;
+                } else if (line.length > 0) {
+                    // Handle standalone content
+                    formattedContent += `
+                        <div class="swift-field">
+                            <div class="swift-field-content">${line}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Don't forget the last field
+            if (currentField) {
+                const fieldInfo = getSWIFTFieldInfo(currentField);
+                formattedContent += `
+                    <div class="swift-field">
+                        <div class="swift-field-header">
+                            <span class="swift-field-tag">${currentField}</span>
+                            ${fieldInfo.name}
+                        </div>
+                        <div class="swift-field-content">${currentValue.trim() || 'Not specified'}</div>
+                    </div>
+                `;
+            }
+
+            return formattedContent || '<div class="swift-field"><div class="swift-field-content">No formatted content available</div></div>';
+        }
+
+        // Get SWIFT field information
+        function getSWIFTFieldInfo(tag) {
+            const fieldMap = {
+                '20': { name: 'Transaction Reference Number', description: 'Unique reference for this LC' },
+                '23': { name: 'Function Code', description: 'Type of LC operation (IRREVOCABLE/REVOCABLE)' },
+                '31C': { name: 'Issue Date', description: 'Date when LC is issued' },
+                '40A': { name: 'Form of Documentary Credit', description: 'Type of documentary credit' },
+                '31D': { name: 'Expiry Date/Place', description: 'LC expiry date and location' },
+                '50': { name: 'Applicant', description: 'Party requesting the LC' },
+                '51A': { name: 'Applicant Bank', description: 'Bank of the applicant' },
+                '57A': { name: 'Advising Bank', description: 'Bank advising the beneficiary' },
+                '59': { name: 'Beneficiary', description: 'Party who will receive payment' },
+                '32B': { name: 'Currency Code/Amount', description: 'LC currency and amount' },
+                '41A': { name: 'Available With', description: 'Bank where LC is available' },
+                '41D': { name: 'Available By', description: 'Method of availability' },
+                '42C': { name: 'Drafts At', description: 'Tenor of drafts (AT SIGHT/USANCE)' },
+                '43P': { name: 'Partial Shipments', description: 'Whether partial shipments allowed' },
+                '43T': { name: 'Transhipment', description: 'Whether transhipment allowed' },
+                '44A': { name: 'Loading on Board/Dispatch', description: 'Port of loading/dispatch' },
+                '44E': { name: 'Port of Discharge', description: 'Final destination port' },
+                '44F': { name: 'Transport To', description: 'Transport destination' },
+                '44B': { name: 'Final Destination', description: 'Final delivery location' },
+                '44C': { name: 'Latest Date of Shipment', description: 'Last date for shipment' },
+                '45A': { name: 'Description of Goods', description: 'Detailed goods description' },
+                '46A': { name: 'Documents Required', description: 'Required documentation' },
+                '47A': { name: 'Additional Conditions', description: 'Special terms and conditions' },
+                '71B': { name: 'Charges', description: 'Details of charges' },
+                '48': { name: 'Period for Presentation', description: 'Time limit for document presentation' },
+                '49': { name: 'Confirmation Instructions', description: 'Confirmation requirements' },
+                '78': { name: 'Instructions to Paying Bank', description: 'Special instructions' }
+            };
+
+            return fieldMap[tag] || { name: `Field ${tag}`, description: 'SWIFT field' };
+        }
+
+        // Copy SWIFT message to clipboard
+        async function copySwiftMessage() {
+            const swiftContent = document.getElementById('swiftRawContent');
+
+            if (swiftContent && swiftContent.textContent) {
+                try {
+                    await navigator.clipboard.writeText(swiftContent.textContent);
+                    // Show success message
+                    const btn = document.querySelector('.btn-muted');
+                    if (btn) {
+                        const originalHTML = btn.innerHTML;
+                        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => {
+                            btn.innerHTML = originalHTML;
+                        }, 2000);
+                    }
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                }
+            } else {
+                console.error('No SWIFT content available to copy');
+            }
+        }
+
+        // Download SWIFT message as text file
+        function downloadSwiftMessage() {
+            const swiftContent = document.getElementById('swiftRawContent');
+            const modalLcNumberEl = document.getElementById('modalLcNumber');
+            const lcNum = modalLcNumberEl ? modalLcNumberEl.textContent : 'unknown';
+
+            if (swiftContent && swiftContent.textContent) {
+                const blob = new Blob([swiftContent.textContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `SWIFT_MT700_${lcNum}_${new Date().toISOString().split('T')[0]}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                // Show success message
+                const btn = document.querySelector('.btn-primary-muted');
+                if (btn) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Downloaded!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                    }, 2000);
+                }
+            } else {
+                console.error('No SWIFT content available to download');
+            }
+        }
+
+        // Close modal on background click
+        document.getElementById('swiftModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeSwiftModal();
+            }
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeSwiftModal();
+            }
+        });
+
+        // Navigate to Document Register with SWIFT context
+        function goToDocumentRegister() {
+            console.log('Navigating to Document Register with SWIFT context');
+
+            // Get SWIFT message from the modal if it's been generated
+            const swiftRawContent = document.getElementById('swiftRawContent');
+            let swiftMessage = '';
+
+            if (swiftRawContent && swiftRawContent.textContent) {
+                swiftMessage = swiftRawContent.textContent;
+            }
+
+            // Prepare LC context data
+            const lcContext = {
+                lcNumber: lcNumber,
+                transactionId: transactionId,
+                swiftMessage: swiftMessage,
+                formData: formData,
+                submissionTime: new Date().toISOString(),
+                status: 'submitted'
+            };
+
+            // Store LC context in session storage for document register
+            sessionStorage.setItem('lcContext', JSON.stringify(lcContext));
+
+            // Generate SWIFT message if not already available and then navigate
+            if (!swiftMessage) {
+                console.log('Generating SWIFT message for document register...');
+
+                const previewData = formData || {
+                    lcNumber: lcNumber,
+                    applicant: 'Sample Applicant Company',
+                    beneficiary: 'Sample Beneficiary Company',
+                    amount: '100000.00',
+                    currency: 'USD',
+                    issueDate: new Date().toISOString().split('T')[0],
+                    expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    latestShipmentDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    lcType: 'irrevocable',
+                    goodsDescription: 'Trade goods as per contract',
+                    partialShipment: 'allowed',
+                    transhipment: 'not_allowed'
+                };
+
+                fetch('/api/lc/swift-preview-form', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(previewData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            lcContext.swiftMessage = data.swift_message;
+                            sessionStorage.setItem('lcContext', JSON.stringify(lcContext));
+                        }
+                        // Navigate regardless of SWIFT generation success
+                        window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
+                    })
+                    .catch(error => {
+                        console.error('Error generating SWIFT message:', error);
+                        // Navigate anyway, document register can handle missing SWIFT
+                        window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
+                    });
+            } else {
+                // SWIFT message is already available, navigate directly
+                window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
+            }
+        }
+    </script>
+</body>
+
+</html>

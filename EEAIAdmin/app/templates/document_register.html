@@ -1,0 +1,4350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Finance - Document Registration</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-discrepancy-ui.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/advanced-discrepancy-ui.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/professional-discrepancy-ui.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-features.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-validation-transparency.css') }}">
+
+    <!-- Professional Muted UI for Discrepancy Analysis Results Only -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/professional-muted-discrepancy-ui.css') }}">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="{{ url_for('static', filename='js/enhanced-discrepancy-ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/advanced-discrepancy-ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/professional-discrepancy-ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/enhanced-features.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/enhanced-validation-transparency.js') }}" defer></script>
+
+    <!-- Professional Muted UI for Discrepancy Results Only -->
+    <script src="{{ url_for('static', filename='js/professional-muted-discrepancy-ui.js') }}"></script>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --bg-color: #f8f9fa;
+            --text-color: #2d3748;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --border-muted: #cbd5e1;
+            --surface: rgba(255, 255, 255, 0.95);
+            --surface-elevated: rgba(248, 250, 252, 0.9);
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-600: #475569;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --focus-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            padding-top: 120px;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text-color);
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTE2djJIMjR2LTJoMTJ6Ii8+PC9nPjwvZz48L3N2Zz4=');
+            pointer-events: none;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .container {
+            width: 95%;
+            max-width: none;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Modern Floating Header with Muted Design */
+        .floating-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .floating-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 28px;
+            width: 95%;
+            max-width: none;
+            margin: 0 auto;
+        }
+
+        /* Brand Section */
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-container {
+            position: relative;
+        }
+
+        .modern-logo {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            position: relative;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color), var(--primary-color));
+            background-size: 200% 100%;
+            animation: gradientShift 3s linear infinite;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 200% 0%;
+            }
+        }
+
+        /* Smart Capture Section */
+        .smart-capture-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .smart-capture-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+        }
+
+        .smart-capture-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .smart-capture-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+
+        .smart-capture-text h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .smart-capture-text p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .btn-smart-capture {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-smart-capture::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-smart-capture:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-smart-capture:hover::before {
+            left: 100%;
+        }
+
+        .btn-smart-capture i {
+            font-size: 20px;
+        }
+
+        /* Smart Capture Modal - Professional Design */
+        .smart-capture-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(30, 41, 59, 0.4));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .smart-capture-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .smart-capture-iframe-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+            max-height: 900px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+            backdrop-filter: blur(24px) saturate(1.5);
+            -webkit-backdrop-filter: blur(24px) saturate(1.5);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow:
+                0 24px 48px rgba(99, 102, 241, 0.15),
+                0 12px 24px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.5),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(229, 231, 235, 0.3);
+            animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        @keyframes slideUpModal {
+            from {
+                transform: translate(-50%, -45%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        .smart-capture-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+        }
+
+        .smart-capture-header-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .smart-capture-header-title i {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            position: relative;
+        }
+
+        .smart-capture-header-title i::before {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .smart-capture-header-title h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .smart-capture-header-subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .smart-capture-close {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .smart-capture-close:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+            border-color: transparent;
+        }
+
+        .smart-capture-close:active {
+            transform: scale(0.95);
+        }
+
+        .smart-capture-iframe {
+            width: 100%;
+            height: calc(100% - 96px);
+            border: none;
+            background: #ffffff;
+            position: relative;
+        }
+
+        /* Loading indicator for iframe */
+        .smart-capture-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 10;
+        }
+
+        .smart-capture-modal.loading .smart-capture-loading {
+            display: flex;
+        }
+
+        .smart-capture-modal.loading .smart-capture-iframe {
+            opacity: 0;
+        }
+
+        .smart-capture-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .smart-capture-loading-text {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Enhanced Chatbot Icon */
+        .chatbot-icon {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+            }
+
+            100% {
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            }
+        }
+
+        @keyframes slideUpChat {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chatbot-icon:hover {
+            transform: scale(1.1);
+            animation: none;
+        }
+
+        .chatbot-icon i {
+            color: white;
+            font-size: 26px;
+        }
+
+        /* Enhanced Chatbot Overlay */
+        .chatbot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chatbot-overlay.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Enhanced Chatbot Window */
+        .chatbot-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            height: 650px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            animation: slideUpChat 0.3s ease;
+        }
+
+        .chatbot-window.maximized {
+            width: 90vw;
+            height: 90vh;
+            max-width: 1200px;
+            max-height: 900px;
+        }
+
+        .chatbot-window.minimized {
+            height: 60px;
+            width: 300px;
+            bottom: 30px;
+            right: 30px;
+            top: auto;
+            left: auto;
+            transform: none;
+        }
+
+        @keyframes slideUpModal {
+            from {
+                transform: translate(-50%, -45%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+
+        /* Enhanced Chatbot Header */
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .chatbot-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chatbot-header-left i {
+            font-size: 20px;
+        }
+
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chatbot-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* Window Controls */
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .control-btn i {
+            font-size: 14px;
+        }
+
+        /* Chatbot Body */
+        .chatbot-body {
+            flex: 1;
+            overflow: hidden;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .chatbot-window.minimized .chatbot-body {
+            display: none;
+        }
+
+        .chatbot-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e53e3e;
+            margin-left: 2px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--surface);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: var(--focus-shadow);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Action Buttons */
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Status Message */
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status-message.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-2px);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+
+        /* LC Context Styles - Matches Your Existing Theme */
+        .lc-context-section {
+            margin: 24px 0;
+            animation: slideInDown 0.5s ease-out;
+        }
+
+        .lc-context-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .lc-context-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lc-context-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transition: left 0.6s;
+        }
+
+        .lc-context-header:hover::before {
+            left: 100%;
+        }
+
+        .lc-context-header:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .lc-context-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            backdrop-filter: blur(4px);
+        }
+
+        .lc-context-icon i {
+            font-size: 24px;
+        }
+
+        .lc-context-info {
+            flex: 1;
+        }
+
+        .lc-context-info h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .lc-context-info p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        #lcContextDescription {
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 500;
+            font-size: 14.5px;
+            margin: 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .lc-context-toggle {
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .lc-context-toggle:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .lc-context-toggle.expanded i {
+            transform: rotate(180deg);
+        }
+
+        .lc-context-details {
+            padding: 24px;
+            background: var(--surface);
+        }
+
+        .lc-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .lc-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .lc-detail-item label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .lc-detail-item span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--success-color);
+            border-radius: 50%;
+        }
+
+        .lc-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-lc-action {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-lc-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-lc-action:hover::before {
+            left: 100%;
+        }
+
+        .btn-lc-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-lc-action i {
+            font-size: 13px;
+        }
+
+        /* Document Upload Enhancement */
+        .document-upload-section {
+            margin-top: 24px;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 2px dashed var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .document-upload-section.dragover {
+            border-color: var(--primary-color);
+            background: var(--surface-elevated);
+        }
+
+        .document-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .document-type-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .document-type-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .document-type-card.selected {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        }
+
+        .document-type-card.uploaded {
+            border-color: var(--success-color);
+            background: #f0fdf4;
+        }
+
+        .document-type-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            background: var(--surface-elevated);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .document-type-card.uploaded .document-type-icon {
+            background: #dcfce7;
+            color: var(--success-color);
+        }
+
+        .document-type-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .document-type-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .upload-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--success-color);
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .selection-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .document-type-card.selected .selection-status {
+            display: flex;
+        }
+
+        .document-type-card.uploaded .upload-status {
+            display: flex;
+        }
+
+        .selected-types-display {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Discrepancy Results Styles */
+        .discrepancy-results {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .results-summary {
+            margin-bottom: 20px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+        }
+
+        .token-usage-info {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid;
+        }
+
+        .summary-card.passed {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .summary-card.warnings {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .summary-card.errors {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .summary-card.token-info {
+            border-color: #6366f1;
+            background: #f0f9ff;
+        }
+
+        .summary-number {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .discrepancy-details h4 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .discrepancy-item {
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .discrepancy-item.high {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .discrepancy-item.medium {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .discrepancy-item.low {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .discrepancy-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .severity-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .severity-badge.high {
+            background: #ef4444;
+            color: white;
+        }
+
+        .severity-badge.medium {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .severity-badge.low {
+            background: #10b981;
+            color: white;
+        }
+
+        .field-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .discrepancy-message {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .discrepancy-recommendation {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .smart-capture-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .lc-details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lc-actions {
+                flex-direction: column;
+            }
+
+            .document-types-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Direct Upload Zone Styles */
+        .direct-upload-zone {
+            border: 2px dashed var(--border-muted);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--surface) 0%, #fafbfc 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .direct-upload-zone::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .direct-upload-zone:hover::before {
+            opacity: 1;
+        }
+
+        .direct-upload-zone:hover {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .direct-upload-zone.dragover {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-style: solid;
+        }
+
+        .upload-zone-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .direct-upload-zone:hover .upload-icon {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .upload-zone-content h4 {
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .upload-zone-content p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .supported-formats {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .format-badge {
+            background: var(--slate-100);
+            color: var(--slate-600);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid var(--slate-200);
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Upload Progress Styles */
+        .upload-progress-section {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress-header h4 {
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .progress-status {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--slate-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), #10b981);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            color: var(--text-color);
+            font-weight: 600;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Uploaded Documents Display */
+        .uploaded-documents-section {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .document-card {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .document-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow);
+        }
+
+        .document-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .document-info h5 {
+            color: var(--text-color);
+            margin: 0 0 0.25rem 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .document-type-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .document-type-badge.unknown {
+            background: var(--slate-400);
+        }
+
+        .document-type-badge.high {
+            background: #059669;
+            color: white;
+        }
+
+        .document-type-badge.medium {
+            background: #d97706;
+            color: white;
+        }
+
+        .document-type-badge.low {
+            background: #dc2626;
+            color: white;
+        }
+
+        .classification-info {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 4px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .classification-info small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .document-confidence {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .document-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-danger {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Upload Summary */
+        .upload-summary {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--surface-elevated);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .direct-upload-zone {
+                padding: 2rem 1rem;
+            }
+
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Header (same as LC form) -->
+    <div class="floating-header">
+        <div class="floating-header-content">
+            <div class="brand-section">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <i class="mdi mdi-bank" style="font-size: 20px; color: var(--primary-color);"></i>
+                    </div>
+                </div>
+                <div class="brand-text">
+                    <h2 style="font-size: 16px; font-weight: 700; color: var(--text-color); margin: 0;">Finstack</h2>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 0; font-weight: 500;">Trade Finance
+                        Platform</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="status-indicator-modern">
+                    <div class="pulse-dot"></div>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="header">
+                <h1><i class="fas fa-file-plus"></i> Document Registration</h1>
+                <p>Trade Finance - Document Management System</p>
+                <!-- LC Context Section -->
+                <div id="lcContextSection" class="lc-context-section" style="display: none;">
+                    <div class="lc-context-card">
+                        <div class="lc-context-header">
+                            <div class="lc-context-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div class="lc-context-info">
+                                <h3>Letter of Credit Context</h3>
+                                <p id="lcContextDescription">Processing documents for LC submission</p>
+                            </div>
+                            <button type="button" class="lc-context-toggle" onclick="toggleLcDetails()">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div id="lcContextDetails" class="lc-context-details" style="display: none;">
+                            <div class="lc-details-grid">
+                                <div class="lc-detail-item">
+                                    <label>LC Number:</label>
+                                    <span id="contextLcNumber">-</span>
+                                </div>
+                                <div class="lc-detail-item">
+                                    <label>Transaction ID:</label>
+                                    <span id="contextTransactionId">-</span>
+                                </div>
+                                <div class="lc-detail-item">
+                                    <label>Status:</label>
+                                    <span id="contextStatus" class="status-badge">-</span>
+                                </div>
+                                <div class="lc-detail-item">
+                                    <label>Submission Time:</label>
+                                    <span id="contextSubmissionTime">-</span>
+                                </div>
+                            </div>
+                            <div class="lc-actions">
+                                <button type="button" class="btn-lc-action" onclick="viewSwiftMessage()">
+                                    <i class="fas fa-eye"></i> View SWIFT Message
+                                </button>
+                                <button type="button" class="btn-lc-action" onclick="runDiscrepancyCheck()">
+                                    <i class="fas fa-search"></i> Check Discrepancies
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <!-- Enhanced Smart Capture Section -->
+                <div class="smart-capture-section">
+                    <div class="smart-capture-info">
+                        <div class="smart-capture-icon">
+                            <i class="mdi mdi-scan-helper"></i>
+                        </div>
+                        <div class="smart-capture-text">
+                            <h3>Smart Document Capture</h3>
+                            <p>Upload and register trade finance documents automatically</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-smart-capture" onclick="openSmartCapture()">
+                        <i class="mdi mdi-scan-helper"></i>
+                        <span>Start Smart Capture</span>
+                    </button>
+                </div>
+
+                <div id="statusMessage" class="status-message"></div>
+
+
+
+                <form id="documentForm" enctype="multipart/form-data">
+
+                    <!-- Basic Document Information Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Basic Document Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="docType">Document Type <span class="required">*</span></label>
+                                <select id="docType" name="type" required>
+                                    <option value="">Select Document Type</option>
+                                    <option value="commercial-invoice">Commercial Invoice</option>
+                                    <option value="bill-of-lading">Bill of Lading</option>
+                                    <option value="packing-list">Packing List</option>
+                                    <option value="certificate-origin">Certificate of Origin</option>
+                                    <option value="insurance-certificate">Insurance Certificate</option>
+                                    <option value="inspection-certificate">Inspection Certificate</option>
+                                    <option value="customs-declaration">Customs Declaration</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="docNumber">Document Number <span class="required">*</span></label>
+                                <input type="text" id="docNumber" name="number" required placeholder="e.g., INV2024001">
+                            </div>
+                            <div class="form-group">
+                                <label for="issueDate">Issue Date <span class="required">*</span></label>
+                                <input type="date" id="issueDate" name="issueDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expiryDate">Expiry Date</label>
+                                <input type="date" id="expiryDate" name="expiryDate">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Details Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Document Details</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="issuer">Issuer/Authority <span class="required">*</span></label>
+                                <input type="text" id="issuer" name="issuer" required
+                                    placeholder="Enter issuing authority">
+                            </div>
+                            <div class="form-group">
+                                <label for="currency">Currency</label>
+                                <select id="currency" name="currency">
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="GBP">GBP - British Pound</option>
+                                    <option value="JPY">JPY - Japanese Yen</option>
+                                    <option value="AUD">AUD - Australian Dollar</option>
+                                    <option value="CAD">CAD - Canadian Dollar</option>
+                                    <option value="CHF">CHF - Swiss Franc</option>
+                                    <option value="CNY">CNY - Chinese Yuan</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Amount/Value</label>
+                                <input type="number" id="amount" name="amount" step="0.01"
+                                    placeholder="Enter document value">
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea id="description" name="description"
+                                    placeholder="Enter document description or notes"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trade Information Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Trade Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="lcReference">LC Reference</label>
+                                <input type="text" id="lcReference" name="lcReference"
+                                    placeholder="Enter LC reference number">
+                            </div>
+                            <div class="form-group">
+                                <label for="tradeReference">Trade Reference</label>
+                                <input type="text" id="tradeReference" name="tradeReference"
+                                    placeholder="Enter trade reference">
+                            </div>
+                            <div class="form-group">
+                                <label for="beneficiary">Beneficiary</label>
+                                <input type="text" id="beneficiary" name="beneficiary"
+                                    placeholder="Enter beneficiary name">
+                            </div>
+                            <div class="form-group">
+                                <label for="applicant">Applicant</label>
+                                <input type="text" id="applicant" name="applicant" placeholder="Enter applicant name">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Information Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Processing Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="countryOrigin">Country of Origin</label>
+                                <select id="countryOrigin" name="countryOrigin">
+                                    <option value="">Select Country</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="FR">France</option>
+                                    <option value="IT">Italy</option>
+                                    <option value="JP">Japan</option>
+                                    <option value="CN">China</option>
+                                    <option value="IN">India</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="CA">Canada</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="countryDestination">Destination Country</label>
+                                <select id="countryDestination" name="countryDestination">
+                                    <option value="">Select Country</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="FR">France</option>
+                                    <option value="IT">Italy</option>
+                                    <option value="JP">Japan</option>
+                                    <option value="CN">China</option>
+                                    <option value="IN">India</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="CA">Canada</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="priority">Priority Level</label>
+                                <select id="priority" name="priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="verificationRequired">Verification Required</label>
+                                <select id="verificationRequired" name="verificationRequired">
+                                    <option value="standard" selected>Standard</option>
+                                    <option value="enhanced">Enhanced</option>
+                                    <option value="manual">Manual Review</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Additional Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="tags">Tags</label>
+                                <input type="text" id="tags" name="tags" placeholder="Enter tags separated by commas">
+                            </div>
+                            <div class="form-group">
+                                <label for="notes">Internal Notes</label>
+                                <textarea id="notes" name="notes"
+                                    placeholder="Enter internal notes or special instructions"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-warning" onclick="checkDiscrepancies()"
+                            id="checkDiscrepanciesBtn" disabled>
+                            <i class="mdi mdi-shield-search"></i>
+                            <span>Check Discrepancies</span>
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="debugUploadedDocuments()"
+                            style="margin-left: 10px;">
+                            <i class="mdi mdi-bug"></i>
+                            <span>Debug</span>
+                        </button>
+                        <a href="/admin/discrepancy-config" class="btn btn-outline-info" target="_blank"
+                            title="Configure GPT-4 Discrepancy Analysis">
+                            <i class="mdi mdi-cog"></i>
+                            <span>Config</span>
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                            <i class="mdi mdi-content-save"></i>
+                            <span>Register Document</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Upload Input (Hidden) -->
+    <input type="file" id="fileInput" name="files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+        style="display: none;">
+
+    <!-- Smart Capture Overlay -->
+    <div id="smartCaptureOverlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px;">
+        <div
+            style="background: white; border-radius: 16px; max-width: 800px; margin: 50px auto; padding: 32px; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 style="margin: 0; color: var(--text-color);"><i class="mdi mdi-scan-helper"></i> Smart Document
+                    Capture</h2>
+                <button onclick="closeSmartCapture()"
+                    style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">×</button>
+            </div>
+
+            <div id="dropZone"
+                style="border: 3px dashed var(--border-color); border-radius: 12px; padding: 48px; text-align: center; background: var(--surface-elevated); cursor: pointer;">
+                <div style="font-size: 48px; color: var(--primary-color); margin-bottom: 16px;">
+                    <i class="mdi mdi-cloud-upload"></i>
+                </div>
+                <h3 style="margin-bottom: 8px; color: var(--text-color);">Drop your documents here</h3>
+                <p style="color: var(--text-muted); margin-bottom: 24px;">or click to browse files</p>
+
+                <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                    <span
+                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
+                        <i class="fas fa-file-pdf" style="color: #dc2626;"></i> PDF
+                    </span>
+                    <span
+                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
+                        <i class="fas fa-file-image" style="color: #059669;"></i> Images
+                    </span>
+                    <span
+                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
+                        <i class="fas fa-file-word" style="color: #2563eb;"></i> Word
+                    </span>
+                    <span
+                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
+                        <i class="fas fa-file-excel" style="color: #16a34a;"></i> Excel
+                    </span>
+                </div>
+            </div>
+
+            <div id="fileList" style="margin-top: 24px;"></div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button onclick="closeSmartCapture()" class="btn btn-secondary">Cancel</button>
+                <button onclick="processFiles()" class="btn btn-primary" disabled id="processBtn">Process Files</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let lcContext = null;
+        let uploadedDocuments = {};
+        let currentUploadType = null;
+
+        // Helper functions for LC context and SWIFT message
+        function getLCContext() {
+            return lcContext;
+        }
+
+        function getSwiftMessage() {
+            if (lcContext && lcContext.swiftMessage) {
+                return lcContext.swiftMessage;
+            }
+
+            // Try to get SWIFT message from session storage
+            try {
+                const storedSwift = sessionStorage.getItem('swiftMessage');
+                if (storedSwift) {
+                    return storedSwift;
+                }
+            } catch (e) {
+                console.warn('Could not load SWIFT message:', e);
+            }
+
+            return '';
+        }
+
+        // Initialize LC context on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeLcContext();
+        });
+
+        function initializeLcContext() {
+            // Get LC context from URL parameters and session storage
+            const urlParams = new URLSearchParams(window.location.search);
+            const source = urlParams.get('source');
+            const lcNumber = urlParams.get('lcNumber');
+
+            if (source === 'lc_success' && lcNumber) {
+                // Load LC context from session storage
+                try {
+                    const storedContext = sessionStorage.getItem('lcContext');
+                    if (storedContext) {
+                        lcContext = JSON.parse(storedContext);
+                        displayLcContext();
+                    } else {
+                        // Create test LC context if none exists (for testing)
+                        console.log('No LC context found, creating test data for LC:', lcNumber);
+                        createTestLcContext(lcNumber);
+                    }
+                } catch (e) {
+                    console.warn('Could not load LC context:', e);
+                    // Create test data as fallback
+                    createTestLcContext(lcNumber);
+                }
+            }
+        }
+
+        function displayLcContext() {
+            if (!lcContext) return;
+
+            const lcSection = document.getElementById('lcContextSection');
+            const lcDescription = document.getElementById('lcContextDescription');
+            const contextLcNumber = document.getElementById('contextLcNumber');
+            const contextTransactionId = document.getElementById('contextTransactionId');
+            const contextStatus = document.getElementById('contextStatus');
+            const contextSubmissionTime = document.getElementById('contextSubmissionTime');
+
+            if (lcSection) {
+                lcSection.style.display = 'block';
+                lcDescription.textContent = `Processing documents for LC ${lcContext.lcNumber}`;
+                contextLcNumber.textContent = lcContext.lcNumber || 'N/A';
+                contextTransactionId.textContent = lcContext.transactionId || 'N/A';
+                contextStatus.textContent = lcContext.status || 'Unknown';
+
+                if (lcContext.submissionTime) {
+                    const date = new Date(lcContext.submissionTime);
+                    contextSubmissionTime.textContent = date.toLocaleString();
+                }
+            }
+        }
+
+        // Test function to create sample LC context data for testing
+        function createTestLcContext(lcNumber) {
+            const testLcContext = {
+                lcNumber: lcNumber || 'LC20251011085838',
+                transactionId: 'TXN' + Date.now(),
+                swiftMessage: `{1:F01TESTBANKAXXX0000000000}
+{2:I700RECEIVERXXXXN}
+{4:
+:20:${lcNumber || 'LC20251011085838'}
+:23:IRREVOCABLE
+:31C:251011
+:40A:IRREVOCABLE
+:31D:251211TESTCITY
+:50:ACME IMPORTING COMPANY LTD
+/123 BUSINESS AVENUE
+/NEW YORK, NY 10001
+/UNITED STATES
+:59:GLOBAL ELECTRONICS EXPORTS
+/456 INDUSTRIAL ZONE
+/SHENZHEN, GUANGDONG
+/CHINA
+:32B:USD250000,00
+:45A:Electronic components and accessories
+including semiconductors, circuit boards
+and related electronic parts as per
+purchase order PO-2025-001 dated 01.10.2025
+:46A:Commercial invoice in 3 copies
+Packing list in 2 copies
+Bill of lading marked freight prepaid
+Certificate of origin
+:47A:Documents must be presented within
+15 days after shipment date but not
+later than expiry date of credit
+-}`,
+                formData: {
+                    lcNumber: lcNumber || 'LC20251011085838',
+                    applicant: 'ACME IMPORTING COMPANY LTD',
+                    beneficiary: 'GLOBAL ELECTRONICS EXPORTS',
+                    amount: '250000.00',
+                    currency: 'USD',
+                    expiryDate: '2025-12-11',
+                    issuingBank: 'TEST BANK INTERNATIONAL',
+                    advisingBank: 'RECEIVER BANK'
+                },
+                submissionTime: new Date().toISOString(),
+                status: 'submitted'
+            };
+
+            // Store in session storage and set global variable
+            sessionStorage.setItem('lcContext', JSON.stringify(testLcContext));
+            lcContext = testLcContext;
+            displayLcContext();
+
+            console.log('Test LC context created:', testLcContext);
+            return testLcContext;
+        }
+
+        function toggleLcDetails() {
+            const details = document.getElementById('lcContextDetails');
+            const toggle = document.querySelector('.lc-context-toggle');
+
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                toggle.classList.add('expanded');
+            } else {
+                details.style.display = 'none';
+                toggle.classList.remove('expanded');
+            }
+        }
+
+        function viewSwiftMessage() {
+            if (!lcContext || !lcContext.swiftMessage) {
+                alert('SWIFT message not available. Please generate it from the LC success page first.');
+                return;
+            }
+
+            // Create a modal to display SWIFT message
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6); display: flex; align-items: center;
+                justify-content: center; z-index: 10000; backdrop-filter: blur(3px);
+            `;
+
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; max-width: 80%; max-height: 80%;
+                           padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #334155;">SWIFT MT700 Message</h3>
+                        <button onclick="this.closest('.modal').remove()" 
+                                style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">×</button>
+                    </div>
+                    <pre style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px;
+                              font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;
+                              white-space: pre-wrap; overflow-x: auto;">${lcContext.swiftMessage}</pre>
+                </div>
+            `;
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+        }
+
+        // New workflow variables
+        let selectedDocumentTypes = new Set();
+        let uploadedFile = null;
+        let discrepancyCheckCompleted = false;
+
+        function toggleDocumentType(documentType) {
+            const card = document.querySelector(`[data-type="${documentType}"]`);
+
+            if (selectedDocumentTypes.has(documentType)) {
+                selectedDocumentTypes.delete(documentType);
+                card.classList.remove('selected');
+            } else {
+                selectedDocumentTypes.add(documentType);
+                card.classList.add('selected');
+            }
+
+            updateSelectedTypesDisplay();
+            updateUploadButton();
+        }
+
+        function updateSelectedTypesDisplay() {
+            const displayEl = document.getElementById('selectedTypesList');
+
+            if (selectedDocumentTypes.size === 0) {
+                displayEl.textContent = 'None selected';
+            } else {
+                const typeNames = Array.from(selectedDocumentTypes).map(type => getDocumentTypeName(type));
+                displayEl.textContent = typeNames.join(', ');
+            }
+        }
+
+        function updateUploadButton() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = selectedDocumentTypes.size === 0;
+        }
+
+        function uploadSelectedDocuments() {
+            if (selectedDocumentTypes.size === 0) {
+                showStatusMessage('Please select at least one document type first.', 'warning');
+                return;
+            }
+
+            document.getElementById('documentFileInput').click();
+        }
+
+        function handleDocumentUpload(event) {
+            // ✅ Redirect to the new PDF extraction function
+            console.log('🔄 Redirecting handleDocumentUpload to handleDirectDocumentUpload for PDF extraction');
+            handleDirectDocumentUpload(event);
+        }
+
+        function getDocumentTypeName(type) {
+            const names = {
+                'bill_of_exchange': 'Bill of Exchange',
+                'commercial_invoice': 'Commercial Invoice',
+                'packing_list': 'Packing List',
+                'certificate_of_origin': 'Certificate of Origin',
+                'bill_of_lading': 'Bill of Lading',
+                'insurance_certificate': 'Insurance Certificate'
+            };
+            return names[type] || type;
+        }
+
+        function checkDiscrepancies() {
+            // Check if we have uploaded documents
+            if (Object.keys(uploadedDocuments).length === 0) {
+                showStatusMessage('Please upload documents first.', 'warning');
+                return;
+            }
+
+            const checkBtn = document.getElementById('checkDiscrepanciesBtn');
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Documents...';
+
+            console.log('📤 BACKEND PROCESSING: Sending files for server-side text extraction');
+
+            // Create FormData to send actual files to backend for processing
+            const formData = new FormData();
+
+            // Add LC context and SWIFT message as JSON
+            formData.append('lcContext', JSON.stringify(getLCContext()));
+            formData.append('swiftMessage', getSwiftMessage());
+
+            // Add actual files for backend processing
+            let fileCount = 0;
+            Object.keys(uploadedDocuments).forEach(fileName => {
+                const doc = uploadedDocuments[fileName];
+                console.log(`📤 Adding file for backend processing: ${fileName}`);
+
+                if (doc.file) {
+                    formData.append('files', doc.file, fileName);
+                    fileCount++;
+                } else {
+                    console.error(`❌ No file object found for ${fileName}`);
+                }
+            });
+
+            console.log(`📤 Sending ${fileCount} files to backend for text extraction and analysis`);
+
+            fetch('/api/discrepancy-check', {
+                method: 'POST',
+                body: formData // Send as FormData with actual files
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📥 Received discrepancy check response:', data);
+                    if (data.success) {
+                        console.log('🎯 Calling displayDiscrepancyResults with:', data);
+                        displayDiscrepancyResults(data);
+                        autoFillFormFromSwift();
+                        discrepancyCheckCompleted = true;
+
+                        // Enable submit button
+                        const submitBtn = document.getElementById('submitBtn');
+                        submitBtn.disabled = false;
+
+                        checkBtn.innerHTML = '<i class="fas fa-check"></i> Discrepancies Checked';
+                        checkBtn.classList.add('btn-success');
+                        showStatusMessage('Discrepancy check completed successfully!', 'success');
+                    } else {
+                        throw new Error(data.message || 'Discrepancy check failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking discrepancies:', error);
+                    checkBtn.disabled = false;
+                    checkBtn.innerHTML = '<i class="fas fa-shield-search"></i> Check Discrepancies';
+
+                    // Hide loading overlay if it exists
+                    const loadingOverlay = document.querySelector('.loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.remove();
+                    }
+
+                    showStatusMessage('Error checking discrepancies: ' + error.message, 'error');
+                });
+        }
+
+        function displayDiscrepancyResults(data) {
+            console.log('🎯 displayDiscrepancyResults called with data:', data);
+            console.log('🔍 Checking for advancedDiscrepancyUI:', typeof advancedDiscrepancyUI);
+
+            // Function to try using professional muted UI (highest priority)
+            const tryProfessionalMutedUI = () => {
+                if (typeof ProfessionalMutedDiscrepancyUI !== 'undefined') {
+                    console.log('✅ Using Professional Muted Discrepancy UI');
+                    try {
+                        const mutedUI = new ProfessionalMutedDiscrepancyUI();
+                        mutedUI.displayProfessionalResults(data);
+                        return true;
+                    } catch (error) {
+                        console.error('❌ Error using professional muted UI:', error);
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            // Function to try using professional UI (fallback)
+            const tryProfessionalUI = () => {
+                if (typeof professionalDiscrepancyUI !== 'undefined' && professionalDiscrepancyUI && professionalDiscrepancyUI.displayAdvancedResults) {
+                    console.log('✅ Using professional 4-tab discrepancy UI');
+                    try {
+                        professionalDiscrepancyUI.displayAdvancedResults(data);
+                        return true;
+                    } catch (error) {
+                        console.error('❌ Error using professional UI:', error);
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            // Function to try using advanced UI
+            const tryAdvancedUI = () => {
+                if (typeof advancedDiscrepancyUI !== 'undefined' && advancedDiscrepancyUI && advancedDiscrepancyUI.displayAdvancedResults) {
+                    console.log('✅ Using advanced two-panel discrepancy UI');
+                    try {
+                        advancedDiscrepancyUI.displayAdvancedResults(data);
+                        return true;
+                    } catch (error) {
+                        console.error('❌ Error using advanced UI:', error);
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            // Function to try using minimal UI as additional fallback
+            const tryMinimalUI = () => {
+                if (typeof minimalAdvancedUI !== 'undefined' && minimalAdvancedUI && minimalAdvancedUI.displayAdvancedResults) {
+                    console.log('✅ Using minimal advanced discrepancy UI as fallback');
+                    try {
+                        minimalAdvancedUI.displayAdvancedResults(data);
+                        return true;
+                    } catch (error) {
+                        console.error('❌ Error using minimal UI:', error);
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            // Function to try using enhanced UI as fallback
+            const tryEnhancedUI = () => {
+                if (typeof enhancedDiscrepancyUI !== 'undefined' && enhancedDiscrepancyUI && enhancedDiscrepancyUI.displayEnhancedResults) {
+                    console.log('✅ Using enhanced discrepancy UI as fallback');
+                    try {
+                        enhancedDiscrepancyUI.displayEnhancedResults(data);
+                        return true;
+                    } catch (error) {
+                        console.error('❌ Error using enhanced UI:', error);
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            // Try professional muted UI first (highest priority)
+            if (tryProfessionalMutedUI()) {
+                return;
+            }
+
+            // Try professional UI as secondary
+            if (tryProfessionalUI()) {
+                return;
+            }
+
+            // Try advanced UI as third option
+            if (tryAdvancedUI()) {
+                return;
+            }
+
+            // Try enhanced UI as fourth option
+            if (tryEnhancedUI()) {
+                return;
+            }
+
+            // Try minimal UI as fourth option
+            if (tryMinimalUI()) {
+                return;
+            }
+
+            // Wait a bit for UIs to load
+            console.log('⏳ Professional UI not ready, waiting...');
+            setTimeout(() => {
+                if (tryProfessionalUI()) {
+                    return;
+                }
+
+                if (tryAdvancedUI()) {
+                    return;
+                }
+
+                if (tryEnhancedUI()) {
+                    return;
+                }
+
+                if (tryMinimalUI()) {
+                    return;
+                }
+
+                console.log('⚠️ No advanced UI available after wait, using fallback');
+                displayDiscrepancyResultsFallback(data);
+            }, 500);
+        }
+
+        function displayDiscrepancyResultsFallback(data) {
+            // Handle different data structures - extract results if it's the full API response
+            const results = data.results || data;
+
+            // Create or update discrepancy results display
+            let resultsContainer = document.getElementById('discrepancyResults');
+            if (!resultsContainer) {
+                resultsContainer = document.createElement('div');
+                resultsContainer.id = 'discrepancyResults';
+                resultsContainer.className = 'discrepancy-results';
+
+                const uploadSection = document.getElementById('documentUploadSection');
+                uploadSection.parentNode.insertBefore(resultsContainer, uploadSection.nextSibling);
+            }
+
+            const summary = results.summary || {};
+            const discrepancies = results.discrepancies || [];
+
+            // Extract token usage information from discrepancies metadata
+            let tokenUsage = null;
+            const metadataItem = discrepancies.find(d => d._token_usage);
+            if (metadataItem && metadataItem._token_usage) {
+                tokenUsage = metadataItem._token_usage;
+            }
+
+            resultsContainer.innerHTML = `
+                <div class="section-header">
+                    <h3><i class="fas fa-chart-line"></i> Discrepancy Analysis Results</h3>
+                    ${tokenUsage ? `
+                        <div class="token-usage-info">
+                            <small>
+                                <i class="fas fa-coins"></i> 
+                                Tokens Used: ${tokenUsage.total_tokens} 
+                                (Cost: ~$${tokenUsage.estimated_cost_usd.toFixed(4)})
+                            </small>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="results-summary">
+                    <div class="summary-cards">
+                        <div class="summary-card passed">
+                            <div class="summary-number">${summary.passed || 0}</div>
+                            <div class="summary-label">Passed</div>
+                        </div>
+                        <div class="summary-card warnings">
+                            <div class="summary-number">${summary.warnings || 0}</div>
+                            <div class="summary-label">Warnings</div>
+                        </div>
+                        <div class="summary-card errors">
+                            <div class="summary-number">${summary.errors || 0}</div>
+                            <div class="summary-label">Errors</div>
+                        </div>
+                        ${tokenUsage ? `
+                            <div class="summary-card token-info">
+                                <div class="summary-number">${tokenUsage.total_tokens}</div>
+                                <div class="summary-label">Tokens Used</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                ${discrepancies.length > 0 ? `
+                    <div class="discrepancy-details">
+                        <h4>Detailed Analysis:</h4>
+                        ${discrepancies.map(disc => `
+                            <div class="discrepancy-item ${disc.severity}">
+                                <div class="discrepancy-header">
+                                    <span class="severity-badge ${disc.severity}">${disc.severity.toUpperCase()}</span>
+                                    <span class="field-name">${disc.field || disc.type}</span>
+                                    ${disc.document_name ? `<span class="document-name">📄 ${disc.document_name}</span>` : ''}
+                                </div>
+                                ${disc.document_type ? `<div class="document-type-badge">${disc.document_type.replace('_', ' ').toUpperCase()}</div>` : ''}
+                                <div class="discrepancy-message">${disc.message}</div>
+                                ${disc.lc_requirement ? `<div class="lc-requirement"><strong>LC Requirement:</strong> ${disc.lc_requirement}</div>` : ''}
+                                ${disc.document_value ? `<div class="document-value"><strong>Document Shows:</strong> ${disc.document_value}</div>` : ''}
+                                ${disc.recommendation ? `<div class="discrepancy-recommendation"><strong>Recommendation:</strong> ${disc.recommendation}</div>` : ''}
+                                ${disc.swift_reference ? `<div class="swift-reference"><strong>SWIFT Field:</strong> ${disc.swift_reference}</div>` : ''}
+                                ${disc.confidence ? `<div class="confidence-score">Confidence: ${Math.round(disc.confidence * 100)}%</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function autoFillFormFromSwift() {
+            try {
+                // Get LC context and SWIFT message
+                const lcData = getLCContext();
+                const swiftMessage = getSwiftMessage();
+
+                if (!lcData && !swiftMessage) {
+                    showStatusMessage('No LC context or SWIFT message available for auto-fill.', 'warning');
+                    return;
+                }
+
+                console.log('Auto-filling form with LC data:', lcData);
+
+                let fillCount = 0;
+
+                // Parse SWIFT message for additional data if available
+                let swiftFields = {};
+                if (swiftMessage) {
+                    swiftFields = parseSwiftMessage(swiftMessage);
+                }
+
+                // Priority: Use form data first, then SWIFT parsed data
+                const formData = lcData?.formData || {};
+
+                // Comprehensive field mappings
+                const fieldMappings = {
+                    // Basic document information
+                    'referenceNumber': formData.lcNumber || swiftFields.lcNumber || '',
+                    'amount': formData.amount || swiftFields.amount || '',
+                    'currency': formData.currency || swiftFields.currency || 'USD',
+                    'issueDate': new Date().toISOString().split('T')[0],
+
+                    // Party information
+                    'applicant': formData.applicant || swiftFields.applicant || '',
+                    'beneficiary': formData.beneficiary || swiftFields.beneficiary || '',
+
+                    // Document details
+                    'description': formData.goodsDescription || swiftFields.goodsDescription || '',
+                    'issuingBank': formData.issuingBank || swiftFields.issuingBank || '',
+                    'advisingBank': formData.advisingBank || swiftFields.advisingBank || '',
+
+                    // Dates
+                    'expiryDate': formData.expiryDate || swiftFields.expiryDate || '',
+                    'shipmentDate': swiftFields.shipmentDate || '',
+
+                    // Additional fields that might exist in the form
+                    'portOfLoading': swiftFields.portOfLoading || '',
+                    'portOfDischarge': swiftFields.portOfDischarge || '',
+                    'documentNumber': formData.lcNumber || swiftFields.lcNumber || ''
+                };
+
+                // Fill form fields
+                Object.entries(fieldMappings).forEach(([fieldId, value]) => {
+                    const field = document.getElementById(fieldId);
+                    if (field && value && value.toString().trim()) {
+                        field.value = value;
+                        field.dispatchEvent(new Event('change')); // Trigger change event
+                        fillCount++;
+
+                        // Add visual feedback
+                        field.style.backgroundColor = '#e8f5e8';
+                        setTimeout(() => {
+                            field.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                });
+
+                // Try to fill any textarea fields with goods description
+                const textAreas = document.querySelectorAll('textarea');
+                textAreas.forEach(textarea => {
+                    if (textarea.placeholder && textarea.placeholder.toLowerCase().includes('description') &&
+                        !textarea.value && (formData.goodsDescription || swiftFields.goodsDescription)) {
+                        textarea.value = formData.goodsDescription || swiftFields.goodsDescription;
+                        fillCount++;
+                        textarea.style.backgroundColor = '#e8f5e8';
+                        setTimeout(() => {
+                            textarea.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                });
+
+                if (fillCount > 0) {
+                    showStatusMessage(`✅ Auto-filled ${fillCount} form fields from LC/SWIFT data.`, 'success');
+                } else {
+                    showStatusMessage('No matching form fields found to auto-fill.', 'info');
+                }
+
+            } catch (error) {
+                console.error('Error auto-filling form:', error);
+                showStatusMessage('Error auto-filling form from SWIFT data.', 'error');
+            }
+        }
+
+        // Helper function to parse SWIFT message
+        function parseSwiftMessage(swiftMessage) {
+            const fields = {};
+            if (!swiftMessage) return fields;
+
+            try {
+                // Parse standard SWIFT fields
+                const fieldPatterns = {
+                    lcNumber: /:20:([^\n]+)/,
+                    amount: /:32B:([A-Z]{3})([\d,]+)/,
+                    currency: /:32B:([A-Z]{3})/,
+                    expiryDate: /:31D:(\d{6})/,
+                    applicant: /:50:((?:[^\n:]+\n?)+?)(?=:\d|$)/,
+                    beneficiary: /:59:((?:[^\n:]+\n?)+?)(?=:\d|$)/,
+                    goodsDescription: /:45A:((?:[^\n:]+\n?)+?)(?=:\d|$)/,
+                    documentsRequired: /:46A:((?:[^\n:]+\n?)+?)(?=:\d|$)/
+                };
+
+                Object.entries(fieldPatterns).forEach(([field, pattern]) => {
+                    const match = swiftMessage.match(pattern);
+                    if (match) {
+                        if (field === 'amount') {
+                            fields[field] = match[2].replace(',', '');
+                            fields.currency = match[1];
+                        } else if (field === 'expiryDate') {
+                            // Convert YYMMDD to YYYY-MM-DD
+                            const dateStr = match[1];
+                            const year = '20' + dateStr.substring(0, 2);
+                            const month = dateStr.substring(2, 4);
+                            const day = dateStr.substring(4, 6);
+                            fields[field] = `${year}-${month}-${day}`;
+                        } else {
+                            fields[field] = match[1].replace(/\n/g, ' ').trim();
+                        }
+                    }
+                });
+
+                console.log('Parsed SWIFT fields:', fields);
+                return fields;
+            } catch (error) {
+                console.error('Error parsing SWIFT message:', error);
+                return fields;
+            }
+        }
+
+        function checkAllDiscrepancies() {
+            if (Object.keys(uploadedDocuments).length === 0) {
+                showStatusMessage('Please upload at least one document before running discrepancy check.', 'warning');
+                return;
+            }
+
+            runDiscrepancyCheck();
+        }
+
+        function runDiscrepancyCheck() {
+            showStatusMessage('Running discrepancy check...', 'info');
+
+            // Check if we have uploaded documents
+            if (Object.keys(uploadedDocuments).length === 0) {
+                showStatusMessage('Please upload documents first.', 'warning');
+                return;
+            }
+
+            console.log('📤 BACKEND PROCESSING: Sending files for server-side text extraction (runDiscrepancyCheck)');
+
+            // Create FormData to send actual files to backend for processing
+            const formData = new FormData();
+
+            // Add LC context and SWIFT message as JSON
+            formData.append('lcContext', JSON.stringify(lcContext || {}));
+            formData.append('swiftMessage', lcContext ? lcContext.swiftMessage || '' : '');
+
+            // Add actual files for backend processing
+            let fileCount = 0;
+            Object.keys(uploadedDocuments).forEach(fileName => {
+                const doc = uploadedDocuments[fileName];
+                console.log(`📤 Adding file for backend processing: ${fileName}`);
+
+                if (doc.file) {
+                    formData.append('files', doc.file, fileName);
+                    fileCount++;
+                } else {
+                    console.error(`❌ No file object found for ${fileName}`);
+                }
+            });
+
+            console.log(`📤 Sending ${fileCount} files to backend for text extraction and analysis`);
+
+            fetch('/api/discrepancy-check', {
+                method: 'POST',
+                body: formData // Send as FormData with actual files
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📥 Received discrepancy check response (runDiscrepancyCheck):', data);
+                    if (data.success) {
+                        console.log('🎯 Calling displayDiscrepancyResults with:', data);
+                        displayDiscrepancyResults(data);
+                    } else {
+                        showStatusMessage(`Discrepancy check failed: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showStatusMessage('Error running discrepancy check. Please try again.', 'error');
+                });
+        }
+
+        // Removed duplicate displayDiscrepancyResults function - using the one above
+
+        function displayDiscrepancyResultsModal(data) {
+            // Handle different data structures - extract results if it's the full API response
+            const results = data.results || data;
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6); display: flex; align-items: center;
+                justify-content: center; z-index: 10000; backdrop-filter: blur(3px);
+            `;
+
+            // Ensure discrepancies exists and is an array
+            const discrepancies = results.discrepancies || [];
+            const discrepanciesHtml = discrepancies.map(d => `
+                <div style="margin-bottom: 16px; padding: 16px; background: ${d.severity === 'high' ? '#fef2f2' : d.severity === 'medium' ? '#fffbeb' : '#f0fdf4'}; 
+                           border-radius: 8px; border-left: 4px solid ${d.severity === 'high' ? '#dc2626' : d.severity === 'medium' ? '#f59e0b' : '#059669'};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div style="font-weight: 600; color: ${d.severity === 'high' ? '#dc2626' : d.severity === 'medium' ? '#f59e0b' : '#059669'};">
+                            ${d.severity.toUpperCase()}: ${d.field}
+                        </div>
+                        ${d.document_name ? `<span style="background: #e5e7eb; padding: 2px 8px; border-radius: 4px; font-size: 12px; color: #374151;">📄 ${d.document_name}</span>` : ''}
+                    </div>
+                    ${d.document_type ? `<div style="background: #ddd6fe; color: #5b21b6; padding: 2px 6px; border-radius: 3px; font-size: 11px; display: inline-block; margin-bottom: 8px;">${d.document_type.replace('_', ' ').toUpperCase()}</div>` : ''}
+                    <div style="color: #374151; margin-bottom: 8px; font-weight: 500;">${d.message}</div>
+                    ${d.lc_requirement ? `<div style="color: #6366f1; font-size: 13px; margin-bottom: 4px;"><strong>LC Requirement:</strong> ${d.lc_requirement}</div>` : ''}
+                    ${d.document_value ? `<div style="color: #dc2626; font-size: 13px; margin-bottom: 4px;"><strong>Document Shows:</strong> ${d.document_value}</div>` : ''}
+                    ${d.recommendation ? `<div style="color: #059669; font-size: 13px; margin-bottom: 4px;"><strong>Recommendation:</strong> ${d.recommendation}</div>` : ''}
+                    ${d.swift_reference ? `<div style="color: #7c3aed; font-size: 12px; margin-bottom: 4px;"><strong>SWIFT Field:</strong> ${d.swift_reference}</div>` : ''}
+                    ${d.confidence ? `<div style="color: #6b7280; font-size: 11px;">Confidence: ${Math.round(d.confidence * 100)}%</div>` : ''}
+                </div>
+            `).join('');
+
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; max-width: 800px; width: 90%;
+                           max-height: 80%; padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h3 style="margin: 0; color: #334155;">Discrepancy Check Results</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b;">
+                                ${discrepancies.length} discrepancies found
+                            </p>
+                        </div>
+                        <button onclick="this.closest('.modal').remove()" 
+                                style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">×</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #059669;">${results.summary?.passed || 0}</div>
+                                <div style="color: #6b7280; font-size: 14px;">Passed</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #f59e0b;">${results.summary?.warnings || 0}</div>
+                                <div style="color: #6b7280; font-size: 14px;">Warnings</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #dc2626;">${results.summary?.errors || 0}</div>
+                                <div style="color: #6b7280; font-size: 14px;">Errors</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        ${discrepanciesHtml || '<div style="text-align: center; padding: 40px; color: #059669;"><i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 16px;"></i><br>No discrepancies found!</div>'}
+                    </div>
+                </div>
+            `;
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+
+            if (discrepancies.length === 0) {
+                showStatusMessage('✅ No discrepancies found! All documents comply with LC requirements.', 'success');
+            } else {
+                showStatusMessage(`⚠️ ${discrepancies.length} discrepancies found. Please review and correct.`, 'warning');
+            }
+        }
+
+        function showStatusMessage(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            if (!statusDiv) return;
+
+            const colors = {
+                success: { bg: '#c6f6d5', border: '#48bb78', text: '#22543d' },
+                error: { bg: '#fed7d7', border: '#f56565', text: '#742a2a' },
+                info: { bg: '#bee3f8', border: '#4299e1', text: '#2c5282' },
+                warning: { bg: '#fef5e7', border: '#ed8936', text: '#c05621' }
+            };
+
+            const color = colors[type] || colors.info;
+
+            statusDiv.innerHTML = `
+                <div style="background: ${color.bg}; border-left: 4px solid ${color.border}; 
+                           color: ${color.text}; padding: 16px; border-radius: 8px; 
+                           margin-top: 16px; display: none;">
+                    ${message}
+                </div>
+            `;
+
+            statusDiv.style.display = 'block';
+
+            // Auto-hide after 5 seconds for success/info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function openSmartCapture() {
+            document.getElementById('smartCaptureOverlay').style.display = 'block';
+            setupDragAndDrop();
+        }
+
+        function closeSmartCapture() {
+            document.getElementById('smartCaptureOverlay').style.display = 'none';
+            selectedFiles = [];
+            updateFileList();
+        }
+
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('documentFileInput'); // ✅ Use the NEW file input with PDF extraction
+
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--primary-color)';
+                dropZone.style.background = 'rgba(100, 116, 139, 0.05)';
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--border-color)';
+                dropZone.style.background = 'var(--surface-elevated)';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--border-color)';
+                dropZone.style.background = 'var(--surface-elevated)';
+
+                const files = Array.from(e.dataTransfer.files);
+                // ✅ Use the NEW function with PDF extraction
+                handleDirectDocumentUpload({ target: { files } });
+            });
+
+            // Remove the old file input change listener since documentFileInput already has one
+        }
+
+        function handleFiles(files) {
+            // ✅ Redirect to the new PDF extraction function
+            console.log('🔄 Redirecting handleFiles to handleDirectDocumentUpload for PDF extraction');
+            handleDirectDocumentUpload({ target: { files } });
+        }
+
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            const processBtn = document.getElementById('processBtn');
+
+            if (selectedFiles.length === 0) {
+                fileList.innerHTML = '';
+                processBtn.disabled = true;
+                return;
+            }
+
+            processBtn.disabled = false;
+
+            fileList.innerHTML = selectedFiles.map((file, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--surface-elevated); border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-file" style="color: var(--primary-color);"></i>
+                        <div>
+                            <div style="font-weight: 500; color: var(--text-color);">${file.name}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">${formatFileSize(file.size)}</div>
+                        </div>
+                    </div>
+                    <button onclick="removeFile(${index})" style="background: var(--error-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-times" style="font-size: 12px;"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function processFiles() {
+            if (selectedFiles.length === 0) return;
+
+            // Add files to the main form
+            const formFileInput = document.getElementById('fileInput');
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            formFileInput.files = dt.files;
+
+            showStatusMessage('Files processed successfully! Please fill in the document details below.', 'success');
+            closeSmartCapture();
+        }
+
+        function showStatusMessage(message, type) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Form submission
+        document.getElementById('documentForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Check if discrepancy check is completed
+            if (!discrepancyCheckCompleted) {
+                showStatusMessage('Please complete the discrepancy check before submitting.', 'warning');
+                return;
+            }
+
+            // Check if documents are uploaded
+            if (!uploadedFile || selectedDocumentTypes.size === 0) {
+                showStatusMessage('Please upload documents and complete discrepancy check first.', 'warning');
+                return;
+            }
+
+            const formData = new FormData(this);
+
+            // Add user context if available
+            if (currentUser && currentUser.user) {
+                formData.append('user_id', currentUser.user.id);
+                if (isGuestMode) {
+                    formData.append('guest_mode', 'true');
+                }
+            }
+
+            // Add uploaded file and document types
+            formData.append('files', uploadedFile);
+            formData.append('document_types', JSON.stringify(Array.from(selectedDocumentTypes)));
+            formData.append('lc_context', JSON.stringify(getLCContext()));
+
+            try {
+                showStatusMessage('Registering document...', 'success');
+
+                const response = await fetch('/api/document/register', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatusMessage('Document registered successfully!', 'success');
+
+                    setTimeout(() => {
+                        const docType = formData.get('type');
+                        const docNumber = formData.get('number');
+                        window.location.href = `/document-verification-status?verificationId=${result.registration_id}&documentType=${docType}&referenceNumber=${docNumber}`;
+                    }, 1500);
+                } else {
+                    throw new Error('Registration failed');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showStatusMessage('Error registering document. Please try again.', 'error');
+            }
+        });
+
+        // Check authentication and setup guest mode if needed
+        let currentUser = null;
+        let isGuestMode = false;
+
+        async function checkAuthenticationStatus() {
+            try {
+                showStatusMessage('Checking authentication status...', 'info');
+                const response = await fetch('/auth/current-user');
+                if (response.ok) {
+                    currentUser = await response.json();
+                    isGuestMode = false;
+                    console.log('Authenticated user:', currentUser);
+                    showStatusMessage('Authenticated successfully', 'success');
+                } else {
+                    console.log('Authentication failed, trying guest mode...');
+                    // Fallback to guest mode
+                    const guestResponse = await fetch('/auth/guest-user');
+                    if (guestResponse.ok) {
+                        currentUser = await guestResponse.json();
+                        isGuestMode = true;
+                        console.log('Using guest mode:', currentUser);
+                        showStatusMessage('Running in guest mode - full functionality available', 'info');
+                    } else {
+                        throw new Error('Guest mode also failed');
+                    }
+                }
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                // Setup minimal guest mode
+                currentUser = {
+                    success: true,
+                    user: {
+                        id: 'guest_user',
+                        firstName: 'Guest',
+                        lastName: 'User',
+                        email: 'guest@example.com',
+                        isAllowed: true,
+                        isAdmin: false,
+                        isGuest: true
+                    }
+                };
+                isGuestMode = true;
+                showStatusMessage('Running in offline guest mode - full functionality available', 'info');
+            }
+        }
+
+        // Check for prefill data from classification overlay
+        async function checkForPrefillData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefill = urlParams.get('prefill');
+            const tempId = urlParams.get('temp_id');
+
+            if (prefill === 'true' && tempId) {
+                try {
+                    const response = await fetch(`/api/document/get-extraction-data?temp_id=${tempId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        showStatusMessage('Pre-filling form with classification data...', 'success');
+                        // In a real implementation, this would populate form fields
+                        // with the extracted data from the classification overlay
+                    }
+                } catch (error) {
+                    console.error('Error loading prefill data:', error);
+                }
+            }
+        }
+
+        // Enhanced file processing with coordinate data
+        function processFilesWithCoordinates() {
+            if (selectedFiles.length === 0) return;
+
+            // Process files and show coordinate information if available
+            const formFileInput = document.getElementById('fileInput');
+            const dt = new DataTransfer();
+            selectedFiles.forEach(file => dt.items.add(file));
+            formFileInput.files = dt.files;
+
+            // Enhanced success message with AI processing info
+            showStatusMessage('Files processed with smart capture! AI extraction and coordinate mapping will be applied during registration.', 'success');
+            closeSmartCapture();
+        }
+
+        // Listen for messages from classification overlay (if opened as popup)
+        window.addEventListener('message', function (event) {
+            if (event.data && event.data.type === 'CLASSIFICATION_RESULT') {
+                const classificationData = event.data.data;
+
+                // Prefill form with classification results
+                if (classificationData.extracted_fields) {
+                    const fieldMapping = {
+                        'Document_Number': 'number',
+                        'Invoice_Number': 'number',
+                        'LC_Number': 'number',
+                        'Issue_Date': 'issueDate',
+                        'Expiry_Date': 'expiryDate',
+                        'Amount': 'amount',
+                        'Currency': 'currency',
+                        'Issuer': 'issuer',
+                        'Beneficiary': 'beneficiary',
+                        'Applicant': 'applicant'
+                    };
+
+                    Object.entries(classificationData.extracted_fields).forEach(([key, fieldData]) => {
+                        const mappedField = fieldMapping[key];
+                        const element = document.getElementById(mappedField);
+                        if (element && fieldData.value) {
+                            element.value = fieldData.value;
+                        }
+                    });
+
+                    // Set document type if available
+                    if (classificationData.document_type) {
+                        const typeElement = document.getElementById('type');
+                        if (typeElement) {
+                            typeElement.value = classificationData.document_type.toLowerCase().replace(/[^a-z]/g, '-');
+                        }
+                    }
+
+                    showStatusMessage('Form prefilled with AI extraction data!', 'success');
+                }
+            }
+        });
+
+        // Open Smart Capture Document Classification Modal
+        function openSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+
+            // Show loading state
+            modal.classList.add('loading');
+
+            // Set the iframe source with context parameters
+            // Pass functionName for enhanced classification with field mappings
+            const params = new URLSearchParams({
+                functionName: 'Register Document',
+                productName: 'Document Registration',
+                skipAuth: 'true', // Skip authentication checks in iframe
+                guestMode: isGuestMode ? 'true' : 'false'
+            });
+
+            // Add user context if available
+            if (currentUser && currentUser.user) {
+                params.append('user_id', currentUser.user.id);
+                params.append('user_name', `${currentUser.user.firstName} ${currentUser.user.lastName}`);
+                params.append('user_email', currentUser.user.email);
+                if (isGuestMode) {
+                    params.append('guest_mode', 'true');
+                    params.append('auth_bypass', 'true');
+                }
+            }
+
+            iframe.src = `/document-classification-overlay?${params.toString()}`;
+
+            // Show the modal with animation
+            modal.classList.add('active');
+
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+
+            // Add escape key handler
+            document.addEventListener('keydown', handleSmartCaptureEscape);
+        }
+
+        // Hide loading indicator when iframe loads
+        function hideSmartCaptureLoading() {
+            const modal = document.getElementById('smartCaptureModal');
+            setTimeout(() => {
+                modal.classList.remove('loading');
+
+                // Send authentication context to the iframe
+                const iframe = document.getElementById('smartCaptureIframe');
+                if (iframe && iframe.contentWindow) {
+                    try {
+                        iframe.contentWindow.postMessage({
+                            type: 'PARENT_AUTH_CONTEXT',
+                            user: currentUser,
+                            isGuest: isGuestMode,
+                            guestUserId: 'guest_user',
+                            authBypass: isGuestMode
+                        }, '*');
+                    } catch (e) {
+                        console.log('Could not send auth context to iframe:', e);
+                    }
+                }
+            }, 500); // Give iframe more time to load
+        }
+
+        // Handle escape key
+        function handleSmartCaptureEscape(e) {
+            if (e.key === 'Escape') {
+                closeSmartCapture();
+            }
+        }
+
+        // Close Smart Capture Modal
+        function closeSmartCapture() {
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+
+            // Hide the modal with animation
+            modal.classList.remove('active');
+            modal.classList.remove('loading');
+
+            // Clear iframe source after animation
+            setTimeout(() => {
+                iframe.src = '';
+            }, 300);
+
+            // Restore body scroll
+            document.body.style.overflow = 'auto';
+
+            // Remove escape key handler
+            document.removeEventListener('keydown', handleSmartCaptureEscape);
+        }
+
+        // Enhanced Chatbot Controls
+        let isMaximized = false;
+        let isMinimized = false;
+
+        function openChatbot() {
+            const chatbotOverlay = document.getElementById('chatbotOverlay');
+            const chatbotFrame = document.getElementById('chatbotFrame');
+
+            // Initialize chatbot iframe if not already loaded
+            if (!chatbotFrame.src) {
+                // Add user context to chatbot URL
+                const params = new URLSearchParams({
+                    skipAuth: 'true', // Skip authentication checks in iframe
+                    guestMode: isGuestMode ? 'true' : 'false',
+                    contextSource: 'document_register'
+                });
+
+                if (currentUser && currentUser.user) {
+                    params.append('user_id', currentUser.user.id);
+                    params.append('user_name', `${currentUser.user.firstName} ${currentUser.user.lastName}`);
+                    params.append('user_email', currentUser.user.email);
+                    if (isGuestMode) {
+                        params.append('guest_mode', 'true');
+                        params.append('auth_bypass', 'true');
+                    }
+                }
+                chatbotFrame.src = `/ai_chat_modern_overylay?${params.toString()}`;
+            }
+
+            chatbotOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeChatbot() {
+            const chatbotOverlay = document.getElementById('chatbotOverlay');
+            chatbotOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            isMaximized = false;
+            isMinimized = false;
+        }
+
+        function closeChatbotOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeChatbot();
+            }
+        }
+
+        function minimizeChatbot() {
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            if (isMinimized) {
+                chatbotWindow.classList.remove('minimized');
+                isMinimized = false;
+            } else {
+                chatbotWindow.classList.add('minimized');
+                chatbotWindow.classList.remove('maximized');
+                isMinimized = true;
+                isMaximized = false;
+            }
+        }
+
+        function maximizeChatbot() {
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            if (isMaximized) {
+                chatbotWindow.classList.remove('maximized');
+                isMaximized = false;
+            } else {
+                chatbotWindow.classList.add('maximized');
+                chatbotWindow.classList.remove('minimized');
+                isMaximized = true;
+                isMinimized = false;
+            }
+        }
+
+        // Make chatbot window draggable
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        function initializeDragging() {
+            const chatbotHeader = document.getElementById('chatbotHeader');
+            const chatbotWindow = document.getElementById('chatbotWindow');
+
+            if (chatbotHeader && chatbotWindow) {
+                chatbotHeader.addEventListener('mousedown', dragStart);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', dragEnd);
+            }
+        }
+
+        function dragStart(e) {
+            if (isMaximized) return;
+
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+
+            if (e.target === e.currentTarget) {
+                isDragging = true;
+            }
+        }
+
+        function drag(e) {
+            if (isDragging && !isMaximized) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+
+                xOffset = currentX;
+                yOffset = currentY;
+
+                setTranslate(currentX, currentY, document.getElementById('chatbotWindow'));
+            }
+        }
+
+        function dragEnd() {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+        }
+
+        // Close modal when clicking outside for smart capture
+        function initializeModalHandlers() {
+            const smartCaptureModal = document.getElementById('smartCaptureModal');
+            if (smartCaptureModal) {
+                smartCaptureModal.addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        closeSmartCapture();
+                    }
+                });
+            }
+        }
+
+        // Guest mode intercept for iframe messages
+        window.addEventListener('message', function (event) {
+            console.log('Received message from iframe:', event.data);
+
+            // Handle authentication requests from iframes
+            if (event.data && event.data.type === 'AUTH_REQUEST') {
+                console.log('Iframe requested authentication context');
+                // Send back the current user context
+                event.source.postMessage({
+                    type: 'AUTH_RESPONSE',
+                    user: currentUser,
+                    isGuest: isGuestMode,
+                    guestUserId: 'guest_user',
+                    authBypass: true
+                }, '*');
+            }
+
+            // Handle API request intercepts from iframes
+            if (event.data && event.data.type === 'API_REQUEST') {
+                console.log('Iframe requested API modification');
+                // Modify API requests to include guest user_id
+                const requestData = event.data.data;
+                if (isGuestMode && requestData && !requestData.user_id) {
+                    requestData.user_id = 'guest_user';
+                    requestData.guest_mode = 'true';
+                    // Send modified request back to iframe
+                    event.source.postMessage({
+                        type: 'API_REQUEST_MODIFIED',
+                        data: requestData
+                    }, '*');
+                }
+            }
+
+            // Handle errors from iframes
+            if (event.data && event.data.type === 'IFRAME_ERROR') {
+                console.error('Iframe error:', event.data.error);
+                if (event.data.error.includes('401') || event.data.error.includes('Unauthorized')) {
+                    // Send guest mode context
+                    event.source.postMessage({
+                        type: 'FORCE_GUEST_MODE',
+                        user: currentUser,
+                        isGuest: true,
+                        guestUserId: 'guest_user'
+                    }, '*');
+                }
+            }
+        });
+
+        // Inject guest mode helpers into window for iframe access
+        window.DOCUMENT_REGISTER_CONTEXT = {
+            isGuestMode: false,
+            currentUser: null,
+            getGuestUserId: function () {
+                return 'guest_user';
+            },
+            isAuthenticated: function () {
+                return !this.isGuestMode && this.currentUser && this.currentUser.success;
+            },
+            getAuthHeaders: function () {
+                return {
+                    'X-User-ID': this.getGuestUserId(),
+                    'X-Guest-Mode': this.isGuestMode ? 'true' : 'false'
+                };
+            },
+            makeAuthenticatedRequest: async function (url, options = {}) {
+                const defaultOptions = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...this.getAuthHeaders(),
+                        ...(options.headers || {})
+                    }
+                };
+
+                if (options.body && typeof options.body === 'object') {
+                    if (options.body instanceof FormData) {
+                        options.body.append('user_id', this.getGuestUserId());
+                        if (this.isGuestMode) {
+                            options.body.append('guest_mode', 'true');
+                        }
+                    } else {
+                        options.body = JSON.stringify({
+                            ...options.body,
+                            user_id: this.getGuestUserId(),
+                            guest_mode: this.isGuestMode
+                        });
+                    }
+                }
+
+                return fetch(url, { ...defaultOptions, ...options });
+            }
+        };
+
+        // Make it available globally for iframes
+        window.parent.DOCUMENT_REGISTER_CONTEXT = window.DOCUMENT_REGISTER_CONTEXT;
+
+        // Pre-submit verification function
+        function preSubmitVerification() {
+            showStatusMessage('Running pre-submit verification...', 'info');
+
+            // Collect form data
+            const formData = collectFormData();
+
+            // Check if documents are uploaded
+            const uploadedCount = Object.keys(uploadedDocuments).length;
+            if (uploadedCount === 0) {
+                showStatusMessage('⚠️ No documents uploaded. Please upload required documents for verification.', 'warning');
+                return;
+            }
+
+            // Prepare verification data
+            const verificationData = {
+                formData: formData,
+                uploadedDocuments: Object.keys(uploadedDocuments).map(type => ({
+                    type: type,
+                    name: uploadedDocuments[type].name,
+                    size: uploadedDocuments[type].size
+                })),
+                lcContext: lcContext,
+                swiftMessage: lcContext ? lcContext.swiftMessage : null,
+                verificationType: 'pre_submit'
+            };
+
+            // Run comprehensive verification
+            fetch('/api/pre-submit-verification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(verificationData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayVerificationResults(data.results);
+                    } else {
+                        showStatusMessage(`Verification failed: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showStatusMessage('Error running pre-submit verification. Please try again.', 'error');
+                });
+        }
+
+        function collectFormData() {
+            const form = document.getElementById('documentForm');
+            const formData = {};
+
+            // Collect all form fields
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
+                }
+            });
+
+            return formData;
+        }
+
+        function displayVerificationResults(results) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6); display: flex; align-items: center;
+                justify-content: center; z-index: 10000; backdrop-filter: blur(3px);
+            `;
+
+            const hasErrors = results.discrepancies.some(d => d.severity === 'high');
+            const hasWarnings = results.discrepancies.some(d => d.severity === 'medium');
+
+            let statusColor = '#059669'; // Green for success
+            let statusIcon = 'check-circle';
+            let statusText = 'Ready to Submit';
+
+            if (hasErrors) {
+                statusColor = '#dc2626'; // Red for errors
+                statusIcon = 'exclamation-triangle';
+                statusText = 'Cannot Submit - Fix Errors';
+            } else if (hasWarnings) {
+                statusColor = '#f59e0b'; // Yellow for warnings
+                statusIcon = 'exclamation-triangle';
+                statusText = 'Review Warnings';
+            }
+
+            const discrepanciesHtml = results.discrepancies.map(d => `
+                <div style="margin-bottom: 16px; padding: 16px; background: ${d.severity === 'high' ? '#fef2f2' : d.severity === 'medium' ? '#fffbeb' : '#f0fdf4'}; 
+                           border-radius: 8px; border-left: 4px solid ${d.severity === 'high' ? '#dc2626' : d.severity === 'medium' ? '#f59e0b' : '#059669'};">
+                    <div style="font-weight: 600; color: ${d.severity === 'high' ? '#dc2626' : d.severity === 'medium' ? '#f59e0b' : '#059669'}; margin-bottom: 4px;">
+                        ${d.severity.toUpperCase()}: ${d.field}
+                    </div>
+                    <div style="color: #374151; margin-bottom: 8px;">${d.message}</div>
+                    ${d.recommendation ? `<div style="color: #6b7280; font-size: 14px;"><strong>Recommendation:</strong> ${d.recommendation}</div>` : ''}
+                </div>
+            `).join('');
+
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; max-width: 800px; width: 90%;
+                           max-height: 80%; padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 48px; height: 48px; background: ${statusColor}20; border-radius: 12px; 
+                                       display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-${statusIcon}" style="color: ${statusColor}; font-size: 24px;"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; color: #334155;">Pre-submit Verification</h3>
+                                <p style="margin: 4px 0 0 0; color: ${statusColor}; font-weight: 600;">${statusText}</p>
+                            </div>
+                        </div>
+                        <button onclick="this.closest('.modal').remove()" 
+                                style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">×</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #059669;">${results.summary.passed}</div>
+                                <div style="color: #6b7280; font-size: 14px;">Passed</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #f59e0b;">${results.summary.warnings}</div>
+                                <div style="color: #6b7280; font-size: 14px;">Warnings</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #dc2626;">${results.summary.errors}</div>
+                                <div style="color: #6b7280; font-size: 14px;">Errors</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; color: #334155;">${Object.keys(uploadedDocuments).length}</div>
+                                <div style="color: #6b7280; font-size: 14px;">Documents</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                        ${discrepanciesHtml || '<div style="text-align: center; padding: 40px; color: #059669;"><i class="fas fa-check-circle" style="font-size: 48px; margin-bottom: 16px;"></i><br>All checks passed!</div>'}
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button onclick="this.closest('.modal').remove()" 
+                                style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; 
+                                       border-radius: 8px; cursor: pointer; font-weight: 500;">Close</button>
+                        ${!hasErrors ? `
+                            <button onclick="this.closest('.modal').remove(); document.getElementById('submitBtn').click();" 
+                                    style="background: linear-gradient(135deg, #059669, #047857); color: white; border: none; 
+                                           padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500;
+                                           display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-check"></i> Proceed to Submit
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+
+            // Update status message
+            if (hasErrors) {
+                showStatusMessage(`❌ ${results.summary.errors} errors found. Please fix before submitting.`, 'error');
+            } else if (hasWarnings) {
+                showStatusMessage(`⚠️ ${results.summary.warnings} warnings found. Review before submitting.`, 'warning');
+            } else {
+                showStatusMessage('✅ All verifications passed! Ready to submit.', 'success');
+            }
+        }
+
+        // Initialize Enhanced UI
+        function initializeEnhancedUI() {
+            console.log('🔧 Initializing Enhanced UI...');
+
+            // Wait for the enhanced UI to be available
+            const checkEnhancedUI = () => {
+                if (typeof enhancedDiscrepancyUI !== 'undefined' && enhancedDiscrepancyUI) {
+                    console.log('✅ Enhanced Discrepancy UI is ready');
+                    window.enhancedUIReady = true;
+                    return true;
+                } else {
+                    console.log('⏳ Enhanced UI not yet available, retrying...');
+                    return false;
+                }
+            };
+
+            // Try immediately, then retry with intervals
+            if (!checkEnhancedUI()) {
+                let retries = 0;
+                const maxRetries = 10;
+                const interval = setInterval(() => {
+                    retries++;
+                    if (checkEnhancedUI() || retries >= maxRetries) {
+                        clearInterval(interval);
+                        if (retries >= maxRetries) {
+                            console.error('❌ Enhanced UI failed to load after maximum retries');
+                            window.enhancedUIReady = false;
+                        }
+                    }
+                }, 200);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function () {
+            console.log('📄 Document Registration page loading...');
+            console.log('🔧 BACKEND PROCESSING MODE: Files will be processed on server-side');
+
+            // Check authentication status first
+            await checkAuthenticationStatus();
+
+            // Initialize Enhanced UI
+            initializeEnhancedUI();
+
+            // Update global context
+            window.DOCUMENT_REGISTER_CONTEXT.isGuestMode = isGuestMode;
+            window.DOCUMENT_REGISTER_CONTEXT.currentUser = currentUser;
+
+            // Set default date to today
+            document.getElementById('issueDate').valueAsDate = new Date();
+
+            // Check for prefill data
+            checkForPrefillData();
+
+            // Initialize modal handlers and dragging
+            initializeModalHandlers();
+            initializeDragging();
+
+            // Initialize direct upload functionality
+            initializeDirectUpload();
+
+            console.log('✅ Document Registration page initialization complete (Backend Processing Mode)');
+        });
+
+        // Direct Upload Functionality
+        function initializeDirectUpload() {
+            const uploadZone = document.getElementById('uploadDropZone');
+            const fileInput = document.getElementById('documentFileInput');
+
+            // Drag and drop handlers
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files);
+                handleDirectDocumentUpload({ target: { files } });
+            });
+
+            // Click handler
+            uploadZone.addEventListener('click', () => {
+                triggerFileInput();
+            });
+
+            // Load existing documents on page load
+            loadUploadedDocuments();
+        }
+
+        function triggerFileInput() {
+            document.getElementById('documentFileInput').click();
+        }
+
+        async function handleDirectDocumentUpload(event) {
+            const files = Array.from(event.target.files);
+
+            if (files.length === 0) {
+                return;
+            }
+
+            console.log(`📁 Processing ${files.length} files locally...`);
+
+            // Show progress section
+            showUploadProgress();
+
+            // Process files with text extraction
+            try {
+                updateProgressStatus('Processing documents...', 20);
+
+                // Allowed file extensions
+                const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.doc', '.docx'];
+                const processedDocuments = [];
+                const failedUploads = [];
+
+                // Process files sequentially to extract content
+                for (let index = 0; index < files.length; index++) {
+                    const file = files[index];
+                    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+
+                    updateProgressStatus(`Extracting text from ${file.name}...`, 20 + (index / files.length) * 60);
+
+                    if (allowedExtensions.includes(fileExtension)) {
+                        try {
+                            console.log(`� SIMPLIFIED UPLOAD: Storing file ${file.name} for backend processing`);
+                            console.log(`� File type: ${fileExtension}, Size: ${file.size} bytes`);
+
+                            // Create document data object WITHOUT content extraction
+                            const documentData = {
+                                id: `doc_${Date.now()}_${index}`,
+                                original_filename: file.name,
+                                stored_filename: file.name,
+                                file_size: file.size,
+                                file_extension: fileExtension,
+                                upload_timestamp: new Date().toISOString(),
+                                status: 'ready_for_processing', // ✅ New status
+                                file_object: file
+                            };
+
+                            processedDocuments.push(documentData);
+
+                            // Store in global uploadedDocuments for discrepancy check - BACKEND WILL EXTRACT TEXT
+                            uploadedDocuments[file.name] = {
+                                file: file, // ✅ Keep original file object for backend processing
+                                type: 'unknown', // Will be classified by backend
+                                name: file.name,
+                                size: file.size,
+                                status: 'ready_for_processing',
+                                file_extension: fileExtension
+                            };
+
+                            console.log(`📦 STORED file for backend processing: ${file.name} (${file.size} bytes)`);
+
+                        } catch (uploadError) {
+                            console.error(`❌ Failed to process upload for ${file.name}:`, uploadError);
+
+                            // Show user-friendly error
+                            alert(`❌ Failed to process ${file.name}: ${uploadError.message}`);
+
+                            failedUploads.push({
+                                filename: file.name,
+                                error: uploadError.message,
+                                size: file.size
+                            });
+
+                            failedUploads.push({
+                                filename: file.name,
+                                error: `Content extraction failed: ${contentError.message}`,
+                                reason: 'Text extraction failed but document was uploaded'
+                            });
+                        }
+
+                    } else {
+                        failedUploads.push({
+                            filename: file.name,
+                            error: `Unsupported file type: ${fileExtension}`,
+                            reason: 'Only PDF, image, and Word documents are supported'
+                        });
+                    }
+                }
+
+                updateProgressStatus('Finalizing...', 80);                // Update global variables
+                uploadedFile = files[0]; // For compatibility with existing code
+
+                updateProgressStatus('Complete!', 100);
+
+                // Show success message
+                setTimeout(() => {
+                    hideUploadProgress();
+                    displayUploadedDocuments(processedDocuments);
+                    showUploadSummary({
+                        total_uploaded: files.length,
+                        successful: processedDocuments.length,
+                        failed: failedUploads.length
+                    });
+
+                    // Enable the discrepancy check button
+                    enableDiscrepancyCheckButton();
+
+                    // Show notification
+                    showNotification(`✅ Successfully uploaded ${processedDocuments.length} documents`, 'success');
+
+                    if (failedUploads.length > 0) {
+                        showNotification(`⚠️ ${failedUploads.length} documents failed to process`, 'warning');
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                hideUploadProgress();
+                showNotification(`❌ Upload failed: ${error.message}`, 'error');
+            }
+
+            // Clear file input
+            event.target.value = '';
+        }
+
+
+
+        function showUploadProgress() {
+            document.getElementById('uploadProgressSection').style.display = 'block';
+            document.getElementById('uploadedDocumentsSection').style.display = 'none';
+        }
+
+        function hideUploadProgress() {
+            document.getElementById('uploadProgressSection').style.display = 'none';
+        }
+
+        function updateProgressStatus(message, percentage) {
+            document.getElementById('progressStatus').textContent = message;
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${percentage}%`;
+        }
+
+        function enableDiscrepancyCheckButton() {
+            const checkBtn = document.getElementById('checkDiscrepanciesBtn');
+            if (checkBtn) {
+                checkBtn.disabled = false;
+                checkBtn.classList.remove('btn-secondary');
+                checkBtn.classList.add('btn-warning');
+                console.log('✅ Discrepancy check button enabled');
+            }
+
+            // Also enable any other discrepancy check buttons
+            const otherCheckBtns = document.querySelectorAll('[onclick*="runDiscrepancyCheck"]');
+            otherCheckBtns.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+            });
+        }
+
+        function displayUploadedDocuments(documents) {
+            const documentsGrid = document.getElementById('documentsGrid');
+            const documentsSection = document.getElementById('uploadedDocumentsSection');
+
+            if (!documents || documents.length === 0) {
+                documentsSection.style.display = 'none';
+                return;
+            }
+
+            documentsSection.style.display = 'block';
+
+            documentsGrid.innerHTML = documents.map(doc => `
+                <div class="document-card" data-doc-id="${doc.id}">
+                    <div class="document-card-header">
+                        <div class="document-info">
+                            <h5>${doc.original_filename}</h5>
+                            <div class="document-type-badge uploaded">✅ Uploaded Successfully</div>
+                        </div>
+                    </div>
+                    <div class="document-meta">
+                        <span>Size: ${formatFileSize(doc.file_size)}</span>
+                        <span>Status: ${doc.status || 'uploaded'}</span>
+                        <span>Uploaded: ${new Date(doc.upload_timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <div class="document-actions">
+                        <button class="btn-sm" onclick="downloadDocument('${doc.stored_filename}')">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn-sm btn-danger" onclick="deleteDocument('${doc.id}', '${doc.stored_filename}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showUploadSummary(summary) {
+            if (!summary) return;
+
+            document.getElementById('totalDocuments').textContent = summary.successful || 0;
+            document.getElementById('detectedTypes').textContent = summary.successful || 0;
+            document.getElementById('avgConfidence').textContent = 'Ready';
+
+            // Show success message about discrepancy check readiness
+            if (summary.successful > 0) {
+                setTimeout(() => {
+                    showNotification(`📋 ${summary.successful} documents uploaded. Documents will be classified during discrepancy check.`, 'info');
+                }, 1000);
+            }
+        }
+
+        async function loadUploadedDocuments() {
+            try {
+                const response = await fetch('/api/supporting-documents');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.documents.length > 0) {
+                        // Convert to expected format for display
+                        const formattedDocs = result.documents.map(doc => ({
+                            id: doc.filename,
+                            original_filename: doc.filename,
+                            stored_filename: doc.filename,
+                            file_size: doc.size,
+                            upload_timestamp: doc.upload_date,
+                            document_type: 'unknown',
+                            ocr_status: 'pending',
+                            confidence_score: 0,
+                            key_fields: {}
+                        }));
+
+                        displayUploadedDocuments(formattedDocs);
+                        showUploadSummary({ successful: result.documents.length });
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not load existing documents:', error);
+            }
+        }
+
+        function refreshDocumentsList() {
+            loadUploadedDocuments();
+            showNotification('📄 Documents list refreshed', 'info');
+        }
+
+        async function deleteDocument(docId, filename) {
+            if (!confirm(`Are you sure you want to delete ${filename}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/supporting-documents/${docId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Remove from UI
+                    const docCard = document.querySelector(`[data-doc-id="${docId}"]`);
+                    if (docCard) {
+                        docCard.remove();
+                    }
+
+                    showNotification(`✅ Document deleted successfully`, 'success');
+                    loadUploadedDocuments(); // Refresh the list
+                } else {
+                    throw new Error(result.error || 'Delete failed');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                showNotification(`❌ Failed to delete document: ${error.message}`, 'error');
+            }
+        }
+
+        function viewDocumentDetails(docId) {
+            showNotification('📄 Document details feature coming soon', 'info');
+        }
+
+        function downloadDocument(filename) {
+            // Create download link
+            const link = document.createElement('a');
+            link.href = `/api/supporting-documents/download/${filename}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Utility functions
+        function formatDocumentType(type) {
+            if (!type || type === 'unknown') return 'Unknown';
+            return type.split('_').map(word =>
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#6b7280'};
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                animation: slideInRight 0.3s ease;
+                max-width: 350px;
+                font-size: 14px;
+            `;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ===============================
+        // BACKEND PROCESSING MODE
+        // ===============================
+        // Note: PDF text extraction is now handled on the server-side
+        // Files are sent directly to the backend for processing
+
+        // Script loading verification
+        console.log('📊 Script Loading Status:');
+        console.log('- enhancedDiscrepancyUI:', typeof enhancedDiscrepancyUI);
+        console.log('- EnhancedDiscrepancyUI class:', typeof EnhancedDiscrepancyUI);
+        console.log('- validationTransparencyUI:', typeof validationTransparencyUI);
+        console.log('- enhancedFeaturesUI:', typeof enhancedFeaturesUI);
+        console.log('� Backend Processing Mode: PDF extraction handled server-side');
+
+        // Check if we have the class but not the instance
+        if (typeof EnhancedDiscrepancyUI !== 'undefined' && typeof enhancedDiscrepancyUI === 'undefined') {
+            console.log('🔧 Creating enhancedDiscrepancyUI instance...');
+            window.enhancedDiscrepancyUI = new EnhancedDiscrepancyUI();
+        }
+
+        // Force initialize enhanced UI if it exists but wasn't properly initialized
+        if (typeof enhancedDiscrepancyUI !== 'undefined' && !window.enhancedUIReady) {
+            console.log('🔧 Force initializing enhanced UI...');
+            window.enhancedUIReady = true;
+        }
+
+        // Debug function to force reload enhanced UI script
+        window.reloadEnhancedUI = function () {
+            console.log('🔄 Reloading Enhanced UI Script...');
+            const script = document.createElement('script');
+            script.src = "{{ url_for('static', filename='js/enhanced-discrepancy-ui.js') }}";
+            script.onload = function () {
+                console.log('✅ Enhanced UI Script reloaded');
+                window.enhancedUIReady = true;
+            };
+            document.head.appendChild(script);
+        };
+
+        // Test function for enhanced UI
+        window.testEnhancedUI = function () {
+            console.log('🧪 Testing Enhanced UI...');
+            const testData = {
+                results: {
+                    discrepancies: [
+                        {
+                            document_name: "test-invoice.pdf",
+                            document_type: "commercial_invoice",
+                            field: "Amount",
+                            severity: "high",
+                            message: "This is a test discrepancy for UI testing",
+                            recommendation: "This is a test recommendation",
+                            confidence: 0.95
+                        }
+                    ],
+                    summary: {
+                        total: 1,
+                        passed: 0,
+                        warnings: 0,
+                        errors: 1
+                    }
+                }
+            };
+
+            if (typeof enhancedDiscrepancyUI !== 'undefined' && enhancedDiscrepancyUI) {
+                console.log('✅ Enhanced UI available, testing...');
+                enhancedDiscrepancyUI.displayEnhancedResults(testData);
+            } else {
+                console.error('❌ Enhanced UI not available');
+                alert('Enhanced UI not loaded. Check console for details.');
+            }
+        };
+
+        // ===============================
+        // DEBUG FUNCTIONS
+        // ===============================
+
+        function debugUploadedDocuments() {
+            console.log('🐛 DEBUG: Current uploaded documents state (Backend Processing Mode):');
+            console.log('🐛 Number of uploaded documents:', Object.keys(uploadedDocuments).length);
+
+            if (Object.keys(uploadedDocuments).length === 0) {
+                console.log('🐛 No documents uploaded yet');
+                alert('No documents uploaded yet. Please upload a PDF first.\n\nIn Backend Processing Mode, files will be processed on the server when you click "Check Discrepancies".');
+                return;
+            }
+
+            Object.keys(uploadedDocuments).forEach((fileName, index) => {
+                const doc = uploadedDocuments[fileName];
+                console.log(`🐛 Document ${index + 1}: ${fileName}`);
+                console.log(`🐛   - Type: ${doc.type}`);
+                console.log(`🐛   - Size: ${doc.size} bytes`);
+                console.log(`🐛   - Status: ${doc.status}`);
+                console.log(`🐛   - File Extension: ${doc.file_extension}`);
+                console.log(`🐛   - Has File Object: ${doc.file ? 'Yes' : 'No'}`);
+                console.log(`🐛   - Ready for Backend Processing: ${doc.file ? 'Yes' : 'No'}`);
+                console.log('🐛   - Full document object:', doc);
+            });
+
+            alert(`Debug info logged to console. Found ${Object.keys(uploadedDocuments).length} documents ready for backend processing.`);
+        }
+    </script>
+
+    <!-- Smart Capture Modal -->
+    <div id="smartCaptureModal" class="smart-capture-modal">
+        <div class="smart-capture-iframe-container">
+            <div class="smart-capture-header">
+                <div class="smart-capture-header-title">
+                    <i class="mdi mdi-scan-helper"></i>
+                    <div>
+                        <h3>Smart Document Capture</h3>
+                        <div class="smart-capture-header-subtitle">Upload and extract data from your documents</div>
+                    </div>
+                </div>
+                <button class="smart-capture-close" onclick="closeSmartCapture()" title="Close">
+                    <i class="mdi mdi-close"></i>
+                </button>
+            </div>
+            <div class="smart-capture-loading">
+                <div class="smart-capture-spinner"></div>
+                <div class="smart-capture-loading-text">Loading Smart Capture...</div>
+            </div>
+            <iframe id="smartCaptureIframe" class="smart-capture-iframe" src=""
+                onload="hideSmartCaptureLoading()"></iframe>
+        </div>
+    </div>
+
+    <!-- Enhanced Chatbot Icon -->
+    <div class="chatbot-icon" onclick="openChatbot()">
+        <i class="fas fa-comments"></i>
+    </div>
+
+    <!-- Enhanced Chatbot Overlay -->
+    <div id="chatbotOverlay" class="chatbot-overlay" onclick="closeChatbotOnOverlay(event)">
+        <div id="chatbotWindow" class="chatbot-window" onclick="event.stopPropagation()">
+            <div class="chatbot-header" id="chatbotHeader">
+                <div class="chatbot-header-left">
+                    <i class="fas fa-robot"></i>
+                    <div>
+                        <h3>AI Assistant</h3>
+                        <div class="chatbot-status">
+                            <span class="status-dot"></span>
+                            <span>Online</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="window-controls">
+                    <button class="control-btn" onclick="minimizeChatbot()" title="Minimize">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="control-btn" onclick="maximizeChatbot()" title="Maximize">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="control-btn" onclick="closeChatbot()" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chatbot-body">
+                <iframe id="chatbotFrame" class="chatbot-iframe" src="/ai_chat_modern_overylay"></iframe>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

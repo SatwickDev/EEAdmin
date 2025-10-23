@@ -1371,6 +1371,96 @@ def format_llm_answer(text: str) -> str:
 
 
 def setup_auth_routes(app: Flask):
+    """Data Categories Management Routes"""
+    # custom_functions_routes.register_custom_functions_routes(app)
+
+    @app.route('/trade_finance_lc_form', methods=['GET', 'POST'])
+    def trade_finance_lc_form():
+        """Render the Trade Finance LC form with template loading and form handling"""
+        if request.method == 'POST':
+            # Handle form submission
+            try:
+                # Get form data
+                form_data = request.form.to_dict()
+                form_data['user_id'] = session.get('user_id', 'anonymous')
+                form_data['timestamp'] = datetime.utcnow()
+                form_data['status'] = 'submitted'
+
+                # Generate LC number if not provided
+                if not form_data.get('lcNumber'):
+                    form_data['lcNumber'] = f"LC{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+                # # Store in database
+                # result = db.lc_transactions.insert_one(form_data)
+
+                # Return success response
+                return jsonify({
+                    'success': True,
+                    'message': 'LC form submitted successfully!',
+                    'lcNumber': form_data['lcNumber'],
+                    'transactionId': str(result.inserted_id),
+                    'showSwiftPreview': True
+                })
+            except Exception as e:
+                logger.error(f"Error submitting LC form: {str(e)}")
+                return jsonify({
+                    'success': False,
+                    'message': f'Error submitting form: {str(e)}'
+                }), 500
+
+        else:
+            # Handle GET request - render form with optional template data
+            template_data = {}
+
+            # Check if loading a sample template (handle both template=sample and load_template=true)
+            load_template = request.args.get('template', '')
+            load_template_flag = request.args.get('load_template', '').lower() == 'true'
+
+            if load_template == 'sample' or load_template_flag:
+                template_data = {
+                    'lcNumber': 'LC' + datetime.now().strftime('%Y%m%d%H%M%S'),
+                    'lcType': 'irrevocable',
+                    'issueDate': datetime.now().strftime('%Y-%m-%d'),
+                    'expiryDate': (datetime.now() + timedelta(days=90)).strftime('%Y-%m-%d'),
+                    'applicant': 'ABC Trading Company\n123 Business Street\nNew York, NY 10001\nUSA',
+                    'beneficiary': 'XYZ Export Limited\n456 Export Avenue\nLondon, EC1A 1BB\nUnited Kingdom',
+                    'issuingBank': 'International Trade Bank\nSWIFT: ITBKUS33\n789 Banking Plaza\nNew York, NY 10005',
+                    'advisingBank': 'Global Commerce Bank\nSWIFT: GCBKGB2L\n321 Financial District\nLondon, EC2V 8RF',
+                    'currency': 'USD',
+                    'amount': '500000.00',
+                    'tolerancePercent': '5',
+                    'paymentTerms': 'sight',
+                    'placeOfTaking': 'New York Port',
+                    'portOfLoading': 'New York, NY',
+                    'portOfDischarge': 'London, UK',
+                    'finalDestination': 'London, United Kingdom',
+                    'latestShipmentDate': (datetime.now() + timedelta(days=60)).strftime('%Y-%m-%d'),
+                    'partialShipment': 'allowed',
+                    'transhipment': 'not_allowed',
+                    'incoterms': 'CIF',
+                    'goodsDescription': 'High-quality electronic components including:\n- Microprocessors (1000 units)\n- Memory modules (2000 units)\n- Circuit boards (500 units)\nAll items conform to international standards.',
+                    'hsCode': '8542.31.0000',
+                    'quantity': '3500 units',
+                    'additionalDocuments': 'Commercial Invoice in triplicate\nPacking List\nCertificate of Origin\nInsurance Certificate',
+                    'additionalConditions': 'All documents must be presented within 21 days of shipment date.\nInsurance to be effected for 110% of invoice value.',
+                    'charges': 'applicant',
+                    'repository_id': request.args.get('repository_id', 'import_lc'),
+                    'documents': ['commercial_invoice', 'packing_list', 'bill_of_lading', 'certificate_of_origin']
+                }
+
+                # If load_template=true, return JSON response for AJAX
+                if load_template_flag:
+                    return jsonify({
+                        'success': True,
+                        'template': template_data
+                    })
+            else:
+                # Load form data from GET parameters if provided
+                for key in request.args:
+                    if key not in ['template', 'load_template']:
+                        template_data[key] = request.args.get(key)
+
+            return render_template('trade_finance_lc_form.html', **template_data)
     @app.route('/document-classification')
     def document_classification():
         """Document classification and compliance page"""
@@ -1715,6 +1805,273 @@ def setup_routes(app: Flask):
     """Data Categories Management Routes"""
     custom_functions_routes.register_custom_functions_routes(app)
     
+    @app.route('/document_register')
+    def document_register():
+        """Document registration page with supporting documents upload"""
+        return render_template('document_register.html')
+    @app.route('/api/lc/swift-preview-form', methods=['POST'])
+    def generate_swift_preview_from_form():
+        """Generate Swift MT700 preview from form data without saving to database"""
+        try:
+            form_data = request.get_json()
+
+            # Validate required fields
+            required_fields = ['lcNumber', 'applicant', 'beneficiary', 'amount', 'currency']
+            missing_fields = [field for field in required_fields if not form_data.get(field)]
+
+            if missing_fields:
+                return jsonify({
+                    'success': False,
+                    'message': f'Missing required fields: {", ".join(missing_fields)}'
+                }), 400
+
+            # Generate SWIFT MT700 message from form data
+            swift_message = generate_mt700_message(form_data)
+
+            return jsonify({
+                'success': True,
+                'message': 'SWIFT MT700 preview generated successfully',
+                'swift_message': swift_message,
+                'lcNumber': form_data.get('lcNumber'),
+                'preview': True
+            })
+
+        except Exception as e:
+            logger.error(f"Error generating SWIFT preview: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Error generating SWIFT preview: {str(e)}'
+            }), 500
+
+
+
+    @app.route('/lc_success')
+    def lc_success():
+        """Render the LC submission success page"""
+        # Get data from URL parameters
+        lc_number = request.args.get('lcNumber')
+        transaction_id = request.args.get('transactionId')
+        return render_template('lc_success.html', lcNumber=lc_number, transactionId=transaction_id)
+    # =========================
+    # LC FORM SUBMISSION & SWIFT MT700 GENERATION
+    # =========================
+
+    @app.route('/api/lc/submit', methods=['POST'])
+    @timing_aspect
+    def submit_lc_form():
+        """Submit Letter of Credit form and store in database"""
+        try:
+            data = request.get_json()
+
+            # Validate required fields
+            required_fields = ['lcNumber', 'lcType', 'issueDate', 'expiryDate', 'applicant',
+                               'beneficiary', 'issuingBank', 'currency', 'amount', 'paymentTerms',
+                               'latestShipmentDate', 'goodsDescription']
+
+            missing_fields = []
+            for field in required_fields:
+                if not data.get(field):
+                    missing_fields.append(field)
+
+            if missing_fields:
+                return jsonify({
+                    'success': False,
+                    'message': f'Missing required fields: {", ".join(missing_fields)}'
+                }), 400
+
+            # Validate dates
+            try:
+                issue_date = datetime.strptime(data['issueDate'], '%Y-%m-%d')
+                expiry_date = datetime.strptime(data['expiryDate'], '%Y-%m-%d')
+                shipment_date = datetime.strptime(data['latestShipmentDate'], '%Y-%m-%d')
+
+                if expiry_date <= issue_date:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Expiry date must be after issue date'
+                    }), 400
+
+                if shipment_date >= expiry_date:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Shipment date must be before expiry date'
+                    }), 400
+
+            except ValueError:
+                return jsonify({
+                    'success': False,
+                    'message': 'Invalid date format. Use YYYY-MM-DD'
+                }), 400
+
+            # Validate amount
+            try:
+                amount = float(data['amount'])
+                if amount <= 0:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Amount must be greater than zero'
+                    }), 400
+            except (ValueError, TypeError):
+                return jsonify({
+                    'success': False,
+                    'message': 'Invalid amount format'
+                }), 400
+
+            # Generate unique LC number if not provided or exists
+            lc_collection = db.letter_of_credits
+
+            # Check if LC number already exists
+            existing_lc = lc_collection.find_one({'lcNumber': data['lcNumber']})
+            if existing_lc:
+                # Generate new LC number
+                current_year = datetime.now().year
+                count = lc_collection.count_documents({'lcNumber': {'$regex': f'^LC{current_year}'}})
+                data['lcNumber'] = f"LC{current_year}{str(count + 1).zfill(4)}"
+
+            # Prepare LC document
+            lc_document = {
+                'lcNumber': data['lcNumber'],
+                'lcType': data['lcType'],
+                'issueDate': data['issueDate'],
+                'expiryDate': data['expiryDate'],
+                'applicant': data['applicant'],
+                'beneficiary': data['beneficiary'],
+                'issuingBank': data['issuingBank'],
+                'advisingBank': data.get('advisingBank', ''),
+                'currency': data['currency'],
+                'amount': amount,
+                'tolerancePercent': data.get('tolerancePercent', 0),
+                'paymentTerms': data['paymentTerms'],
+                'placeOfTaking': data.get('placeOfTaking', ''),
+                'portOfLoading': data.get('portOfLoading', ''),
+                'portOfDischarge': data.get('portOfDischarge', ''),
+                'finalDestination': data.get('finalDestination', ''),
+                'latestShipmentDate': data['latestShipmentDate'],
+                'partialShipment': data.get('partialShipment', 'allowed'),
+                'transhipment': data.get('transhipment', 'allowed'),
+                'incoterms': data.get('incoterms', ''),
+                'goodsDescription': data['goodsDescription'],
+                'hsCode': data.get('hsCode', ''),
+                'quantity': data.get('quantity', ''),
+                'documents': data.get('documents', []),
+                'additionalDocuments': data.get('additionalDocuments', ''),
+                'additionalConditions': data.get('additionalConditions', ''),
+                'charges': data.get('charges', 'beneficiary'),
+                'status': 'submitted',
+                'createdAt': datetime.utcnow(),
+                'updatedAt': datetime.utcnow()
+            }
+
+            # Insert into database
+            result = lc_collection.insert_one(lc_document)
+
+            logger.info(f"LC form submitted successfully: {data['lcNumber']}")
+
+            return jsonify({
+                'success': True,
+                'message': 'Letter of Credit submitted successfully',
+                'lcNumber': data['lcNumber'],
+                'lcId': str(result.inserted_id),
+                'transactionId': str(result.inserted_id),
+                'redirect': f'/lc_success?lcNumber={data["lcNumber"]}&transactionId={str(result.inserted_id)}'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error submitting LC form: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Internal server error during LC submission'
+            }), 500
+
+    @app.route('/api/lc/generate-swift', methods=['POST'])
+    @timing_aspect
+    def generate_swift_mt700():
+        """Generate SWIFT MT700 message from LC data"""
+        try:
+            data = request.get_json()
+            lc_id = data.get('lcId')
+            lc_number = data.get('lcNumber')
+
+            # Get LC data from database
+            lc_collection = db.letter_of_credits
+
+            if lc_id:
+                lc_data = lc_collection.find_one({'_id': ObjectId(lc_id)})
+            elif lc_number:
+                lc_data = lc_collection.find_one({'lcNumber': lc_number})
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': 'LC ID or LC Number is required'
+                }), 400
+
+            if not lc_data:
+                return jsonify({
+                    'success': False,
+                    'message': 'LC not found'
+                }), 404
+
+            # Generate SWIFT MT700 message
+            swift_message = generate_mt700_message(lc_data)
+
+            # Store SWIFT message in database
+            swift_collection = db.swift_messages
+            swift_document = {
+                'lcId': str(lc_data['_id']),
+                'lcNumber': lc_data['lcNumber'],
+                'messageType': 'MT700',
+                'swiftMessage': swift_message,
+                'status': 'generated',
+                'createdAt': datetime.utcnow()
+            }
+
+            swift_result = swift_collection.insert_one(swift_document)
+
+            return jsonify({
+                'success': True,
+                'message': 'SWIFT MT700 message generated successfully',
+                'swiftMessage': swift_message,
+                'swiftId': str(swift_result.inserted_id)
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error generating SWIFT MT700: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Error generating SWIFT message'
+            }), 500
+
+    @app.route('/api/lc/swift-preview/<lc_id>')
+    @timing_aspect
+    def preview_swift_mt700(lc_id):
+        """Preview SWIFT MT700 message for an LC"""
+        try:
+            lc_collection = db.letter_of_credits
+            lc_data = lc_collection.find_one({'_id': ObjectId(lc_id)})
+
+            if not lc_data:
+                return jsonify({
+                    'success': False,
+                    'message': 'LC not found'
+                }), 404
+
+            # Generate SWIFT MT700 message preview (without saving)
+            swift_message = generate_mt700_message(lc_data)
+
+            return jsonify({
+                'success': True,
+                'swiftMessage': swift_message,
+                'lcNumber': lc_data['lcNumber']
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error previewing SWIFT MT700: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Error generating SWIFT preview'
+            }), 500
+
+
     @app.route('/api/discrepancy-rules', methods=['GET'])
     @timing_aspect
     def get_discrepancy_rules():
@@ -3769,10 +4126,10 @@ Return compliance status for each field.'''
         """Render the forms dashboard"""
         return render_template('forms_dashboard.html')
 
-    @app.route('/trade_finance_lc_form')
-    def trade_finance_lc_form():
-        """Render the Trade Finance LC form"""
-        return render_template('trade_finance_lc_form.html')
+    # @app.route('/trade_finance_lc_form')
+    # def trade_finance_lc_form():
+    #     """Render the Trade Finance LC form"""
+    #     return render_template('trade_finance_lc_form.html')
     
     @app.route('/trade_finance_guarantee_form')
     def trade_finance_guarantee_form():
@@ -3810,31 +4167,31 @@ Return compliance status for each field.'''
         return render_template('components/ai_chatbot_popup.html')
     
     # API Routes for form submissions
-    @app.route('/api/lc/submit', methods=['POST'])
-    @login_required
-    def submit_lc():
-        """Handle LC form submission"""
-        try:
-            data = request.json
-            data['user_id'] = session.get('user_id')
-            data['timestamp'] = datetime.utcnow()
-            data['status'] = 'pending'
+    # @app.route('/api/lc/submit', methods=['POST'])
+    # @login_required
+    # def submit_lc():
+    #     """Handle LC form submission"""
+    #     try:
+    #         data = request.json
+    #         data['user_id'] = session.get('user_id')
+    #         data['timestamp'] = datetime.utcnow()
+    #         data['status'] = 'pending'
             
-            # Generate LC number if not provided
-            if not data.get('lcNumber'):
-                data['lcNumber'] = f"LC{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    #         # Generate LC number if not provided
+    #         if not data.get('lcNumber'):
+    #             data['lcNumber'] = f"LC{datetime.now().strftime('%Y%m%d%H%M%S')}"
             
-            # Store in database
-            result = db.lc_transactions.insert_one(data)
+    #         # Store in database
+    #         result = db.lc_transactions.insert_one(data)
             
-            return jsonify({
-                'success': True,
-                'lcNumber': data['lcNumber'],
-                'transactionId': str(result.inserted_id)
-            })
-        except Exception as e:
-            logger.error(f"Error submitting LC: {str(e)}")
-            return jsonify({'error': 'Failed to submit LC'}), 500
+    #         return jsonify({
+    #             'success': True,
+    #             'lcNumber': data['lcNumber'],
+    #             'transactionId': str(result.inserted_id)
+    #         })
+    #     except Exception as e:
+    #         logger.error(f"Error submitting LC: {str(e)}")
+    #         return jsonify({'error': 'Failed to submit LC'}), 500
     
     @app.route('/api/guarantee/submit', methods=['POST'])
     @login_required
@@ -12024,4 +12381,350 @@ def _save_document_categories(data):
         
         logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
         return matches
+    
+# new code added here    
+def generate_mt700_message(lc_data):
+    """Generate SWIFT MT700 message from LC data"""
 
+    # Format currency and amount for SWIFT
+    currency = lc_data['currency']
+    # Convert amount to float for formatting
+    amount_value = float(lc_data['amount']) if isinstance(lc_data['amount'], str) else lc_data['amount']
+    amount = "{:.2f}".format(amount_value).replace('.', ',')
+
+    # Format dates for SWIFT (YYMMDD)
+    issue_date = datetime.strptime(lc_data['issueDate'], '%Y-%m-%d').strftime('%y%m%d')
+    expiry_date = datetime.strptime(lc_data['expiryDate'], '%Y-%m-%d').strftime('%y%m%d')
+    shipment_date = datetime.strptime(lc_data['latestShipmentDate'], '%Y-%m-%d').strftime('%y%m%d')
+
+    # Build SWIFT MT700 message
+    swift_lines = [
+        "{1:F01BANKGB2LAXXX0000000000}",
+        "{2:I700BANKUS33XXXXN}",
+        "{3:{108:MT700}}",
+        "{4:",
+        ":20:" + lc_data['lcNumber'],  # Documentary Credit Number
+        ":23:" + ("IRREVOCABLE" if lc_data['lcType'] == 'irrevocable' else lc_data['lcType'].upper()),
+        ":31C:" + issue_date,  # Date of Issue
+        ":40A:IRREVOCABLE",  # Form of Documentary Credit
+        ":31D:" + expiry_date + lc_data.get('finalDestination', 'ANY BANK').upper(),  # Date and Place of Expiry
+        ":50:" + format_address_field(lc_data['applicant']),  # Applicant
+        ":59:" + format_address_field(lc_data['beneficiary']),  # Beneficiary
+        ":32B:" + currency + amount,  # Currency Code, Amount
+        ""
+    ]
+
+    # Add issuing bank
+    if lc_data.get('issuingBank'):
+        swift_lines.append(":51A:" + format_bank_field(lc_data['issuingBank']))
+
+    # Add advising bank if present
+    if lc_data.get('advisingBank'):
+        swift_lines.append(":57A:" + format_bank_field(lc_data['advisingBank']))
+
+    # Add payment terms
+    if lc_data.get('paymentTerms') == 'sight':
+        swift_lines.append(":42C:AT SIGHT")
+    elif lc_data.get('paymentTerms') == 'deferred':
+        swift_lines.append(":42C:DEFERRED PAYMENT")
+    elif lc_data.get('paymentTerms') == 'acceptance':
+        swift_lines.append(":42C:BY ACCEPTANCE")
+    elif lc_data.get('paymentTerms') == 'negotiation':
+        swift_lines.append(":42C:BY NEGOTIATION")
+
+    # Add shipment details
+    if lc_data.get('latestShipmentDate'):
+        swift_lines.append(":44C:" + shipment_date)
+
+    if lc_data.get('portOfLoading'):
+        swift_lines.append(":44F:" + lc_data['portOfLoading'].upper())
+
+    if lc_data.get('portOfDischarge'):
+        swift_lines.append(":44B:" + lc_data['portOfDischarge'].upper())
+
+    if lc_data.get('finalDestination'):
+        swift_lines.append(":44A:" + lc_data['finalDestination'].upper())
+
+    # Add partial shipment and transhipment
+    swift_lines.append(":43P:" + ("ALLOWED" if lc_data.get('partialShipment') == 'allowed' else "NOT ALLOWED"))
+    swift_lines.append(":43T:" + ("ALLOWED" if lc_data.get('transhipment') == 'allowed' else "NOT ALLOWED"))
+
+    # Add description of goods
+    goods_desc = lc_data.get('goodsDescription', 'GOODS DESCRIPTION NOT PROVIDED')
+    swift_lines.append(":45A:" + goods_desc[:1000])  # Max 1000 chars for SWIFT
+
+    # Add documents required
+    documents_text = "DOCUMENTS REQUIRED:\n"
+    for doc in lc_data.get('documents', []):
+        documents_text += "- " + doc.replace('_', ' ').title() + "\n"
+
+    if lc_data.get('additionalDocuments'):
+        documents_text += "- " + lc_data['additionalDocuments']
+
+    swift_lines.append(":46A:" + documents_text[:6000])  # Max 6000 chars
+
+    # Add additional conditions
+    if lc_data.get('additionalConditions'):
+        swift_lines.append(":47A:" + lc_data['additionalConditions'][:8500])  # Max 8500 chars
+
+    # Add charges
+    if lc_data.get('charges') == 'beneficiary':
+        swift_lines.append(":71B:ALL CHARGES OUTSIDE OPENING BANK'S COUNTRY FOR BENEFICIARY'S ACCOUNT")
+    else:
+        swift_lines.append(":71B:ALL CHARGES FOR APPLICANT'S ACCOUNT")
+
+    swift_lines.append("-}")
+
+    return "\n".join(swift_lines)
+
+
+def format_address_field(address_text):
+    """Format address for SWIFT field (max 4 lines of 35 chars each)"""
+    if not address_text:
+        return ""
+
+    # Split into lines and limit to 35 chars per line, max 4 lines
+    lines = []
+    words = address_text.split()
+    current_line = ""
+
+    for word in words:
+        if len(current_line + " " + word) <= 35:
+            current_line = current_line + " " + word if current_line else word
+        else:
+            if current_line:
+                lines.append(current_line)
+            if len(lines) >= 4:
+                break
+            current_line = word[:35]  # Truncate long words
+
+    if current_line and len(lines) < 4:
+        lines.append(current_line)
+
+    return "\n".join(lines[:4])
+
+
+def format_bank_field(bank_text):
+    """Format bank information for SWIFT field"""
+    if not bank_text:
+        return ""
+
+    # Extract SWIFT code if present (11 characters, ends with XXX)
+    swift_code_match = re.search(r'[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?', bank_text.upper())
+
+    if swift_code_match:
+        swift_code = swift_code_match.group(0)
+        # Format as SWIFT code only for field 51A/57A
+        return swift_code
+    else:
+        # Return formatted bank name
+        return format_address_field(bank_text)
+
+
+# ===== MISSING API ROUTES =====
+
+# Note: /api/trade-documents route is already defined above at line 12498
+# Removed duplicate route definition to prevent conflicts
+
+    @app.route('/api/supporting-documents/upload', methods=['POST'])
+    def upload_supporting_documents():
+        """Upload supporting documents with automatic document type detection"""
+        try:
+            logger.info("📁 Supporting documents upload initiated")
+
+            # Get uploaded files
+            uploaded_files = request.files.getlist('documents')
+
+            if not uploaded_files or len(uploaded_files) == 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'No documents uploaded',
+                    'message': 'Please select at least one document to upload'
+                }), 400
+
+            # Create uploads directory if it doesn't exist
+            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+
+            processed_documents = []
+            successful_uploads = 0
+            failed_uploads = []
+
+            for file in uploaded_files:
+                if file and file.filename:
+                    try:
+                        logger.info(f"📄 Processing document: {file.filename}")
+
+                        # Generate unique filename
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        filename = f"{timestamp}_{secure_filename(file.filename)}"
+                        file_path = os.path.join(upload_dir, filename)
+
+                        # Save file
+                        file.save(file_path)
+                        file_size = os.path.getsize(file_path)
+
+                        # Get file extension for validation
+                        file_extension = os.path.splitext(filename)[1].lower()
+                        allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.doc', '.docx']
+
+                        if file_extension not in allowed_extensions:
+                            failed_uploads.append({
+                                'filename': file.filename,
+                                'error': f'Unsupported file type: {file_extension}',
+                                'reason': 'Only PDF, image, and Word documents are supported'
+                            })
+                            # Remove the uploaded file
+                            if os.path.exists(file_path):
+                                os.remove(file_path)
+                            continue
+
+                        # Simple document storage - no complex processing
+                        logger.info(f"� Storing document: {filename}")
+
+                        # Simple document data
+                        document_data = {
+                            'id': str(uuid.uuid4()),
+                            'original_filename': file.filename,
+                            'stored_filename': filename,
+                            'file_path': file_path,
+                            'file_size': file_size,
+                            'file_extension': file_extension,
+                            'upload_timestamp': datetime.now().isoformat(),
+                            'status': 'uploaded'
+                        }
+
+                        processed_documents.append(document_data)
+                        successful_uploads += 1
+
+                    except Exception as e:
+                        logger.error(f"Error processing file {file.filename}: {e}")
+                        failed_uploads.append({
+                            'filename': file.filename,
+                            'error': str(e),
+                            'reason': 'File processing error'
+                        })
+                else:
+                    failed_uploads.append({
+                        'filename': 'Unknown',
+                        'error': 'Invalid file',
+                        'reason': 'File has no name or is empty'
+                    })
+
+            # Store documents for discrepancy checking
+            if processed_documents:
+                session['uploaded_documents'] = processed_documents
+                logger.info(f"✅ Stored {len(processed_documents)} documents for discrepancy checking")
+
+            # Prepare response
+            response_data = {
+                'success': True,
+                'message': f'Successfully uploaded {successful_uploads} documents',
+                'summary': {
+                    'total_uploaded': len(uploaded_files),
+                    'successful': successful_uploads,
+                    'failed': len(failed_uploads)
+                },
+                'documents': processed_documents
+            }
+
+            if failed_uploads:
+                response_data['failed_uploads'] = failed_uploads
+                response_data['warning'] = f'{len(failed_uploads)} documents failed to process'
+
+            logger.info(f"📊 Upload summary: {successful_uploads} successful, {len(failed_uploads)} failed")
+
+            return jsonify(response_data)
+
+        except Exception as e:
+            logger.error(f"Error in supporting documents upload: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to upload documents'
+            }), 500
+
+    @app.route('/api/supporting-documents', methods=['GET'])
+    def get_uploaded_supporting_documents():
+        """Get list of uploaded supporting documents"""
+        try:
+            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+
+            if not os.path.exists(upload_dir):
+                return jsonify({
+                    'success': True,
+                    'documents': [],
+                    'message': 'No documents uploaded yet'
+                })
+
+            documents = []
+            for filename in os.listdir(upload_dir):
+                file_path = os.path.join(upload_dir, filename)
+                if os.path.isfile(file_path):
+                    # Get file stats
+                    stat_info = os.stat(file_path)
+
+                    documents.append({
+                        'filename': filename,
+                        'size': stat_info.st_size,
+                        'upload_date': datetime.fromtimestamp(stat_info.st_mtime).isoformat(),
+                        'file_path': file_path
+                    })
+
+            # Sort by upload date (newest first)
+            documents.sort(key=lambda x: x['upload_date'], reverse=True)
+
+            return jsonify({
+                'success': True,
+                'documents': documents,
+                'total_count': len(documents)
+            })
+
+        except Exception as e:
+            logger.error(f"Error getting uploaded documents: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/supporting-documents/<document_id>', methods=['DELETE'])
+    def delete_supporting_document(document_id):
+        """Delete a specific supporting document"""
+        try:
+            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+
+            # Find file by ID (document_id could be filename or partial match)
+            target_file = None
+            for filename in os.listdir(upload_dir):
+                if document_id in filename or filename.startswith(document_id):
+                    target_file = filename
+                    break
+
+            if not target_file:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document not found'
+                }), 404
+
+            file_path = os.path.join(upload_dir, target_file)
+
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                logger.info(f"🗑️ Deleted document: {target_file}")
+
+                return jsonify({
+                    'success': True,
+                    'message': f'Document {target_file} deleted successfully'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document file not found'
+                }), 404
+
+        except Exception as e:
+            logger.error(f"Error deleting document: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
