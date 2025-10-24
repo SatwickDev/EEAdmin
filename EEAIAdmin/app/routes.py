@@ -3217,48 +3217,59 @@ Return compliance status for each field.'''
         try:
             mapping_data = request.get_json()
 
-            # Validate required fields
+            # ---- 1. Validate required fields ----
             required_fields = ['documentId', 'documentCategoryId', 'entityId', 'dataCategoryId', 'fieldType']
-            for field in required_fields:
-                if not mapping_data.get(field):
-                    return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+            missing = [f for f in required_fields if not mapping_data.get(f)]
+            if missing:
+                return jsonify({'success': False, 'message': f"Missing required fields: {', '.join(missing)}"}), 400
 
-            document_id = mapping_data.get('documentId')
+            document_id = mapping_data['documentId']
 
-            # Load only the specific document's data
+            # ---- 2. Load existing data ----
             doc_data = _load_document_entity_mapping_by_document(document_id)
+            doc_entity_data = _load_document_entity_maintenance_by_document(document_id)
 
-            # Generate new ID (globally unique across all documents)
-            all_data = _load_document_entity_mappings()
-            existing_ids = [int(m['id']) for m in all_data.get('mappings', []) if m.get('id', '').isdigit()]
-            new_id = str(max(existing_ids, default=0) + 1)
+            # ---- 3. Generate new IDs ----
+            def _next_id(loader):
+                all_data = loader()
+                ids = [int(m['id']) for m in all_data.get('mappings', []) if str(m.get('id', '')).isdigit()]
+                return str(max(ids, default=0) + 1)
 
-            # Create new mapping
-            new_mapping = {
-                'id': new_id,
-                'documentId': mapping_data.get('documentId'),
+            new_id = _next_id(_load_document_entity_mappings)
+            new_entity_id = _next_id(_load_document_entity_maintenance_mappings)
+
+            # ---- 4. Build mapping dict once ----
+            base_mapping = {
+                'documentId': mapping_data['documentId'],
                 'documentName': mapping_data.get('documentName', ''),
-                'documentCategoryId': mapping_data.get('documentCategoryId'),
+                'documentCategoryId': mapping_data['documentCategoryId'],
                 'documentCategoryName': mapping_data.get('documentCategoryName', ''),
-                'entityId': mapping_data.get('entityId'),
+                'entityId': mapping_data['entityId'],
                 'entityName': mapping_data.get('entityName', ''),
                 'mappingFormField': mapping_data.get('mappingFormField', ''),
                 'mappingFormDescription': mapping_data.get('mappingFormDescription', ''),
-                'dataCategoryId': mapping_data.get('dataCategoryId'),
+                'dataCategoryId': mapping_data['dataCategoryId'],
                 'dataCategoryValue': mapping_data.get('dataCategoryValue', ''),
-                'fieldType': mapping_data.get('fieldType')
+                'fieldType': mapping_data['fieldType']
             }
 
-            # Update document name if not set
-            if not doc_data.get('documentName'):
-                doc_data['documentName'] = mapping_data.get('documentName', '')
+            new_mapping = dict(base_mapping, id=new_id)
+            new_entity_mapping = dict(base_mapping, id=new_entity_id)
 
-            doc_data['mappings'].append(new_mapping)
+            # ---- 5. Append to doc data ----
+            for d, name in [(doc_data, 'documentName'), (doc_entity_data, 'documentName')]:
+                if not d.get(name):
+                    d[name] = mapping_data.get('documentName', '')
 
-            if _save_document_entity_mapping_by_document(document_id, doc_data):
-                return jsonify({'success': True, 'mapping': new_mapping}), 201
-            else:
-                return jsonify({'success': False, 'message': 'Failed to save mapping'}), 500
+            doc_data.setdefault('mappings', []).append(new_mapping)
+            doc_entity_data.setdefault('mappings', []).append(new_entity_mapping)
+
+            # ---- 6. Save both ----
+            if (_save_document_entity_mapping_by_document(document_id, doc_data) and
+                    _save_document_entity_maintenance_mapping_by_document(document_id, doc_entity_data)):
+                return jsonify({'success': True, 'mapping': new_entity_mapping}), 201
+
+            return jsonify({'success': False, 'message': 'Failed to save mapping'}), 500
 
         except Exception as e:
             logger.error(f"Error creating document entity mapping: {e}")
