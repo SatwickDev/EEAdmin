@@ -3214,12 +3214,30 @@
     async function loadAllData() {
         try {
             // Load documents
-            const docsResponse = await fetch('/api/documents');
+            {#const docsResponse = await fetch('/api/documents');
             const docsData = await docsResponse.json();
             if (docsData.success) {
                 documents = docsData.documents || [];
                 populateDocuments();
+            }#}
+
+            //load entity mappings
+            const response = await fetch('/api/document_entity_maintenance');
+            const data = await response.json();
+            if (data.success) {
+                mappings = data.mappings || [];
+            } else {
+                showError('Failed to load mappings');
             }
+
+            //load document Types
+            const docTypeResponse = await fetch('/api/document_categories');
+            const docTypeData = await docTypeResponse.json();
+            if (docTypeData.success) {
+                documentTypes = docTypeData.categories || [];
+                populateDocumentTypes();
+            }
+
             // Load document categories (the 5 high-level categories)
             const docCatResponse = await fetch('/api/document-types/categories');
             const docCatData = await docCatResponse.json();
@@ -3249,7 +3267,7 @@
         }
     }
 
-    function populateDocuments() {
+    {#function populateDocuments() {
         const select = document.getElementById('documentId');
         select.innerHTML = '<option value="">Select document...</option>';
         console.log('filteredDocumentTypes>>'+filteredDocumentTypes)
@@ -3271,6 +3289,49 @@
             const option = document.createElement('option');
             option.value = doc.id;
             option.textContent = doc.name;
+            filterSelect.appendChild(option);
+        });
+
+        // Add event listener to auto-fill document category
+        select.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const categoryId = selectedOption.getAttribute('data-category-id');
+
+            const documentCategorySelect = document.getElementById('documentCategoryId');
+            if (categoryId) {
+                documentCategorySelect.value = categoryId;
+                documentCategorySelect.disabled = false;
+                documentCategorySelect.style.backgroundColor = '#f1f5f9';
+                documentCategorySelect.style.cursor = 'not-allowed';
+            } else {
+                documentCategorySelect.value = '';
+                documentCategorySelect.disabled = true;
+            }
+        });
+    }#}
+
+    function populateDocumentTypes() {
+        const select = document.getElementById('documentId');
+        select.innerHTML = '<option value="">Select document...</option>';
+        documentTypes.forEach(doc => {
+            const option = document.createElement('option');
+            const matchedDoc = mappings.find(mapping => mapping.documentName === doc.name);
+            option.value = matchedDoc ? matchedDoc.documentId : '';
+            option.textContent = doc.name;
+            option.setAttribute('data-category-id', doc.categoryId || '');
+            option.setAttribute('data-category-name', doc.categoryName || '');
+            select.appendChild(option);
+        });
+
+        // Also populate the filter dropdown
+        const filterSelect = document.getElementById('documentFilter');
+        filterSelect.innerHTML = '<option value="">All Documents</option>';
+        documentTypes.forEach(doc => {
+            const option = document.createElement('option');
+            const matchedDoc = mappings.find(mapping => mapping.documentName === doc.name);
+            option.value = matchedDoc ? matchedDoc.documentId.toLowerCase() : '';
+            option.textContent = doc.name;
+
             filterSelect.appendChild(option);
         });
 
@@ -3595,7 +3656,9 @@
         const fieldType = document.querySelector('input[name="fieldType"]:checked').value;
 
         // Get names for display
-        const selectedDocument = documents.find(d => d.id === documentId);
+        const matchedMapping = mappings.find(d => d.documentId === documentId);
+        const documentName = matchedMapping ? matchedMapping.documentName : '';
+        //const selectedDocument = documents.find(d => d.id === documentId);
         const documentCategory = documentCategories.find(c => c.id === Number(documentCategoryId));
         const entity = entities.find(e => e.id === entityId);
         const dataCategory = dataCategories.find(c => c.id === dataCategoryId);
@@ -3603,7 +3666,7 @@
         console.log('documentCategories>>'+documentCategories)
         const mappingData = {
             documentId,
-            documentName: selectedDocument?.name || '',
+            documentName,
             documentCategoryId,
             documentCategoryName: documentCategory?.name || '',
             entityId,
