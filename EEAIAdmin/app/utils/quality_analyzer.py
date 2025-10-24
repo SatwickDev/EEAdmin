@@ -37,9 +37,9 @@ class DocumentQualityAnalyzer:
         """Initialize the quality analyzer with Azure OpenAI configuration."""
         # Azure OpenAI Configuration from provided config
         self.azure_config = {
-            "api_key": "GPbELdmNOZA6LlMHgYyjcOPWeU9VIEYh0jo1hggpB4urTfDoJMijJQQJ99BAACYeBjFXJ3w3AAABACOGDMQ4",
-            "endpoint": "https://newfinaiapp.openai.azure.com/",
-            "api_version": "2024-12-01-preview",
+            "api_key": "1h36ydp0nY0qVtsIR7GjIr9cbyjBYtTPUIX21BH7PN1GuoEa8Tk8JQQJ99BIACYeBjFXJ3w3AAABACOGzSgi",
+            "endpoint": "https://newfinai-app.openai.azure.com/",
+            "api_version": "2024-08-01-preview",
             "deployment_name": "gpt-4o"
         }
         
