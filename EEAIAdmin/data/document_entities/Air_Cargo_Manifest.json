@@ -225,6 +225,62 @@
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure",
       "fieldType": "conditional"
+    },
+	{
+      "id": "336",
+      "documentId": "Air_Cargo_Manifest",
+      "documentName": "Air Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "159",
+      "entityName": "Carrier (Transport Services Provider)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "337",
+      "documentId": "Air_Cargo_Manifest",
+      "documentName": "Air Cargo Manifest",
+      "documentCategoryId": "5",
+      "documentCategoryName": "Quality and Compliance Processes",
+      "entityId": "379",
+      "entityName": "Transport equipment operator",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "338",
+      "documentId": "Air_Cargo_Manifest",
+      "documentName": "Air Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "322",
+      "entityName": "Original Loading Location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "339",
+      "documentId": "Air_Cargo_Manifest",
+      "documentName": "Air Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "347",
+      "entityName": "Consignment summary description",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
     }
   ]
 }

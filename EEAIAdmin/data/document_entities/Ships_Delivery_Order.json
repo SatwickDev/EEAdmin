@@ -51,7 +51,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "159",
-      "entityName": "Carrier",
+      "entityName": "Carrier (Transport Services Provider)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -463,6 +463,62 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "conditional"
+    },
+	{
+      "id": "267",
+      "documentId": "Ships_Delivery_Order",
+      "documentName": "Ship's Delivery Order",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "340",
+      "entityName": "Transport Contract Document / Bill of Lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "268",
+      "documentId": "Ships_Delivery_Order",
+      "documentName": "Ship's Delivery Order",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "50",
+      "entityName": "Gross Weight",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "269",
+      "documentId": "Ships_Delivery_Order",
+      "documentName": "Ship's Delivery Order",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "249",
+      "entityName": "Shipping marks",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "270",
+      "documentId": "Ships_Delivery_Order",
+      "documentName": "Ship's Delivery Order",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "353",
+      "entityName": "Actual arrival date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates",
+      "fieldType": "optional"
     }
   ]
 }

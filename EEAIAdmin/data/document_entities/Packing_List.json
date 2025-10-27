@@ -149,7 +149,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "159",
-      "entityName": "Carrier",
+      "entityName": "Carrier (Transport Services Provider)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -336,7 +336,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
 	{
       "id": "151",

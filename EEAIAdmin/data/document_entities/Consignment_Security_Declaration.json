@@ -135,7 +135,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "159",
-      "entityName": "Carrier",
+      "entityName": "Carrier (Transport Services Provider)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -463,6 +463,62 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "conditional"
+    },
+	{
+      "id": "453",
+      "documentId": "Consignment_Security_Declaration",
+      "documentName": "Consignment Security Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "406",
+      "entityName": "Consignment route",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "454",
+      "documentId": "Consignment_Security_Declaration",
+      "documentName": "Consignment Security Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "347",
+      "entityName": "Consignment summary description",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "455",
+      "documentId": "Consignment_Security_Declaration",
+      "documentName": "Consignment Security Declaration",
+      "documentCategoryId": "5",
+      "documentCategoryName": "Quality and Compliance Processes",
+      "entityId": "385",
+      "entityName": "Risk object text",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "456",
+      "documentId": "Consignment_Security_Declaration",
+      "documentName": "Consignment Security Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "161",
+      "entityName": "Freight forwarder",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "optional"
     }
   ]
 }

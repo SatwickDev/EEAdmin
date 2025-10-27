@@ -1995,10 +1995,16 @@
                                 <h2 class="text-2xl font-bold text-gray-800">Classification Results</h2>
                                 <p class="text-gray-600">Successfully analyzed {% raw %}{{ results.length }}{% endraw %} document{% raw %}{{ results.length > 1 ? 's' : '' }}{% endraw %}</p>
                             </div>
+                            <div class="flex items-center gap-3">
+                            <button @click="viewAllCompliance()" class="compliance-btn text-sm px-4 py-4 group">
+                                                <i class="mdi mdi-shield-check-outline mr-1 group-hover:animate-pulse"></i>
+                                                Compliance Analysis
+                                            </button>
                             <button @click="reset" class="btn-primary">
                                 <i class="mdi mdi-refresh"></i>
                                 Upload More
                             </button>
+                            </div>
                         </div>
 
                         <!-- Enhanced Results Grid -->
@@ -4347,6 +4353,65 @@
                     this.selectedResult.discrepancies = complianceAnalysis; // Reusing discrepancies for all compliance data
                     this.showDiscrepancyModal = true;
                 },
+                viewAllCompliance() {
+                    console.log('=== DEBUG: View All Combined Compliance ===');
+                    const combinedComplianceData = [];
+
+                    for (const result of this.results || []) {
+                        let complianceData =
+                            result?._rawResult?.compliance?.unified ||
+                            result?.compliance?.unified ||
+                            result?.unified_compliance ||
+                            result?.complianceResult ||
+                            result?.analysisResult?.compliance;
+
+                        if (!complianceData || Object.keys(complianceData).length === 0) {
+                            console.warn(`⚠️ No compliance data found for ${result.file_name}`);
+                            continue;
+                        }
+
+                        for (const [fieldKey, fieldData] of Object.entries(complianceData)) {
+                            if (!fieldData || typeof fieldData !== 'object') continue;
+
+                            // ✅ Create a truly unique key per file + field + index
+                            const uniqueId = `${result.file_name || 'UnknownFile'}_${fieldKey}_${combinedComplianceData.length}`;
+
+                            const isCompliant = fieldData.compliance === true;
+                            combinedComplianceData.push({
+                                id: uniqueId,
+                                source_file: result.file_name || 'Unknown File',
+                                field_name: fieldData.field || fieldKey,
+                                field_value: fieldData.value || 'No value detected',
+                                status: isCompliant ? 'compliant' : 'non-compliant',
+                                reason: fieldData.reason || (isCompliant ? 'Field meets compliance requirements' : 'Compliance violation detected'),
+                                severity: fieldData.severity || (isCompliant ? 'low' : 'medium'),
+                                rule_code: fieldData.rule_code || null,
+                                basis: fieldData.basis || 'Standard Practice',
+                                priority: fieldData.priority || 'Optional',
+                                rule_description: fieldData.rule_description || null,
+                                suggestion: fieldData.suggestion || fieldData.correction || null,
+                                confidence: fieldData.confidence || null,
+                                category: fieldData.category || fieldData.type || 'general'
+                            });
+                        }
+                    }
+
+                    console.log(`✅ Total fields combined: ${combinedComplianceData.length}`);
+                    console.table(combinedComplianceData.map(f => ({
+                        file: f.source_file,
+                        field: f.field_name,
+                        status: f.status
+                    })));
+
+                    if (combinedComplianceData.length === 0) {
+                        alert('No compliance analysis data available across all documents.');
+                        return;
+                    }
+
+                    this.selectedResult = { discrepancies: combinedComplianceData };
+                    this.showDiscrepancyModal = true;
+                },
+
 
                 closeDiscrepancyModal() {
                     this.showDiscrepancyModal = false;

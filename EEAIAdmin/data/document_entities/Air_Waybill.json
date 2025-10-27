@@ -51,7 +51,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "159",
-      "entityName": "Carrier",
+      "entityName": "Carrier (Transport Services Provider)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -84,7 +84,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
     {
       "id": "273",
@@ -322,7 +322,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "conditional"
+      "fieldType": "mandatory"
     },
     {
       "id": "298",
@@ -378,6 +378,20 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "302",
+      "documentId": "Air_Waybill",
+      "documentName": "Air Waybill",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "371",
+      "entityName": "Transport Contract Document Conditions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     }
   ]

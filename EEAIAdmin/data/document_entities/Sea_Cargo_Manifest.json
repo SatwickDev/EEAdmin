@@ -196,7 +196,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "mandatory"
+      "fieldType": "conditional"
     },
     {
       "id": "316",
@@ -252,7 +252,91 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
-      "fieldType": "optional"
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "320",
+      "documentId": "Sea_Cargo_Manifest",
+      "documentName": "Sea Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "340",
+      "entityName": "Transport Contract Document / Bill of Lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "321",
+      "documentId": "Sea_Cargo_Manifest",
+      "documentName": "Sea Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "24",
+      "entityName": "Notify Party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "322",
+      "documentId": "Sea_Cargo_Manifest",
+      "documentName": "Sea Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "323",
+      "entityName": "Baseport Unloading Location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "323",
+      "documentId": "Sea_Cargo_Manifest",
+      "documentName": "Sea Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "359",
+      "entityName": "Transport Means, gross weight",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "324",
+      "documentId": "Sea_Cargo_Manifest",
+      "documentName": "Sea Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "249",
+      "entityName": "Shipping marks",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "325",
+      "documentId": "Sea_Cargo_Manifest",
+      "documentName": "Sea Cargo Manifest",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "352",
+      "entityName": "Seal Identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
     }
   ]
 }

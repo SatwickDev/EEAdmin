@@ -51,7 +51,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "159",
-      "entityName": "Carrier",
+      "entityName": "Carrier (Transport Services Provider)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -420,7 +420,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
-      "fieldType": "optional"
+      "fieldType": "mandatory"
     },
     {
       "id": "227",
@@ -518,7 +518,105 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "235",
+      "documentId": "Sea_Waybill",
+      "documentName": "Sea Waybill",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "378",
+      "entityName": "HS Code (Commodity Code)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
       "fieldType": "conditional"
+    },
+    {
+      "id": "236",
+      "documentId": "Sea_Waybill",
+      "documentName": "Sea Waybill",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "345",
+      "entityName": "Payment Location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "237",
+      "documentId": "Sea_Waybill",
+      "documentName": "Sea Waybill",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "331",
+      "entityName": "Type of Packaging (UNCEFACT coded) and shipping marks",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "238",
+      "documentId": "Sea_Waybill",
+      "documentName": "Sea Waybill",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "349",
+      "entityName": "Mode of Transport",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "239",
+      "documentId": "Sea_Waybill",
+      "documentName": "Sea Waybill",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "119",
+      "entityName": "Contract Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
+    },
+    {
+      "id": "240",
+      "documentId": "Sea_Waybill",
+      "documentName": "Sea Waybill",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "377",
+      "entityName": "Trade terms conditions description",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
+    },
+    {
+      "id": "241",
+      "documentId": "Sea_Waybill",
+      "documentName": "Sea Waybill",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "378",
+      "entityName": "Trade terms conditions code",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
     }
   ]
 }

@@ -238,7 +238,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "optional"
+      "fieldType": "mandatory"
     },
     {
       "id": "470",
@@ -281,6 +281,48 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "conditional"
+    },
+	{
+      "id": "473",
+      "documentId": "Export_Import_License",
+      "documentName": "Export/Import License for agricultural products",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "409",
+      "entityName": "Permit/Certificate/Carnet issuer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "474",
+      "documentId": "Export_Import_License",
+      "documentName": "Export/Import License for agricultural products",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "424",
+      "entityName": "Permit/Certificate/Carnet number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "475",
+      "documentId": "Export_Import_License",
+      "documentName": "Export/Import License for agricultural products",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "410",
+      "entityName": "Management/Competent Authority",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
     }
   ]
 }

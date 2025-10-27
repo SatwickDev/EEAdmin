@@ -140,7 +140,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "optional"
+      "fieldType": "conditional"
     },
     {
       "id": "374",
@@ -155,6 +155,62 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms",
       "fieldType": "optional"
+    },
+	{
+      "id": "375",
+      "documentId": "Warehouse_Receipt",
+      "documentName": "Warehouse Receipt",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "128",
+      "entityName": "Product Identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "conditional"
+    },
+	{
+      "id": "376",
+      "documentId": "Warehouse_Receipt",
+      "documentName": "Warehouse Receipt",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "50",
+      "entityName": "Gross Weight",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "377",
+      "documentId": "Warehouse_Receipt",
+      "documentName": "Warehouse Receipt",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "359",
+      "entityName": "Transport Means, gross weight",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "378",
+      "documentId": "Warehouse_Receipt",
+      "documentName": "Warehouse Receipt",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "56",
+      "entityName": "Number of Packages",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "mandatory"
     }
   ]
 }

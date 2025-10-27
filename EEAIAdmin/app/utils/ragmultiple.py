@@ -10,7 +10,7 @@ import os
 openai.api_type = "azure"
 openai.api_base = "https://newfinaiapp.openai.azure.com"
 openai.api_version = "2024-10-01-preview"
-openai.api_key = "GPbELdmNOZA6LlMHgYyjcOPWeU9VIEYh0jo1hggpB4urTfDoJMijJQQJ99BAACYeBjFXJ3w3AAABACOGDMQ4"
+openai.api_key = "1h36ydp0nY0qVtsIR7GjIr9cbyjBYtTPUIX21BH7PN1GuoEa8Tk8JQQJ99BIACYeBjFXJ3w3AAABACOGzSgi"
 
 EMBEDDING_MODEL = "text-embedding-3-large"
 CHAT_MODEL = "gpt-4o"

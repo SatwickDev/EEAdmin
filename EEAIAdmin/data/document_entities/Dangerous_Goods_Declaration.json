@@ -14,7 +14,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
     {
       "id": "376",
@@ -28,7 +28,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
     {
       "id": "377",
@@ -555,7 +555,7 @@
       "documentCategoryId": "5",
       "documentCategoryName": "Quality and Compliance Processes",
       "entityId": "400",
-      "entityName": "Aircraft Limitation Information",
+      "entityName": "Aircraft Limitation Information (PAX & CGO or CAO)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -631,6 +631,132 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "conditional"
+    },
+	{
+      "id": "420",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "135",
+      "entityName": "Consignor",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "421",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "1",
+      "entityName": "Document Identifier",
+      "mappingFormField": "doc_index",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
+    },
+	{
+      "id": "422",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "340",
+      "entityName": "Transport Contract Document / Bill of Lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
+    },
+	{
+      "id": "423",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "311",
+      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "optional"
+    },
+	{
+      "id": "424",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "374",
+      "entityName": "Place of taking over of the goods (by the carrier from the consignor or his agent)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "optional"
+    },
+	{
+      "id": "425",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "141",
+      "entityName": "Place of Issue",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "optional"
+    },
+	{
+      "id": "426",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "370",
+      "entityName": "Arrival location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "427",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "5",
+      "documentCategoryName": "Quality and Compliance Processes",
+      "entityId": "337",
+      "entityName": "Authentication",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
+      "fieldType": "mandatory"
+    },
+	{
+      "id": "428",
+      "documentId": "Dangerous_Goods_Declaration",
+      "documentName": "Dangerous Goods Declaration",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "390",
+      "entityName": "Document endorsement",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
+      "fieldType": "optional"
     }
   ]
 }

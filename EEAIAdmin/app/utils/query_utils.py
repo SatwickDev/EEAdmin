@@ -2450,6 +2450,8 @@ INSTRUCTIONS:
 3. Reference specific rule codes and bases when violations are found
 4. Use "high" severity for mandatory rule violations, "medium" for operational issues, "low" for minor discrepancies
 5. Provide a single unified compliance result
+6. For each field, if it matches any rule from the rules list above, always include the "rule_code" from that rule, even if compliant.
+
 
 Return JSON only:
 {{"results":[{{"field":"<field_name>","value":"<field_value>",

@@ -351,6 +351,76 @@
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
       "fieldType": "conditional"
+    },
+    {
+      "id": "120",
+      "documentId": "Shippers_Letter_of_Instructions",
+      "documentName": "Shipper's Letter of Instructions",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "143",
+      "entityName": "Buyer",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties",
+      "fieldType": "conditional"
+    },
+    {
+      "id": "121",
+      "documentId": "Shippers_Letter_of_Instructions",
+      "documentName": "Shipper's Letter of Instructions",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "313",
+      "entityName": "Origin country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "122",
+      "documentId": "Shippers_Letter_of_Instructions",
+      "documentName": "Shipper's Letter of Instructions",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "142",
+      "entityName": "Documentary credit identifier",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional"
+    },
+    {
+      "id": "123",
+      "documentId": "Shippers_Letter_of_Instructions",
+      "documentName": "Shipper's Letter of Instructions",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "326",
+      "entityName": "Goods value",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts",
+      "fieldType": "optional"
+    },
+    {
+      "id": "124",
+      "documentId": "Shippers_Letter_of_Instructions",
+      "documentName": "Shipper's Letter of Instructions",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "327",
+      "entityName": "Volume (Cube)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "optional"
     }
   ]
 }
