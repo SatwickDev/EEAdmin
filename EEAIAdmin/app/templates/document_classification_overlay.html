@@ -3424,6 +3424,112 @@
                 </div>
             </div>
         </div>
+
+         <div v-if="showFieldConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <i class="mdi mdi-check-all text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Confirm Field Population</h3>
+                            <p class="text-indigo-100">Review and select which fields to populate in the LC form</p>
+                        </div>
+                    </div>
+                    <button @click.stop="cancelFieldPopulation"
+        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+    Cancel
+</button>
+                </div>
+            </div>
+
+            <!-- Fields List -->
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div class="grid gap-4">
+                    <template v-for="(fieldGroup, fieldName) in getGroupedFields()" :key="fieldName">
+                        <div class="border border-gray-200 rounded-lg p-4" :class="{ 'border-yellow-400 bg-yellow-50': fieldGroup.isDuplicate }">
+
+                            <!-- Field Header -->
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <h4 class="font-bold text-gray-800 text-lg" v-text="fieldGroup.displayName"></h4>
+                                    <span v-if="fieldGroup.isDuplicate" class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                                        Multiple Values Found
+                                    </span>
+                                </div>
+                                <div class="text-sm text-gray-500" v-text="fieldGroup.fields.length + ' value(s) found'"></div>
+                            </div>
+
+                            <!-- Field Options -->
+                            <div class="space-y-2">
+                                <div v-for="field in fieldGroup.fields" :key="field.originalKey"
+                                     class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-indigo-300 transition-colors"
+                                     :class="{ 'border-indigo-400 bg-indigo-50': selectedFields[fieldName] === field.value }">
+
+                                    <input type="radio"
+                                           :name="'field_' + fieldName"
+                                           :value="field.value"
+                                           :checked="selectedFields[fieldName] === field.value"
+                                           @change="onFieldSelectionChange(fieldName, field.value)"
+                                           class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+
+                                    <div class="flex-1">
+                                        <div class="font-medium text-gray-900" v-text="field.value"></div>
+                                        <div class="text-sm text-gray-500 flex items-center gap-4 mt-1">
+                                            <span class="flex items-center gap-1">
+                                                <i class="mdi mdi-file-document-outline"></i>
+                                                <span v-text="field.documentType"></span>
+                                            </span>
+
+                                            <span class="flex items-center gap-1">
+            <i class="mdi mdi-file"></i>
+            <span v-text="field.fileName"></span>
+        </span>
+
+                                            <span class="flex items-center gap-1">
+                                                <i class="mdi mdi-chart-donut"></i>
+                                                <span v-text="field.confidence + '% confidence'"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- No Fields Message -->
+                <div v-if="confirmationFields.length === 0" class="text-center py-8 text-gray-500">
+                    <i class="mdi mdi-information-outline text-4xl mb-2"></i>
+                    <p>No fields available for population</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-gray-200 p-6 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-600" v-text="Object.keys(selectedFields).length + ' fields selected'"></div>
+                    <div class="flex gap-3">
+                        <button @click="cancelFieldPopulation"
+                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                            Cancel
+                        </button>
+                        <button @click="confirmFieldPopulation"
+                                class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                            <i class="mdi mdi-check"></i>
+                            Confirm & Populate <span v-text="Object.keys(selectedFields).length"></span> Fields
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     </div>
 
     <script>
@@ -4458,106 +4564,336 @@
                 },
 
                 // Populate form fields back to parent LC form
-                populateFormFields() {
-                    if (!this.selectedResult) {
-                        alert('No document selected');
-                        return;
+populateFormFields() {
+    if (!this.results || this.results.length === 0) {
+        alert('No documents processed');
+        return;
+    }
+
+    console.log('All results:', this.results);
+
+    // CORRECTED FIELD MAPPING - using entityName from your JSON
+    const fieldMapping = {
+        // Basic Information
+        'Documentary Credit Identifier': 'lcNumber',
+        'Documentary credit document issue date': 'issueDate',
+        'LC Expiry Date': 'expiryDate',
+        'Documentary credit document effective end date': 'expiryDate',
+
+        // Parties
+        'Documentary Credit Applicant': 'applicant',
+        'Documentary Credit Beneficiary': 'beneficiary',
+        'Documentary Credit Available Bank': 'issuingBank',
+        'Documentary Credit Applicant Agent Bank': 'advisingBank',
+        'Documentary Credit Drawee': 'drawee',
+        'Documentary Credit Reimbursing Bank': 'reimbursingBank',
+
+        // Amount and Payment
+        'Documentary credit amount': 'amount',
+        'Payment term': 'paymentTerms',
+
+        // Shipment Details
+        'Original Loading Location': 'portOfLoading',
+        'Baseport Unloading Location': 'portOfDischarge',
+        'Place of the delivery of the goods (by the carrier)': 'finalDestination',
+        'Latest pick-up date': 'latestShipmentDate',
+        'Despatch': 'dispatchLocation',
+
+        // Goods
+        'Description of Goods': 'goodsDescription',
+        'Invoice Number': 'invoiceNumber',
+
+        // Documents Required - ADD THIS MAPPING
+        'Documents Required': 'documentsRequired',
+        'Documents Required (46A)': 'documentsRequired',
+        'Required Documents': 'documentsRequired',
+        'Documentary Requirements': 'documentsRequired'
+    };
+
+    // Reset confirmation data
+    this.confirmationFields = [];
+    this.selectedFields = {};
+
+    // Track seen values to prevent duplicates within same document type and page
+    const seenValues = new Map(); // Map<fieldName_documentType_page, value>
+
+    // Process ALL results (all documents in the uploaded PDF)
+    this.results.forEach((result, resultIndex) => {
+        console.log(`Processing result ${resultIndex}:`, result.documentType);
+
+        let extractedFields = result.extractedFields || {};
+
+        // Process fields from this document
+        if (extractedFields && typeof extractedFields === 'object') {
+            for (const [key, fieldData] of Object.entries(extractedFields)) {
+                const formFieldName = fieldMapping[key];
+
+                if (formFieldName && fieldData) {
+                    let value = '';
+                    let confidence = 85;
+                    let page = 0;
+
+                    if (typeof fieldData === 'object' && fieldData !== null) {
+                        value = fieldData.value || fieldData.text || fieldData.content || '';
+                        confidence = fieldData.confidence || 85;
+                        page = fieldData.page || fieldData.bounding_page || 0;
+                    } else {
+                        value = fieldData;
                     }
 
-                    console.log('Selected result:', this.selectedResult);
-                    console.log('Raw data:', this.selectedResult.rawData);
+                    if (value && value !== '') {
+                        // Create unique key for deduplication: fieldName_documentType_page
+                        const dedupeKey = `${formFieldName}_${result.documentType}_${page}`;
 
-                    // Map extracted fields to LC form fields (using exact field names from the data)
-                    const fieldMapping = {
-                        // Basic Information
-                        'lc_number': 'lcNumber',
-                        'issue_date': 'issueDate',
-                        'expiry_date': 'expiryDate',
+                        // Check if we've already seen this exact value in the same document type and page
+                        if (seenValues.has(dedupeKey) && seenValues.get(dedupeKey) === value) {
+                            console.log(`Skipping duplicate: ${formFieldName}="${value}" in ${result.documentType} page ${page}`);
+                            continue; // Skip this duplicate
+                        }
 
-                        // Parties
-                        'buyer': 'applicant',  // Buyer maps to Applicant
-                        'seller': 'beneficiary',  // Seller maps to Beneficiary
-                        'issuing_bank': 'issuingBank',
-                        'advising_bank': 'advisingBank',
+                        // Mark this value as seen for this document type and page
+                        seenValues.set(dedupeKey, value);
 
-                        // Amount and Payment
-                        'currency': 'currency',
-                        'total_amount': 'amount',
-                        'amount': 'amount',
-                        'payment_terms': 'paymentTerms',
+                        // Handle amount field splitting
+                        if (key === 'Documentary credit amount') {
+                            const { currency, amount } = this.splitCurrencyAndAmount(value);
 
-                        // Shipment Details
-                        'port_of_loading': 'portOfLoading',
-                        'port_of_discharge': 'portOfDischarge',
-                        'final_destination': 'finalDestination',
-                        'latest_shipment_date': 'latestShipmentDate',
-                        'partial_shipment': 'partialShipment',
-                        'transhipment': 'transhipment',
-                        'incoterms': 'incoterms',
-
-                        // Goods
-                        'description_of_goods': 'goodsDescription',
-                        'hs_code': 'hsCode',
-                        'quantity': 'quantity',
-                        'unit_price': 'unitPrice'
-                    };
-
-                    // Prepare data to send to parent window
-                    const formData = {};
-
-                    // Get extracted fields from the raw data (with underscore)
-                    let extractedFields = null;
-                    if (this.selectedResult.rawData && this.selectedResult.rawData.extracted_fields) {
-                        extractedFields = this.selectedResult.rawData.extracted_fields;
-                    } else if (this.selectedResult.extractedFields) {
-                        extractedFields = this.selectedResult.extractedFields;
-                    }
-
-                    console.log('Extracted fields found:', extractedFields);
-
-                    // Process the extracted fields
-                    if (extractedFields && typeof extractedFields === 'object') {
-                        for (const [key, fieldData] of Object.entries(extractedFields)) {
-                            const formFieldName = fieldMapping[key.toLowerCase()];
-                            if (formFieldName) {
-                                // Handle different field data structures
-                                let value = '';
-                                if (typeof fieldData === 'object' && fieldData !== null) {
-                                    value = fieldData.value || fieldData.text || fieldData.content || '';
-                                } else {
-                                    value = fieldData;
-                                }
-
-                                if (value) {
-                                    formData[formFieldName] = value;
-                                    console.log(`Mapping ${key} -> ${formFieldName}: ${value}`);
-                                }
+                            if (currency) {
+                                this.confirmationFields.push({
+                                    originalKey: key,
+                                    fieldName: 'currency',
+                                    displayName: 'Currency',
+                                    value: currency,
+                                    confidence: confidence,
+                                    documentType: result.documentType,
+                                    documentIndex: resultIndex,
+                                    fileName: result.fileName,
+                                    page: page,
+                                    isDuplicate: false
+                                });
                             }
+                            if (amount) {
+                                this.confirmationFields.push({
+                                    originalKey: key,
+                                    fieldName: 'amount',
+                                    displayName: 'Amount',
+                                    value: amount,
+                                    confidence: confidence,
+                                    documentType: result.documentType,
+                                    documentIndex: resultIndex,
+                                    fileName: result.fileName,
+                                    page: page,
+                                    isDuplicate: false
+                                });
+                            }
+                        } else {
+                            // Normal field
+                            this.confirmationFields.push({
+                                originalKey: key,
+                                fieldName: formFieldName,
+                                displayName: this.formatFieldName(formFieldName),
+                                value: value,
+                                confidence: confidence,
+                                documentType: result.documentType,
+                                documentIndex: resultIndex,
+                                fileName: result.fileName,
+                                page: page,
+                                isDuplicate: false
+                            });
                         }
                     }
+                }
+            }
+        }
+    });
 
-                    console.log('Final form data to populate:', formData);
+    console.log('Total fields collected from all documents after deduplication:', this.confirmationFields.length);
 
-                    // Send message to parent window (LC form)
-                    if (window.parent !== window) {
-                        window.parent.postMessage({
-                            type: 'POPULATE_LC_FORM',
-                            data: formData
-                        }, '*');
+    // Check for duplicates across different document types/pages and auto-select
+    this.checkDuplicateFields();
 
-                        // Show success message
-                        this.showNotification('Fields submitted successfully!', 'success');
+    // Close details modal
+    this.closeDetailsModal();
 
-                        // Close modal after a delay
-                        setTimeout(() => {
-                            this.closeDetailsModal();
-                        }, 1500);
-                    } else {
-                        // If not in iframe, just show the data
-                        console.log('Form data to populate:', formData);
-                        alert('Form fields ready to submit.');
-                    }
-                },
+    // Show confirmation modal
+    this.showFieldConfirmation = true;
+},
+
+// Enhanced checkDuplicateFields method
+checkDuplicateFields() {
+    const fieldCount = {};
+
+    // Count fields by name
+    this.confirmationFields.forEach(field => {
+        if (!fieldCount[field.fieldName]) {
+            fieldCount[field.fieldName] = [];
+        }
+        fieldCount[field.fieldName].push(field);
+    });
+
+    // Mark duplicates and auto-select highest confidence
+    Object.keys(fieldCount).forEach(fieldName => {
+        const fields = fieldCount[fieldName];
+        const isDuplicate = fields.length > 1;
+
+        // Mark all fields in this group as duplicate
+        fields.forEach(field => {
+            field.isDuplicate = isDuplicate;
+        });
+
+        // Auto-select highest confidence field
+        if (fields.length > 0) {
+            const highestConfidenceField = fields.reduce((prev, current) =>
+                (prev.confidence > current.confidence) ? prev : current
+            );
+            this.selectedFields[fieldName] = highestConfidenceField.value;
+        }
+    });
+
+    console.log('Duplicate check completed. Fields:', Object.keys(fieldCount));
+},
+// Handle field selection
+onFieldSelectionChange(fieldName, value) {
+    this.selectedFields[fieldName] = value;
+},
+
+// Cancel confirmation - DEBUG VERSION
+cancelFieldPopulation() {
+    console.log('🚨 CANCEL BUTTON CLICKED - Method is executing');
+    console.log('Before - showFieldConfirmation:', this.showFieldConfirmation);
+
+    this.showFieldConfirmation = false;
+    this.confirmationFields = [];
+    this.selectedFields = {};
+
+    console.log('After - showFieldConfirmation:', this.showFieldConfirmation);
+    console.log('Confirmation fields cleared:', this.confirmationFields.length);
+    console.log('Selected fields cleared:', Object.keys(this.selectedFields).length);
+
+    // Force Vue update
+    this.$forceUpdate();
+},
+
+// Final confirmation
+confirmFieldPopulation() {
+    const formData = {};
+
+    // Prepare final data from selected fields
+    Object.keys(this.selectedFields).forEach(fieldName => {
+        if (this.selectedFields[fieldName]) {
+            formData[fieldName] = this.selectedFields[fieldName];
+        }
+    });
+
+    console.log('Final form data after confirmation:', formData);
+
+    // Send to parent LC form
+    if (window.parent !== window) {
+        window.parent.postMessage({
+            type: 'POPULATE_LC_FORM',
+            data: formData
+        }, '*');
+
+        // Show success message
+        this.showNotification('Fields populated successfully!', 'success');
+
+        // Close ALL modals
+        setTimeout(() => {
+        this.showFieldConfirmation = true;
+            this.closeDetailsModal();
+            //this.showFieldConfirmation = false;
+
+            // Close smart capture modal
+            if (window.parent && window.parent.closeSmartCapture) {
+                window.parent.closeSmartCapture();
+            }
+
+        }, 1000);
+    }
+},
+
+
+// Helper to group fields
+getGroupedFields() {
+    const grouped = {};
+
+    this.confirmationFields.forEach(field => {
+        if (!grouped[field.fieldName]) {
+            grouped[field.fieldName] = {
+                displayName: field.displayName,
+                fields: [],
+                isDuplicate: field.isDuplicate
+            };
+        }
+        grouped[field.fieldName].fields.push(field);
+    });
+
+    return grouped;
+},
+splitCurrencyAndAmount(combinedValue) {
+    if (!combinedValue) return { currency: '', amount: '' };
+
+    console.log('Splitting combined amount:', combinedValue);
+
+    // Common currency patterns
+    const currencyPatterns = [
+        /([A-Z]{3})\s*([0-9,.,]+)/, // USD 60,450
+        /([A-Z]{3})\s*([0-9,.,]+\s*[A-Z]*)/, // USD 60,450 dollars
+        /([$€£¥])\s*([0-9,.,]+)/, // $60,450
+        /([0-9,.,]+)\s*([A-Z]{3})/, // 60,450 USD
+    ];
+
+    for (const pattern of currencyPatterns) {
+        const match = combinedValue.match(pattern);
+        if (match) {
+            console.log('Pattern matched:', pattern, match);
+
+            // Check if currency is first or second
+            if (match[1].length === 3 && match[1] === match[1].toUpperCase()) {
+                // First group is currency code (USD, EUR, etc.)
+                const amount = match[2].replace(/,/g, ''); // REMOVE COMMAS for number input
+                return {
+                    currency: match[1],
+                    amount: amount
+                };
+            } else if (match[2].length === 3 && match[2] === match[2].toUpperCase()) {
+                // Second group is currency code
+                const amount = match[1].replace(/,/g, ''); // REMOVE COMMAS for number input
+                return {
+                    currency: match[2],
+                    amount: amount
+                };
+            } else if (['$', '€', '£', '¥'].includes(match[1])) {
+                // First group is currency symbol
+                const symbolToCode = {
+                    '$': 'USD',
+                    '€': 'EUR',
+                    '£': 'GBP',
+                    '¥': 'JPY'
+                };
+                const amount = match[2].replace(/,/g, ''); // REMOVE COMMAS for number input
+                return {
+                    currency: symbolToCode[match[1]] || match[1],
+                    amount: amount
+                };
+            }
+        }
+    }
+
+    // Fallback: try to extract just numbers for amount (REMOVE COMMAS)
+    const amountMatch = combinedValue.match(/([0-9][0-9,.]*)/);
+    if (amountMatch) {
+        console.log('Fallback amount match:', amountMatch);
+        const amount = amountMatch[1].replace(/,/g, ''); // REMOVE COMMAS for number input
+        return {
+            currency: '', // Let user select currency manually
+            amount: amount
+        };
+    }
+
+    console.log('No pattern matched for:', combinedValue);
+    return { currency: '', amount: '' };
+},
 
                 showNotification(message, type = 'info') {
                     // Simple notification (you can enhance this)

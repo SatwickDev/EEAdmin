@@ -8773,16 +8773,16 @@ Guidelines:
                     temperature=extraction_temp,
                     max_tokens=extraction_max_tokens
                 )
-                logger.info("Printing the value of extraction_response : {extraction_response}")
+                logger.info("Printing the value of extraction_response : {}", extraction_response)
 
                 extraction_result = extraction_response.choices[0].message.content
-                logger.info("Printing the value of extraction_result : {extraction_result}")
+                logger.info("Printing the value of extraction_result : {}", extraction_result)
                 # Parse extraction result
                 try:
                     extraction_json = json.loads(extraction_result)
-                    logger.info("Printing the value of extraction_json : {extraction_json}")
+                    logger.info("Printing the value of extraction_json : {}", extraction_json)
                     extracted_fields = extraction_json.get('extracted_fields', {})
-                    logger.info("Printing the value of extracted_fields : {extracted_fields}")
+                    logger.info("Printing the value of extracted_fields : {}", extracted_fields)
                 except:
                     extracted_fields = {}
 

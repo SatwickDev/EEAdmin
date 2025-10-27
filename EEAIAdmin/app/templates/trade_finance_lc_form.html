@@ -1290,41 +1290,10 @@
                         <!-- Documents Required Section -->
                         <div class="form-section">
                             <h2 class="section-title">Documents Required (46A)</h2>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" name="documents" value="commercial_invoice"> Commercial
-                                        Invoice
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" name="documents" value="bill_of_lading"> Bill of Lading
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" name="documents" value="packing_list"> Packing List
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" name="documents" value="certificate_of_origin">
-                                        Certificate of Origin
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" name="documents" value="insurance_certificate"> Insurance
-                                        Certificate
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" name="documents" value="inspection_certificate">
-                                        Inspection Certificate
-                                    </label>
-                                </div>
+                            <div class="form-group">
+                                <label for="documentsRequired">Documents Required <span class="required">*</span></label>
+                                <textarea id="documentsRequired" name="documentsRequired" required
+                                    placeholder="List all required documents, e.g., Commercial Invoice, Bill of Lading, Packing List, etc."></textarea>
                             </div>
                             <div class="form-group">
                                 <label for="additionalDocuments">Additional Documents</label>
@@ -3049,6 +3018,32 @@
                 }
             }).mount('#app');
         </script>
+                  <script>
+// Add this to your LC application form page
+window.addEventListener('message', function(event) {
+    console.log('Received message from document classification:', event.data);
+
+    if (event.data.type === 'POPULATE_LC_FORM') {
+        console.log('Populating LC form with data:', event.data.data);
+        // Populate the form fields with the extracted data
+        const formData = event.data.data;
+        Object.keys(formData).forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                field.value = formData[fieldName];
+                console.log(`Populated ${fieldName}: ${formData[fieldName]}`);
+            }
+        });
+
+        // Auto-close the smart capture modal after populating
+        setTimeout(() => {
+            if (typeof closeSmartCapture === 'function') {
+                closeSmartCapture();
+            }
+        }, 500);
+    }
+});
+</script>
     </div>
 </body>
 
