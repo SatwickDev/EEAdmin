@@ -629,6 +629,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
 
         # Get entity fields for this document type
         entity_info = self.get_enhanced_entity_fields(doc_id)
+        print(f"Entity info for {doc_id}: {entity_info}")
 
         # Get document category info using case-insensitive lookup
         doc_category = "Unknown"
@@ -642,64 +643,202 @@ Return ONLY this JSON structure (no markdown, no additional text):
                     doc_category = self.entity_mappings[key].get('documentCategoryName', 'Unknown')
                     break
 
-        # Build field sections organized by category with descriptions
-        field_sections = []
+        # Get extraction config flags
+        extraction_config = self.prompt_config.get('extraction', {})
+        extract_mandatory = extraction_config.get('extract_mandatory', True)
+        extract_optional = extraction_config.get('extract_optional', True)
+        extract_conditional = extraction_config.get('extract_conditional', True)
 
-        if entity_info['fields_by_category']:
-            for category, fields in sorted(entity_info['fields_by_category'].items()):
-                field_items = []
-                for field in fields:
-                    field_name = field.get('entityName', '')
-                    field_desc = field.get('description', '')
-                    
-                    # Build field entry with description for better LLM understanding
-                    if field_desc:
-                        desc_text = f" - {field_desc}"
-                    else:
-                        desc_text = " - No specific description available"
-                    
-                    # Determine field type indicator
-                    if field in entity_info['mandatory_fields']:
-                        field_items.append(f"  - **{field_name}** (REQUIRED){desc_text}")
-                    elif field in entity_info['conditional_fields']:
-                        field_items.append(f"  - **{field_name}** (conditional){desc_text}")
-                    else:
-                        field_items.append(f"  - **{field_name}** (optional){desc_text}")
+        # Build field sections with CLEAR separation by field type
+        mandatory_sections = []
+        optional_sections = []
+        conditional_sections = []
 
-                if field_items:
-                    field_sections.append(f"**{category}:**\n" + "\n".join(field_items))
+        total_mandatory = 0
+        total_optional = 0
+        total_conditional = 0
 
-        fields_text = "\n\n".join(field_sections) if field_sections else "No specific fields configured for this document type."
+        # Build mandatory fields section if enabled
+        if extract_mandatory and entity_info['mandatory_fields']:
+            mandatory_by_category = {}
+            for field in entity_info['mandatory_fields']:
+                category = field.get('dataCategoryValue', 'Other')
+                if category not in mandatory_by_category:
+                    mandatory_by_category[category] = []
+                
+                field_name = field.get('entityName', '')
+                field_desc = field.get('description', '')
+                desc_text = f" - {field_desc}" if field_desc else " - No specific description available"
+                mandatory_by_category[category].append(f"  - **{field_name}**{desc_text}")
+            
+            for category in sorted(mandatory_by_category.keys()):
+                mandatory_sections.append(f"**{category}:**\n" + "\n".join(mandatory_by_category[category]))
+            
+            total_mandatory = len(entity_info['mandatory_fields'])
+
+        # Build optional fields section if enabled
+        if extract_optional and entity_info['optional_fields']:
+            optional_by_category = {}
+            for field in entity_info['optional_fields']:
+                category = field.get('dataCategoryValue', 'Other')
+                if category not in optional_by_category:
+                    optional_by_category[category] = []
+                
+                field_name = field.get('entityName', '')
+                field_desc = field.get('description', '')
+                desc_text = f" - {field_desc}" if field_desc else " - No specific description available"
+                optional_by_category[category].append(f"  - **{field_name}**{desc_text}")
+            
+            for category in sorted(optional_by_category.keys()):
+                optional_sections.append(f"**{category}:**\n" + "\n".join(optional_by_category[category]))
+            
+            total_optional = len(entity_info['optional_fields'])
+
+        # Build conditional fields section if enabled
+        if extract_conditional and entity_info['conditional_fields']:
+            conditional_by_category = {}
+            for field in entity_info['conditional_fields']:
+                category = field.get('dataCategoryValue', 'Other')
+                if category not in conditional_by_category:
+                    conditional_by_category[category] = []
+                
+                field_name = field.get('entityName', '')
+                field_desc = field.get('description', '')
+                desc_text = f" - {field_desc}" if field_desc else " - No specific description available"
+                conditional_by_category[category].append(f"  - **{field_name}**{desc_text}")
+            
+            for category in sorted(conditional_by_category.keys()):
+                conditional_sections.append(f"**{category}:**\n" + "\n".join(conditional_by_category[category]))
+            
+            total_conditional = len(entity_info['conditional_fields'])
+
+        # Build the complete fields text with clear sections based on what's enabled
+        fields_sections = []
+        
+        if mandatory_sections:
+            mandatory_text = "\n\n".join(mandatory_sections)
+            fields_sections.append(f"### MANDATORY FIELDS (REQUIRED - Must be extracted):\n{mandatory_text}")
+        
+        if optional_sections:
+            optional_text = "\n\n".join(optional_sections)
+            fields_sections.append(f"### OPTIONAL FIELDS (Extract if clearly present):\n{optional_text}")
+        
+        if conditional_sections:
+            conditional_text = "\n\n".join(conditional_sections)
+            fields_sections.append(f"### CONDITIONAL FIELDS (Extract based on document context):\n{conditional_text}")
+
+        fields_text = "\n\n".join(fields_sections) if fields_sections else "No fields configured for extraction."
+        
+        # Calculate total fields to extract
+        total_all_fields = total_mandatory + total_optional + total_conditional
         
         # Log sample of fields_text to show descriptions being included
-        logging.info(f"PROMPT_FIELDS_PREVIEW: Generated fields section with descriptions (first 300 chars): {fields_text[:300]}{'...' if len(fields_text) > 300 else ''}")
+        logging.info(f"PROMPT_FIELDS_PREVIEW: Extraction flags - Mandatory:{extract_mandatory}, Optional:{extract_optional}, Conditional:{extract_conditional}")
+        logging.info(f"PROMPT_FIELDS_COUNTS: Total fields to extract: {total_all_fields} (M:{total_mandatory} O:{total_optional} C:{total_conditional})")
+        logging.info(f"PROMPT_FIELDS_PREVIEW: Generated fields section (first 500 chars): {fields_text[:500]}{'...' if len(fields_text) > 500 else ''}")
 
-        # Build mandatory fields summary
-        mandatory_summary = ""
-        if entity_info['mandatory_fields']:
-            mandatory_list = [f"- {f.get('entityName', '')}" for f in entity_info['mandatory_fields']]
-            mandatory_summary = f"\n\n### REQUIRED Fields (MUST be extracted):\n" + "\n".join(mandatory_list)
-
-        # Get prompt template from config (with fallback)
-        extraction_config = self.prompt_config.get('extraction', {})
+        # Get system prompt from config
         system_prompt = extraction_config.get('system_prompt',
             'You are an expert data extraction system for trade finance documents.')
 
         # Check if prompt_template exists in config
         prompt_template = extraction_config.get('prompt_template')
 
+        # Build extraction instructions based on enabled field types
+        extraction_instructions = []
+        if extract_mandatory:
+            extraction_instructions.append(f"1. **MANDATORY fields** ({total_mandatory} fields) - These are REQUIRED and MUST be extracted")
+        if extract_optional:
+            extraction_instructions.append(f"2. **OPTIONAL fields** ({total_optional} fields) - Extract if clearly present in document")
+        if extract_conditional:
+            extraction_instructions.append(f"3. **CONDITIONAL fields** ({total_conditional} fields) - Extract based on document context and relevance")
+        
+        extraction_instructions_text = "\n".join(extraction_instructions) if extraction_instructions else "No extraction instructions defined."
+
         if prompt_template:
-            # Use template from YAML
-            prompt = prompt_template.format(
-                system_prompt=system_prompt,
-                document_type=document_type,
-                doc_category=doc_category,
-                page_number=page_number,
-                fields_text=fields_text,
-                mandatory_summary=mandatory_summary,
-                ocr_text=ocr_text[:25000],
-                total_mandatory=len(entity_info['mandatory_fields'])
-            )
+            # Use template from YAML with dynamic field sections
+            prompt = f"""
+    {system_prompt}
+
+    ### Document Information:
+    - **Document Type**: {document_type}
+    - **Category**: {doc_category} (USE THIS EXACT VALUE in response)
+    - **Page**: {page_number}
+
+    ### CRITICAL: Extract Configured Field Types
+
+    **YOU MUST extract the following field types as configured:**
+    {extraction_instructions_text}
+
+    **Total fields to extract: {total_all_fields}**
+
+    ### CRITICAL FORMATTING RULES (MUST FOLLOW):
+
+    1. **Dates**: Convert ALL dates to YYYY-MM-DD format
+    - "210429" → "2021-04-29"
+    - "29/04/21" → "2021-04-29"
+    - "Apr 29, 2021" → "2021-04-29"
+
+    2. **Amounts**: ALWAYS include currency code
+    - "60,465.00" → "USD 60,465.00" (add USD if currency not stated)
+    - Use format: "CURRENCY_CODE AMOUNT"
+
+    3. **Bounding Boxes**: Use [0, 0, 0, 0] if no OCR coordinates available
+    - DO NOT fabricate coordinates like [100, 100, 200, 200]
+    - Only use actual coordinates if present in OCR data
+
+    4. **Document Type in Response**: Use EXACT format with proper spacing
+    - Use "{document_type}" NOT "letter_of_credit"
+    - Preserve spaces, not underscores
+
+    5. **Extract ALL Configured Fields**: Include all enabled field types in your response
+    - For missing fields, use empty string "" with confidence 0
+    - Include EVERY field in extracted_fields, even if not found
+
+    ### Fields to Extract:
+
+    {fields_text}
+
+    ### OCR Text (Page {page_number}):
+    {ocr_text[:25000]}
+
+    ### Required JSON Response:
+    Return ONLY valid JSON (no markdown, no commentary):
+
+    {{
+    "page_number": {page_number},
+    "classification": {{
+        "category": "{doc_category}",
+        "document_type": "{document_type}",
+        "sub_type": "<specific sub-type or null>"
+    }},
+    "extracted_fields": {{
+        "<Field_Name>": {{
+        "value": "<extracted value or empty string>",
+        "confidence": <0-100>,
+        "bounding_box": [<x1>, <y1>, <x2>, <y2>],
+        "bounding_page": {page_number},
+        "field_type": "<mandatory|optional|conditional>"
+        }}
+    }},
+    "confidence_score": <overall 0-100>,
+    "mandatory_fields_found": <count of mandatory fields with values>,
+    "optional_fields_found": <count of optional fields with values>,
+    "conditional_fields_found": <count of conditional fields with values>,
+    "total_mandatory_fields": {total_mandatory},
+    "total_optional_fields": {total_optional},
+    "total_conditional_fields": {total_conditional},
+    "total_fields_extracted": <total count of all extracted fields with values>,
+    "extraction_completeness": <percentage 0-100 based on fields found vs total configured>
+    }}
+
+    **REMINDER: You must attempt to extract ALL {total_all_fields} configured fields. Include every field in extracted_fields:**
+    - Mandatory fields: {total_mandatory}
+    - Optional fields: {total_optional}
+    - Conditional fields: {total_conditional}
+
+    **For fields not found in the document, use empty string "" with confidence 0, but still include them in the response.**
+    """
         else:
             # Fallback to hardcoded template with enhanced field descriptions
             prompt = f"""
@@ -757,8 +896,7 @@ Return ONLY valid JSON (no markdown, no commentary):
         
         # Log final prompt statistics
         prompt_length = len(prompt)
-        description_count = prompt.count(' - ') - prompt.count(' - No specific description available')
-        logging.info(f"PROMPT_COMPLETE: Generated extraction prompt with descriptions - Length: {prompt_length} chars, Descriptions included: {description_count}")
+        logging.info(f"PROMPT_COMPLETE: Generated extraction prompt with descriptions - Length: {prompt_length} chars, Configured fields: {total_all_fields}")
         
         return prompt
 

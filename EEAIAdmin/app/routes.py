@@ -8372,9 +8372,13 @@ Guidelines:
                 progress_tracker.start_field_extraction(field_count=total_documents)
 
             extraction_config = config.get('extraction', {}) if config else {}
+            logger.info(f"Extraction config: {extraction_config}")
             extraction_model = extraction_config.get('model', deployment_name)
+            logger.info(f"Extraction model: {extraction_model}")
             extraction_temp = extraction_config.get('temperature', 0.0)
+            logger.info(f"Extraction temperature: {extraction_temp}")
             extraction_max_tokens = extraction_config.get('max_tokens', 4000)
+            logger.info(f"Extraction max tokens: {extraction_max_tokens}")
 
             results = []
 
@@ -8393,7 +8397,8 @@ Guidelines:
                     ocr_text=group['text'],
                     page_number=group['pages'][0]
                 )
-
+                logger.info(f"Printing the value of extraction_prompt: {extraction_prompt}")
+                logger.info("The prompt has been completed here");
                 # Add field mappings
                 field_mapping_data = load_document_field_mappings(group['document_type'])
                 field_mapping_example = None
@@ -8402,7 +8407,7 @@ Guidelines:
                     extraction_prompt += f"\n\n{field_mapping_example}"
                     logger.info(f" Enhanced extraction prompt with field mapping examples for {group['document_type']}")
 
-                logger.info(f" Built extraction prompt ({len(extraction_prompt)} chars)")
+                logger.info("Built extraction prompt : {extraction_prompt}")
 
                 # Call LLM for extraction
                 extraction_response = openai.ChatCompletion.create(
@@ -8411,13 +8416,16 @@ Guidelines:
                     temperature=extraction_temp,
                     max_tokens=extraction_max_tokens
                 )
+                logger.info("Printing the value of extraction_response : {extraction_response}")
 
                 extraction_result = extraction_response.choices[0].message.content
-
+                logger.info("Printing the value of extraction_result : {extraction_result}")
                 # Parse extraction result
                 try:
                     extraction_json = json.loads(extraction_result)
+                    logger.info("Printing the value of extraction_json : {extraction_json}")
                     extracted_fields = extraction_json.get('extracted_fields', {})
+                    logger.info("Printing the value of extracted_fields : {extracted_fields}")
                 except:
                     extracted_fields = {}
 

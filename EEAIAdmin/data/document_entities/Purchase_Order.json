@@ -129,20 +129,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "56",
-      "documentId": "Purchase_Order",
-      "documentName": "Purchase Order",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "119",
-      "entityName": "Contract Number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "57",
       "documentId": "Purchase_Order",
       "documentName": "Purchase Order",
@@ -281,6 +267,20 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "conditional"
+    },
+    {
+      "id": "943",
+      "documentId": "Purchase_Order",
+      "documentName": "Purchase Order",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "16",
+      "entityName": "Shipment Date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates",
+      "fieldType": "mandatory"
     }
   ]
 }
