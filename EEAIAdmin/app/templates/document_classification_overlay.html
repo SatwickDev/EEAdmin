@@ -2913,8 +2913,9 @@
                                          :key="fieldKey"
                                          class="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer"
                                          :class="{ 
-                                             'ring-2 ring-indigo-500 shadow-lg border-indigo-300': activeFieldIndex === index, 
-                                             'ring-2 ring-purple-400 bg-purple-50 border-purple-300': targetField === fieldKey 
+                                             'ring-2 ring-blue-500 shadow-lg border-blue-300': activeFieldIndex === index && fieldData?.value && !manuallyEditedFields[fieldKey],
+                                             'ring-2 ring-yellow-400 shadow-lg border-yellow-300': activeFieldIndex === index && manuallyEditedFields[fieldKey],
+                                             'ring-2 ring-red-400 bg-red-50 border-red-300': !fieldData?.value
                                          }"
                                          @click="highlightField(index, fieldData)">
 
@@ -3008,7 +3009,7 @@
                                                     </div>
                                                     <div v-else class="text-gray-400 italic flex items-center justify-center h-12">
                                                         <i class="mdi mdi-pencil mr-2"></i>
-                                                        Click to add value
+                                                        No data found. Click to add value
                                                     </div>
                                                 </div>
                                             </div>
@@ -5369,21 +5370,34 @@
                 },
                 saveFieldEdit(fieldKey) {
                     if (this.editingField === fieldKey) {
-                        // Update the field value
                         const fields = this.getExtractedFieldsWithDetails();
-                        if (fields[fieldKey]) {
-                            fields[fieldKey].value = this.editedFields[fieldKey];
 
-                            // Update in the original result
+                        if (fields[fieldKey]) {
+                            const newValue = this.editedFields[fieldKey]?.trim() || '';
+
+                            // Update displayed field value
+                            fields[fieldKey].value = newValue;
+
+                            // Update original selected result
                             if (this.selectedResult.extractedFields[fieldKey]) {
                                 if (typeof this.selectedResult.extractedFields[fieldKey] === 'object') {
-                                    this.selectedResult.extractedFields[fieldKey].value = this.editedFields[fieldKey];
+                                    this.selectedResult.extractedFields[fieldKey].value = newValue;
                                 } else {
-                                    this.selectedResult.extractedFields[fieldKey] = this.editedFields[fieldKey];
+                                    this.selectedResult.extractedFields[fieldKey] = newValue;
                                 }
+                            }
+
+                            // 🔴🟡 Keep track of manual edits
+                            if (!newValue) {
+                                // If value was cleared, mark as NOT manually edited → stays RED
+                                this.$set(this.manuallyEditedFields, fieldKey, false);
+                            } else {
+                                // If user entered something new, mark as manually edited → YELLOW
+                                this.$set(this.manuallyEditedFields, fieldKey, true);
                             }
                         }
 
+                        // Exit edit mode
                         this.editingField = null;
                     }
                 },
@@ -7506,225 +7520,6 @@
                                             return '\n📊 Above industry standard';
                                         } else {
                                             return '\n� Room for optimization';
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            r: {
-                                beginAtZero: true,
-                                min: 0,
-                                max: 100,
-                                ticks: {
-                                    stepSize: 20,
-                                    color: '#9CA3AF',
-                                    font: {
-                                        size: 10,
-                                        weight: 'medium'
-                                    },
-                                    backdropColor: 'transparent',
-                                    callback: function(value) {
-                                        return value + '%';
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(156, 163, 175, 0.2)',
-                                    lineWidth: 1
-                                },
-                                pointLabels: {
-                                    color: '#374151',
-                                    font: {
-                                        size: 10,
-                                        weight: 'bold'
-                                    },
-                                    padding: 8
-                                },
-                                angleLines: {
-                                    color: 'rgba(156, 163, 175, 0.3)',
-                                    lineWidth: 1
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 2500,
-                            easing: 'easeInOutCubic',
-                            animateRotate: true,
-                            animateScale: true
-                        },
-                        interaction: {
-                            intersect: false,
-                            mode: 'point'
-                        },
-                        elements: {
-                            point: {
-                                hoverBackgroundColor: '#ffffff',
-                                hoverBorderWidth: 4
-                            }
-                        }
-                    }
-                });
-                
-                console.log('Premium quality metrics radar chart created successfully:', chart);
-                return chart;
-                
-            } catch (error) {
-                console.error('Error creating premium quality metrics chart:', error);
-            }
-        }
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) {
-                console.error('Quality metrics canvas not found:', canvasId);
-                return;
-            }
-            
-            console.log('Creating premium quality metrics radar chart for canvas:', canvasId);
-            
-            // Check if Chart.js is available
-            if (typeof Chart === 'undefined') {
-                console.log('Chart.js not loaded for quality metrics chart');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            
-            // Comprehensive quality metrics data (from quality analysis response or sophisticated defaults)
-            const qualityMetrics = {
-                brightness: resultData.quality?.brightness || 88,
-                contrast: resultData.quality?.contrast || 94,
-                skew: resultData.quality?.skew || 82,
-                clarity: resultData.quality?.clarity || 91,
-                sharpness: resultData.quality?.sharpness || 87,
-                noise: resultData.quality?.noise || 89,
-                resolution: resultData.quality?.resolution || 95,
-                textLegibility: resultData.quality?.textLegibility || 93,
-                colorBalance: resultData.quality?.colorBalance || 86,
-                documentOrientation: resultData.quality?.documentOrientation || 98
-            };
-            
-            console.log('Premium quality metrics data:', qualityMetrics);
-            
-            // Create premium gradient for the radar chart
-            const gradient = ctx.createRadialGradient(150, 150, 0, 150, 150, 150);
-            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
-            gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.3)');
-            gradient.addColorStop(1, 'rgba(168, 85, 247, 0.1)');
-            
-            // Create the premium radar chart
-            try {
-                const chart = new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: [
-                            'Brightness', 'Contrast', 'Skew Correction', 'Clarity',
-                            'Sharpness', 'Noise Reduction', 'Resolution', 'Text Legibility',
-                            'Color Balance', 'Orientation'
-                        ],
-                        datasets: [
-                            {
-                                label: 'Quality Assessment',
-                                data: [
-                                    qualityMetrics.brightness,
-                                    qualityMetrics.contrast,
-                                    qualityMetrics.skew,
-                                    qualityMetrics.clarity,
-                                    qualityMetrics.sharpness,
-                                    qualityMetrics.noise,
-                                    qualityMetrics.resolution,
-                                    qualityMetrics.textLegibility,
-                                    qualityMetrics.colorBalance,
-                                    qualityMetrics.documentOrientation
-                                ],
-                                backgroundColor: gradient,
-                                borderColor: 'rgba(99, 102, 241, 0.8)',
-                                borderWidth: 3,
-                                pointBackgroundColor: [
-                                    '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B',
-                                    '#EF4444', '#06B6D4', '#84CC16', '#F97316',
-                                    '#EC4899', '#6366F1'
-                                ],
-                                pointBorderColor: '#ffffff',
-                                pointBorderWidth: 3,
-                                pointRadius: 6,
-                                pointHoverRadius: 8,
-                                pointHoverBackgroundColor: '#ffffff',
-                                pointHoverBorderWidth: 4,
-                                fill: true,
-                                tension: 0.1
-                            },
-                            {
-                                label: 'Industry Standard',
-                                data: [85, 85, 85, 85, 85, 85, 85, 85, 85, 85],
-                                backgroundColor: 'rgba(156, 163, 175, 0.1)',
-                                borderColor: 'rgba(156, 163, 175, 0.5)',
-                                borderWidth: 2,
-                                borderDash: [5, 5],
-                                pointRadius: 0,
-                                fill: false,
-                                tension: 0
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                align: 'center',
-                                labels: {
-                                    color: '#374151',
-                                    font: {
-                                        size: 11,
-                                        weight: 'bold'
-                                    },
-                                    padding: 15,
-                                    usePointStyle: true,
-                                    pointStyle: 'circle'
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(17, 24, 39, 0.95)',
-                                titleColor: '#ffffff',
-                                bodyColor: '#ffffff',
-                                borderColor: 'rgba(99, 102, 241, 0.3)',
-                                borderWidth: 2,
-                                cornerRadius: 12,
-                                padding: 16,
-                                titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                bodyFont: {
-                                    size: 13
-                                },
-                                displayColors: true,
-                                usePointStyle: true,
-                                callbacks: {
-                                    title: function(context) {
-                                        return `${context[0].label}`;
-                                    },
-                                    label: function(context) {
-                                        const value = context.parsed.r;
-                                        let quality = '';
-                                        if (value >= 95) quality = '🏆 Outstanding';
-                                        else if (value >= 90) quality = '⭐ Excellent';
-                                        else if (value >= 85) quality = '✅ Very Good';
-                                        else if (value >= 80) quality = '👍 Good';
-                                        else if (value >= 70) quality = '⚠️ Fair';
-                                        else quality = '🔴 Needs Improvement';
-                                        
-                                        return `Score: ${value}% ${quality}`;
-                                    },
-                                    afterBody: function(context) {
-                                        const value = context[0].parsed.r;
-                                        if (value >= 90) {
-                                            return '\n✨ Premium quality detected';
-                                        } else if (value >= 80) {
-                                            return '\n📊 Above industry standard';
-                                        } else {
-                                            return '\n💡 Room for optimization';
                                         }
                                     }
                                 }
