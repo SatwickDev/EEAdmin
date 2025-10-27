@@ -2374,7 +2374,7 @@
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "12",
-      "dataCategoryValue": "Clauses/conditions/instructions"
+      "dataCategoryValue": "Others"
     },
     {
       "id": "266",
@@ -4070,21 +4070,212 @@
     },
     {
       "id": "454",
-      "name": "discharge place",
-      "description": "asdfghjk",
-      "mappingFormField": "doc_identifier",
-      "mappingFormDescription": "",
-      "dataCategoryId": "",
-      "dataCategoryValue": "Parties/addresses/places/countries"
+      "entityName": "Payment term",
+      "mappingFormField": "Tag 42C",
+      "mappingFormDescription": "Payment term",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
     },
+
     {
-      "id": "455",
-      "name": "Discharge location",
-      "description": "sdfghjkl;",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    }
+    "id": "455",
+    "entityName": "Form of Documentary Credit",
+    "mappingFormField": "Tag 40A",
+    "mappingFormDescription": "Form of Documentary Credit",
+    "dataCategoryId": "6",
+    "dataCategoryValue": "Terms"
+  },
+  {
+    "id": "456",
+    "entityName": "Applicable Rules",
+    "mappingFormField": "Tag 40E",
+    "mappingFormDescription": "Applicable Rules",
+    "dataCategoryId": "6",
+    "dataCategoryValue": "Terms"
+  },
+  {
+    "id": "457",
+    "entityName": "Reference to Pre-Advice",
+    "mappingFormField": "Tag 23",
+    "mappingFormDescription": "Reference to Pre-Advice",
+    "dataCategoryId": "1",
+    "dataCategoryValue": "References"
+  },
+     {
+    "id": "458",
+    "entityName": "Applicant Bank",
+    "mappingFormField": "Tag 51A",
+    "mappingFormDescription": "Applicant Bank",
+    "dataCategoryId": "3",
+    "dataCategoryValue": "Parties"
+  },
+  {
+    "id": "459",
+    "entityName": "Percentage Credit Amount Tolerance",
+    "mappingFormField": "Tag 39A",
+    "mappingFormDescription": "Percentage Credit Amount Tolerance",
+    "dataCategoryId": "7",
+    "dataCategoryValue": "Amounts"
+  },
+  {
+    "id": "460",
+    "entityName": "Additional Amounts Covered",
+    "mappingFormField": "Tag 39C",
+    "mappingFormDescription": "Additional Amounts Covered",
+    "dataCategoryId": "7",
+    "dataCategoryValue": "Amounts"
+  },
+  {
+    "id": "461",
+    "entityName": "Mixed Payment Details",
+    "mappingFormField": "Tag 42M",
+    "mappingFormDescription": "Mixed Payment Details",
+    "dataCategoryId": "6",
+    "dataCategoryValue": "Terms"
+  },
+  {
+    "id": "462",
+    "entityName": "Negotiation/Deferred Payment Details",
+    "mappingFormField": "Tag 42P",
+    "mappingFormDescription": "Negotiation/Deferred Payment Details",
+    "dataCategoryId": "6",
+    "dataCategoryValue": "Terms"
+  },
+  {
+    "id": "463",
+    "entityName": "Partial Shipments",
+    "mappingFormField": "Tag 43P",
+    "mappingFormDescription": "Partial Shipments",
+    "dataCategoryId": "6",
+    "dataCategoryValue": "Terms"
+  },
+  {
+    "id": "464",
+    "entityName": "Transhipment",
+    "mappingFormField": "Tag 43T",
+    "mappingFormDescription": "Transhipment",
+    "dataCategoryId": "6",
+    "dataCategoryValue": "Terms"
+  },
+  {
+    "id": "465",
+    "entityName": "Place of Taking in Charge/Dispatch/Receipt",
+    "mappingFormField": "Tag 44A",
+    "mappingFormDescription": "Place of Taking in Charge / Dispatch / Receipt",
+    "dataCategoryId": "4",
+    "dataCategoryValue": "Locations"
+  },
+  {
+    "id": "466",
+    "entityName": "Port of Loading/Airport of Departure",
+    "mappingFormField": "Tag 44E",
+    "mappingFormDescription": "Port of Loading / Airport of Departure",
+    "dataCategoryId": "4",
+    "dataCategoryValue": "Locations"
+  },
+  {
+    "id": "467",
+    "entityName": "Port of Discharge/Airport of Destination",
+    "mappingFormField": "Tag 44F",
+    "mappingFormDescription": "Port of Discharge / Airport of Destination",
+    "dataCategoryId": "4",
+    "dataCategoryValue": "Locations"
+  },
+  {
+    "id": "468",
+    "entityName": "Place of Final Destination / Delivery",
+    "mappingFormField": "Tag 44B",
+    "mappingFormDescription": "Place of Final Destination / Delivery",
+    "dataCategoryId": "4",
+    "dataCategoryValue": "Locations"
+  },
+  {
+    "id": "469",
+    "entityName": "Latest Date of Shipment",
+    "mappingFormField": "Tag 44C",
+    "mappingFormDescription": "Latest Date of Shipment",
+    "dataCategoryId": "2",
+    "dataCategoryValue": "Dates"
+  },
+  {
+    "id": "470",
+    "entityName": "Documents Required",
+    "mappingFormField": "Tag 46A",
+    "mappingFormDescription": "Documents Required",
+    "dataCategoryId": "9",
+    "dataCategoryValue": "Documents"
+  },
+  {
+    "id": "471",
+    "entityName": "Additional Conditions",
+    "mappingFormField": "Tag 47A",
+    "mappingFormDescription": "Additional Conditions",
+    "dataCategoryId": "9",
+    "dataCategoryValue": "Documents"
+  },
+  {
+    "id": "472",
+    "entityName": "Special Payment Conditions for Beneficiary",
+    "mappingFormField": "Tag 49G",
+    "mappingFormDescription": "Special Payment Conditions for Beneficiary",
+    "dataCategoryId": "7",
+    "dataCategoryValue": "Amounts"
+  },
+  {
+    "id": "473",
+    "entityName": "Special Payment Conditions for Receiving Bank",
+    "mappingFormField": "Tag 49H",
+    "mappingFormDescription": "Special Payment Conditions for Receiving Bank",
+    "dataCategoryId": "7",
+    "dataCategoryValue": "Amounts"
+  },
+  {
+    "id": "474",
+    "entityName": "Charges",
+    "mappingFormField": "Tag 71D",
+    "mappingFormDescription": "Charges (6*35z)",
+    "dataCategoryId": "7",
+    "dataCategoryValue": "Amounts"
+  },
+  {
+    "id": "475",
+    "entityName": "Period for Presentation",
+    "mappingFormField": "Tag 48",
+    "mappingFormDescription": "Period for Presentation in Days",
+    "dataCategoryId": "2",
+    "dataCategoryValue": "Dates"
+  },
+  {
+    "id": "476",
+    "entityName": "Requested Confirmation Party",
+    "mappingFormField": "Tag 58A",
+    "mappingFormDescription": "Requested Confirmation Party",
+    "dataCategoryId": "3",
+    "dataCategoryValue": "Parties"
+  },
+  {
+    "id": "477",
+    "entityName": "Instructions to Paying/Accepting/Negotiating Bank",
+    "mappingFormField": "Tag 78",
+    "mappingFormDescription": "Instructions to the Paying/Accepting/Negotiating Bank",
+    "dataCategoryId": "9",
+    "dataCategoryValue": "Instructions"
+  },
+  {
+    "id": "478",
+    "entityName": "Advise Through Bank",
+    "mappingFormField": "Tag 57A",
+    "mappingFormDescription": "'Advise Through' Bank",
+    "dataCategoryId": "3",
+    "dataCategoryValue": "Parties"
+  },
+  {
+    "id": "479",
+    "entityName": "Sender to Receiver Information",
+    "mappingFormField": "Tag 72Z",
+    "mappingFormDescription": "Sender to Receiver Information",
+    "dataCategoryId": "9",
+    "dataCategoryValue": "Instructions"
+  }
   ]
 }
