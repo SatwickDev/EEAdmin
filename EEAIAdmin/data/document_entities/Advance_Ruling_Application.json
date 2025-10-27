@@ -85,6 +85,20 @@
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
+    },
+    {
+      "id": "817",
+      "documentId": "Advance_Ruling_Application",
+      "documentName": "Advance Ruling Application",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "412",
+      "entityName": "Nature of transaction",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
+      "fieldType": "mandatory"
     }
   ]
 }

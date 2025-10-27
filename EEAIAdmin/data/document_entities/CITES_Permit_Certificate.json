@@ -3,20 +3,6 @@
   "documentName": "CITES Permit / Certificate",
   "mappings": [
     {
-      "id": "676",
-      "documentId": "CITES_Permit_Certificate",
-      "documentName": "CITES Permit / Certificate",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "1",
-      "entityName": "Document Identifier",
-      "mappingFormField": "doc_index",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "677",
       "documentId": "CITES_Permit_Certificate",
       "documentName": "CITES Permit / Certificate",
@@ -87,34 +73,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "682",
-      "documentId": "CITES_Permit_Certificate",
-      "documentName": "CITES Permit / Certificate",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "139",
-      "entityName": "Destination Country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "683",
-      "documentId": "CITES_Permit_Certificate",
-      "documentName": "CITES Permit / Certificate",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "358",
-      "entityName": "Exportation country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "684",
       "documentId": "CITES_Permit_Certificate",
       "documentName": "CITES Permit / Certificate",
@@ -142,20 +100,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-    {
-      "id": "686",
-      "documentId": "CITES_Permit_Certificate",
-      "documentName": "CITES Permit / Certificate",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "141",
-      "entityName": "Place of Issue",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
+
     {
       "id": "687",
       "documentId": "CITES_Permit_Certificate",
@@ -210,20 +155,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "691",
-      "documentId": "CITES_Permit_Certificate",
-      "documentName": "CITES Permit / Certificate",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "430",
-      "entityName": "Monetary amount",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts",
       "fieldType": "mandatory"
     },
     {
@@ -294,6 +225,48 @@
       "mappingFormDescription": "",
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "697",
+      "documentId": "CITES_Permit_Certificate",
+      "documentName": "CITES Permit / Certificate",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "340",
+      "entityName": "Transport Contract Document / Bill of Lading number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "698",
+      "documentId": "CITES_Permit_Certificate",
+      "documentName": "CITES Permit / Certificate",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "407",
+      "entityName": "Consignment destination country",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+     {
+      "id": "699",
+      "documentId": "CITES_Permit_Certificate",
+      "documentName": "CITES Permit / Certificate",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "390",
+      "entityName": "Document endorsement",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     }
   ]

@@ -3,20 +3,6 @@
   "documentName": "Payment Confirmation",
   "mappings": [
     {
-      "id": "866",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "1",
-      "entityName": "Document Identifier",
-      "mappingFormField": "doc_index",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "867",
       "documentId": "Payment_Confirmation",
       "documentName": "Payment Confirmation",
@@ -30,20 +16,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-    {
-      "id": "868",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "124",
-      "entityName": "Issue Date",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates",
-      "fieldType": "mandatory"
-    },
+
     {
       "id": "869",
       "documentId": "Payment_Confirmation",
@@ -56,7 +29,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates",
-      "fieldType": "mandatory"
+      "fieldType": "optional"
     },
     {
       "id": "870",
@@ -87,20 +60,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "872",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "314",
-      "entityName": "Payment term",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "873",
       "documentId": "Payment_Confirmation",
       "documentName": "Payment Confirmation",
@@ -114,48 +73,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "mandatory"
     },
-    {
-      "id": "874",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "3",
-      "entityName": "Purchase Order number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
-      "id": "875",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "2",
-      "entityName": "Booking reference number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
-      "id": "876",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "4",
-      "entityName": "House waybill document identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
+
     {
       "id": "877",
       "documentId": "Payment_Confirmation",
@@ -168,49 +86,7 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "878",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "320",
-      "entityName": "Seller's bank",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "879",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "453",
-      "entityName": "Buyer's bank",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "880",
-      "documentId": "Payment_Confirmation",
-      "documentName": "Payment Confirmation",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "345",
-      "entityName": "Payment Location",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "optional"
+      "fieldType": "mandatory"
     },
     {
       "id": "881",
