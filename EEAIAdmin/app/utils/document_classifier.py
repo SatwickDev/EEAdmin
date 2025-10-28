@@ -192,27 +192,36 @@ class DocumentClassifier:
             
             for filename in os.listdir(str(self.doc_list_path)):
                 if filename.endswith(".json"):
-                    # Handle both patterns: *_OCR_Fields.json and *.json
-                    if filename.endswith("_OCR_Fields.json"):
-                        doc_type = filename.replace("_OCR_Fields.json", "")
-                    else:
-                        doc_type = filename.replace(".json", "")
-                    
-                    # Normalize the document type (lowercase, underscores to spaces)
-                    doc_type_normalized = doc_type.lower().replace("_", " ")
-                    
                     filepath = self.doc_list_path / filename
                     with open(str(filepath), 'r') as f:
                         data = json.load(f)
-                        self.document_fields_cache[doc_type_normalized] = data
+
+                        # Extract actual document type from JSON content if possible
+                        doc_type_from_file = None
+                        if isinstance(data, dict):
+                            # Try common patterns
+                            if "document_type" in data:
+                                doc_type_from_file = data["document_type"]
+                            elif "doc_type" in data:
+                                doc_type_from_file = data["doc_type"]
+                            # Fallback: use filename without extension
+                            else:
+                                doc_type_from_file = filename.replace("_OCR_Fields.json", "").replace(".json", "")
+
+                        if not doc_type_from_file:
+                            continue
+
+                        # Use normalized version BUT DO NOT use it as a document type
+                        normalized_key = doc_type_from_file.lower().replace("_", " ")
                         
-                        # Also store with original case for case-sensitive lookups
-                        self.document_fields_cache[doc_type] = data
-                        
-                        logging.info(f"Loaded fields for document type: {doc_type_normalized} from {filename}")
+                        # Store under both forms — but NEVER use cache keys as document types
+                        self.document_fields_cache[normalized_key] = data
+                        self.document_fields_cache[doc_type_from_file] = data
+
+                        logging.info(f"Loaded fields for document: {doc_type_from_file} from {filename}")
         except Exception as e:
             logging.error(f"Failed to load document fields: {e}")
-    
+
     def classify_document(self, ocr_text: str, websocket_handler=None, client_id=None, task_id=None) -> Dict:
         """
         Classify document using GPT with enhanced categorization based on DOC_LIST.
@@ -224,11 +233,7 @@ class DocumentClassifier:
             task_id: Optional task ID for tracking
         """
         # Use entity_mappings to organize documents by proper categories
-        doc_types_by_category = {}
-
-        # Initialize with the 5 proper categories from entity_mappings
-        for cat_id, cat_name in self.document_categories.items():
-            doc_types_by_category[cat_name] = []
+        doc_types_by_category = {cat: [] for cat in self.document_categories.values()}
 
         # Map document types to their proper categories from entity_mappings
         for doc_id, mapping in self.entity_mappings.items():
@@ -240,21 +245,21 @@ class DocumentClassifier:
                     doc_types_by_category[category_name].append(document_name)
 
         # Fallback: add any remaining documents from cache that aren't in entity_mappings
-        for doc_type in self.document_fields_cache.keys():
-            found = False
-            for cat_docs in doc_types_by_category.values():
-                if doc_type.title() in cat_docs or doc_type.replace('_', ' ').title() in cat_docs:
-                    found = True
-                    break
-            if not found:
-                # Default to Financial Processes for LC/Guarantee type docs
-                if any(keyword in doc_type.lower() for keyword in ["letter of credit", "bank guarantee", "lc", "guarantee"]):
-                    if "Financial Processes" in doc_types_by_category:
-                        doc_types_by_category["Financial Processes"].append(doc_type.replace('_', ' ').title())
-                # Default to Commercial Processes for others
-                elif "Commercial Processes" in doc_types_by_category:
-                    doc_types_by_category["Commercial Processes"].append(doc_type.replace('_', ' ').title())
-        
+        # for doc_type in self.document_fields_cache.keys():
+        #     found = False
+        #     for cat_docs in doc_types_by_category.values():
+        #         if doc_type.title() in cat_docs or doc_type.replace('_', ' ').title() in cat_docs:
+        #             found = True
+        #             break
+        #     if not found:
+        #         # Default to Financial Processes for LC/Guarantee type docs
+        #         if any(keyword in doc_type.lower() for keyword in ["letter of credit", "bank guarantee", "lc", "guarantee"]):
+        #             if "Financial Processes" in doc_types_by_category:
+        #                 doc_types_by_category["Financial Processes"].append(doc_type.replace('_', ' ').title())
+        #         # Default to Commercial Processes for others
+        #         elif "Commercial Processes" in doc_types_by_category:
+        #             doc_types_by_category["Commercial Processes"].append(doc_type.replace('_', ' ').title())
+
         # Build categorized document list for prompt
         category_sections = []
         for category_name in sorted(doc_types_by_category.keys()):
@@ -276,6 +281,7 @@ class DocumentClassifier:
                 document_types_by_category=chr(10).join(category_sections),
                 ocr_text=ocr_text[:25000]
             )
+            logging.info("Printing the value of the prompt for the first page classification : {}".format(prompt))
         else:
             # Fallback to hardcoded template
             prompt = f"""
@@ -626,6 +632,8 @@ Return ONLY this JSON structure (no markdown, no additional text):
         """Build extraction prompt dynamically based on entity mappings."""
         # Normalize document type to match entity_mappings keys
         doc_id = document_type.replace(' ', '_')
+        logging.info("Printing the document id used for building extraction prompt : {}".format(doc_id))
+        logging.info("Printing the document type used for building extraction prompt : {}".format(document_type))
 
         # Get entity fields for this document type
         entity_info = self.get_enhanced_entity_fields(doc_id)

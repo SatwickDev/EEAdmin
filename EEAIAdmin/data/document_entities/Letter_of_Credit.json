@@ -1,6 +1,6 @@
 {
   "documentId": "Letter_of_Credit",
-  "documentName": "Letter Of Credit",
+  "documentName": "Letter of Credit",
   "mappings": [
     {
       "id": "846",
@@ -161,7 +161,7 @@
     {
       "id": "865",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "311",
@@ -175,7 +175,7 @@
     {
       "id": "866",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "322",
@@ -189,7 +189,7 @@
      {
       "id": "867",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "330",
@@ -203,7 +203,7 @@
      {
       "id": "868",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "323",
@@ -217,7 +217,7 @@
       {
       "id": "870",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "129",
@@ -456,7 +456,7 @@
     {
       "id": "871",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "470",
@@ -470,7 +470,7 @@
     {
       "id": "872",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "471",
@@ -484,7 +484,7 @@
     {
       "id": "873",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "472",
@@ -498,7 +498,7 @@
     {
       "id": "874",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "473",
@@ -512,7 +512,7 @@
     {
       "id": "875",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "474",
@@ -526,7 +526,7 @@
     {
       "id": "876",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "475",
@@ -540,7 +540,7 @@
     {
       "id": "877",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "476",
@@ -554,7 +554,7 @@
     {
       "id": "879",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "477",
@@ -568,7 +568,7 @@
     {
       "id": "880",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "478",
@@ -582,7 +582,7 @@
     {
       "id": "881",
       "documentId": "Letter_of_Credit",
-      "documentName": "Letter Of Credit",
+      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "479",

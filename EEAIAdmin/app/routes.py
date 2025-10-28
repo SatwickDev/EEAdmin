@@ -8773,16 +8773,11 @@ Guidelines:
                     temperature=extraction_temp,
                     max_tokens=extraction_max_tokens
                 )
-                logger.info("Printing the value of extraction_response : {}", extraction_response)
-
                 extraction_result = extraction_response.choices[0].message.content
-                logger.info("Printing the value of extraction_result : {}", extraction_result)
                 # Parse extraction result
                 try:
                     extraction_json = json.loads(extraction_result)
-                    logger.info("Printing the value of extraction_json : {}", extraction_json)
                     extracted_fields = extraction_json.get('extracted_fields', {})
-                    logger.info("Printing the value of extracted_fields : {}", extracted_fields)
                 except:
                     extracted_fields = {}
 
@@ -8796,32 +8791,32 @@ Guidelines:
 
                 # === UNIFIED COMPLIANCE ANALYSIS ===
                 logger.info(f"SEARCH: Running unified compliance analysis for {group['document_type']}")
-                
+
                 # Start compliance check progress tracking
                 if progress_tracker:
                     progress_tracker.start_compliance_check()
-                
+
                 compliance_analysis_start = time.time()
-                
+
                 # Initialize unified compliance result
                 unified_compliance = {}  # NEW: Unified compliance result
-                
+
                 # Perform UCP600 and SWIFT compliance analysis if we have extracted fields
                 if extracted_fields:
                     # Remove coordinate mapping fields before compliance analysis
                     compliance_fields = {k: v for k, v in extracted_fields.items() 
                                        if not k.startswith('_coordinate_mapping') and 
                                           k not in ['coordinate_mapping_stats']}
-                    
+
                     logger.info(f"Original fields: {len(extracted_fields)}, Compliance fields: {len(compliance_fields)}")
-                    
+
                     try:
                         # RULE-BASED UNIFIED COMPLIANCE: Use document-specific rules for page-by-page mode
                         from app.utils.query_utils import analyze_unified_compliance_fast, get_unified_compliance_result, clear_unified_compliance_result
-                        
+
                         # Clear any previous compliance results
                         clear_unified_compliance_result()
-                        
+
                         logger.info(f"SPEED: PAGE-BY-PAGE RULE-BASED UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields")
                         logger.info(f"Document type: {group['document_type']}")
                         logger.info(f"Compliance fields: {list(compliance_fields.keys())}")
