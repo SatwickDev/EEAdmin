@@ -4079,7 +4079,8 @@
 
     {
     "id": "455",
-    "entityName": "Form of Documentary Credit",
+    "name": "Form of Documentary Credit",
+    "description": "Form of Documentary Credit",
     "mappingFormField": "Tag 40A",
     "mappingFormDescription": "Form of Documentary Credit",
     "dataCategoryId": "6",
@@ -4087,7 +4088,8 @@
   },
   {
     "id": "456",
-    "entityName": "Applicable Rules",
+    "name": "Applicable Rules",
+    "description": "Applicable Rules",
     "mappingFormField": "Tag 40E",
     "mappingFormDescription": "Applicable Rules",
     "dataCategoryId": "6",
@@ -4095,15 +4097,17 @@
   },
   {
     "id": "457",
-    "entityName": "Reference to Pre-Advice",
+    "name": "Reference to Pre-Advice",
+    "description": "Reference to Pre-Advice",
     "mappingFormField": "Tag 23",
     "mappingFormDescription": "Reference to Pre-Advice",
     "dataCategoryId": "1",
     "dataCategoryValue": "References"
   },
-     {
+  {
     "id": "458",
-    "entityName": "Applicant Bank",
+    "name": "Applicant Bank",
+    "description": "Applicant Bank",
     "mappingFormField": "Tag 51A",
     "mappingFormDescription": "Applicant Bank",
     "dataCategoryId": "3",
@@ -4111,7 +4115,8 @@
   },
   {
     "id": "459",
-    "entityName": "Percentage Credit Amount Tolerance",
+    "name": "Percentage Credit Amount Tolerance",
+    "description": "Percentage Credit Amount Tolerance",
     "mappingFormField": "Tag 39A",
     "mappingFormDescription": "Percentage Credit Amount Tolerance",
     "dataCategoryId": "7",
@@ -4119,7 +4124,8 @@
   },
   {
     "id": "460",
-    "entityName": "Additional Amounts Covered",
+    "name": "Additional Amounts Covered",
+    "description": "Additional Amounts Covered",
     "mappingFormField": "Tag 39C",
     "mappingFormDescription": "Additional Amounts Covered",
     "dataCategoryId": "7",
@@ -4127,7 +4133,8 @@
   },
   {
     "id": "461",
-    "entityName": "Mixed Payment Details",
+    "name": "Mixed Payment Details",
+    "description": "Mixed Payment Details",
     "mappingFormField": "Tag 42M",
     "mappingFormDescription": "Mixed Payment Details",
     "dataCategoryId": "6",
@@ -4135,7 +4142,8 @@
   },
   {
     "id": "462",
-    "entityName": "Negotiation/Deferred Payment Details",
+    "name": "Negotiation/Deferred Payment Details",
+    "description": "Negotiation/Deferred Payment Details",
     "mappingFormField": "Tag 42P",
     "mappingFormDescription": "Negotiation/Deferred Payment Details",
     "dataCategoryId": "6",
@@ -4143,7 +4151,8 @@
   },
   {
     "id": "463",
-    "entityName": "Partial Shipments",
+    "name": "Partial Shipments",
+    "description": "Partial Shipments",
     "mappingFormField": "Tag 43P",
     "mappingFormDescription": "Partial Shipments",
     "dataCategoryId": "6",
@@ -4151,7 +4160,8 @@
   },
   {
     "id": "464",
-    "entityName": "Transhipment",
+    "name": "Transhipment",
+    "description": "Transhipment",
     "mappingFormField": "Tag 43T",
     "mappingFormDescription": "Transhipment",
     "dataCategoryId": "6",
@@ -4159,7 +4169,8 @@
   },
   {
     "id": "465",
-    "entityName": "Place of Taking in Charge/Dispatch/Receipt",
+    "name": "Place of Taking in Charge/Dispatch/Receipt",
+    "description": "Place of Taking in Charge/Dispatch/Receipt",
     "mappingFormField": "Tag 44A",
     "mappingFormDescription": "Place of Taking in Charge / Dispatch / Receipt",
     "dataCategoryId": "4",
@@ -4167,7 +4178,8 @@
   },
   {
     "id": "466",
-    "entityName": "Port of Loading/Airport of Departure",
+    "name": "Port of Loading/Airport of Departure",
+    "description": "Port of Loading/Airport of Departure",
     "mappingFormField": "Tag 44E",
     "mappingFormDescription": "Port of Loading / Airport of Departure",
     "dataCategoryId": "4",
@@ -4175,7 +4187,8 @@
   },
   {
     "id": "467",
-    "entityName": "Port of Discharge/Airport of Destination",
+    "name": "Port of Discharge/Airport of Destination",
+    "description": "Port of Discharge/Airport of Destination",
     "mappingFormField": "Tag 44F",
     "mappingFormDescription": "Port of Discharge / Airport of Destination",
     "dataCategoryId": "4",
@@ -4183,7 +4196,8 @@
   },
   {
     "id": "468",
-    "entityName": "Place of Final Destination / Delivery",
+    "name": "Place of Final Destination / Delivery",
+    "description": "Place of Final Destination / Delivery",
     "mappingFormField": "Tag 44B",
     "mappingFormDescription": "Place of Final Destination / Delivery",
     "dataCategoryId": "4",
@@ -4191,7 +4205,8 @@
   },
   {
     "id": "469",
-    "entityName": "Latest Date of Shipment",
+    "name": "Latest Date of Shipment",
+    "description": "Latest Date of Shipment",
     "mappingFormField": "Tag 44C",
     "mappingFormDescription": "Latest Date of Shipment",
     "dataCategoryId": "2",
@@ -4199,7 +4214,8 @@
   },
   {
     "id": "470",
-    "entityName": "Documents Required",
+    "name": "Documents Required",
+    "description": "Documents Required",
     "mappingFormField": "Tag 46A",
     "mappingFormDescription": "Documents Required",
     "dataCategoryId": "9",
@@ -4207,7 +4223,8 @@
   },
   {
     "id": "471",
-    "entityName": "Additional Conditions",
+    "name": "Additional Conditions",
+    "description": "Additional Conditions",
     "mappingFormField": "Tag 47A",
     "mappingFormDescription": "Additional Conditions",
     "dataCategoryId": "9",
@@ -4215,7 +4232,8 @@
   },
   {
     "id": "472",
-    "entityName": "Special Payment Conditions for Beneficiary",
+    "name": "Special Payment Conditions for Beneficiary",
+    "description": "Special Payment Conditions for Beneficiary",
     "mappingFormField": "Tag 49G",
     "mappingFormDescription": "Special Payment Conditions for Beneficiary",
     "dataCategoryId": "7",
@@ -4223,7 +4241,8 @@
   },
   {
     "id": "473",
-    "entityName": "Special Payment Conditions for Receiving Bank",
+    "name": "Special Payment Conditions for Receiving Bank",
+    "description": "Special Payment Conditions for Receiving Bank",
     "mappingFormField": "Tag 49H",
     "mappingFormDescription": "Special Payment Conditions for Receiving Bank",
     "dataCategoryId": "7",
@@ -4231,7 +4250,8 @@
   },
   {
     "id": "474",
-    "entityName": "Charges",
+    "name": "Charges",
+    "description": "Charges",
     "mappingFormField": "Tag 71D",
     "mappingFormDescription": "Charges (6*35z)",
     "dataCategoryId": "7",
@@ -4239,7 +4259,8 @@
   },
   {
     "id": "475",
-    "entityName": "Period for Presentation",
+    "name": "Period for Presentation",
+    "description": "Period for Presentation",
     "mappingFormField": "Tag 48",
     "mappingFormDescription": "Period for Presentation in Days",
     "dataCategoryId": "2",
@@ -4247,7 +4268,8 @@
   },
   {
     "id": "476",
-    "entityName": "Requested Confirmation Party",
+    "name": "Requested Confirmation Party",
+    "description": "Requested Confirmation Party",
     "mappingFormField": "Tag 58A",
     "mappingFormDescription": "Requested Confirmation Party",
     "dataCategoryId": "3",
@@ -4255,7 +4277,8 @@
   },
   {
     "id": "477",
-    "entityName": "Instructions to Paying/Accepting/Negotiating Bank",
+    "name": "Instructions to Paying/Accepting/Negotiating Bank",
+    "description": "Instructions to Paying/Accepting/Negotiating Bank",
     "mappingFormField": "Tag 78",
     "mappingFormDescription": "Instructions to the Paying/Accepting/Negotiating Bank",
     "dataCategoryId": "9",
@@ -4263,7 +4286,8 @@
   },
   {
     "id": "478",
-    "entityName": "Advise Through Bank",
+    "name": "Advise Through Bank",
+    "description": "Advise Through Bank",
     "mappingFormField": "Tag 57A",
     "mappingFormDescription": "'Advise Through' Bank",
     "dataCategoryId": "3",
@@ -4271,11 +4295,39 @@
   },
   {
     "id": "479",
-    "entityName": "Sender to Receiver Information",
-    "mappingFormField": "Tag 72Z",
+    "name": "Sequence of Total",
+    "description": "Sequence of Total",
+    "mappingFormField": "Tag 27",
     "mappingFormDescription": "Sender to Receiver Information",
     "dataCategoryId": "9",
     "dataCategoryValue": "Instructions"
+  },
+  {
+    "id": "480",
+    "name": "Documentary Credit Number",
+    "description": "Documentary Credit Number",
+    "mappingFormField": "doc_index",
+    "mappingFormDescription": "",
+    "dataCategoryId": "1",
+    "dataCategoryValue": "References"
+  },
+  {
+    "id": "481",
+    "name": "Shipment Period",
+    "description": "Shipment Period",
+    "mappingFormField": "doc_index",
+    "mappingFormDescription": "",
+    "dataCategoryId": "6",
+    "dataCategoryValue": "Terms"
+  },
+  {
+    "id": "482",
+    "name": "Confirmation Instructions",
+    "description": "Confirmation Instructions",
+    "mappingFormField": "",
+    "mappingFormDescription": "",
+    "dataCategoryId": "5",
+    "dataCategoryValue": "Clauses/conditions/instructions"
   }
   ]
 }

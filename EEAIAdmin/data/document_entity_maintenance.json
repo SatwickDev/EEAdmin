@@ -14503,6 +14503,62 @@
             "dataCategoryId": "3",
             "dataCategoryValue": "Parties",
             "fieldType": "conditional"
-    }
+    },
+    {
+      "id": "84899",
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "479",
+      "entityName": "Sequence of Total",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+	 {
+      "id": "88480",
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "480",
+      "entityName": "Documentary Credit Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory"
+    },
+{
+      "id": "8281",
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter Of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "481",
+      "entityName": "Shipment Period",
+      "mappingFormField": "Tag 44D",
+      "mappingFormDescription": "Shipment Period",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
+      "fieldType": "optional"
+    },
+	{
+      "id": "9381",
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter Of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "482",
+      "entityName": "Confirmation Instructions",
+      "mappingFormField": "Tag 44D",
+      "mappingFormDescription": "Shipment Period",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions",
+      "fieldType": "optional"
+    }  
     ]
 }
