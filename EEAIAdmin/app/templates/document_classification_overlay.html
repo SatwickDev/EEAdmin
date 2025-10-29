@@ -2000,6 +2000,10 @@
                                                 <i class="mdi mdi-shield-check-outline mr-1 group-hover:animate-pulse"></i>
                                                 Compliance Analysis
                                             </button>
+							<button v-if="isFromDocumentRegister" @click="openDiscrepancyCheckModal()" class="compliance-btn text-sm px-4 py-4 group">
+                                                <i class="mdi mdi-file-document-alert-outline mr-1 group-hover:animate-pulse"></i>
+                                              Discrepancy check
+                             </button>
                             <button @click="reset" class="btn-primary">
                                 <i class="mdi mdi-refresh"></i>
                                 Upload More
@@ -3047,6 +3051,174 @@
 
             </div>
         </div>
+		
+		
+         
+{% raw %}
+<!-- Discrepancy Check Modal -->
+<div v-if="showDiscrepancyCheckModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeDiscrepancyCheckModal">
+    <div class="bg-white rounded-lg shadow-2xl w-[95%] max-w-[1800px] h-[92vh] flex flex-col">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="mdi mdi-file-document-alert-outline mr-2"></i>
+                Discrepancy Check
+            </h2>
+            <button @click="closeDiscrepancyCheckModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                <i class="mdi mdi-close text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body: Two Column Layout -->
+        <div class="flex flex-1 overflow-hidden">
+            
+            <!-- LEFT SIDE: LC Data with Color Coding -->
+            <div class="w-1/2 border-r border-gray-200 overflow-y-auto p-6 bg-gray-50">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700">LC Data</h3>
+                    <p class="text-sm text-gray-500 mt-1">Green = Has Value, Red = Empty</p>
+                </div>
+
+                <!-- LC Data Fields -->
+                <div v-if="lcData && Object.keys(lcData).length > 0" class="space-y-4">
+                    <div v-for="(value, key) in filteredLcDataForDiscrepancyCheckModal" :key="key">
+                        <!-- Field Name -->
+                        <div class="text-xs font-semibold text-gray-600 uppercase mb-2">
+                            {{ key }}
+                        </div>
+                        <!-- Field Value Box with Color Coding -->
+                        <div class="p-3 rounded-lg shadow-sm transition-all"
+                             :class="isLcValuePresentForDiscrepancyCheckModal(value) ? 'bg-green-50 border-2 border-green-300' : 'bg-red-50 border-2 border-red-300'">
+                            <div class="text-sm font-medium"
+                                 :class="isLcValuePresentForDiscrepancyCheckModal(value) ? 'text-green-800' : 'text-red-600'">
+                                <span v-if="isLcValuePresentForDiscrepancyCheckModal(value)">{{ value }}</span>
+                                <span v-else class="italic">(Empty / Not Provided)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else class="text-center text-gray-500 py-8">
+                    <i class="mdi mdi-information-outline text-4xl mb-2"></i>
+                    <p>No LC data available</p>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE: Field Name Matched Documents -->
+            <div class="w-1/2 flex flex-col overflow-hidden bg-white">
+                <!-- Matched Results -->
+                <div class="flex-1 overflow-y-auto p-6">
+                    <!-- Header (scrolls with content) -->
+                    <div class="pb-4 mb-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-700">Matched Document Fields</h3>
+                        <p class="text-sm text-gray-500 mt-1">Field name match ≥85%, color by value match</p>
+                    </div>
+                    
+                    <div v-if="allLcFieldsWithMatchesForDiscrepancyCheckModal && allLcFieldsWithMatchesForDiscrepancyCheckModal.length > 0" class="space-y-6">
+                        <!-- Loop through each LC field -->
+                        <div v-for="(matchGroup, index) in allLcFieldsWithMatchesForDiscrepancyCheckModal" :key="index">
+                            <!-- LC Field Name at Top -->
+                            <div class="text-sm font-bold text-gray-700 mb-3">
+                                {{ matchGroup.lcFieldName }}
+                            </div>
+
+                            <!-- If Field Name Matches Found -->
+                            <div v-if="matchGroup.matches.length > 0" class="space-y-3">
+                                <div v-for="(match, matchIndex) in matchGroup.matches" :key="matchIndex"
+                                     class="rounded-xl shadow-md transition-all hover:shadow-lg border-2"
+                                     :class="getMatchBorderColorForDiscrepancyCheckModal(match.valueMatchPercentage)">
+                                    
+                                    <!-- Values Box -->
+                                    <div class="p-4 bg-gradient-to-br"
+                                         :class="getMatchBackgroundColorForDiscrepancyCheckModal(match.valueMatchPercentage)">
+                                        <div class="space-y-2">
+                                            <!-- LC Value -->
+                                            <div class="flex items-start">
+                                                <span class="text-xs font-semibold text-gray-600 w-16">LC:</span>
+                                                <span class="text-sm font-medium text-gray-800 flex-1">{{ match.lcValue }}</span>
+                                            </div>
+                                            <!-- Document Value with Document Type -->
+                                            <div class="flex items-start">
+                                                <span class="text-xs font-semibold text-gray-600 w-16">{{ match.documentType }}:</span>
+                                                <span class="text-sm font-medium text-gray-800 flex-1">{{ match.docValue }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Meta Information Below -->
+                                    <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                                        <div class="flex items-center justify-between text-xs text-gray-600">
+                                            <div class="flex items-center space-x-4">
+                                                <span class="flex items-center">
+                                                    <i class="mdi mdi-file-document mr-1"></i>
+                                                    <strong>{{ match.documentType }}</strong>
+                                                </span>
+                                                <span class="flex items-center">
+                                                    <i class="mdi mdi-file-multiple mr-1"></i>
+                                                    {{ match.pageRange }}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                                                    <i class="mdi mdi-tag mr-1"></i>
+                                                    Field: {{ match.fieldNameMatchPercentage }}%
+                                                </span>
+                                                <span class="px-2 py-1 rounded-full"
+                                                     :class="getMatchBadgeColorForDiscrepancyCheckModal(match.valueMatchPercentage)">
+                                                    <i class="mdi mdi-percent mr-1"></i>
+                                                    Value: {{ match.valueMatchPercentage }}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- If NO Field Name Matches Found -->
+                            <div v-else class="rounded-xl shadow-md border-2 border-orange-400 bg-orange-50">
+                                <div class="p-4">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="mdi mdi-alert-circle text-orange-500 text-2xl"></i>
+                                        <div class="flex-1">
+                                            <div class="text-sm font-medium text-orange-800">No Field Name Match Found</div>
+                                            <div class="text-xs text-orange-600 mt-1">
+                                                LC Value: <strong>{{ matchGroup.lcValue }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="px-4 py-2 bg-orange-100 border-t border-orange-200">
+                                    <p class="text-xs text-orange-700">
+                                        <i class="mdi mdi-information mr-1"></i>
+                                        No document has a field name matching "{{ matchGroup.lcFieldName }}" or its entity variations (≥85% similarity)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No LC Data -->
+                    <div v-else class="text-center text-gray-500 py-12">
+                        <i class="mdi mdi-file-search-outline text-5xl mb-3"></i>
+                        <p class="text-lg">No LC data to match</p>
+                        <p class="text-sm text-gray-400 mt-2">Please ensure LC data is loaded</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end">
+            <button @click="closeDiscrepancyCheckModal" class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                <i class="mdi mdi-close mr-2"></i>
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+{% endraw %}
+
+
 
         <!-- Modern Compliance Analysis Modal -->
         <div v-if="showDiscrepancyModal" class="fixed inset-0 bg-gradient-to-br from-slate-900/95 to-gray-900/95 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -3538,6 +3710,10 @@
         createApp({
             data() {
                 return {
+					showDiscrepancyCheckModal: false,
+                    selectedDocumentType: '',
+					isFromDocumentRegister:false,
+					lcData:[],
                     isDragging: false,
                     selectedFiles: [],
                     processing: false,
@@ -3614,6 +3790,169 @@
                 }
             },
             computed: {
+				// Filter LC data (exclude non-displayable fields)
+    filteredLcDataForDiscrepancyCheckModal() {
+        if (!this.lcData) return {};
+        
+        const excludeKeys = ['documents', 'repository', 'submitted_from'];
+        const filtered = {};
+        
+        Object.keys(this.lcData).forEach(key => {
+            if (!excludeKeys.includes(key)) {
+                filtered[key] = this.lcData[key];
+            }
+        });
+        
+        return filtered;
+    },
+
+    // Create reverse mapping from form field to all entity names
+    reverseFieldMappingForDiscrepancyCheckModal() {
+        const fieldMapping = {
+            // Basic Information
+            'Documentary Credit Identifier': 'lcNumber',
+            'Documentary credit document issue date': 'issueDate',
+            'LC Expiry Date': 'expiryDate',
+            'Documentary credit document effective end date': 'expiryDate',
+            // Parties
+            'Documentary Credit Applicant': 'applicant',
+            'Documentary Credit Beneficiary': 'beneficiary',
+            'Documentary Credit Available Bank': 'issuingBank',
+            'Documentary Credit Applicant Agent Bank': 'advisingBank',
+            'Documentary Credit Drawee': 'drawee',
+            'Documentary Credit Reimbursing Bank': 'reimbursingBank',
+            // Amount and Payment
+            'Documentary credit amount': 'amount',
+            'Payment term': 'paymentTerms',
+            // Shipment Details
+            'Original Loading Location': 'portOfLoading',
+            'Baseport Unloading Location': 'portOfDischarge',
+            'Place of the delivery of the goods (by the carrier)': 'finalDestination',
+            'Latest pick-up date': 'latestShipmentDate',
+            'Latest Date of Shipment': 'latestShipmentDate',
+            'Latest Shipment Date': 'latestShipmentDate',
+            'Shipment Date': 'latestShipmentDate',
+            'Despatch': 'dispatchLocation',
+            // LC Type
+            'Form of Documentary Credit': 'lcType',
+            'LC Type': 'lcType',
+            'Type of Credit': 'lcType',
+            'Credit Type': 'lcType',
+            'Documentary Credit Type': 'lcType',
+            // Shipment Restrictions
+            'Partial Shipments': 'partialShipment',
+            'Partial Shipment': 'partialShipment',
+            'Partial Shipment (43P)': 'partialShipment',
+            'Transhipment': 'transhipment',
+            'Transhipment (43T)': 'transhipment',
+            // Goods
+            'Description of Goods': 'goodsDescription',
+            'Invoice Number': 'invoiceNumber',
+            // Incoterms
+            'Incoterms': 'incoterms',
+            'Incoterm': 'incoterms',
+            'Trade Terms': 'incoterms',
+            'Delivery Terms': 'incoterms',
+            // Documents Required
+            'Documents Required': 'documentsRequired',
+            'Documents Required (46A)': 'documentsRequired',
+            'Required Documents': 'documentsRequired',
+            'Documentary Requirements': 'documentsRequired'
+        };
+
+        // Create reverse mapping: formField -> [all entity names]
+        const reverseMapping = {};
+        
+        Object.keys(fieldMapping).forEach(entityName => {
+            const formField = fieldMapping[entityName];
+            if (!reverseMapping[formField]) {
+                reverseMapping[formField] = [];
+            }
+            reverseMapping[formField].push(entityName);
+        });
+        
+        return reverseMapping;
+    },
+
+    // All LC fields with their field name matches using reverse mapping
+    allLcFieldsWithMatchesForDiscrepancyCheckModal() {
+        if (!this.lcData || !this.results) return [];
+        
+        const matchedGroups = [];
+        const filteredLc = this.filteredLcDataForDiscrepancyCheckModal;
+        const reverseMapping = this.reverseFieldMappingForDiscrepancyCheckModal;
+        
+        // For each LC field
+        Object.keys(filteredLc).forEach(lcKey => {
+            const lcValue = filteredLc[lcKey];
+            
+            // Skip if LC value is empty
+            if (!this.isLcValuePresentForDiscrepancyCheckModal(lcValue)) return;
+            
+            const matches = [];
+            
+            // Get all possible entity names for this LC field
+            const possibleEntityNames = reverseMapping[lcKey] || [];
+            // Also include the lcKey itself as a possible match
+            const allPossibleNames = [lcKey, ...possibleEntityNames];
+            
+            // Search through all documents for FIELD NAME matches
+            if (this.results && this.results.length > 0) {
+                this.results.forEach(doc => {
+                    if (doc.extractedFields) {
+                        Object.keys(doc.extractedFields).forEach(docFieldName => {
+                            const field = doc.extractedFields[docFieldName];
+                            const docValue = field.value;
+                            
+                            // Check if docFieldName matches ANY of the possible entity names
+                            let bestFieldNameMatch = 0;
+                            let matchedEntityName = '';
+                            
+                            allPossibleNames.forEach(possibleName => {
+                                const matchPercentage = this.calculateFuzzyMatchForDiscrepancyCheckModal(possibleName, docFieldName);
+                                if (matchPercentage > bestFieldNameMatch) {
+                                    bestFieldNameMatch = matchPercentage;
+                                    matchedEntityName = possibleName;
+                                }
+                            });
+                            
+                            // Only proceed if BEST field name match ≥70%
+                            if (bestFieldNameMatch >= 85) {
+                                // Now calculate VALUE match (for color coding)
+                                const valueMatch = docValue 
+                                    ? this.calculateFuzzyMatchForDiscrepancyCheckModal(lcValue, docValue)
+                                    : 0;
+                                
+                                matches.push({
+                                    lcValue: lcValue,
+                                    docValue: docValue || 'N/A',
+                                    documentType: doc.documentType,
+                                    pageRange: doc.pageRange || 'N/A',
+                                    fieldNameMatchPercentage: bestFieldNameMatch,
+                                    valueMatchPercentage: valueMatch,
+                                    matchedEntityName: matchedEntityName,
+                                    docFieldName: docFieldName
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Add to results (with or without matches)
+            matchedGroups.push({
+                lcFieldName: lcKey,
+                lcValue: lcValue,
+                matches: matches.sort((a, b) => b.valueMatchPercentage - a.valueMatchPercentage)
+            });
+        });
+        
+        return matchedGroups;
+    },
+    
+    
+				
+				
                 avgConfidence() {
                     if (!this.results) return 0;
                     const sum = this.results.reduce((acc, r) => acc + r.confidence, 0);
@@ -3660,6 +3999,95 @@
                 }
             },
             methods: {
+				// Open discrepancy check modal
+    openDiscrepancyCheckModal() {
+        this.showDiscrepancyCheckModal = true;
+    },
+    
+    // Close discrepancy check modal
+    closeDiscrepancyCheckModal() {
+        this.showDiscrepancyCheckModal = false;
+    },
+    
+    // Check if LC value is present
+    isLcValuePresentForDiscrepancyCheckModal(value) {
+        return value !== null && value !== undefined && value !== '';
+    },
+    
+    // Calculate fuzzy match percentage using Levenshtein distance
+    calculateFuzzyMatchForDiscrepancyCheckModal(str1, str2) {
+        if (!str1 || !str2) return 0;
+        
+        // Convert to lowercase and trim
+        const s1 = String(str1).toLowerCase().trim();
+        const s2 = String(str2).toLowerCase().trim();
+        
+        // Exact match
+        if (s1 === s2) return 100;
+        
+        // Calculate Levenshtein distance
+        const distance = this.levenshteinDistanceForDiscrepancyCheckModal(s1, s2);
+        const maxLength = Math.max(s1.length, s2.length);
+        
+        // Convert to percentage
+        const similarity = ((maxLength - distance) / maxLength) * 100;
+        
+        return Math.round(similarity);
+    },
+    
+    // Levenshtein distance algorithm
+    levenshteinDistanceForDiscrepancyCheckModal(str1, str2) {
+        const matrix = [];
+        
+        for (let i = 0; i <= str2.length; i++) {
+            matrix[i] = [i];
+        }
+        
+        for (let j = 0; j <= str1.length; j++) {
+            matrix[0][j] = j;
+        }
+        
+        for (let i = 1; i <= str2.length; i++) {
+            for (let j = 1; j <= str1.length; j++) {
+                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j] + 1
+                    );
+                }
+            }
+        }
+        
+        return matrix[str2.length][str1.length];
+    },
+    
+    // Get border color based on VALUE match percentage
+    getMatchBorderColorForDiscrepancyCheckModal(percentage) {
+        if (percentage >= 90) return 'border-green-400';
+        if (percentage >= 70) return 'border-yellow-400';
+        return 'border-red-400';
+    },
+    
+    // Get background color based on VALUE match percentage
+    getMatchBackgroundColorForDiscrepancyCheckModal(percentage) {
+        if (percentage >= 90) return 'from-green-50 to-green-100';
+        if (percentage >= 70) return 'from-yellow-50 to-yellow-100';
+        return 'from-red-50 to-red-100';
+    },
+    
+    // Get badge color based on VALUE match percentage
+    getMatchBadgeColorForDiscrepancyCheckModal(percentage) {
+        if (percentage >= 90) return 'bg-green-100 text-green-700';
+        if (percentage >= 70) return 'bg-yellow-100 text-yellow-700';
+        return 'bg-red-100 text-red-700';
+    },
+    
+   
+				
+				
                 // Helper methods for absolute page numbering
                 getAbsolutePageNumber(relativePageIndex) {
                     // Convert relative page index (0-based) to absolute page number
@@ -4115,7 +4543,8 @@
                                     console.log('Processed result:', processedResult);
                                     return processedResult;
                                 });
-                            } else {
+                            console.log('final result:',this.results)
+							} else {
                                 console.error('Classification failed:', data.error);
                                 this.showError(data.error || 'Classification failed');
 
@@ -4597,13 +5026,36 @@ populateFormFields() {
         'Baseport Unloading Location': 'portOfDischarge',
         'Place of the delivery of the goods (by the carrier)': 'finalDestination',
         'Latest pick-up date': 'latestShipmentDate',
+        'Latest Date of Shipment': 'latestShipmentDate', // ADD THIS MAPPING
+        'Latest Shipment Date': 'latestShipmentDate', // ADD THIS MAPPING
+        'Shipment Date': 'latestShipmentDate', // ADD THIS MAPPING
         'Despatch': 'dispatchLocation',
+
+        // LC Type
+        'Form of Documentary Credit': 'lcType',
+        'LC Type': 'lcType',
+        'Type of Credit': 'lcType',
+        'Credit Type': 'lcType',
+        'Documentary Credit Type': 'lcType',
+
+        // Shipment Restrictions - ADD THESE MAPPINGS
+        'Partial Shipments': 'partialShipment',
+        'Partial Shipment': 'partialShipment',
+        'Partial Shipment (43P)': 'partialShipment',
+        'Transhipment': 'transhipment',
+        'Transhipment (43T)': 'transhipment',
 
         // Goods
         'Description of Goods': 'goodsDescription',
         'Invoice Number': 'invoiceNumber',
 
-        // Documents Required - ADD THIS MAPPING
+         // Incoterms - ADD THIS MAPPING
+        'Incoterms': 'incoterms',
+        'Incoterm': 'incoterms',
+        'Trade Terms': 'incoterms',
+        'Delivery Terms': 'incoterms',
+
+        // Documents Required
         'Documents Required': 'documentsRequired',
         'Documents Required (46A)': 'documentsRequired',
         'Required Documents': 'documentsRequired',
@@ -4617,6 +5069,12 @@ populateFormFields() {
     // Track seen values to prevent duplicates within same document type and page
     const seenValues = new Map(); // Map<fieldName_documentType_page, value>
 
+    // DEBUG: Log all available field names
+    console.log('=== DEBUG: ALL AVAILABLE FIELD NAMES ===');
+    this.results.forEach((result, index) => {
+        console.log(`Result ${index} (${result.documentType}):`, Object.keys(result.extractedFields || {}));
+    });
+
     // Process ALL results (all documents in the uploaded PDF)
     this.results.forEach((result, resultIndex) => {
         console.log(`Processing result ${resultIndex}:`, result.documentType);
@@ -4627,6 +5085,9 @@ populateFormFields() {
         if (extractedFields && typeof extractedFields === 'object') {
             for (const [key, fieldData] of Object.entries(extractedFields)) {
                 const formFieldName = fieldMapping[key];
+
+                // DEBUG: Log each field being processed
+                console.log(`Processing field: "${key}" -> "${formFieldName}"`, fieldData);
 
                 if (formFieldName && fieldData) {
                     let value = '';
@@ -4653,6 +5114,24 @@ populateFormFields() {
 
                         // Mark this value as seen for this document type and page
                         seenValues.set(dedupeKey, value);
+
+                        // ⭐⭐⭐ MAP LC TYPE VALUES ⭐⭐⭐
+                        if (formFieldName === 'lcType') {
+                            console.log(`Mapping LC Type: "${value}" -> "${this.mapLcTypeValue(value)}"`);
+                            value = this.mapLcTypeValue(value);
+                        }
+
+                        // ⭐⭐⭐ MAP PARTIAL SHIPMENT VALUES ⭐⭐⭐
+                        if (formFieldName === 'partialShipment') {
+                            console.log(`Mapping Partial Shipment: "${value}" -> "${this.mapPartialShipmentValue(value)}"`);
+                            value = this.mapPartialShipmentValue(value);
+                        }
+
+                        // ⭐⭐⭐ MAP TRANSHIPMENT VALUES ⭐⭐⭐
+                        if (formFieldName === 'transhipment') {
+                            console.log(`Mapping Transhipment: "${value}" -> "${this.mapTranshipmentValue(value)}"`);
+                            value = this.mapTranshipmentValue(value);
+                        }
 
                         // Handle amount field splitting
                         if (key === 'Documentary credit amount') {
@@ -4708,6 +5187,7 @@ populateFormFields() {
     });
 
     console.log('Total fields collected from all documents after deduplication:', this.confirmationFields.length);
+    console.log('Confirmation fields:', this.confirmationFields);
 
     // Check for duplicates across different document types/pages and auto-select
     this.checkDuplicateFields();
@@ -4719,6 +5199,70 @@ populateFormFields() {
     this.showFieldConfirmation = true;
 },
 
+// Add these mapping methods after your existing mapLcTypeValue method:
+
+// Map backend LC Type values to frontend values
+mapLcTypeValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    const lowerValue = backendValue.toLowerCase().trim();
+    console.log(`Mapping LC Type: Original="${backendValue}", Lowercase="${lowerValue}"`);
+
+    // Map various backend LC type formats to frontend values
+    if (lowerValue.includes('irrevocable') || lowerValue.includes('100%')) {
+        return 'irrevocable';
+    } else if (lowerValue.includes('confirmed')) {
+        return 'confirmed';
+    } else if (lowerValue.includes('transferable')) {
+        return 'transferable';
+    } else if (lowerValue.includes('standby')) {
+        return 'standby';
+    } else if (lowerValue.includes('revolving')) {
+        return 'revolving';
+    }
+
+    // If no match found, return the original value
+    console.log(`No mapping found for LC Type: "${backendValue}"`);
+    return backendValue;
+},
+
+// Map backend Partial Shipment values to frontend values
+mapPartialShipmentValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    const lowerValue = backendValue.toLowerCase().trim();
+    console.log(`Mapping Partial Shipment: Original="${backendValue}", Lowercase="${lowerValue}"`);
+
+    // Map backend values to frontend values
+    if (lowerValue.includes('prohibited') || lowerValue.includes('not allowed') || lowerValue.includes('not_allowed')) {
+        return 'not_allowed';
+    } else if (lowerValue.includes('permitted') || lowerValue.includes('allowed')) {
+        return 'allowed';
+    }
+
+    // If no match found, return the original value
+    console.log(`No mapping found for Partial Shipment: "${backendValue}"`);
+    return backendValue;
+},
+
+// Map backend Transhipment values to frontend values
+mapTranshipmentValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    const lowerValue = backendValue.toLowerCase().trim();
+    console.log(`Mapping Transhipment: Original="${backendValue}", Lowercase="${lowerValue}"`);
+
+    // Map backend values to frontend values
+    if (lowerValue.includes('prohibited') || lowerValue.includes('not allowed') || lowerValue.includes('not_allowed')) {
+        return 'not_allowed';
+    } else if (lowerValue.includes('permitted') || lowerValue.includes('allowed')) {
+        return 'allowed';
+    }
+
+    // If no match found, return the original value
+    console.log(`No mapping found for Transhipment: "${backendValue}"`);
+    return backendValue;
+},
 // Enhanced checkDuplicateFields method
 checkDuplicateFields() {
     const fieldCount = {};
@@ -4894,7 +5438,6 @@ splitCurrencyAndAmount(combinedValue) {
     console.log('No pattern matched for:', combinedValue);
     return { currency: '', amount: '' };
 },
-
                 showNotification(message, type = 'info') {
                     // Simple notification (you can enhance this)
                     const notification = document.createElement('div');
@@ -6201,6 +6744,14 @@ splitCurrencyAndAmount(combinedValue) {
             mounted() {
                 this.fetchCurrentUser();
                 this.fetchTradeDocuments();
+				 window.addEventListener('message', (event) => {
+        console.log('📥 Received message:', event.data);
+        if (event.data && event.data.type === 'LC_DATA' && event.data.source === 'document_register') {
+            this.isFromDocumentRegister = true;
+            this.lcData = event.data.data.formData;
+            console.log('✅ LC data stored:', this.lcData);
+        }
+    });
             }
         }).mount('#app');
 

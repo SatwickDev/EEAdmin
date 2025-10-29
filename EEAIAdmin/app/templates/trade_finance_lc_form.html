@@ -1196,17 +1196,14 @@
                                     <input type="number" id="tolerancePercent" name="tolerancePercent"
                                         placeholder="e.g., 10" min="0" max="100">
                                 </div>
+                                <!-- Payment Terms Section -->
                                 <div class="form-group">
                                     <label for="paymentTerms">Payment Terms (42C) <span
                                             class="required">*</span></label>
-                                    <select id="paymentTerms" name="paymentTerms" required>
-                                        <option value="">Select Terms</option>
-                                        <option value="sight">At Sight</option>
-                                        <option value="deferred">Deferred Payment</option>
-                                        <option value="acceptance">Acceptance</option>
-                                        <option value="negotiation">Negotiation</option>
-                                    </select>
+                                    <input type="text" id="paymentTerms" name="paymentTerms" required
+                                        placeholder="Enter payment terms (e.g., At Sight, Deferred Payment)">
                                 </div>
+
                             </div>
                         </div>
 
@@ -1252,54 +1249,52 @@
                                         <option value="not_allowed">Not Allowed</option>
                                     </select>
                                 </div>
+                                <!-- Incoterms Section -->
                                 <div class="form-group">
                                     <label for="incoterms">Incoterms</label>
-                                    <select id="incoterms" name="incoterms">
-                                        <option value="">Select Incoterms</option>
-                                        <option value="EXW">EXW - Ex Works</option>
-                                        <option value="FOB">FOB - Free On Board</option>
-                                        <option value="CFR">CFR - Cost and Freight</option>
-                                        <option value="CIF">CIF - Cost, Insurance and Freight</option>
-                                        <option value="DDP">DDP - Delivered Duty Paid</option>
-                                    </select>
+                                    <input type="text" id="incoterms" name="incoterms"
+                                        placeholder="Enter Incoterms (e.g., FOB, CIF, DDP)">
                                 </div>
+
+
                             </div>
+
                         </div>
 
                         <!-- Goods Description Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Goods Description</h2>
+                        <h2 class="section-title">Goods Description (45A)</h2>
+                        <div class="form-group">
+                            <label for="goodsDescription">Description of Goods <span class="required">*</span></label>
+                            <textarea id="goodsDescription" name="goodsDescription" required
+                                placeholder="Detailed description of goods/services"></textarea>
+                        </div>
+
+
+                        <div class="form-grid">
                             <div class="form-group">
-                                <label for="goodsDescription">Description of Goods (45A) <span
-                                        class="required">*</span></label>
-                                <textarea id="goodsDescription" name="goodsDescription" required
-                                    placeholder="Detailed description of goods/services"></textarea>
+                                <label for="hsCode">HS Code</label>
+                                <input type="text" id="hsCode" name="hsCode" placeholder="Harmonized System Code">
                             </div>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="hsCode">HS Code</label>
-                                    <input type="text" id="hsCode" name="hsCode" placeholder="Harmonized System Code">
-                                </div>
-                                <div class="form-group">
-                                    <label for="quantity">Quantity</label>
-                                    <input type="text" id="quantity" name="quantity" placeholder="e.g., 1000 units">
-                                </div>
+                            <div class="form-group">
+                                <label for="quantity">Quantity</label>
+                                <input type="text" id="quantity" name="quantity" placeholder="e.g., 1000 units">
+
                             </div>
                         </div>
 
                         <!-- Documents Required Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Documents Required (46A)</h2>
-                            <div class="form-group">
-                                <label for="documentsRequired">Documents Required <span class="required">*</span></label>
-                                <textarea id="documentsRequired" name="documentsRequired" required
-                                    placeholder="List all required documents, e.g., Commercial Invoice, Bill of Lading, Packing List, etc."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="additionalDocuments">Additional Documents</label>
-                                <textarea id="additionalDocuments" name="additionalDocuments"
-                                    placeholder="Specify any additional documents required"></textarea>
-                            </div>
+                        <h2 class="section-title">Documents Required (46A)</h2>
+
+                        <div class="form-group">
+                            <label for="documentsRequired">Documents Required <span class="required">*</span></label>
+                            <textarea id="documentsRequired" name="documentsRequired" required
+                                placeholder="List all required documents, e.g., Commercial Invoice, Bill of Lading, Packing List, etc."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="additionalDocuments">Additional Documents</label>
+                            <textarea id="additionalDocuments" name="additionalDocuments"
+                                placeholder="Specify any additional documents required"></textarea>
                         </div>
 
                         <!-- Additional Conditions Section -->
@@ -3018,32 +3013,32 @@
                 }
             }).mount('#app');
         </script>
-                  <script>
-// Add this to your LC application form page
-window.addEventListener('message', function(event) {
-    console.log('Received message from document classification:', event.data);
+        <script>
+            // Add this to your LC application form page
+            window.addEventListener('message', function (event) {
+                console.log('Received message from document classification:', event.data);
 
-    if (event.data.type === 'POPULATE_LC_FORM') {
-        console.log('Populating LC form with data:', event.data.data);
-        // Populate the form fields with the extracted data
-        const formData = event.data.data;
-        Object.keys(formData).forEach(fieldName => {
-            const field = document.querySelector(`[name="${fieldName}"]`);
-            if (field) {
-                field.value = formData[fieldName];
-                console.log(`Populated ${fieldName}: ${formData[fieldName]}`);
-            }
-        });
+                if (event.data.type === 'POPULATE_LC_FORM') {
+                    console.log('Populating LC form with data:', event.data.data);
+                    // Populate the form fields with the extracted data
+                    const formData = event.data.data;
+                    Object.keys(formData).forEach(fieldName => {
+                        const field = document.querySelector(`[name="${fieldName}"]`);
+                        if (field) {
+                            field.value = formData[fieldName];
+                            console.log(`Populated ${fieldName}: ${formData[fieldName]}`);
+                        }
+                    });
 
-        // Auto-close the smart capture modal after populating
-        setTimeout(() => {
-            if (typeof closeSmartCapture === 'function') {
-                closeSmartCapture();
-            }
-        }, 500);
-    }
-});
-</script>
+                    // Auto-close the smart capture modal after populating
+                    setTimeout(() => {
+                        if (typeof closeSmartCapture === 'function') {
+                            closeSmartCapture();
+                        }
+                    }, 500);
+                }
+            });
+        </script>
     </div>
 </body>
 
