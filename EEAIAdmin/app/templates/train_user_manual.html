@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Manual Training System</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .drag-over { border-color: #3b82f6; background-color: #eff6ff; }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-3">
+                <i class="fas fa-graduation-cap text-indigo-600 mr-3"></i>
+                User Manual Training System
+            </h1>
+            <p class="text-lg text-gray-600">AI-powered document analysis and training workflow</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <template v-for="(step, index) in steps" :key="index">
+                    <div class="flex items-center" 
+                         :class="{ 'flex-1': index < steps.length - 1 }">
+                        
+                        <!-- Step Circle -->
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300"
+                             :class="getStepClass(index)">
+                            <i v-if="step.completed" class="fas fa-check"></i>
+                            <i v-else-if="step.active && loading" class="fas fa-spinner fa-spin"></i>
+                            <span v-else v-text="index + 1"></span>
+                        </div>
+                        
+                        <!-- Step Label -->
+                        <div class="ml-3 min-w-0">
+                            <p class="text-sm font-medium" :class="step.active ? 'text-blue-600' : step.completed ? 'text-green-600' : 'text-gray-500'" v-text="step.title">
+                            </p>
+                            <p class="text-xs text-gray-500" v-text="step.description"></p>
+                        </div>
+                        
+                        <!-- Progress Line -->
+                        <div v-if="index < steps.length - 1" class="flex-1 h-0.5 mx-6 bg-gray-200"></div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="max-w-4xl mx-auto px-4 py-8">
+            
+            <!-- Step 1: File Upload -->
+            <div v-if="currentStep === 0" class="fade-in">
+                <div class="bg-white rounded-lg shadow-sm border p-8">
+                    <div class="text-center">
+                        <i class="fas fa-cloud-upload-alt text-6xl text-blue-500 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Upload User Manual</h2>
+                        <p class="text-gray-600 mb-8">Select a PDF, JPEG, or PNG file to train as a user manual</p>
+                        
+                        <!-- File Drop Zone -->
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 hover:border-blue-400 transition-colors"
+                             :class="{ 'border-blue-400 bg-blue-50': dragOver }"
+                             @drop="handleFileDrop"
+                             @dragover="handleDragOver"
+                             @dragleave="handleDragLeave">
+                            
+                            <input ref="fileInput" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" @change="handleFileSelect">
+                            
+                            <div v-if="!selectedFile">
+                                <i class="fas fa-file-upload text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-lg text-gray-600 mb-2">Drop your file here or</p>
+                                <button @click="$refs.fileInput.click()" 
+                                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    Browse Files
+                                </button>
+                                <p class="text-sm text-gray-500 mt-4">Supported: PDF, JPEG, PNG (Max 10MB)</p>
+                            </div>
+                            
+                            <div v-else class="text-left">
+                                <div class="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-file-alt text-blue-600 text-2xl mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-900" v-text="selectedFile.name"></p>
+                                        <p class="text-sm text-gray-500" v-text="formatFileSize(selectedFile.size)"></p>
+                                    </div>
+                                    <button @click="removeFile" class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div v-if="selectedFile" class="mt-8">
+                            <button @click="analyzeDocument" 
+                                    :disabled="loading"
+                                    class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                                <i v-else class="fas fa-search mr-2"></i>
+                                <span v-if="loading">Analyzing...</span>
+                                <span v-else>Analyze Document</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: AI Analysis & Preview -->
+            <div v-if="currentStep === 1" class="fade-in space-y-6">
+                
+                <!-- Document Preview -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-eye text-blue-600 mr-2"></i>
+                        Document Preview
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-6" v-if="preview">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">File Information</h4>
+                            <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">File Name:</span>
+                                    <span class="font-medium" v-text="preview.file_name"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Word Count:</span>
+                                    <span class="font-medium" v-if="preview.word_count" v-text="preview.word_count.toLocaleString()"></span>
+                                    <span class="font-medium" v-else>-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Est. Chunks:</span>
+                                    <span class="font-medium" v-text="preview.estimated_chunks"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Text Preview</h4>
+                            <div class="bg-gray-50 rounded-lg p-4 h-32 overflow-y-auto">
+                                <p class="text-sm text-gray-700" v-text="preview.text_preview"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Analysis -->
+                <div class="bg-white rounded-lg shadow-sm border p-6" v-if="aiAnalysis">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-robot text-purple-600 mr-2"></i>
+                        AI Analysis
+                    </h3>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Summary</h4>
+                                <p class="text-gray-700 text-sm leading-relaxed" v-text="aiAnalysis.summary"></p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Document Type</h4>
+                                <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                <span v-text="aiAnalysis.document_type"></span>
+                                </span>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Target Audience</h4>
+                                <p class="text-gray-700 text-sm" v-text="aiAnalysis.target_audience"></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Key Topics</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span v-for="topic in aiAnalysis.key_topics" :key="topic"
+                                          class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                                    <span v-text="topic"></span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Quality Rating</h4>
+                                <div class="flex items-center">
+                                    <div class="flex">
+                                        <i v-for="n in 10" :key="n"
+                                           class="fas fa-star text-lg mr-1"
+                                           :class="n <= aiAnalysis.quality_rating ? 'text-yellow-400' : 'text-gray-300'"></i>
+                                    </div>
+                                    <span class="ml-2 text-sm text-gray-600" v-text="aiAnalysis.quality_rating + '/10'"></span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1" v-text="aiAnalysis.quality_notes"></p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-2">Use Cases</h4>
+                                <ul class="text-sm text-gray-700 space-y-1">
+                                    <li v-for="useCase in aiAnalysis.use_cases" :key="useCase" class="flex items-center">
+                                        <i class="fas fa-check text-green-500 mr-2 text-xs"></i>
+                                        <span v-text="useCase"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="flex justify-between">
+                    <button @click="goBack" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </button>
+                    <button @click="proceedToTesting" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Test Questions <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Q&A Testing -->
+            <div v-if="currentStep === 2" class="fade-in space-y-6">
+
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-question-circle text-indigo-600 mr-2"></i>
+                        Test Questions
+                    </h3>
+                    <p class="text-gray-600 mb-6">Test how well the AI can answer questions about your document before training.</p>
+
+                    <!-- Generated Questions -->
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Suggested Questions</h4>
+                        <div class="grid gap-3">
+                            <div v-for="(question, index) in testQuestions" :key="index"
+                                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900" v-text="question.question"></p>
+                                    <div class="flex items-center mt-1 space-x-2">
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded" v-text="question.category"></span>
+                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded" v-text="question.difficulty"></span>
+                                    </div>
+                                </div>
+                                <button @click="testQuestion(question.question)"
+                                        :disabled="loading"
+                                        class="ml-4 text-blue-600 hover:text-blue-800 disabled:opacity-50">
+                                    <i class="fas fa-play-circle text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Question -->
+                    <div class="border-t pt-6">
+                        <h4 class="font-semibold text-gray-800 mb-3">Ask Your Own Question</h4>
+                        <div class="flex gap-3">
+                            <input v-model="customQuestion"
+                                   @keyup.enter="testQuestion(customQuestion)"
+                                   type="text"
+                                   placeholder="Enter your question about the document..."
+                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <button @click="testQuestion(customQuestion)"
+                                    :disabled="!customQuestion.trim() || loading"
+                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+                                <i v-else class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Answer Display -->
+                    <div v-if="currentAnswer" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h5 class="font-semibold text-blue-900 mb-2">
+                            <i class="fas fa-lightbulb mr-2"></i>Answer:
+                        </h5>
+                        <p class="text-blue-800 mb-2" v-text="currentAnswer.answer"></p>
+                        <p class="text-xs text-blue-600" v-text="'Source: ' + currentAnswer.source"></p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="flex justify-between">
+                    <button @click="goBack" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </button>
+                    <button @click="proceedToConfirmation" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        Confirm Training <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Confirmation -->
+            <div v-if="currentStep === 3" class="fade-in">
+                <div class="bg-white rounded-lg shadow-sm border p-8 text-center">
+                    <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Ready to Train</h2>
+                    <p class="text-gray-600 mb-8">Your document has been analyzed and tested. Confirm to proceed with training.</p>
+
+                    <!-- Final Summary -->
+                    <div class="bg-gray-50 rounded-lg p-6 mb-8 text-left max-w-md mx-auto" v-if="preview && aiAnalysis">
+                        <h4 class="font-semibold text-gray-800 mb-3">Training Summary</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Document:</span>
+                                <span class="font-medium" v-text="preview.file_name"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Type:</span>
+                                <span class="font-medium" v-text="aiAnalysis.document_type"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Quality:</span>
+                                <span class="font-medium" v-text="aiAnalysis.quality_rating + '/10'"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Chunks:</span>
+                                <span class="font-medium" v-text="preview.estimated_chunks"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Chunk Size:</span>
+                                <span class="font-medium" v-text="aiAnalysis.chunk_size || '500'"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-center space-x-4">
+                        <button @click="goBack" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-arrow-left mr-2"></i>Back
+                        </button>
+                        <button @click="confirmTraining"
+                                :disabled="loading"
+                                class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            <i v-if="loading" class="fas fa-spinner fa-spin mr-2"></i>
+                            <i v-else class="fas fa-rocket mr-2"></i>
+                            <span v-if="loading">Training...</span>
+                            <span v-else>Confirm & Train</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Success -->
+            <div v-if="currentStep === 4" class="fade-in">
+                <div class="bg-white rounded-lg shadow-sm border p-8 text-center">
+                    <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Training Complete!</h2>
+                    <p class="text-gray-600 mb-8">Your user manual has been successfully trained and is now available for queries.</p>
+
+                    <div class="flex justify-center space-x-4">
+                        <button @click="startOver" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Train Another
+                        </button>
+                        <a href="/ai-chat" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
+                            <i class="fas fa-comments mr-2"></i>Test in Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Loading Overlay -->
+        <div v-if="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2" v-text="loadingMessage"></h3>
+                    <p class="text-gray-600 text-sm">Please wait while we process your request...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Modal -->
+        <div v-if="error" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="clearError">
+            <div class="bg-white rounded-lg p-6 max-w-md mx-4" @click.stop>
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Error</h3>
+                    <p class="text-gray-600 text-sm mb-4" v-text="error"></p>
+                    <button @click="clearError" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentStep: 0,
+                    loading: false,
+                    loadingMessage: '',
+                    error: null,
+                    dragOver: false,
+                    selectedFile: null,
+
+                    steps: [
+                        { title: 'Upload', description: 'Select document', active: true, completed: false },
+                        { title: 'Analyze', description: 'AI analysis', active: false, completed: false },
+                        { title: 'Test', description: 'Q&A testing', active: false, completed: false },
+                        { title: 'Confirm', description: 'Review & confirm', active: false, completed: false },
+                        { title: 'Complete', description: 'Training done', active: false, completed: false }
+                    ],
+
+                    preview: null,
+                    aiAnalysis: null,
+                    testQuestions: [],
+                    customQuestion: '',
+                    currentAnswer: null,
+                    documentText: ''
+                }
+            },
+
+            methods: {
+                getStepClass(index) {
+                    const step = this.steps[index];
+                    if (step.completed) return 'step-completed border-green-600';
+                    if (step.active) return 'step-active border-blue-600';
+                    return 'step-inactive border-gray-300';
+                },
+
+                updateSteps() {
+                    this.steps.forEach((step, index) => {
+                        step.active = index === this.currentStep;
+                        step.completed = index < this.currentStep;
+                    });
+                },
+
+                handleDragOver(e) {
+                    e.preventDefault();
+                    this.dragOver = true;
+                },
+
+                handleDragLeave(e) {
+                    e.preventDefault();
+                    this.dragOver = false;
+                },
+
+                handleFileDrop(e) {
+                    e.preventDefault();
+                    this.dragOver = false;
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleFile(files[0]);
+                    }
+                },
+
+                handleFileSelect(e) {
+                    const files = e.target.files;
+                    if (files.length > 0) {
+                        this.handleFile(files[0]);
+                    }
+                },
+
+                handleFile(file) {
+                    // Validate file
+                    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(file.type)) {
+                        this.error = 'Please select a PDF, JPEG, or PNG file.';
+                        return;
+                    }
+
+                    if (file.size > 10 * 1024 * 1024) { // 10MB
+                        this.error = 'File size must be less than 10MB.';
+                        return;
+                    }
+
+                    this.selectedFile = file;
+                },
+
+                removeFile() {
+                    this.selectedFile = null;
+                    this.$refs.fileInput.value = '';
+                },
+
+                async analyzeDocument() {
+                    if (!this.selectedFile) return;
+
+                    this.loading = true;
+                    this.loadingMessage = 'Analyzing document with AI...';
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', this.selectedFile);
+
+                        const response = await fetch('/api/user-manual/preview', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.preview = data.preview;
+                            this.aiAnalysis = data.ai_analysis;
+                            this.testQuestions = data.test_questions;
+                            this.documentText = data.preview.full_text || data.preview.text_preview;
+
+                            this.currentStep = 1;
+                            this.updateSteps();
+                        } else {
+                            this.error = data.message || 'Failed to analyze document';
+                        }
+                    } catch (err) {
+                        this.error = 'Network error. Please try again.';
+                        console.error('Analysis error:', err);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async testQuestion(question) {
+                    if (!question.trim()) return;
+
+                    this.loading = true;
+                    this.loadingMessage = 'Testing question...';
+
+                    try {
+                        const response = await fetch('/api/user-manual/test-question', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                question: question,
+                                document_text: this.documentText
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.currentAnswer = data;
+                            if (question === this.customQuestion) {
+                                this.customQuestion = '';
+                            }
+                        } else {
+                            this.error = data.message || 'Failed to test question';
+                        }
+                    } catch (err) {
+                        this.error = 'Network error. Please try again.';
+                        console.error('Question test error:', err);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async confirmTraining() {
+                    this.loading = true;
+                    this.loadingMessage = 'Confirming training...';
+
+                    try {
+                        const response = await fetch('/api/user-manual/confirm-training', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                file_name: this.preview.file_name,
+                                confirmed: true,
+                                document_text: this.documentText,
+                                ai_analysis: this.aiAnalysis
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.currentStep = 4;
+                            this.updateSteps();
+                        } else {
+                            this.error = data.message || 'Failed to confirm training';
+                        }
+                    } catch (err) {
+                        this.error = 'Network error. Please try again.';
+                        console.error('Confirmation error:', err);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                goBack() {
+                    if (this.currentStep > 0) {
+                        this.currentStep--;
+                        this.updateSteps();
+                    }
+                },
+                
+                proceedToTesting() {
+                    this.currentStep = 2;
+                    this.updateSteps();
+                },
+                
+                proceedToConfirmation() {
+                    this.currentStep = 3;
+                    this.updateSteps();
+                },
+                
+                startOver() {
+                    this.currentStep = 0;
+                    this.selectedFile = null;
+                    this.preview = null;
+                    this.aiAnalysis = null;
+                    this.testQuestions = [];
+                    this.customQuestion = '';
+                    this.currentAnswer = null;
+                    this.documentText = '';
+                    this.$refs.fileInput.value = '';
+                    this.updateSteps();
+                },
+                
+                clearError() {
+                    this.error = null;
+                },
+                
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                }
+            },
+            
+            mounted() {
+                this.updateSteps();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
+</html>

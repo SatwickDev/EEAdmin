@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load Template Sample Button - Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .feature-highlight {
+            background: linear-gradient(135deg, #0ea5e9 10%, #0284c7 90%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background: #64748b;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #475569;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #0ea5e9;
+        }
+        .step-number {
+            background: #0ea5e9;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .success-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1><i class="fas fa-file-import"></i> Load Template Sample Button - Implementation</h1>
+        
+        <div class="feature-highlight">
+            <h3><i class="fas fa-star"></i> New Feature Added</h3>
+            <p>A "Load Template Sample" button has been added to the LC form that allows users to quickly populate the form with sample data for testing and demonstration purposes.</p>
+        </div>
+
+        <h2><i class="fas fa-cogs"></i> What Was Implemented</h2>
+        
+        <div class="step">
+            <div class="step-number">1</div>
+            <div>
+                <strong>Button Added to Form</strong><br>
+                Added a new "Load Template Sample" button to the LC form button group with an attractive info-style design.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">2</div>
+            <div>
+                <strong>CSS Styling</strong><br>
+                Created new <code>.btn-info</code> CSS class with a gradient blue background and hover effects.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">3</div>
+            <div>
+                <strong>JavaScript Function</strong><br>
+                Implemented <code>loadTemplateSample()</code> function that fetches sample data and populates all form fields.
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">4</div>
+            <div>
+                <strong>Backend Enhancement</strong><br>
+                Enhanced the existing route to return JSON data when <code>load_template=true</code> parameter is passed.
+            </div>
+        </div>
+
+        <h2><i class="fas fa-code"></i> Button Implementation</h2>
+        
+        <p><strong>HTML Button:</strong></p>
+        <div class="code-block">&lt;button type="button" class="btn btn-info" onclick="loadTemplateSample()"&gt;
+    &lt;i class="fas fa-file-import"&gt;&lt;/i&gt; Load Template Sample
+&lt;/button&gt;</div>
+
+        <p><strong>CSS Styling:</strong></p>
+        <div class="code-block">.btn-info {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}</div>
+
+        <h2><i class="fas fa-rocket"></i> How It Works</h2>
+        
+        <div class="step">
+            <div class="step-number">1</div>
+            <div>
+                User clicks "Load Template Sample" button on the LC form
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">2</div>
+            <div>
+                JavaScript makes an AJAX request to <code>/trade_finance_lc_form?load_template=true</code>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">3</div>
+            <div>
+                Backend returns sample LC data in JSON format
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">4</div>
+            <div>
+                JavaScript populates all form fields with the sample data
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">5</div>
+            <div>
+                User sees success message and can review/modify the populated data
+            </div>
+        </div>
+
+        <h2><i class="fas fa-database"></i> Sample Data Included</h2>
+        
+        <ul style="line-height: 1.8;">
+            <li><span class="success-badge">✓</span> LC Number (auto-generated with timestamp)</li>
+            <li><span class="success-badge">✓</span> Applicant and Beneficiary details</li>
+            <li><span class="success-badge">✓</span> Banking information (Issuing & Advising banks)</li>
+            <li><span class="success-badge">✓</span> Amount, Currency, and Payment terms</li>
+            <li><span class="success-badge">✓</span> Shipment details and dates</li>
+            <li><span class="success-badge">✓</span> Goods description and specifications</li>
+            <li><span class="success-badge">✓</span> Document requirements (checkboxes)</li>
+            <li><span class="success-badge">✓</span> Additional conditions and terms</li>
+        </ul>
+
+        <h2><i class="fas fa-link"></i> Quick Access</h2>
+        
+        <a href="http://127.0.0.1:5002/trade_finance_lc_form" class="btn btn-primary" target="_blank">
+            <i class="fas fa-external-link-alt"></i> Open LC Form
+        </a>
+        
+        <a href="http://127.0.0.1:5002/lc_demo" class="btn btn-info" target="_blank">
+            <i class="fas fa-info-circle"></i> View Full Demo
+        </a>
+
+        <h2><i class="fas fa-exclamation-triangle"></i> Technical Notes</h2>
+        
+        <ul style="line-height: 1.8;">
+            <li><strong>Error Handling:</strong> Function includes try-catch blocks and user feedback</li>
+            <li><strong>Form Field Mapping:</strong> Automatically maps JSON keys to form field names/IDs</li>
+            <li><strong>Checkbox Support:</strong> Handles document requirement checkboxes</li>
+            <li><strong>User Feedback:</strong> Shows loading, success, and error messages</li>
+            <li><strong>Responsive Design:</strong> Button works on all screen sizes</li>
+        </ul>
+    </div>
+</body>
+</html>

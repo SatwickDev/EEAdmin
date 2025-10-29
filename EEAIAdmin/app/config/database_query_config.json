@@ -1,0 +1,1234 @@
+{
+  "entities": {
+    "advising_bank": {
+      "description": "Bank advising the LC to beneficiary",
+      "id": "advising_bank",
+      "id_column": "bank_id",
+      "name": "Advising Bank",
+      "natural_keys": [
+        "swift_bic",
+        "name"
+      ],
+      "table": "banks"
+    },
+    "applicant": {
+      "description": "Customer requesting LC/guarantee",
+      "id": "applicant",
+      "id_column": "party_id",
+      "name": "Applicant",
+      "natural_keys": [
+        "name",
+        "swift_bic",
+        "tax_id"
+      ],
+      "table": "parties"
+    },
+    "beneficiary": {
+      "description": "Party receiving payment under LC/guarantee",
+      "id": "beneficiary",
+      "id_column": "party_id",
+      "name": "Beneficiary",
+      "natural_keys": [
+        "name",
+        "swift_bic",
+        "tax_id"
+      ],
+      "table": "parties"
+    },
+    "issuing_bank": {
+      "description": "Bank issuing the LC or guarantee",
+      "id": "issuing_bank",
+      "id_column": "bank_id",
+      "name": "Issuing Bank",
+      "natural_keys": [
+        "swift_bic",
+        "name"
+      ],
+      "table": "banks"
+    }
+  },
+  "metadata": {
+    "description": "Trade Finance Database Query Configuration - Module/Table Mapping, Recipes, and RBAC",
+    "lastUpdated": "2025-10-26T18:31:16.070440",
+    "maintainer": "Finstack Tech"
+  },
+  "modules": {
+    "collections": {
+      "description": "D/P and D/A collection transactions",
+      "entry_tables": [
+        "collections",
+        "collection_documents"
+      ],
+      "icon": "mdi-inbox-multiple-outline",
+      "id": "collections",
+      "intents": {
+        "list_pending": {
+          "description": "Collections awaiting acceptance or payment",
+          "recipe": "collection_pending_view"
+        },
+        "status_tracking": {
+          "description": "Track collection status by reference",
+          "recipe": "collection_detail_view"
+        }
+      },
+      "name": "Documentary Collections"
+    },
+    "guarantees": {
+      "description": "SBLC and other guarantee instruments lifecycle",
+      "entry_tables": [
+        "guarantees",
+        "guarantee_claims"
+      ],
+      "icon": "mdi-shield-check-outline",
+      "id": "guarantees",
+      "intents": {
+        "claims_history": {
+          "description": "View claims against guarantees",
+          "recipe": "guarantee_claims_view"
+        },
+        "list_active": {
+          "description": "Active guarantees by beneficiary or type",
+          "recipe": "guarantee_active_view"
+        },
+        "list_expiring": {
+          "description": "Guarantees expiring soon",
+          "recipe": "guarantee_expiring_view"
+        }
+      },
+      "name": "Bank Guarantees"
+    },
+    "letters_of_credit": {
+      "description": "Issuance & lifecycle of documentary LCs (MT700/707)",
+      "entry_tables": [
+        "lc_applications",
+        "lc_amendments"
+      ],
+      "icon": "mdi-file-document-outline",
+      "id": "letters_of_credit",
+      "intents": {
+        "amendments_history": {
+          "description": "View all amendments for specific LCs",
+          "recipe": "lc_amendments_view"
+        },
+        "detail_by_number": {
+          "description": "Get full details of an LC by reference number",
+          "recipe": "lc_detail_view"
+        },
+        "list_expired": {
+          "description": "Find LCs that have already expired",
+          "recipe": "lc_expired_view"
+        },
+        "list_expiring": {
+          "description": "Find LCs expiring within a date range",
+          "recipe": "lc_expiring_view"
+        },
+        "list_pending": {
+          "description": "Find LCs that are approved but not issued, or issued not utilized",
+          "recipe": "lc_pending_view"
+        }
+      },
+      "name": "Letters of Credit"
+    },
+    "trade_finance": {
+      "description": "Export/import financing, pre-shipment, post-shipment",
+      "entry_tables": [
+        "finance_applications",
+        "disbursements"
+      ],
+      "icon": "mdi-cash-multiple",
+      "id": "trade_finance",
+      "intents": {
+        "disbursement_tracking": {
+          "description": "Track disbursements and repayments",
+          "recipe": "disbursement_tracking_view"
+        },
+        "list_applications": {
+          "description": "Finance applications by status",
+          "recipe": "finance_applications_view"
+        }
+      },
+      "name": "Trade Finance"
+    }
+  },
+  "query_settings": {
+    "allowed_operations": [
+      "SELECT"
+    ],
+    "default_limit": 100,
+    "denied_functions": [
+      "EXEC",
+      "EXECUTE",
+      "xp_cmdshell"
+    ],
+    "enable_row_level_security": true,
+    "log_all_queries": true,
+    "max_joins": 5,
+    "max_limit": 500,
+    "require_tenant_filter": true,
+    "statement_timeout_seconds": 30
+  },
+  "rbac_roles": {
+    "admin": {
+      "description": "Full system access",
+      "id": "admin",
+      "name": "Administrator",
+      "permissions": [
+        "read_all",
+        "write_all",
+        "delete_all",
+        "configure"
+      ]
+    },
+    "auditor": {
+      "description": "Read-only access for compliance review",
+      "id": "auditor",
+      "name": "Auditor",
+      "permissions": [
+        "read_all_audit",
+        "export_reports"
+      ]
+    },
+    "ops_analyst": {
+      "description": "Can view and process transactions",
+      "id": "ops_analyst",
+      "name": "Operations Analyst",
+      "permissions": [
+        "read_most",
+        "write_transactions",
+        "view_masked_data"
+      ]
+    },
+    "relationship_manager": {
+      "description": "Client relationship management",
+      "id": "relationship_manager",
+      "name": "Relationship Manager",
+      "permissions": [
+        "read_client_portfolio",
+        "view_analytics"
+      ]
+    }
+  },
+  "recipes": {
+    "guarantee_active_view": {
+      "allowed_filters": [
+        {
+          "field": "beneficiary.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "beneficiary.country",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "guarantees.guarantee_type",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "guarantees.amount",
+          "ops": [
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "type": "decimal"
+        }
+      ],
+      "base": "guarantees",
+      "default_limit": 100,
+      "description": "Currently active bank guarantees and SBLCs",
+      "id": "guarantee_active_view",
+      "joins": [
+        {
+          "alias": "applicant",
+          "from": "guarantees.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "beneficiary",
+          "from": "guarantees.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "module": "guarantees",
+      "name": "Active Guarantees View",
+      "order_by": [
+        "guarantees.expiry_date ASC"
+      ],
+      "select": [
+        "guarantees.guarantee_id",
+        "guarantees.guarantee_type",
+        "guarantees.currency",
+        "guarantees.amount",
+        "guarantees.status",
+        "guarantees.issue_date",
+        "guarantees.expiry_date",
+        "applicant.name as applicant_name",
+        "beneficiary.name as beneficiary_name",
+        "beneficiary.country as beneficiary_country"
+      ],
+      "where": [
+        "guarantees.status IN ('issued', 'active')",
+        "guarantees.expiry_date > CURRENT_DATE",
+        "guarantees.tenant_id = :tenant_id"
+      ]
+    },
+    "guarantee_claims_view": {
+      "allowed_filters": [
+        {
+          "field": "guarantee_claims.claim_status",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "beneficiary.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "guarantee_claims.claim_date",
+          "ops": [
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "type": "date"
+        }
+      ],
+      "base": "guarantee_claims",
+      "default_limit": 100,
+      "description": "Claims made against guarantees",
+      "id": "guarantee_claims_view",
+      "joins": [
+        {
+          "alias": "guarantee",
+          "from": "guarantee_claims.guarantee_id",
+          "to": "guarantees.guarantee_id",
+          "type": "inner"
+        },
+        {
+          "alias": "applicant",
+          "from": "guarantees.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "beneficiary",
+          "from": "guarantees.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "module": "guarantees",
+      "name": "Guarantee Claims View",
+      "order_by": [
+        "guarantee_claims.claim_date DESC"
+      ],
+      "select": [
+        "guarantee_claims.claim_id",
+        "guarantee_claims.claim_date",
+        "guarantee_claims.claim_amount",
+        "guarantee_claims.claim_status",
+        "guarantee.guarantee_id",
+        "guarantee.guarantee_type",
+        "guarantee.amount as guarantee_amount",
+        "applicant.name as applicant_name",
+        "beneficiary.name as beneficiary_name"
+      ],
+      "where": [
+        "guarantee_claims.tenant_id = :tenant_id"
+      ]
+    },
+    "guarantee_expiring_view": {
+      "allowed_filters": [
+        {
+          "field": "guarantees.expiry_date",
+          "ops": [
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "required": true,
+          "type": "date"
+        },
+        {
+          "field": "applicant.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "beneficiary.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "guarantees.guarantee_type",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "guarantees.currency",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "guarantees.amount",
+          "ops": [
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "type": "decimal"
+        }
+      ],
+      "base": "guarantees",
+      "default_limit": 100,
+      "description": "Guarantees expiring within specified date range",
+      "id": "guarantee_expiring_view",
+      "joins": [
+        {
+          "alias": "applicant",
+          "from": "guarantees.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "beneficiary",
+          "from": "guarantees.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "module": "guarantees",
+      "name": "Expiring Guarantees View",
+      "order_by": [
+        "guarantees.expiry_date ASC"
+      ],
+      "select": [
+        "guarantees.guarantee_id",
+        "guarantees.guarantee_type",
+        "guarantees.currency",
+        "guarantees.amount",
+        "guarantees.status",
+        "guarantees.issue_date",
+        "guarantees.expiry_date",
+        "guarantees.underlying_contract",
+        "applicant.name as applicant_name",
+        "applicant.country as applicant_country",
+        "beneficiary.name as beneficiary_name",
+        "beneficiary.country as beneficiary_country"
+      ],
+      "where": [
+        "guarantees.status IN ('issued', 'active')",
+        "guarantees.expiry_date BETWEEN :start_date AND :end_date",
+        "guarantees.tenant_id = :tenant_id"
+      ]
+    },
+    "lc_detail_view": {
+      "allowed_filters": [
+        {
+          "field": "lc_applications.lc_id",
+          "ops": [
+            "="
+          ],
+          "type": "integer"
+        },
+        {
+          "field": "lc_applications.applicant_ref",
+          "ops": [
+            "="
+          ],
+          "type": "string"
+        }
+      ],
+      "base": "lc_applications",
+      "default_limit": 1,
+      "description": "Complete LC details with amendments",
+      "id": "lc_detail_view",
+      "joins": [
+        {
+          "alias": "amend",
+          "from": "lc_applications.lc_id",
+          "to": "lc_amendments.lc_id",
+          "type": "left"
+        },
+        {
+          "alias": "applicant",
+          "from": "lc_applications.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "beneficiary",
+          "from": "lc_applications.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "module": "letters_of_credit",
+      "name": "LC Detail View",
+      "order_by": [
+        "amend.amendment_date DESC"
+      ],
+      "select": [
+        "lc_applications.*",
+        "applicant.name as applicant_name",
+        "applicant.swift_bic as applicant_bic",
+        "applicant.country as applicant_country",
+        "beneficiary.name as beneficiary_name",
+        "beneficiary.swift_bic as beneficiary_bic",
+        "beneficiary.country as beneficiary_country",
+        "amend.amendment_number",
+        "amend.field_name",
+        "amend.old_value",
+        "amend.new_value",
+        "amend.amendment_date"
+      ],
+      "where": [
+        "lc_applications.tenant_id = :tenant_id"
+      ]
+    },
+    "lc_expiring_view": {
+      "allowed_filters": [
+        {
+          "field": "lc_applications.expiry_date",
+          "ops": [
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "required": true,
+          "type": "date"
+        },
+        {
+          "field": "applicant.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "lc_applications.currency",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        }
+      ],
+      "base": "lc_applications",
+      "default_limit": 100,
+      "description": "LCs expiring within specified date range",
+      "id": "lc_expiring_view",
+      "joins": [
+        {
+          "alias": "applicant",
+          "from": "lc_applications.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "applicant",
+          "from": "lc_applications.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "module": "letters_of_credit",
+      "name": "Expiring LCs View",
+      "order_by": [
+        "lc_applications.expiry_date ASC"
+      ],
+      "select": [
+        "lc_applications.lc_id",
+        "lc_applications.applicant_ref",
+        "lc_applications.currency",
+        "lc_applications.amount",
+        "lc_applications.expiry_date",
+        "lc_applications.status",
+        "applicant.name as applicant_name",
+        "beneficiary.name as beneficiary_name"
+      ],
+      "where": [
+        "lc_applications.status IN ('issued', 'advised')",
+        "lc_applications.expiry_date BETWEEN :start_date AND :end_date",
+        "lc_applications.tenant_id = :tenant_id"
+      ]
+    },
+    "lc_pending_view": {
+      "allowed_filters": [
+        {
+          "field": "applicant.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "beneficiary.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "lc_applications.currency",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "lc_applications.amount",
+          "ops": [
+            "=",
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "type": "decimal"
+        },
+        {
+          "field": "lc_applications.expiry_date",
+          "ops": [
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "type": "date"
+        },
+        {
+          "field": "applicant.country",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        }
+      ],
+      "base": "lc_applications",
+      "default_limit": 100,
+      "description": "LCs approved but not yet fully utilized",
+      "id": "lc_pending_view",
+      "joins": [
+        {
+          "alias": "applicant",
+          "from": "lc_applications.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "beneficiary",
+          "from": "lc_applications.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "module": "letters_of_credit",
+      "name": "Pending LCs View",
+      "order_by": [
+        "lc_applications.expiry_date ASC"
+      ],
+      "select": [
+        "lc_applications.lc_id",
+        "lc_applications.applicant_ref",
+        "lc_applications.currency",
+        "lc_applications.amount",
+        "lc_applications.status",
+        "lc_applications.issue_date",
+        "lc_applications.expiry_date",
+        "applicant.name as applicant_name",
+        "applicant.country as applicant_country",
+        "beneficiary.name as beneficiary_name",
+        "beneficiary.country as beneficiary_country"
+      ],
+      "where": [
+        "lc_applications.status IN ('approved', 'issued')",
+        "lc_applications.tenant_id = :tenant_id"
+      ]
+    },
+    "lc_expired_view": {
+      "allowed_filters": [
+        {
+          "field": "applicant.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "beneficiary.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "lc_applications.currency",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "lc_applications.amount",
+          "ops": [
+            "=",
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "type": "decimal"
+        }
+      ],
+      "base": "lc_applications",
+      "default_limit": 100,
+      "description": "Letters of Credit that have expired",
+      "id": "lc_expired_view",
+      "intent_patterns": [
+        "show.*expired.*lc",
+        "expired.*letter.*credit",
+        "list.*expired.*lc",
+        "get.*expired.*lc",
+        ".*lc.*expired"
+      ],
+      "joins": [
+        {
+          "alias": "applicant",
+          "from": "lc_applications.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "beneficiary",
+          "from": "lc_applications.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "keywords": [
+        "expired",
+        "lc",
+        "letter of credit",
+        "letters of credit",
+        "expiry"
+      ],
+      "module": "letters_of_credit",
+      "name": "Expired LCs View",
+      "order_by": [
+        "lc_applications.expiry_date DESC"
+      ],
+      "select": [
+        "lc_applications.lc_id",
+        "lc_applications.applicant_ref",
+        "lc_applications.currency",
+        "lc_applications.amount",
+        "lc_applications.status",
+        "lc_applications.issue_date",
+        "lc_applications.expiry_date",
+        "applicant.name as applicant_name",
+        "applicant.country as applicant_country",
+        "beneficiary.name as beneficiary_name",
+        "beneficiary.country as beneficiary_country"
+      ],
+      "where": [
+        "lc_applications.expiry_date < CURRENT_DATE",
+        "lc_applications.tenant_id = :tenant_id"
+      ]
+    }
+  },
+  "tables": {
+    "guarantee_claims": {
+      "columns": [
+        {
+          "description": "Primary key",
+          "name": "claim_id",
+          "type": "integer"
+        },
+        {
+          "description": "Foreign key to guarantees",
+          "name": "guarantee_id",
+          "type": "integer"
+        },
+        {
+          "description": "Date claim was made",
+          "name": "claim_date",
+          "type": "date"
+        },
+        {
+          "description": "Amount claimed",
+          "name": "claim_amount",
+          "type": "decimal"
+        },
+        {
+          "description": "pending|approved|rejected|paid",
+          "name": "claim_status",
+          "type": "string"
+        },
+        {
+          "description": "Reason for claim",
+          "name": "claim_reason",
+          "type": "text"
+        },
+        {
+          "description": "Whether supporting documents received",
+          "name": "documents_received",
+          "type": "boolean"
+        },
+        {
+          "description": "Date claim was paid (if approved)",
+          "name": "payment_date",
+          "type": "date"
+        },
+        {
+          "description": "Multi-tenancy identifier",
+          "name": "tenant_id",
+          "type": "integer"
+        }
+      ],
+      "description": "Claims made against bank guarantees",
+      "fks": [
+        {
+          "column": "guarantee_id",
+          "ref_column": "guarantee_id",
+          "ref_table": "guarantees"
+        }
+      ],
+      "id": "guarantee_claims",
+      "indexes": [
+        "guarantee_id",
+        "claim_status",
+        "claim_date",
+        "tenant_id"
+      ],
+      "name": "Guarantee Claims",
+      "pk": "claim_id",
+      "rbac": {
+        "read_roles": [
+          "ops_analyst",
+          "relationship_manager",
+          "auditor",
+          "admin"
+        ],
+        "write_roles": [
+          "ops_analyst",
+          "admin"
+        ]
+      }
+    },
+    "guarantees": {
+      "columns": [
+        {
+          "description": "Primary key",
+          "name": "guarantee_id",
+          "type": "integer"
+        },
+        {
+          "description": "Foreign key to parties",
+          "name": "applicant_id",
+          "type": "integer"
+        },
+        {
+          "description": "Foreign key to parties",
+          "name": "beneficiary_id",
+          "type": "integer"
+        },
+        {
+          "description": "performance|financial|advance_payment|bid_bond|SBLC",
+          "name": "guarantee_type",
+          "type": "string"
+        },
+        {
+          "description": "ISO currency code",
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "description": "Guarantee amount",
+          "name": "amount",
+          "type": "decimal"
+        },
+        {
+          "description": "draft|issued|active|claimed|expired|cancelled",
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "description": "Issue date",
+          "name": "issue_date",
+          "type": "date"
+        },
+        {
+          "description": "Expiry date",
+          "name": "expiry_date",
+          "type": "date"
+        },
+        {
+          "description": "Reference to underlying contract",
+          "name": "underlying_contract",
+          "type": "string"
+        },
+        {
+          "description": "Multi-tenancy identifier",
+          "name": "tenant_id",
+          "type": "integer"
+        }
+      ],
+      "description": "Bank guarantee and SBLC master table",
+      "fks": [
+        {
+          "column": "applicant_id",
+          "ref_column": "party_id",
+          "ref_table": "parties"
+        },
+        {
+          "column": "beneficiary_id",
+          "ref_column": "party_id",
+          "ref_table": "parties"
+        }
+      ],
+      "id": "guarantees",
+      "indexes": [
+        "status",
+        "expiry_date",
+        "guarantee_type",
+        "tenant_id"
+      ],
+      "name": "Guarantees",
+      "pk": "guarantee_id",
+      "rbac": {
+        "read_roles": [
+          "ops_analyst",
+          "relationship_manager",
+          "auditor",
+          "admin"
+        ],
+        "write_roles": [
+          "ops_analyst",
+          "admin"
+        ]
+      }
+    },
+    "lc_amendments": {
+      "columns": [
+        {
+          "description": "Primary key",
+          "name": "amendment_id",
+          "type": "integer"
+        },
+        {
+          "description": "Foreign key to lc_applications",
+          "name": "lc_id",
+          "type": "integer"
+        },
+        {
+          "description": "Sequential amendment number",
+          "name": "amendment_number",
+          "type": "integer"
+        },
+        {
+          "description": "Field being amended",
+          "name": "field_name",
+          "type": "string"
+        },
+        {
+          "description": "Previous value",
+          "name": "old_value",
+          "type": "text"
+        },
+        {
+          "description": "New value",
+          "name": "new_value",
+          "type": "text"
+        },
+        {
+          "description": "Date of amendment",
+          "name": "amendment_date",
+          "type": "date"
+        },
+        {
+          "description": "pending|approved|rejected",
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "description": "Multi-tenancy identifier",
+          "name": "tenant_id",
+          "type": "integer"
+        }
+      ],
+      "description": "Amendment history for LCs",
+      "fks": [
+        {
+          "column": "lc_id",
+          "ref_column": "lc_id",
+          "ref_table": "lc_applications"
+        }
+      ],
+      "id": "lc_amendments",
+      "indexes": [
+        "lc_id",
+        "status",
+        "amendment_date"
+      ],
+      "name": "LC Amendments",
+      "pk": "amendment_id",
+      "rbac": {
+        "read_roles": [
+          "ops_analyst",
+          "relationship_manager",
+          "auditor",
+          "admin"
+        ],
+        "write_roles": [
+          "ops_analyst",
+          "admin"
+        ]
+      }
+    },
+    "lc_applications": {
+      "columns": [
+        {
+          "description": "Primary key",
+          "name": "lc_id",
+          "type": "integer"
+        },
+        {
+          "description": "Foreign key to parties",
+          "name": "applicant_id",
+          "type": "integer"
+        },
+        {
+          "description": "Foreign key to parties",
+          "name": "beneficiary_id",
+          "type": "integer"
+        },
+        {
+          "description": "ISO currency code",
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "description": "LC amount",
+          "name": "amount",
+          "type": "decimal"
+        },
+        {
+          "description": "draft|pending_approval|approved|issued|advised|utilized|closed",
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "description": "Date LC was issued",
+          "name": "issue_date",
+          "type": "date"
+        },
+        {
+          "description": "LC expiration date",
+          "name": "expiry_date",
+          "type": "date"
+        },
+        {
+          "description": "Customer reference number",
+          "name": "applicant_ref",
+          "type": "string"
+        },
+        {
+          "description": "Trade terms (FOB, CIF, etc.)",
+          "name": "incoterms",
+          "type": "string"
+        },
+        {
+          "description": "Goods description",
+          "name": "description_of_goods",
+          "type": "text"
+        },
+        {
+          "description": "Multi-tenancy identifier",
+          "name": "tenant_id",
+          "type": "integer"
+        },
+        {
+          "description": "Record creation time",
+          "name": "created_at",
+          "type": "timestamp"
+        },
+        {
+          "description": "Last update time",
+          "name": "updated_at",
+          "type": "timestamp"
+        }
+      ],
+      "description": "Master table for letter of credit applications",
+      "fks": [
+        {
+          "column": "applicant_id",
+          "ref_column": "party_id",
+          "ref_table": "parties"
+        },
+        {
+          "column": "beneficiary_id",
+          "ref_column": "party_id",
+          "ref_table": "parties"
+        }
+      ],
+      "id": "lc_applications",
+      "indexes": [
+        "status",
+        "expiry_date",
+        "tenant_id",
+        "applicant_id",
+        "beneficiary_id"
+      ],
+      "name": "LC Applications",
+      "pk": "lc_id",
+      "rbac": {
+        "masked_columns": [
+          {
+            "column": "applicant_ref",
+            "for_roles": [
+              "auditor"
+            ],
+            "mask_type": "partial"
+          }
+        ],
+        "read_roles": [
+          "ops_analyst",
+          "relationship_manager",
+          "auditor",
+          "admin"
+        ],
+        "write_roles": [
+          "ops_analyst",
+          "admin"
+        ]
+      }
+    },
+    "parties": {
+      "columns": [
+        {
+          "description": "Primary key",
+          "name": "party_id",
+          "type": "integer"
+        },
+        {
+          "description": "Party legal name",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "description": "SWIFT BIC code",
+          "name": "swift_bic",
+          "type": "string"
+        },
+        {
+          "description": "ISO country code",
+          "name": "country",
+          "type": "string"
+        },
+        {
+          "description": "City",
+          "name": "city",
+          "type": "string"
+        },
+        {
+          "description": "Full address",
+          "name": "address",
+          "type": "text"
+        },
+        {
+          "description": "Tax identification number",
+          "name": "tax_id",
+          "type": "string"
+        },
+        {
+          "description": "low|medium|high",
+          "name": "risk_rating",
+          "type": "string"
+        },
+        {
+          "description": "Multi-tenancy identifier",
+          "name": "tenant_id",
+          "type": "integer"
+        }
+      ],
+      "description": "Applicants, beneficiaries, and other trade parties",
+      "id": "parties",
+      "indexes": [
+        "name",
+        "swift_bic",
+        "country",
+        "tenant_id"
+      ],
+      "name": "Parties",
+      "pk": "party_id",
+      "rbac": {
+        "masked_columns": [
+          {
+            "column": "tax_id",
+            "for_roles": [
+              "ops_analyst"
+            ],
+            "mask_type": "hash"
+          },
+          {
+            "column": "address",
+            "for_roles": [
+              "auditor"
+            ],
+            "mask_type": "redact"
+          }
+        ],
+        "read_roles": [
+          "ops_analyst",
+          "relationship_manager",
+          "auditor",
+          "admin"
+        ],
+        "write_roles": [
+          "ops_analyst",
+          "admin"
+        ]
+      }
+    }
+  },
+  "version": "1.2.0"
+}

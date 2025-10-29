@@ -1,0 +1,215 @@
+{
+  "prompt_templates": {
+    "lc_analysis": {
+      "stage_1": {
+        "title": "LC-SWIFT Cross-Validation Analysis",
+        "system_prompt": "You are an expert trade finance analyst specializing in Letter of Credit and SWIFT MT700 message validation. Your role is to identify discrepancies, inconsistencies, and compliance issues.",
+        "user_prompt": "Analyze the provided Letter of Credit details and SWIFT MT700 message for discrepancies, inconsistencies, and missing information. Focus on:\n\n1. Field-by-field comparison between LC and SWIFT\n2. Missing mandatory fields (31C, 32B, 44C, 44E, 44F, 45A, 46A, 47A)\n3. Format compliance (dates, amounts, codes)\n4. Data consistency across documents\n\nProvide structured analysis with:\n- Field reference (e.g., 32B, 45A)\n- Source documents\n- Expected vs actual values\n- Severity level (CRITICAL, HIGH, MEDIUM, LOW)\n- Business impact assessment\n- Specific recommendations\n- Rule references (UCP 600, ISBP, SWIFT standards)",
+        "response_format": "structured_json",
+        "max_tokens": 4000
+      },
+      "stage_2": {
+        "title": "Document Content Validation",
+        "system_prompt": "You are a trade document specialist focusing on document content extraction and validation against Letter of Credit requirements.",
+        "user_prompt": "Validate the uploaded trade documents against Letter of Credit requirements. Check for:\n\n1. Document completeness and readability\n2. Required document types (Commercial Invoice, Packing List, Bill of Lading, etc.)\n3. Content matching LC specifications\n4. Authentication and signatures\n5. Date compliance (issue dates, shipment dates, presentation periods)\n\nFor each document, verify:\n- Document type identification\n- Required fields presence\n- Value consistency with LC\n- Format compliance\n- Authentication status",
+        "response_format": "structured_json",
+        "max_tokens": 3500
+      },
+      "stage_3": {
+        "title": "UCP 600 & URDG Compliance Check",
+        "system_prompt": "You are a trade finance compliance expert with deep knowledge of UCP 600, URDG 758, ISBP 745, and international banking standards.",
+        "user_prompt": "Perform comprehensive compliance analysis against international trade finance rules:\n\n1. UCP 600 Articles (especially Art. 14 - Standard for Examination)\n2. URDG 758 provisions (for guarantees)\n3. ISBP 745 guidelines\n4. SWIFT message standards\n5. Banking regulatory requirements\n\nEvaluate:\n- Presentation period compliance (21-day rule)\n- Document authentication requirements\n- Substantial compliance vs strict compliance\n- Risk assessment and mitigation\n- Amendment requirements",
+        "response_format": "structured_json",
+        "max_tokens": 3500
+      }
+    },
+    "document_classification": {
+      "system_prompt": "You are a document classification specialist for trade finance documents.",
+      "user_prompt": "Classify the uploaded document and extract key information:\n\n1. Document type (Commercial Invoice, Packing List, Bill of Lading, Certificate of Origin, Insurance Certificate, etc.)\n2. Key fields extraction\n3. Authentication markers\n4. Date information\n5. Party information\n6. Goods description\n7. Financial information",
+      "response_format": "structured_json"
+    },
+    "swift_parsing": {
+      "system_prompt": "You are a SWIFT message parsing expert specializing in MT700 (Issue of Documentary Credit) messages.",
+      "user_prompt": "Parse the SWIFT MT700 message and extract all relevant fields according to SWIFT standards:\n\n- 20: Documentary Credit Number\n- 31C: Date of Issue\n- 31D: Date and Place of Expiry\n- 32B: Currency Code and Amount\n- 40A: Form of Documentary Credit\n- 41A/41D: Available With/By\n- 42C: Drafts At\n- 43P/43T: Partial Shipments/Transhipment\n- 44A/44E/44F: Loading/Discharge ports\n- 44C: Latest Date of Shipment\n- 45A: Description of Goods\n- 46A: Documents Required\n- 47A: Additional Conditions\n- 48: Period for Presentation\n- 49: Confirmation Instructions\n- 78: Instructions to Paying Bank",
+      "response_format": "structured_json"
+    }
+  },
+  "severity_mapping": {
+    "CRITICAL": {
+      "description": "Transaction rejection risk - immediate action required",
+      "color": "#dc2626",
+      "icon": "fa-exclamation-triangle",
+      "priority": 1
+    },
+    "HIGH": {
+      "description": "Significant delays expected - urgent attention needed",
+      "color": "#ea580c", 
+      "icon": "fa-exclamation-circle",
+      "priority": 2
+    },
+    "MEDIUM": {
+      "description": "Minor processing issues - should be addressed",
+      "color": "#ca8a04",
+      "icon": "fa-info-circle", 
+      "priority": 3
+    },
+    "LOW": {
+      "description": "Documentation notes - for reference",
+      "color": "#65a30d",
+      "icon": "fa-check-circle",
+      "priority": 4
+    }
+  },
+  "field_mappings": {
+    "swift_fields": {
+      "20": {"name": "Documentary Credit Number", "required": true, "format": "alphanumeric"},
+      "31C": {"name": "Date of Issue", "required": true, "format": "YYMMDD"},
+      "31D": {"name": "Date and Place of Expiry", "required": true, "format": "YYMMDDPLACE"},
+      "32B": {"name": "Currency Code and Amount", "required": true, "format": "CCCNNN"},
+      "40A": {"name": "Form of Documentary Credit", "required": false, "format": "code"},
+      "41A": {"name": "Available With Bank", "required": false, "format": "bank_code"},
+      "41D": {"name": "Available With Bank Name", "required": false, "format": "text"},
+      "42C": {"name": "Drafts At", "required": false, "format": "text"},
+      "43P": {"name": "Partial Shipments", "required": false, "format": "ALLOWED/NOT ALLOWED"},
+      "43T": {"name": "Transhipment", "required": false, "format": "ALLOWED/NOT ALLOWED"},
+      "44A": {"name": "Loading on Board", "required": false, "format": "text"},
+      "44C": {"name": "Latest Date of Shipment", "required": true, "format": "YYMMDD"},
+      "44E": {"name": "Port of Loading", "required": true, "format": "text"},
+      "44F": {"name": "Port of Discharge", "required": true, "format": "text"},
+      "45A": {"name": "Description of Goods", "required": true, "format": "text"},
+      "46A": {"name": "Documents Required", "required": true, "format": "text"},
+      "47A": {"name": "Additional Conditions", "required": false, "format": "text"},
+      "48": {"name": "Period for Presentation", "required": false, "format": "text"},
+      "49": {"name": "Confirmation Instructions", "required": false, "format": "text"},
+      "78": {"name": "Instructions to Paying Bank", "required": false, "format": "text"}
+    },
+    "lc_fields": {
+      "lc_number": {"name": "LC Number", "swift_equivalent": "20"},
+      "issue_date": {"name": "Issue Date", "swift_equivalent": "31C"},
+      "expiry_date": {"name": "Expiry Date", "swift_equivalent": "31D"}, 
+      "amount": {"name": "LC Amount", "swift_equivalent": "32B"},
+      "currency": {"name": "Currency Code", "swift_equivalent": "32B"},
+      "goods_description": {"name": "Goods Description", "swift_equivalent": "45A"},
+      "port_of_loading": {"name": "Port of Loading", "swift_equivalent": "44E"},
+      "port_of_discharge": {"name": "Port of Discharge", "swift_equivalent": "44F"},
+      "latest_shipment_date": {"name": "Latest Shipment Date", "swift_equivalent": "44C"},
+      "required_documents": {"name": "Required Documents", "swift_equivalent": "46A"}
+    }
+  },
+  "compliance_rules": {
+    "ucp_600": {
+      "article_14": {
+        "title": "Standard for Examination of Documents",
+        "subrules": {
+          "14a": "Documents must appear on their face to be in compliance",
+          "14b": "Data in documents need not be identical but must not conflict",
+          "14c": "Documents must be presented within 21 days after shipment date",
+          "14d": "Banks have maximum 5 banking days to examine documents"
+        }
+      },
+      "article_15": {
+        "title": "Complying Presentation",
+        "description": "When documents appear on their face to be in compliance"
+      },
+      "article_16": {
+        "title": "Discrepant Documents",
+        "description": "When documents do not appear on their face to be in compliance"
+      }
+    },
+    "urdg_758": {
+      "article_19": {
+        "title": "Examination of Demands",
+        "description": "Standard for examination of demand documents"
+      }
+    },
+    "isbp_745": {
+      "section_a": "General Principles",
+      "section_b": "Documents in General", 
+      "section_c": "Transport Documents",
+      "section_d": "Insurance Documents",
+      "section_e": "Commercial Invoice",
+      "section_f": "Other Documents"
+    }
+  },
+  "document_types": {
+    "commercial_invoice": {
+      "required_fields": ["invoice_number", "date", "seller", "buyer", "goods_description", "amount", "currency"],
+      "validation_rules": ["amount_matches_lc", "date_within_validity", "goods_match_lc"],
+      "copies_required": "as_specified_in_46A"
+    },
+    "packing_list": {
+      "required_fields": ["date", "goods_description", "quantity", "weight", "packaging"],
+      "validation_rules": ["goods_consistent_with_invoice", "quantities_match"],
+      "copies_required": "as_specified_in_46A"
+    },
+    "bill_of_lading": {
+      "required_fields": ["bl_number", "shipper", "consignee", "notify_party", "port_of_loading", "port_of_discharge", "goods_description"],
+      "validation_rules": ["ports_match_lc", "freight_terms", "shipment_date_compliance"],
+      "authentication": "signed_by_carrier"
+    },
+    "certificate_of_origin": {
+      "required_fields": ["origin_country", "goods_description", "certification_authority"],
+      "validation_rules": ["origin_matches_lc_requirements"],
+      "authentication": "chamber_of_commerce_stamp"
+    }
+  },
+  "ui_configuration": {
+    "tabs": [
+      {
+        "id": "inconsistency",
+        "title": "Inconsistency / Discrepancy",
+        "icon": "fa-exclamation-triangle",
+        "description": "Data mismatches between SWIFT MT700 and trade documents"
+      },
+      {
+        "id": "missing_fields", 
+        "title": "Missing Fields",
+        "icon": "fa-question-circle",
+        "description": "Mandatory LC or SWIFT fields that are empty or not extracted"
+      },
+      {
+        "id": "compliance",
+        "title": "Compliance (UCP/URDG)",
+        "icon": "fa-shield-alt", 
+        "description": "Policy-level issues - violations of international trade rules"
+      },
+      {
+        "id": "missing_documents",
+        "title": "Missing Documents", 
+        "icon": "fa-file-times",
+        "description": "Absent or unreadable supporting documents"
+      }
+    ],
+    "table_columns": {
+      "inconsistency": [
+        {"field": "lc_field", "title": "Field / Clause", "width": "15%"},
+        {"field": "source_docs", "title": "Source Docs", "width": "15%"}, 
+        {"field": "observed_value", "title": "Observed Value", "width": "20%"},
+        {"field": "required_value", "title": "Required Value", "width": "20%"},
+        {"field": "severity", "title": "Severity", "width": "10%"},
+        {"field": "recommendation", "title": "Recommendation", "width": "20%"}
+      ],
+      "missing_fields": [
+        {"field": "field_name", "title": "Field", "width": "20%"},
+        {"field": "source_document", "title": "Source Document", "width": "20%"},
+        {"field": "expected_format", "title": "Expected Format", "width": "15%"},
+        {"field": "status", "title": "Status", "width": "15%"},
+        {"field": "recommendation", "title": "Recommendation", "width": "30%"}
+      ],
+      "compliance": [
+        {"field": "rule", "title": "Rule", "width": "15%"},
+        {"field": "description", "title": "Clause Description", "width": "25%"},
+        {"field": "status", "title": "Status", "width": "15%"},
+        {"field": "business_impact", "title": "Business Impact", "width": "15%"},
+        {"field": "recommendation", "title": "Recommendation", "width": "30%"}
+      ],
+      "missing_documents": [
+        {"field": "document_type", "title": "Document Type", "width": "20%"},
+        {"field": "requirement", "title": "Requirement", "width": "20%"},
+        {"field": "uploaded", "title": "Uploaded?", "width": "10%"},
+        {"field": "ocr_status", "title": "OCR Status", "width": "15%"},
+        {"field": "recommendation", "title": "Recommendation", "width": "35%"}
+      ]
+    }
+  }
+}

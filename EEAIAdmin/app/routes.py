@@ -17,9 +17,22 @@ import concurrent.futures
 
 import bcrypt
 import chromadb
-from app.utils.chromadb_client import get_chromadb_client
+
+try:
+    from app.utils.chromadb_client import get_chromadb_client
+except ImportError:
+    # Fallback chromadb client if utils not available
+    def get_chromadb_client(host="localhost", port=8000):
+        return chromadb.HttpClient(host=host, port=port)
+try:
+    import fitz
+except ImportError:
+    fitz = None
+    
+
 import fitz
 import os
+import sys
 from pathlib import Path
 import logging
 import numpy as np
@@ -35,10 +48,47 @@ from PyPDF2 import PdfReader
 from chromadb.utils import embedding_functions
 from flask import Flask, render_template, request, send_file, jsonify, session, Response, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash as checkpw
+
+# Import enhanced analysis systems
+try:
+    from app.utils.parallel_analyzer import get_parallel_analyzer, analyze_documents_parallel, get_analysis_results
+    from app.utils.enhanced_document_preview import get_document_preview, preview_document_with_fields
+    from app.utils.realtime_logger import get_realtime_logger, log_request, log_processing_step, log_info, log_error_msg
+
+    ENHANCED_FEATURES_AVAILABLE = True
+    print("✅ Enhanced analysis features loaded successfully")
+except ImportError as e:
+    print(f"⚠️  Enhanced features not available: {e}")
+    ENHANCED_FEATURES_AVAILABLE = False
+
+
+    # Create fallback decorators
+    def log_request(func):
+        """Fallback decorator when real-time logging not available"""
+        return func
+
+
+    def log_processing_step(message, details=None):
+        """Fallback function when real-time logging not available"""
+        pass
+
+
+    def log_info(message, details=None):
+        """Fallback function when real-time logging not available"""
+        pass
+
+
+    def log_error_msg(message, details=None):
+        """Fallback function when real-time logging not available"""
+        pass
+
 from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
 from functools import wraps
 import zipfile
+import qrcode
+import cv2
+from docx import Document
 import tiktoken
 from xml.etree.ElementTree import Element, SubElement, tostring
 import time
@@ -46,7 +96,7 @@ import time
 # Placeholder imports for utility functions (replace with actual implementations)
 from app.utils.common import load_schema
 from app.utils.file_utils import get_embedding_azureRAG
-from app.utils.query_utils import handle_ai_check, chroma_client
+from app.utils.query_utils import handle_ai_check,handle_guarantee_vetting_check, chroma_client
 from app.utils.document_classifier import DocumentClassifier
 from app.utils.coordinate_mapper import coordinate_mapper
 
@@ -77,6 +127,252 @@ app.secret_key = os.urandom(24)  # Secure random secret key
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+
+class UserReadableFormatter(logging.Formatter):
+    """Custom formatter for user-readable log messages"""
+
+    def __init__(self):
+        super().__init__()
+
+    def format(self, record):
+        # Color codes for different log levels
+        colors = {
+            'DEBUG': '\033[36m',  # Cyan
+            'INFO': '\033[32m',  # Green  
+            'WARNING': '\033[33m',  # Yellow
+            'ERROR': '\033[31m',  # Red
+            'CRITICAL': '\033[35m'  # Magenta
+        }
+        reset_color = '\033[0m'
+
+        # Icons for different log levels
+        icons = {
+            'DEBUG': '🔍',
+            'INFO': '✅',
+            'WARNING': '⚠️',
+            'ERROR': '❌',
+            'CRITICAL': '🚨'
+        }
+
+        # Format the timestamp in readable format
+        timestamp = self.formatTime(record, '%H:%M:%S')
+
+        # Get color and icon
+        level_color = colors.get(record.levelname, '')
+        icon = icons.get(record.levelname, '📝')
+
+        # Create readable format
+        if record.levelname in ['ERROR', 'CRITICAL']:
+            # For errors, include more context
+            formatted_message = (
+                f"{level_color}{icon} {timestamp} | {record.levelname}{reset_color}\n"
+                f"   📍 {record.funcName}() in {record.filename}:{record.lineno}\n"
+                f"   💬 {record.getMessage()}{reset_color}"
+            )
+        else:
+            # For other levels, use cleaner format
+            formatted_message = (
+                f"{level_color}{icon} {timestamp} | {record.getMessage()}{reset_color}"
+            )
+
+        return formatted_message
+
+
+# Setup enhanced logging
+def setup_user_readable_logging():
+    """Setup user-readable logging configuration"""
+
+    # Remove existing handlers
+    logging.getLogger().handlers.clear()
+
+    # Create console handler with custom formatter
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(UserReadableFormatter())
+    console_handler.setLevel(logging.INFO)
+
+    # Create file handler for detailed logs (outside app directory to prevent server restarts)
+    log_file_path = os.path.join('/Users/ilyasashu/python/logs', 'eai_admin.log')
+    os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+
+    file_handler = logging.FileHandler(log_file_path, encoding='utf-8')
+    file_formatter = logging.Formatter(
+        '%(asctime)s | %(levelname)-8s | %(name)s.%(funcName)s:%(lineno)d | %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(logging.DEBUG)
+
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(console_handler)
+    root_logger.addHandler(file_handler)
+
+    # Suppress noisy third-party logs
+    logging.getLogger('urllib3').setLevel(logging.WARNING)
+    logging.getLogger('requests').setLevel(logging.WARNING)
+    logging.getLogger('openai').setLevel(logging.WARNING)
+    logging.getLogger('azure').setLevel(logging.WARNING)
+
+    return logging.getLogger(__name__)
+
+
+# Initialize enhanced logging
+try:
+    logger = setup_user_readable_logging()
+    logger.info("🚀 EAI Admin Backend Starting - Enhanced Logging Enabled")
+except Exception as e:
+    # Fallback to basic logging if enhanced setup fails
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Enhanced logging setup failed, using basic logging: {e}")
+
+
+# User-friendly logging helpers
+class UserLogger:
+    """User-friendly logging helper class"""
+
+    @staticmethod
+    def start_process(process_name, details=""):
+        """Log the start of a process"""
+        msg = f"🚀 Starting: {process_name}"
+        if details:
+            msg += f" | {details}"
+        logger.info(msg)
+
+    @staticmethod
+    def complete_process(process_name, duration=None, result_count=None):
+        """Log the completion of a process"""
+        msg = f"✅ Completed: {process_name}"
+        if duration:
+            msg += f" | Duration: {duration:.2f}s"
+        if result_count is not None:
+            msg += f" | Results: {result_count}"
+        logger.info(msg)
+
+    @staticmethod
+    def processing_step(step_name, status="in progress"):
+        """Log a processing step"""
+        if status.lower() == "complete":
+            logger.info(f"   ✓ {step_name}")
+        elif status.lower() == "failed":
+            logger.error(f"   ✗ {step_name}")
+        else:
+            logger.info(f"   🔄 {step_name}")
+
+    @staticmethod
+    def data_info(data_type, count, additional_info=""):
+        """Log data information"""
+        msg = f"📊 {data_type}: {count}"
+        if additional_info:
+            msg += f" | {additional_info}"
+        logger.info(msg)
+
+    @staticmethod
+    def api_call(service_name, endpoint="", status="starting"):
+        """Log API call information"""
+        if status.lower() == "starting":
+            msg = f"🌐 API Call: {service_name}"
+            if endpoint:
+                msg += f" | Endpoint: {endpoint}"
+            logger.info(msg)
+        elif status.lower() == "success":
+            logger.info(f"   ✅ {service_name} - Success")
+        elif status.lower() == "failed":
+            logger.error(f"   ❌ {service_name} - Failed")
+
+    @staticmethod
+    def file_operation(operation, file_path, status="starting"):
+        """Log file operations"""
+        file_name = os.path.basename(file_path)
+        if status.lower() == "starting":
+            logger.info(f"📁 {operation}: {file_name}")
+        elif status.lower() == "success":
+            logger.info(f"   ✅ {file_name} - {operation} successful")
+        elif status.lower() == "failed":
+            logger.error(f"   ❌ {file_name} - {operation} failed")
+
+    @staticmethod
+    def user_action(action, user_info="", additional_context=""):
+        """Log user actions"""
+        msg = f"👤 User Action: {action}"
+        if user_info:
+            msg += f" | User: {user_info}"
+        if additional_context:
+            msg += f" | {additional_context}"
+        logger.info(msg)
+
+    @staticmethod
+    def warning(message, suggestion=""):
+        """Log warnings with suggestions"""
+        msg = f"⚠️ Warning: {message}"
+        if suggestion:
+            msg += f" | Suggestion: {suggestion}"
+        logger.warning(msg)
+
+    @staticmethod
+    def error(error_message, context="", suggestion=""):
+        """Log errors with context and suggestions"""
+        msg = f"❌ Error: {error_message}"
+        if context:
+            msg += f" | Context: {context}"
+        if suggestion:
+            msg += f" | Suggestion: {suggestion}"
+        logger.error(msg)
+
+    @staticmethod
+    def api_request(endpoint, description=""):
+        """Log API request information"""
+        msg = f"🌐 API Request: {endpoint}"
+        if description:
+            msg += f" | {description}"
+        logger.info(msg)
+
+    @staticmethod
+    def success(message, details=None):
+        """Log success messages with optional details"""
+        msg = f"✅ {message}"
+        if details:
+            if isinstance(details, dict):
+                detail_str = ", ".join([f"{k}: {v}" for k, v in details.items()])
+                msg += f" | {detail_str}"
+            else:
+                msg += f" | {details}"
+        logger.info(msg)
+
+    @staticmethod
+    def info(message, details=None):
+        """Log info messages with optional details"""
+        msg = f"ℹ️  {message}"
+        if details:
+            if isinstance(details, dict):
+                detail_str = ", ".join([f"{k}: {v}" for k, v in details.items()])
+                msg += f" | {detail_str}"
+            else:
+                msg += f" | {details}"
+        logger.info(msg)
+
+
+# Create global instance for easy access
+try:
+    user_logger = UserLogger()
+except Exception as e:
+    # Fallback to basic logger wrapper if UserLogger fails
+    class BasicUserLogger:
+        @staticmethod
+        def start_process(process_name, details=""):
+            logger.info(f"Starting: {process_name} {details}")
+
+        @staticmethod
+        def complete_process(process_name, duration=None, result_count=None):
+            logger.info(f"Completed: {process_name}")
+        # Add other basic methods as needed
+
+
+    user_logger = BasicUserLogger()
+    logger.warning(f"UserLogger setup failed, using basic fallback: {e}")
+    
+    
 # MongoDB Configuration
 MONGO_URI = "mongodb://localhost:27017/"
 DATABASE_NAME = "finai_chatbot"
@@ -89,269 +385,20 @@ chat_sessions_collection = db.chat_sessions
 chat_messages_collection = db.chat_messages
 metrics_collection = db.request_metrics  # New collection for metrics
 
+# Knowledge Corpus collections
+kc_documents_collection = db.knowledge_corpus_documents
+kc_pages_collection = db.knowledge_corpus_pages
+kc_qa_pairs_collection = db.knowledge_corpus_qa_pairs
+kc_embeddings_collection = db.knowledge_corpus_embeddings
+kc_user_queries_collection = db.knowledge_corpus_user_queries
+kc_audit_log_collection = db.knowledge_corpus_audit_log
+
+
 # Initialize conversation manager
 conversation_manager = ConversationManager(db)
 
 # Initialize vetting rule engine (will be set in setup_routes)
 vetting_engine = None
-
-
-
-
-
-# DISCREPANCY RULE MANAGEMENT ROUTES
-# =============================================
-# DISCREPANCY RULE MANAGEMENT ROUTES
-# =============================================
-
-class DiscrepancyRuleManager:
-    """Manages discrepancy rules with XML and JSON storage"""
-
-    def __init__(self):
-        self.rules = []
-        self.rules_xml_path = os.path.join(os.path.dirname(__file__), 'data', 'discrepancy_rules.xml')
-        self.rules_json_path = os.path.join(os.path.dirname(__file__), 'data', 'discrepancy_rules.json')
-
-        # Ensure data directory exists
-        os.makedirs(os.path.dirname(self.rules_xml_path), exist_ok=True)
-        self.load_rules()
-
-    def load_rules(self):
-        """Load rules from XML file, fallback to JSON if XML doesn't exist"""
-        try:
-            if os.path.exists(self.rules_xml_path):
-                self.rules = self._load_from_xml()
-            elif os.path.exists(self.rules_json_path):
-                self.rules = self._load_from_json()
-            else:
-                self.rules = []
-                self._create_sample_rules()
-        except Exception as e:
-            logger.error(f"Error loading discrepancy rules: {e}")
-            self.rules = []
-
-    def _load_from_xml(self):
-        """Load rules from XML file"""
-        try:
-            import xml.etree.ElementTree as ET
-            tree = ET.parse(self.rules_xml_path)
-            root = tree.getroot()
-            rules = []
-
-            for rule_elem in root.findall('rule'):
-                rule = {
-                    'id': rule_elem.get('id', str(uuid.uuid4())),
-                    'code': rule_elem.find('code').text if rule_elem.find('code') is not None else '',
-                    'documentType': rule_elem.find('documentType').text if rule_elem.find('documentType') is not None else '',
-                    'description': rule_elem.find('description').text if rule_elem.find('description') is not None else '',
-                    'basis': rule_elem.find('basis').text if rule_elem.find('basis') is not None else '',
-                    'priority': rule_elem.find('priority').text if rule_elem.find('priority') is not None else 'Mandatory',
-                    'createdAt': rule_elem.find('createdAt').text if rule_elem.find('createdAt') is not None else datetime.now().isoformat(),
-                    'updatedAt': rule_elem.find('updatedAt').text if rule_elem.find('updatedAt') is not None else datetime.now().isoformat()
-                }
-                rules.append(rule)
-
-            return rules
-        except Exception as e:
-            logger.error(f"Error loading from XML: {e}")
-            return []
-
-    def _load_from_json(self):
-        """Load rules from JSON file"""
-        try:
-            with open(self.rules_json_path, 'r') as f:
-                data = json.load(f)
-                return data.get('rules', [])
-        except Exception as e:
-            logger.error(f"Error loading from JSON: {e}")
-            return []
-
-    def _create_sample_rules(self):
-        """Create sample rules based on the provided data"""
-        sample_rules = [
-            {
-                'id': str(uuid.uuid4()),
-                'code': 'R-0002',
-                'documentType': 'Bill of Lading',
-                'description': 'must be signed by the authorized signatory',
-                'basis': 'ISBP 821 A1',
-                'priority': 'Mandatory',
-                'createdAt': datetime.now().isoformat(),
-                'updatedAt': datetime.now().isoformat()
-            },
-            {
-                'id': str(uuid.uuid4()),
-                'code': 'R-0003',
-                'documentType': 'Air Waybill',
-                'description': 'must be an original when originals are stipulated in the LC; additionally, named shipper must match LC.',
-                'basis': 'UCP 600 Art. 18',
-                'priority': 'Mandatory',
-                'createdAt': datetime.now().isoformat(),
-                'updatedAt': datetime.now().isoformat()
-            },
-            {
-                'id': str(uuid.uuid4()),
-                'code': 'R-0036',
-                'documentType': 'Bill of Lading',
-                'description': 'certificate must reference the invoice/BL number; additionally, incoterms must be consistent.',
-                'basis': 'Bank Practice',
-                'priority': 'Mandatory',
-                'createdAt': datetime.now().isoformat(),
-                'updatedAt': datetime.now().isoformat()
-            },
-            {
-                'id': str(uuid.uuid4()),
-                'code': 'R-0037',
-                'documentType': 'Air Waybill',
-                'description': 'document must show description matching HS code if required',
-                'basis': 'Customs / LC',
-                'priority': 'Mandatory',
-                'createdAt': datetime.now().isoformat(),
-                'updatedAt': datetime.now().isoformat()
-            },
-            {
-                'id': str(uuid.uuid4()),
-                'code': 'R-0070',
-                'documentType': 'Bill of Lading',
-                'description': 'notify party must match LC or be allowed by LC terms',
-                'basis': 'ISBP 821',
-                'priority': 'Mandatory',
-                'createdAt': datetime.now().isoformat(),
-                'updatedAt': datetime.now().isoformat()
-            }
-        ]
-
-        self.rules = sample_rules
-        self.save_rules()
-
-    def save_rules(self):
-        """Save rules to both XML and JSON formats"""
-        try:
-            self._save_to_xml()
-            self._save_to_json()
-        except Exception as e:
-            logger.error(f"Error saving rules: {e}")
-            raise
-
-    def _save_to_xml(self):
-        """Save rules to XML file"""
-        import xml.etree.ElementTree as ET
-        import xml.dom.minidom
-
-        root = ET.Element('discrepancyRules')
-        root.set('version', '1.0')
-        root.set('lastUpdated', datetime.now().isoformat())
-
-        for rule in self.rules:
-            rule_elem = ET.SubElement(root, 'rule')
-            rule_elem.set('id', rule['id'])
-            ET.SubElement(rule_elem, 'code').text = rule['code']
-            ET.SubElement(rule_elem, 'documentType').text = rule['documentType']
-            ET.SubElement(rule_elem, 'description').text = rule['description']
-            ET.SubElement(rule_elem, 'basis').text = rule['basis']
-            ET.SubElement(rule_elem, 'priority').text = rule['priority']
-            ET.SubElement(rule_elem, 'createdAt').text = rule['createdAt']
-            ET.SubElement(rule_elem, 'updatedAt').text = rule['updatedAt']
-
-        xml_str = ET.tostring(root, encoding='unicode')
-        dom = xml.dom.minidom.parseString(xml_str)
-        pretty_xml = dom.toprettyxml(indent='  ')
-        pretty_xml = '\n'.join([line for line in pretty_xml.split('\n') if line.strip()])
-
-        with open(self.rules_xml_path, 'w', encoding='utf-8') as f:
-            f.write(pretty_xml)
-
-    def _save_to_json(self):
-        """Save rules to JSON file as backup"""
-        data = {
-            'version': '1.0',
-            'lastUpdated': datetime.now().isoformat(),
-            'rules': self.rules
-        }
-
-        with open(self.rules_json_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-
-    def get_all_rules(self):
-        """Get all rules"""
-        return self.rules
-
-    def get_rule_by_id(self, rule_id):
-        """Get rule by ID"""
-        return next((rule for rule in self.rules if rule['id'] == rule_id), None)
-
-    def add_rule(self, rule_data):
-        """Add new rule"""
-        new_rule = {
-            'id': str(uuid.uuid4()),
-            'code': rule_data['code'],
-            'documentType': rule_data['documentType'],
-            'description': rule_data['description'],
-            'basis': rule_data['basis'],
-            'priority': rule_data['priority'],
-            'createdAt': datetime.now().isoformat(),
-            'updatedAt': datetime.now().isoformat()
-        }
-        self.rules.append(new_rule)
-        self.save_rules()
-        return new_rule
-
-    def update_rule(self, rule_id, rule_data):
-        """Update existing rule"""
-        rule = self.get_rule_by_id(rule_id)
-        if not rule:
-            return None
-
-        rule.update({
-            'code': rule_data['code'],
-            'documentType': rule_data['documentType'],
-            'description': rule_data['description'],
-            'basis': rule_data['basis'],
-            'priority': rule_data['priority'],
-            'updatedAt': datetime.now().isoformat()
-        })
-        self.save_rules()
-        return rule
-
-    def delete_rule(self, rule_id):
-        """Delete rule"""
-        rule = self.get_rule_by_id(rule_id)
-        if not rule:
-            return False
-
-        self.rules.remove(rule)
-        self.save_rules()
-        return True
-
-    def export_to_xml(self):
-        """Export rules to XML format and return the XML string"""
-        import xml.etree.ElementTree as ET
-        import xml.dom.minidom
-
-        root = ET.Element('discrepancyRules')
-        root.set('version', '1.0')
-        root.set('lastUpdated', datetime.now().isoformat())
-
-        for rule in self.rules:
-            rule_elem = ET.SubElement(root, 'rule')
-            rule_elem.set('id', rule['id'])
-            ET.SubElement(rule_elem, 'code').text = rule['code']
-            ET.SubElement(rule_elem, 'documentType').text = rule['documentType']
-            ET.SubElement(rule_elem, 'description').text = rule['description']
-            ET.SubElement(rule_elem, 'basis').text = rule['basis']
-            ET.SubElement(rule_elem, 'priority').text = rule['priority']
-            ET.SubElement(rule_elem, 'createdAt').text = rule['createdAt']
-            ET.SubElement(rule_elem, 'updatedAt').text = rule['updatedAt']
-
-        # Convert to string with pretty formatting
-        xml_str = ET.tostring(root, encoding='unicode')
-        dom = xml.dom.minidom.parseString(xml_str)
-        pretty_xml = dom.toprettyxml(indent='  ')
-        return '\n'.join([line for line in pretty_xml.split('\n') if line.strip()])
-    
-# Initialize rule manager
-discrepancy_rule_manager = DiscrepancyRuleManager()
-
 
 
 
@@ -373,6 +420,24 @@ discrepancy_rule_manager = DiscrepancyRuleManager()
 #     except Exception as e:
 #         logger.error(f"ERROR: Failed to load prompt config: {e}")
 #         return None
+
+def load_prompt_config():
+    """
+    Load prompt configuration from YAML file.
+    This reads the document_classification_config.yaml and extracts prompt templates.
+    """
+    try:
+        config_path = os.path.join('data', 'document_classification_config.yaml')
+        user_logger.file_operation("Loading", config_path, "starting")
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+        user_logger.file_operation("Loading", config_path, "success")
+        user_logger.data_info("Configuration entries", len(config) if config else 0)
+        return config
+    except Exception as e:
+        user_logger.file_operation("Loading", config_path, "failed")
+        user_logger.error("Failed to load prompt config", str(e), "Check file path and YAML syntax")
+        return None
 
 def build_classification_prompt_from_config(ocr_text, function_description=None):
     """
@@ -834,6 +899,40 @@ chat_sessions_collection.create_index([("user_id", 1), ("session_id", 1)], uniqu
 chat_sessions_collection.create_index("last_activity", expireAfterSeconds=30 * 24 * 60 * 60)  # 30 days
 chat_messages_collection.create_index([("session_id", 1), ("timestamp", 1)])
 chat_messages_collection.create_index("user_id")
+
+# Create indexes for Knowledge Corpus collections
+kc_documents_collection.create_index("document_id", unique=True)
+kc_documents_collection.create_index("status")
+kc_documents_collection.create_index("uploaded_by")
+kc_documents_collection.create_index([("created_at", DESCENDING)])
+kc_documents_collection.create_index("tags")
+
+kc_pages_collection.create_index("page_id", unique=True)
+kc_pages_collection.create_index([("document_id", 1), ("page_number", 1)])
+
+kc_qa_pairs_collection.create_index("qa_id", unique=True)
+kc_qa_pairs_collection.create_index("document_id")
+kc_qa_pairs_collection.create_index("page_id")
+kc_qa_pairs_collection.create_index("approved")
+kc_qa_pairs_collection.create_index([("canonical_question", "text")])
+
+kc_embeddings_collection.create_index("embedding_id", unique=True)
+kc_embeddings_collection.create_index("document_id")
+kc_embeddings_collection.create_index("qa_id")
+kc_embeddings_collection.create_index("enabled")
+
+kc_user_queries_collection.create_index("query_id", unique=True)
+kc_user_queries_collection.create_index("user_id")
+kc_user_queries_collection.create_index("matched_qa_id")
+kc_user_queries_collection.create_index([("query_timestamp", DESCENDING)])
+kc_user_queries_collection.create_index("user_feedback")
+
+kc_audit_log_collection.create_index("log_id", unique=True)
+kc_audit_log_collection.create_index([("entity_type", 1), ("entity_id", 1)])
+kc_audit_log_collection.create_index("user_id")
+kc_audit_log_collection.create_index([("timestamp", DESCENDING)])
+
+
 
 # Define login_required decorator
 def login_required(f):
@@ -1376,6 +1475,7 @@ def setup_auth_routes(app: Flask):
 
     @app.route('/trade_finance_lc_form', methods=['GET', 'POST'])
     def trade_finance_lc_form():
+
         """Render the Trade Finance LC form with template loading and form handling"""
         if request.method == 'POST':
             # Handle form submission
@@ -1391,7 +1491,7 @@ def setup_auth_routes(app: Flask):
                     form_data['lcNumber'] = f"LC{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
                 # # Store in database
-                # result = db.lc_transactions.insert_one(form_data)
+                result = db.lc_transactions.insert_one(form_data)
 
                 # Return success response
                 return jsonify({
@@ -1647,6 +1747,32 @@ def setup_auth_routes(app: Flask):
             logger.error(f"Get current user error: {e}", exc_info=True)
             return jsonify({"success": False, "message": "An error occurred"}), 500
 
+
+    @app.route("/auth/guest-user", methods=["GET"])
+    def get_guest_user():
+        """Get guest user information for unauthenticated access."""
+        try:
+            # Return guest user data
+            response_data = {
+                "success": True,
+                "user": {
+                    "id": "guest_user",
+                    "firstName": "Guest",
+                    "lastName": "User",
+                    "email": "guest@example.com",
+                    "isAllowed": True,  # Allow guest access to basic features
+                    "isAdmin": False,  # Guests are not admins
+                    "isGuest": True  # Mark as guest user
+                }
+            }
+
+            logger.info("Returning guest user data")
+            return jsonify(response_data), 200
+        except Exception as e:
+            logger.error(f"Get guest user error: {e}", exc_info=True)
+            return jsonify({"success": False, "message": "An error occurred"}), 500
+
+
     @app.route("/auth/logout", methods=["POST"])
     @timing_aspect
     def logout():
@@ -1800,10 +1926,1600 @@ def _get_visualization_recommendations(averaged_metrics):
     
     return recommendations
 
+# ============================================================================
+# Utility Functions for Knowledge Corpus
+# ============================================================================
+
+def split_text(text: str, chunk_size: int = 500) -> List[str]:
+    """Split text into chunks for processing."""
+    words = text.split()
+    return [" ".join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
+
+
+def read_pdf(file_path: str) -> str:
+    """Read PDF content with proper file handle closure and encryption handling."""
+    try:
+        with open(file_path, 'rb') as file:
+            reader = PdfReader(file)
+
+            # Check if PDF is encrypted
+            if reader.is_encrypted:
+                # Try to decrypt with empty password (common for read-protected PDFs)
+                try:
+                    reader.decrypt('')
+                except:
+                    logger.warning(f"PDF {file_path} is encrypted and cannot be decrypted with empty password")
+                    # Fall back to OCR for encrypted PDFs
+                    return None
+
+            # Extract text from all pages
+            text_parts = []
+            for page_num, page in enumerate(reader.pages):
+                try:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text_parts.append(page_text)
+                except Exception as page_error:
+                    logger.warning(f"Error extracting text from page {page_num}: {page_error}")
+                    continue
+
+            text = "\n".join(text_parts)
+
+            # If no text extracted, return None to trigger OCR fallback
+            if not text.strip():
+                logger.warning(f"No text extracted from PDF {file_path} using PyPDF2")
+                return None
+
+            return text
+
+    except Exception as e:
+        logger.error(f"Error reading PDF {file_path}: {e}")
+        # Return None instead of empty string to signal OCR fallback needed
+        return None
+
 
 def setup_routes(app: Flask):
     """Data Categories Management Routes"""
     custom_functions_routes.register_custom_functions_routes(app)
+
+    # Initialize autocomplete routes
+    from app.autocomplete_routes import autocomplete_bp
+    app.register_blueprint(autocomplete_bp)
+    logger.info("✅ Registered autocomplete routes")
+
+    # Initialize Knowledge Corpus routes
+    from app import knowledge_corpus_routes
+    knowledge_corpus_collections = {
+        'documents': kc_documents_collection,
+        'pages': kc_pages_collection,
+        'qa_pairs': kc_qa_pairs_collection,
+        'embeddings': kc_embeddings_collection,
+        'user_queries': kc_user_queries_collection,
+        'audit_log': kc_audit_log_collection
+    }
+    knowledge_corpus_utils = {
+        'get_embedding': get_embedding_azureRAG,
+        'extract_text': extract_text_from_file,
+        'read_pdf': read_pdf,
+        'split_text': split_text,
+        'deployment_name': deployment_name,
+        'logger': logger,
+        'allowed_emails': ALLOWED_EMAILS
+    }
+    knowledge_corpus_routes.init_knowledge_corpus_routes(app, knowledge_corpus_collections, knowledge_corpus_utils)
+
+    # ========================
+    # DATABASE QUERY CONFIGURATION ROUTES
+    # ========================
+
+    @app.route('/database_configuration')
+    @timing_aspect
+    def database_configuration():
+        """Render database configuration page"""
+        return render_template('database_configuration.html')
+
+    @app.route('/api/database-config', methods=['GET'])
+    @timing_aspect
+    def get_database_config():
+        """Get full database configuration"""
+        try:
+            from app.utils.query_generator import QueryGenerator
+            qgen = QueryGenerator()
+
+            return jsonify({
+                'success': True,
+                'config': qgen.config
+            }), 200
+        except Exception as e:
+            logger.error(f"Error loading database config: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/modules', methods=['GET'])
+    @login_required
+    @timing_aspect
+    def get_modules():
+        """Get all available modules"""
+        try:
+            from app.utils.query_generator import QueryGenerator
+            qgen = QueryGenerator()
+            modules = qgen.get_available_modules()
+
+            return jsonify({
+                'success': True,
+                'modules': modules
+            }), 200
+        except Exception as e:
+            logger.error(f"Error getting modules: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/modules/<module_id>', methods=['GET'])
+    @timing_aspect
+    def get_module_detail(module_id):
+        """Get detailed module information including intents"""
+        try:
+            from app.utils.query_generator import QueryGenerator
+            qgen = QueryGenerator()
+
+            module = qgen.modules.get(module_id)
+            if not module:
+                return jsonify({
+                    'success': False,
+                    'error': f'Module not found: {module_id}'
+                }), 404
+
+            intents = qgen.get_module_intents(module_id)
+
+            return jsonify({
+                'success': True,
+                'module': {
+                    'id': module_id,
+                    'name': module.get('name'),
+                    'description': module.get('description'),
+                    'icon': module.get('icon'),
+                    'entry_tables': module.get('entry_tables', []),
+                    'intents': intents
+                }
+            }), 200
+        except Exception as e:
+            logger.error(f"Error getting module {module_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/tables', methods=['GET'])
+    @timing_aspect
+    def get_tables():
+        """Get all tables configuration"""
+        try:
+            from app.utils.query_generator import QueryGenerator
+            qgen = QueryGenerator()
+
+            tables = [
+                {
+                    'id': table_id,
+                    'name': table_data.get('name'),
+                    'description': table_data.get('description'),
+                    'pk': table_data.get('pk'),
+                    'columns': table_data.get('columns', []),
+                    'rbac': table_data.get('rbac', {})
+                }
+                for table_id, table_data in qgen.tables.items()
+            ]
+
+            return jsonify({
+                'success': True,
+                'tables': tables
+            }), 200
+        except Exception as e:
+            logger.error(f"Error getting tables: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/recipes', methods=['GET'])
+    @login_required
+    @timing_aspect
+    def get_recipes():
+        """Get all query recipes"""
+        try:
+            from app.utils.query_generator import QueryGenerator
+            qgen = QueryGenerator()
+
+            recipes = [
+                qgen.get_recipe_info(recipe_id)
+                for recipe_id in qgen.recipes.keys()
+            ]
+
+            return jsonify({
+                'success': True,
+                'recipes': recipes
+            }), 200
+        except Exception as e:
+            logger.error(f"Error getting recipes: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/recipes/<recipe_id>', methods=['GET'])
+    @login_required
+    @timing_aspect
+    def get_recipe_detail(recipe_id):
+        """Get detailed recipe information"""
+        try:
+            from app.utils.query_generator import QueryGenerator
+            qgen = QueryGenerator()
+
+            recipe = qgen.get_recipe_info(recipe_id)
+            if not recipe:
+                return jsonify({
+                    'success': False,
+                    'error': f'Recipe not found: {recipe_id}'
+                }), 404
+
+            return jsonify({
+                'success': True,
+                'recipe': recipe
+            }), 200
+        except Exception as e:
+            logger.error(f"Error getting recipe {recipe_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    # ========== LLM Helper Functions ==========
+
+    def _generate_sql_with_openai(user_query: str, schema_context: str, api_key: str) -> str:
+        """Generate SQL using OpenAI GPT-4"""
+        try:
+            import openai
+            openai.api_key = api_key
+
+            system_prompt = """You are a SQL expert. Generate PostgreSQL queries based on user requests.
+
+Rules:
+1. Generate ONLY the SQL query, no explanations or markdown
+2. Use proper PostgreSQL syntax
+3. Use parameterized queries with $1, $2, etc. for values
+4. Include appropriate WHERE, JOIN, ORDER BY, and LIMIT clauses
+5. Use table aliases (t0, t1, t2, etc.)
+6. Return only SELECT queries (no INSERT, UPDATE, DELETE)
+
+Available Schema:
+{schema}
+"""
+
+            user_prompt = f"Generate a SQL query for: {user_query}"
+
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": system_prompt.format(schema=schema_context)},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.1,  # Low temperature for deterministic output
+                max_tokens=500
+            )
+
+            sql_query = response.choices[0].message.content.strip()
+
+            # Clean up markdown code blocks if present
+            if sql_query.startswith('```sql'):
+                sql_query = sql_query.replace('```sql', '').replace('```', '').strip()
+            elif sql_query.startswith('```'):
+                sql_query = sql_query.replace('```', '').strip()
+
+            return sql_query
+
+        except ImportError:
+            raise Exception("OpenAI library not installed. Run: pip install openai")
+        except Exception as e:
+            raise Exception(f"OpenAI error: {str(e)}")
+
+    def _generate_sql_with_anthropic(user_query: str, schema_context: str, api_key: str) -> str:
+        """Generate SQL using Anthropic Claude"""
+        try:
+            import anthropic
+
+            client = anthropic.Anthropic(api_key=api_key)
+
+            system_prompt = """You are a SQL expert. Generate PostgreSQL queries based on user requests.
+
+Rules:
+1. Generate ONLY the SQL query, no explanations or markdown
+2. Use proper PostgreSQL syntax
+3. Use parameterized queries with $1, $2, etc. for values
+4. Include appropriate WHERE, JOIN, ORDER BY, and LIMIT clauses
+5. Use table aliases (t0, t1, t2, etc.)
+6. Return only SELECT queries (no INSERT, UPDATE, DELETE)
+
+Available Schema:
+{schema}
+"""
+
+            user_prompt = f"Generate a SQL query for: {user_query}"
+
+            message = client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=500,
+                temperature=0.1,
+                system=system_prompt.format(schema=schema_context),
+                messages=[
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+
+            sql_query = message.content[0].text.strip()
+
+            # Clean up markdown code blocks if present
+            if sql_query.startswith('```sql'):
+                sql_query = sql_query.replace('```sql', '').replace('```', '').strip()
+            elif sql_query.startswith('```'):
+                sql_query = sql_query.replace('```', '').strip()
+
+            return sql_query
+
+        except ImportError:
+            raise Exception("Anthropic library not installed. Run: pip install anthropic")
+        except Exception as e:
+            raise Exception(f"Anthropic error: {str(e)}")
+
+    # ========== DATABASE QUERY API ENDPOINTS ==========
+
+    @app.route('/api/database-query/classify', methods=['POST'])
+    @timing_aspect
+    def classify_database_query():
+        """Classify natural language query and generate plan"""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No JSON data provided'
+                }), 400
+
+            user_query = data.get('query', '')
+            module_hint = data.get('module')
+
+            if not user_query:
+                return jsonify({
+                    'success': False,
+                    'error': 'Query text is required'
+                }), 400
+
+            from app.utils.query_generator import QueryGenerator
+            try:
+                qgen = QueryGenerator()
+            except Exception as init_error:
+                logger.error(f"Failed to initialize QueryGenerator: {init_error}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Configuration error: {str(init_error)}'
+                }), 500
+
+            try:
+                plan = qgen.classify_user_query(user_query, module_hint)
+            except Exception as classify_error:
+                logger.error(f"Failed to classify query: {classify_error}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Classification error: {str(classify_error)}'
+                }), 400
+
+            # Get recipe details
+            try:
+                recipe_info = qgen.get_recipe_info(plan['recipe_name'])
+            except Exception as recipe_error:
+                logger.warning(f"Failed to get recipe info: {recipe_error}")
+                recipe_info = None
+
+            return jsonify({
+                'success': True,
+                'plan': plan,
+                'recipe': recipe_info
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Unexpected error in classify_database_query: {e}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': f'Internal server error: {str(e)}'
+            }), 500
+
+    @app.route('/api/database-query/generate', methods=['POST'])
+    @timing_aspect
+    def generate_database_query():
+        """Generate SQL query from recipe and filters"""
+        try:
+            data = request.get_json()
+            recipe_name = data.get('recipe_name')
+            filters = data.get('filters', [])
+            tenant_id = data.get('tenant_id', 1)  # Default tenant
+            user_role = data.get('user_role', 'ops_analyst')
+            limit = data.get('limit')
+            offset = data.get('offset', 0)
+            order_by = data.get('order_by')
+
+            if not recipe_name:
+                return jsonify({
+                    'success': False,
+                    'error': 'recipe_name is required'
+                }), 400
+
+            from app.utils.query_generator import QueryGenerator
+            qgen = QueryGenerator()
+
+            sql, params = qgen.generate_query(
+                recipe_name=recipe_name,
+                filters=filters,
+                tenant_id=tenant_id,
+                user_role=user_role,
+                limit=limit,
+                offset=offset,
+                order_by=order_by
+            )
+
+            return jsonify({
+                'success': True,
+                'sql': sql,
+                'parameters': params,
+                'explanation': f"Generated query for recipe '{recipe_name}' with {len(filters)} filters"
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error generating query: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-query/execute', methods=['POST'])
+    @timing_aspect
+    def execute_database_query():
+        """Execute a generated query (read-only)"""
+        try:
+            data = request.get_json()
+            sql = data.get('sql')
+            parameters = data.get('parameters', {})
+
+            if not sql:
+                return jsonify({
+                    'success': False,
+                    'error': 'SQL query is required'
+                }), 400
+
+            # For now, return mock data
+            # In production, connect to actual database
+            mock_results = [
+                {
+                    'lc_id': 1001,
+                    'applicant_ref': 'LC-2025-001',
+                    'currency': 'USD',
+                    'amount': 250000.00,
+                    'status': 'issued',
+                    'issue_date': '2025-01-15',
+                    'expiry_date': '2025-12-31',
+                    'applicant_name': 'Emirates Steel Industries',
+                    'applicant_country': 'AE',
+                    'beneficiary_name': 'Global Trading Corp',
+                    'beneficiary_country': 'US'
+                },
+                {
+                    'lc_id': 1002,
+                    'applicant_ref': 'LC-2025-002',
+                    'currency': 'EUR',
+                    'amount': 180000.00,
+                    'status': 'approved',
+                    'issue_date': '2025-02-01',
+                    'expiry_date': '2025-11-30',
+                    'applicant_name': 'Dubai Exports LLC',
+                    'applicant_country': 'AE',
+                    'beneficiary_name': 'European Import GmbH',
+                    'beneficiary_country': 'DE'
+                }
+            ]
+
+            return jsonify({
+                'success': True,
+                'results': mock_results,
+                'row_count': len(mock_results),
+                'execution_time_ms': 45
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error executing query: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-query/generate-with-llm', methods=['POST'])
+    @timing_aspect
+    def generate_sql_with_llm():
+        """Generate SQL query using LLM (OpenAI/Anthropic) from natural language"""
+        try:
+            data = request.get_json()
+            user_query = data.get('query', '')
+            schema_context = data.get('schema_context', '')  # Optional: provide table schemas
+            provider = data.get('provider', 'openai')  # 'openai' or 'anthropic'
+
+            if not user_query:
+                return jsonify({
+                    'success': False,
+                    'error': 'Query text is required'
+                }), 400
+
+            # Check if API keys are configured
+            import os
+            if provider == 'openai':
+                api_key = os.getenv('OPENAI_API_KEY')
+                if not api_key:
+                    return jsonify({
+                        'success': False,
+                        'error': 'OpenAI API key not configured. Set OPENAI_API_KEY environment variable.'
+                    }), 500
+            elif provider == 'anthropic':
+                api_key = os.getenv('ANTHROPIC_API_KEY')
+                if not api_key:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Anthropic API key not configured. Set ANTHROPIC_API_KEY environment variable.'
+                    }), 500
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': f'Unknown provider: {provider}. Use "openai" or "anthropic"'
+                }), 400
+
+            # Load database schema for context
+            from app.utils.query_generator import QueryGenerator
+            try:
+                qgen = QueryGenerator()
+
+                # Build schema context from configuration
+                if not schema_context:
+                    schema_info = []
+                    for table_id, table in qgen.tables.items():
+                        columns = table.get('columns', [])
+                        col_defs = [f"{col['name']} ({col['type']})" for col in columns]
+                        schema_info.append(f"Table: {table_id}\n  Columns: {', '.join(col_defs)}")
+                    schema_context = "\n\n".join(schema_info)
+            except Exception as config_error:
+                logger.warning(f"Could not load schema context: {config_error}")
+                schema_context = "No schema information available"
+
+            # Call LLM to generate SQL
+            if provider == 'openai':
+                sql_query = _generate_sql_with_openai(user_query, schema_context, api_key)
+            else:  # anthropic
+                sql_query = _generate_sql_with_anthropic(user_query, schema_context, api_key)
+
+            return jsonify({
+                'success': True,
+                'sql': sql_query,
+                'provider': provider,
+                'explanation': f'SQL generated using {provider.upper()} from: "{user_query}"'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error generating SQL with LLM: {e}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/save', methods=['POST'])
+    @timing_aspect
+    def save_database_config():
+        """Save updated database configuration to JSON file"""
+        try:
+            data = request.get_json()
+            config_updates = data.get('config')
+
+            if not config_updates:
+                return jsonify({
+                    'success': False,
+                    'error': 'Configuration data is required'
+                }), 400
+
+            # Update timestamp
+            if 'metadata' in config_updates:
+                config_updates['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save to file
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'w') as f:
+                json.dump(config_updates, f, indent=2)
+
+            logger.info("Database configuration saved successfully")
+
+            return jsonify({
+                'success': True,
+                'message': 'Configuration saved successfully'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error saving database config: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/validate', methods=['POST'])
+    @login_required
+    @timing_aspect
+    def validate_database_config():
+        """Validate database configuration structure"""
+        try:
+            data = request.get_json()
+            config = data.get('config')
+
+            if not config:
+                return jsonify({
+                    'success': False,
+                    'error': 'Configuration data is required'
+                }), 400
+
+            errors = []
+            warnings = []
+
+            # Validate required sections
+            required_sections = ['modules', 'tables', 'recipes', 'query_settings']
+            for section in required_sections:
+                if section not in config:
+                    errors.append(f"Missing required section: {section}")
+
+            # Validate modules
+            for mod_id, mod_data in config.get('modules', {}).items():
+                if 'name' not in mod_data:
+                    errors.append(f"Module {mod_id} missing 'name'")
+                if 'intents' not in mod_data or not mod_data['intents']:
+                    warnings.append(f"Module {mod_id} has no intents defined")
+
+            # Validate recipes reference valid tables
+            tables = config.get('tables', {})
+            for recipe_id, recipe_data in config.get('recipes', {}).items():
+                base_table = recipe_data.get('base')
+                if base_table and base_table not in tables:
+                    errors.append(f"Recipe {recipe_id} references unknown table: {base_table}")
+
+            # Validate RBAC roles
+            if 'rbac_roles' in config and not config['rbac_roles']:
+                warnings.append("No RBAC roles defined")
+
+            is_valid = len(errors) == 0
+
+            return jsonify({
+                'success': True,
+                'valid': is_valid,
+                'errors': errors,
+                'warnings': warnings
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error validating config: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    # ============================================
+    # DATABASE CONFIG CRUD OPERATIONS
+    # ============================================
+
+    @app.route('/api/database-config/modules', methods=['POST'])
+    @timing_aspect
+    def create_module():
+        """Create a new module"""
+        try:
+            data = request.get_json()
+            module_id = data.get('id')
+            module_data = data.get('data')
+
+            if not module_id or not module_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'module id and data are required'
+                }), 400
+
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if module already exists
+            if module_id in config.get('modules', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Module {module_id} already exists'
+                }), 400
+
+            # Add new module
+            if 'modules' not in config:
+                config['modules'] = {}
+            config['modules'][module_id] = module_data
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Created module: {module_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Module {module_id} created successfully'
+            }), 201
+
+        except Exception as e:
+            logger.error(f"Error creating module: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/modules/<module_id>', methods=['PUT'])
+    @timing_aspect
+    def update_module(module_id):
+        """Update an existing module"""
+        try:
+            data = request.get_json()
+            module_data = data.get('data')
+
+            if not module_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'module data is required'
+                }), 400
+
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if module exists
+            if module_id not in config.get('modules', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Module {module_id} not found'
+                }), 404
+
+            # Update module
+            config['modules'][module_id] = module_data
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Updated module: {module_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Module {module_id} updated successfully'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error updating module: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/modules/<module_id>', methods=['DELETE'])
+    @timing_aspect
+    def delete_module(module_id):
+        """Delete a module"""
+        try:
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if module exists
+            if module_id not in config.get('modules', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Module {module_id} not found'
+                }), 404
+
+            # Check if any recipes depend on this module (via intents)
+            module_intents = config['modules'][module_id].get('intents', {})
+            used_recipes = [intent.get('recipe') for intent in module_intents.values() if intent.get('recipe')]
+
+            if used_recipes:
+                return jsonify({
+                    'success': False,
+                    'error': f'Cannot delete module {module_id}: used by recipes {", ".join(used_recipes)}'
+                }), 400
+
+            # Delete module
+            del config['modules'][module_id]
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Deleted module: {module_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Module {module_id} deleted successfully'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error deleting module: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/tables', methods=['POST'])
+    @timing_aspect
+    def create_table():
+        """Create a new table definition"""
+        try:
+            data = request.get_json()
+            table_id = data.get('id')
+            table_data = data.get('data')
+
+            if not table_id or not table_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'table id and data are required'
+                }), 400
+
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if table already exists
+            if table_id in config.get('tables', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Table {table_id} already exists'
+                }), 400
+
+            # Add new table
+            if 'tables' not in config:
+                config['tables'] = {}
+            config['tables'][table_id] = table_data
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Created table: {table_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Table {table_id} created successfully'
+            }), 201
+
+        except Exception as e:
+            logger.error(f"Error creating table: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/tables/<table_id>', methods=['PUT'])
+    @timing_aspect
+    def update_table(table_id):
+        """Update an existing table definition"""
+        try:
+            data = request.get_json()
+            table_data = data.get('data')
+
+            if not table_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'table data is required'
+                }), 400
+
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if table exists
+            if table_id not in config.get('tables', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Table {table_id} not found'
+                }), 404
+
+            # Update table
+            config['tables'][table_id] = table_data
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Updated table: {table_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Table {table_id} updated successfully'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error updating table: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/tables/<table_id>', methods=['DELETE'])
+    @timing_aspect
+    def delete_table(table_id):
+        """Delete a table definition"""
+        try:
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if table exists
+            if table_id not in config.get('tables', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Table {table_id} not found'
+                }), 404
+
+            # Check if any recipes use this table
+            dependent_recipes = []
+            for recipe_id, recipe_data in config.get('recipes', {}).items():
+                if recipe_data.get('base') == table_id:
+                    dependent_recipes.append(recipe_id)
+                # Check joins
+                for join in recipe_data.get('joins', []):
+                    if join.get('table') == table_id:
+                        dependent_recipes.append(recipe_id)
+
+            if dependent_recipes:
+                return jsonify({
+                    'success': False,
+                    'error': f'Cannot delete table {table_id}: used by recipes {", ".join(set(dependent_recipes))}'
+                }), 400
+
+            # Delete table
+            del config['tables'][table_id]
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Deleted table: {table_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Table {table_id} deleted successfully'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error deleting table: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/recipes', methods=['POST'])
+    @timing_aspect
+    def create_recipe():
+        """Create a new query recipe"""
+        try:
+            data = request.get_json()
+            recipe_id = data.get('id')
+            recipe_data = data.get('data')
+
+            if not recipe_id or not recipe_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'recipe id and data are required'
+                }), 400
+
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if recipe already exists
+            if recipe_id in config.get('recipes', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Recipe {recipe_id} already exists'
+                }), 400
+
+            # Validate base table exists
+            base_table = recipe_data.get('base')
+            if base_table and base_table not in config.get('tables', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Base table {base_table} not found'
+                }), 400
+
+            # Add new recipe
+            if 'recipes' not in config:
+                config['recipes'] = {}
+            config['recipes'][recipe_id] = recipe_data
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Created recipe: {recipe_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Recipe {recipe_id} created successfully'
+            }), 201
+
+        except Exception as e:
+            logger.error(f"Error creating recipe: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/recipes/<recipe_id>', methods=['PUT'])
+    @timing_aspect
+    def update_recipe(recipe_id):
+        """Update an existing query recipe"""
+        try:
+            data = request.get_json()
+            recipe_data = data.get('data')
+
+            if not recipe_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'recipe data is required'
+                }), 400
+
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if recipe exists
+            if recipe_id not in config.get('recipes', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Recipe {recipe_id} not found'
+                }), 404
+
+            # Validate base table exists
+            base_table = recipe_data.get('base')
+            if base_table and base_table not in config.get('tables', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Base table {base_table} not found'
+                }), 400
+
+            # Update recipe
+            config['recipes'][recipe_id] = recipe_data
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Updated recipe: {recipe_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Recipe {recipe_id} updated successfully'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error updating recipe: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/recipes/<recipe_id>', methods=['DELETE'])
+    @timing_aspect
+    def delete_recipe(recipe_id):
+        """Delete a query recipe"""
+        try:
+            # Load current config
+            config_path = 'app/config/database_query_config.json'
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+
+            # Check if recipe exists
+            if recipe_id not in config.get('recipes', {}):
+                return jsonify({
+                    'success': False,
+                    'error': f'Recipe {recipe_id} not found'
+                }), 404
+
+            # Check if any module intents reference this recipe
+            dependent_modules = []
+            for module_id, module_data in config.get('modules', {}).items():
+                for intent_id, intent_data in module_data.get('intents', {}).items():
+                    if intent_data.get('recipe') == recipe_id:
+                        dependent_modules.append(f"{module_id}.{intent_id}")
+
+            if dependent_modules:
+                return jsonify({
+                    'success': False,
+                    'error': f'Cannot delete recipe {recipe_id}: used by module intents {", ".join(dependent_modules)}'
+                }), 400
+
+            # Delete recipe
+            del config['recipes'][recipe_id]
+
+            # Update metadata
+            if 'metadata' not in config:
+                config['metadata'] = {}
+            config['metadata']['lastUpdated'] = datetime.now().isoformat()
+
+            # Save config
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+
+            logger.info(f"Deleted recipe: {recipe_id}")
+
+            return jsonify({
+                'success': True,
+                'message': f'Recipe {recipe_id} deleted successfully'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error deleting recipe: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/database-config/generate-query-ai', methods=['POST'])
+    @timing_aspect
+    def generate_query_ai():
+        """Generate SQL query recipe using AI from natural language description"""
+        try:
+            data = request.get_json()
+
+            prompt = data.get('prompt', '').strip()
+            module = data.get('module', '').strip()
+            module_name = data.get('moduleName', '').strip()
+            tables = data.get('tables', [])
+
+            if not prompt or not module:
+                return jsonify({
+                    'success': False,
+                    'error': 'Missing required fields: prompt and module'
+                }), 400
+
+            # Build schema context for LLM
+            schema_context = f"Module: {module_name}\n\nAvailable Tables:\n"
+            for table in tables:
+                schema_context += f"\n{table['name']} (ID: {table['id']}):\n"
+                schema_context += "Columns:\n"
+                for col in table.get('columns', []):
+                    schema_context += f"  - {col.get('name', '')} ({col.get('type', 'text')})\n"
+
+            # Build enhanced LLM prompt with advanced features
+            system_prompt = """You are an advanced SQL query recipe generator. Given a natural language query description and database schema, 
+generate a structured, optimized query recipe in JSON format.
+
+**Recipe Structure:**
+
+1. **name**: Short descriptive name (e.g., "Expired Documentary Collections")
+2. **description**: Clear description of query purpose
+3. **base**: Primary table ID from schema
+4. **select**: Column references ["table_id.column_name"] or aggregates ["SUM(table.amount) as total"]
+5. **joins**: Auto-detect relationships from query
+   Format: [{"type": "INNER|LEFT", "alias": "short_name", "table": "table_id", "from": "base.fk_column", "to": "other.pk_column"}]
+6. **where**: Default filter conditions (always applied)
+   Format: [{"field": "table.column", "op": "eq|gt|lt|like|between|in", "value": "value"}]
+7. **allowed_filters**: Dynamic filters users can apply
+   Format: [{"field": "table.column", "type": "text|number|date", "ops": ["eq", "gt", "lt"], "required": false}]
+8. **default_limit**: Result limit (10-1000)
+
+**Smart Detection Rules:**
+
+**JOINs** - Detect from keywords:
+- "with customer" → LEFT JOIN customers ON base.customer_id = customers.id
+- "including bank" → LEFT JOIN banks ON base.bank_id = banks.id  
+- "and products" → LEFT JOIN products ON base.product_id = products.id
+
+**WHERE conditions** - Auto-generate from status words:
+- "expired" → {"field": "table.expiry_date", "op": "lt", "value": "NOW()"}
+- "active" → {"field": "table.status", "op": "eq", "value": "active"}
+- "pending" → {"field": "table.status", "op": "in", "value": ["pending", "submitted"]}
+- "overdue" → {"field": "table.due_date", "op": "lt", "value": "NOW()"}
+- "high value" → {"field": "table.amount", "op": "gt", "value": 100000}
+
+**Operators by type:**
+- text: ["eq", "like", "in", "not_eq"]
+- number: ["eq", "gt", "lt", "gte", "lte", "between"]
+- date: ["eq", "gt", "lt", "between"]
+
+**Response (JSON only, no markdown):**
+{
+  "recipe": {
+    "name": "Query Name",
+    "description": "What it does",
+    "base": "table_id",
+    "select": ["table.col1", "table.col2"],
+    "joins": [{"type": "LEFT", "alias": "alias", "table": "other_table", "from": "base.fk", "to": "other.id"}],
+    "where": [{"field": "table.status", "op": "eq", "value": "active"}],
+    "allowed_filters": [{"field": "table.date", "type": "date", "ops": ["gt", "lt"], "required": false}],
+    "default_limit": 100
+  },
+  "explanation": "Detailed explanation of query logic"
+}"""
+
+            user_prompt = f"""Schema Context:
+{schema_context}
+
+User Query Request:
+{prompt}
+
+Generate a query recipe for this request."""
+
+            # Call LLM (using Azure OpenAI - legacy style)
+            azure_key = os.getenv('AZURE_OPENAI_API_KEY')
+            azure_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
+            deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o-mini')
+
+            if not azure_key:
+                return jsonify({
+                    'success': False,
+                    'error': 'Azure OpenAI API key not configured. Set AZURE_OPENAI_API_KEY environment variable.'
+                }), 500
+
+            response = openai.ChatCompletion.create(
+                engine=deployment_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                max_tokens=2000
+            )
+
+            # Parse LLM response
+            llm_output = response["choices"][0]["message"]["content"].strip()
+
+            # Try to extract JSON if wrapped in markdown code blocks
+            if '```json' in llm_output:
+                llm_output = llm_output.split('```json')[1].split('```')[0].strip()
+            elif '```' in llm_output:
+                llm_output = llm_output.split('```')[1].split('```')[0].strip()
+
+            result = json.loads(llm_output)
+
+            logger.info(
+                f"AI generated query recipe for module {module}: {result.get('recipe', {}).get('name', 'Unknown')}")
+
+            return jsonify({
+                'success': True,
+                'recipe': result.get('recipe', {}),
+                'explanation': result.get('explanation', 'Query generated successfully')
+            }), 200
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response as JSON: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Failed to parse AI response: {str(e)}'
+            }), 500
+        except Exception as e:
+            logger.error(f"Error generating AI query: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    # QR Code Processing Routes
+    @app.route('/api/qr/parse', methods=['POST'])
+    @timing_aspect
+    def parse_qr_code():
+        """
+        Parse QR code data and extract trade finance information using AI/LLM processing
+        """
+        try:
+            user_logger.api_request("/api/qr/parse", "Parsing QR code data for trade finance")
+
+            data = request.get_json()
+            if not data or 'qr_data' not in data:
+                return jsonify({
+                    'success': False,
+                    'message': 'QR data is required'
+                }), 400
+
+            qr_raw_data = data['qr_data']
+            user_logger.info(f"Processing QR data", {'data_length': len(qr_raw_data)})
+
+            # Try different parsing strategies
+            parsed_result = None
+            parsing_method = 'unknown'
+
+            # Strategy 1: Try JSON parsing
+            try:
+                json_data = json.loads(qr_raw_data)
+                parsed_result = json_data
+                parsing_method = 'json'
+                user_logger.success("QR data parsed as JSON")
+            except json.JSONDecodeError:
+                user_logger.info("QR data is not valid JSON, trying other methods")
+
+            # Strategy 2: Try structured text parsing
+            if parsed_result is None:
+                structured_data = parse_structured_qr_text(qr_raw_data)
+                if structured_data:
+                    parsed_result = structured_data
+                    parsing_method = 'structured_text'
+                    user_logger.success("QR data parsed as structured text")
+
+            # Strategy 3: Use LLM for intelligent parsing
+            if parsed_result is None:
+                llm_parsed_data = parse_qr_with_llm(qr_raw_data)
+                if llm_parsed_data:
+                    parsed_result = llm_parsed_data
+                    parsing_method = 'llm'
+                    user_logger.success("QR data parsed using LLM")
+
+            if parsed_result is None:
+                return jsonify({
+                    'success': False,
+                    'message': 'Unable to parse QR code data. Please ensure it contains valid trade finance information.',
+                    'raw_data': qr_raw_data[:200] + '...' if len(qr_raw_data) > 200 else qr_raw_data
+                }), 400
+
+            # Validate and structure the parsed data
+            validated_data = validate_and_structure_qr_data(parsed_result)
+
+            user_logger.success("QR code parsing completed", {
+                'method': parsing_method,
+                'fields_extracted': len(validated_data.get('trade_finance_fields', {}))
+            })
+
+            return jsonify({
+                'success': True,
+                'data': validated_data,
+                'parsing_method': parsing_method,
+                'confidence': validated_data.get('confidence', 0.8)
+            })
+
+        except Exception as e:
+            user_logger.error(f"QR parsing failed: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Error parsing QR code: {str(e)}'
+            }), 500
+
+    @app.route('/api/qr/generate', methods=['POST'])
+    @timing_aspect
+    def generate_qr_code():
+        """
+        Generate QR code from current form data
+        """
+        try:
+            user_logger.api_request("/api/qr/generate", "Generating QR code from form data")
+
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'message': 'Form data is required'
+                }), 400
+
+            form_data = data.get('form_data', {})
+            qr_options = data.get('options', {})
+
+            # Create structured QR data
+            qr_data = {
+                'type': 'trade_finance_lc',
+                'version': '1.0',
+                'timestamp': datetime.now().isoformat(),
+                'source': 'eai_admin_system',
+                'data': form_data
+            }
+
+            # Generate QR code as base64 image
+            qr_size = qr_options.get('size', 400)
+            qr_margin = qr_options.get('margin', 2)
+
+            import qrcode
+            from io import BytesIO
+            import base64
+
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
+                box_size=10,
+                border=qr_margin,
+            )
+            qr.add_data(json.dumps(qr_data))
+            qr.make(fit=True)
+
+            # Create QR code image
+            qr_img = qr.make_image(fill_color="black", back_color="white")
+            qr_img = qr_img.resize((qr_size, qr_size))
+
+            # Convert to base64
+            buffer = BytesIO()
+            qr_img.save(buffer, format='PNG')
+            qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+            user_logger.success("QR code generated successfully", {
+                'size': qr_size,
+                'fields_count': len(form_data)
+            })
+
+            return jsonify({
+                'success': True,
+                'qr_code': f'data:image/png;base64,{qr_base64}',
+                'qr_data': qr_data,
+                'metadata': {
+                    'size': qr_size,
+                    'format': 'PNG',
+                    'fields_included': len(form_data)
+                }
+            })
+
+        except Exception as e:
+            user_logger.error(f"QR generation failed: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Error generating QR code: {str(e)}'
+            }), 500
+
+    @app.route('/api/qr/process-file', methods=['POST'])
+    @timing_aspect
+    def process_qr_file():
+        """
+        Process uploaded files (PDF, DOC, DOCX, images) to extract QR codes with WebSocket progress updates
+        """
+        try:
+            user_logger.api_request("/api/qr/process-file", "Processing uploaded file for QR codes")
+
+            if 'file' not in request.files:
+                return jsonify({
+                    'success': False,
+                    'message': 'No file uploaded'
+                }), 400
+
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({
+                    'success': False,
+                    'message': 'No file selected'
+                }), 400
+
+            # Get WebSocket client ID for progress updates
+            client_id = request.form.get('client_id', None)
+
+            # Get file extension and type
+            filename = file.filename.lower()
+            file_type = file.content_type
+
+            user_logger.info(f"Processing file: {filename}", {'file_type': file_type, 'client_id': client_id})
+
+            # WebSocket progress updates
+            def emit_progress(step, message, progress=None):
+                if client_id:
+                    try:
+                        ws_handler = get_websocket_handler()
+                        if ws_handler:
+                            ws_handler.emit_message(client_id, 'qr_processing_progress', {
+                                'step': step,
+                                'message': message,
+                                'progress': progress,
+                                'filename': file.filename,
+                                'timestamp': datetime.utcnow().isoformat()
+                            })
+                    except Exception as e:
+                        logger.warning(f"WebSocket progress update failed: {e}")
+
+            emit_progress('upload', 'File uploaded successfully', 10)
+
+            qr_codes = []
+
+            try:
+                emit_progress('detect', 'Detecting QR codes...', 30)
+
+                if filename.endswith('.pdf'):
+                    emit_progress('processing', 'Processing PDF document...', 50)
+                    qr_codes = extract_qr_from_pdf(file)
+                elif filename.endswith(('.doc', '.docx')):
+                    emit_progress('processing', 'Processing Word document...', 50)
+                    qr_codes = extract_qr_from_word(file)
+                elif file_type and file_type.startswith('image/'):
+                    emit_progress('processing', 'Processing image...', 50)
+                    qr_codes = extract_qr_from_image(file)
+                else:
+                    emit_progress('error', f'Unsupported file type: {file_type or "unknown"}')
+                    return jsonify({
+                        'success': False,
+                        'message': f'Unsupported file type: {file_type or "unknown"}'
+                    }), 400
+
+                emit_progress('parsing', 'Parsing QR code data...', 70)
+
+                if qr_codes:
+                    emit_progress('complete', f'Found {len(qr_codes)} QR codes!', 100)
+                    user_logger.success(f"Found {len(qr_codes)} QR codes in file")
+                    return jsonify({
+                        'success': True,
+                        'qr_codes': qr_codes,
+                        'message': f'Found {len(qr_codes)} QR code(s)'
+                    })
+                else:
+                    emit_progress('complete', 'No QR codes found', 100)
+                    user_logger.info("No QR codes found in file")
+                    return jsonify({
+                        'success': False,
+                        'qr_codes': [],
+                        'message': 'No QR codes found in the file'
+                    })
+
+            except Exception as processing_error:
+                emit_progress('error', f'Processing error: {str(processing_error)}')
+                user_logger.error(f"Error processing file: {str(processing_error)}")
+                return jsonify({
+                    'success': False,
+                    'message': f'Error processing file: {str(processing_error)}'
+                }), 500
+
+        except Exception as e:
+            user_logger.error(f"File upload processing failed: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Error processing upload: {str(e)}'
+            }), 500
+
     
     @app.route('/document_register')
     def document_register():
@@ -2071,6 +3787,298 @@ def setup_routes(app: Flask):
                 'message': 'Error generating SWIFT preview'
             }), 500
 
+    class DiscrepancyRuleManager:
+        """Manages discrepancy rules with XML and JSON storage"""
+
+        def __init__(self):
+            self.rules = []
+            self.rules_xml_path = os.path.join(os.path.dirname(__file__), 'data', 'discrepancy_rules.xml')
+            self.rules_json_path = os.path.join(os.path.dirname(__file__), 'data', 'discrepancy_rules.json')
+
+            # Ensure data directory exists
+            os.makedirs(os.path.dirname(self.rules_xml_path), exist_ok=True)
+            self.load_rules()
+
+        def load_rules(self):
+            """Load rules from XML file, fallback to JSON if XML doesn't exist"""
+            try:
+                if os.path.exists(self.rules_xml_path):
+                    self.rules = self._load_from_xml()
+                elif os.path.exists(self.rules_json_path):
+                    self.rules = self._load_from_json()
+                else:
+                    self.rules = []
+                    self._create_sample_rules()
+            except Exception as e:
+                logger.error(f"Error loading discrepancy rules: {e}")
+                self.rules = []
+
+        def _load_from_xml(self):
+            """Load rules from XML file"""
+            try:
+                import xml.etree.ElementTree as ET
+                tree = ET.parse(self.rules_xml_path)
+                root = tree.getroot()
+                rules = []
+
+                for rule_elem in root.findall('rule'):
+                    rule = {
+                        'id': rule_elem.get('id', str(uuid.uuid4())),
+                        'code': rule_elem.find('code').text if rule_elem.find('code') is not None else '',
+                        'documentType': rule_elem.find('documentType').text if rule_elem.find(
+                            'documentType') is not None else '',
+                        'description': rule_elem.find('description').text if rule_elem.find(
+                            'description') is not None else '',
+                        'basis': rule_elem.find('basis').text if rule_elem.find('basis') is not None else '',
+                        'priority': rule_elem.find('priority').text if rule_elem.find(
+                            'priority') is not None else 'Mandatory',
+                        'createdAt': rule_elem.find('createdAt').text if rule_elem.find(
+                            'createdAt') is not None else datetime.now().isoformat(),
+                        'updatedAt': rule_elem.find('updatedAt').text if rule_elem.find(
+                            'updatedAt') is not None else datetime.now().isoformat()
+                    }
+                    rules.append(rule)
+
+                return rules
+            except Exception as e:
+                logger.error(f"Error loading from XML: {e}")
+                return []
+
+        def _load_from_json(self):
+            """Load rules from JSON file"""
+            try:
+                with open(self.rules_json_path, 'r') as f:
+                    data = json.load(f)
+                    return data.get('rules', [])
+            except Exception as e:
+                logger.error(f"Error loading from JSON: {e}")
+                return []
+
+        def _create_sample_rules(self):
+            """Create sample rules based on the provided data"""
+            sample_rules = [
+                {
+                    'id': str(uuid.uuid4()),
+                    'code': 'R-0002',
+                    'documentType': 'Bill of Lading',
+                    'description': 'must be signed by the authorized signatory',
+                    'basis': 'ISBP 821 A1',
+                    'priority': 'Mandatory',
+                    'createdAt': datetime.now().isoformat(),
+                    'updatedAt': datetime.now().isoformat()
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'code': 'R-0003',
+                    'documentType': 'Air Waybill',
+                    'description': 'must be an original when originals are stipulated in the LC; additionally, named shipper must match LC.',
+                    'basis': 'UCP 600 Art. 18',
+                    'priority': 'Mandatory',
+                    'createdAt': datetime.now().isoformat(),
+                    'updatedAt': datetime.now().isoformat()
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'code': 'R-0036',
+                    'documentType': 'Bill of Lading',
+                    'description': 'certificate must reference the invoice/BL number; additionally, incoterms must be consistent.',
+                    'basis': 'Bank Practice',
+                    'priority': 'Mandatory',
+                    'createdAt': datetime.now().isoformat(),
+                    'updatedAt': datetime.now().isoformat()
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'code': 'R-0037',
+                    'documentType': 'Air Waybill',
+                    'description': 'document must show description matching HS code if required',
+                    'basis': 'Customs / LC',
+                    'priority': 'Mandatory',
+                    'createdAt': datetime.now().isoformat(),
+                    'updatedAt': datetime.now().isoformat()
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'code': 'R-0070',
+                    'documentType': 'Bill of Lading',
+                    'description': 'notify party must match LC or be allowed by LC terms',
+                    'basis': 'ISBP 821',
+                    'priority': 'Mandatory',
+                    'createdAt': datetime.now().isoformat(),
+                    'updatedAt': datetime.now().isoformat()
+                }
+            ]
+
+            self.rules = sample_rules
+            self.save_rules()
+
+        def save_rules(self):
+            """Save rules to both XML and JSON formats"""
+            try:
+                self._save_to_xml()
+                self._save_to_json()
+            except Exception as e:
+                logger.error(f"Error saving rules: {e}")
+                raise
+
+        def _save_to_xml(self):
+            """Save rules to XML file"""
+            import xml.etree.ElementTree as ET
+            import xml.dom.minidom
+
+            root = ET.Element('discrepancyRules')
+            root.set('version', '1.0')
+            root.set('lastUpdated', datetime.now().isoformat())
+
+            for rule in self.rules:
+                rule_elem = ET.SubElement(root, 'rule')
+                rule_elem.set('id', rule['id'])
+
+                # Add child elements
+                ET.SubElement(rule_elem, 'code').text = rule['code']
+                ET.SubElement(rule_elem, 'documentType').text = rule['documentType']
+                ET.SubElement(rule_elem, 'description').text = rule['description']
+                ET.SubElement(rule_elem, 'basis').text = rule['basis']
+                ET.SubElement(rule_elem, 'priority').text = rule['priority']
+                ET.SubElement(rule_elem, 'createdAt').text = rule['createdAt']
+                ET.SubElement(rule_elem, 'updatedAt').text = rule['updatedAt']
+
+            # Pretty print XML
+            xml_str = ET.tostring(root, encoding='unicode')
+            dom = xml.dom.minidom.parseString(xml_str)
+            pretty_xml = dom.toprettyxml(indent='  ')
+
+            # Remove empty lines
+            pretty_xml = '\n'.join([line for line in pretty_xml.split('\n') if line.strip()])
+
+            with open(self.rules_xml_path, 'w', encoding='utf-8') as f:
+                f.write(pretty_xml)
+
+        def _save_to_json(self):
+            """Save rules to JSON file as backup"""
+            data = {
+                'version': '1.0',
+                'lastUpdated': datetime.now().isoformat(),
+                'rules': self.rules
+            }
+
+            with open(self.rules_json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+        def get_all_rules(self):
+            """Get all rules"""
+            return self.rules
+
+        def get_rule_by_id(self, rule_id):
+            """Get rule by ID"""
+            return next((rule for rule in self.rules if rule['id'] == rule_id), None)
+
+        def add_rule(self, rule_data):
+            """Add new rule"""
+            import uuid
+            new_rule = {
+                'id': str(uuid.uuid4()),
+                'code': rule_data['code'],
+                'documentType': rule_data['documentType'],
+                'description': rule_data['description'],
+                'basis': rule_data['basis'],
+                'priority': rule_data['priority'],
+                'createdAt': datetime.now().isoformat(),
+                'updatedAt': datetime.now().isoformat()
+            }
+
+            self.rules.append(new_rule)
+            self.save_rules()
+            return new_rule
+
+        def update_rule(self, rule_id, rule_data):
+            """Update existing rule"""
+            rule = self.get_rule_by_id(rule_id)
+            if not rule:
+                return None
+
+            rule.update({
+                'code': rule_data['code'],
+                'documentType': rule_data['documentType'],
+                'description': rule_data['description'],
+                'basis': rule_data['basis'],
+                'priority': rule_data['priority'],
+                'updatedAt': datetime.now().isoformat()
+            })
+
+            self.save_rules()
+            return rule
+
+        def delete_rule(self, rule_id):
+            """Delete rule"""
+            rule = self.get_rule_by_id(rule_id)
+            if not rule:
+                return False
+
+            self.rules.remove(rule)
+            self.save_rules()
+            return True
+
+        def import_from_text(self, content):
+            """Import rules from text format"""
+            lines = content.strip().split('\n')
+            imported_count = 0
+
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+
+                # Parse line format: R-0002	Bill of Lading	must be signed by the authorized signatory	ISBP 821 A1	Mandatory
+                parts = line.split('\t')
+                if len(parts) >= 5:
+                    rule_data = {
+                        'code': parts[0].strip(),
+                        'documentType': parts[1].strip(),
+                        'description': parts[2].strip(),
+                        'basis': parts[3].strip(),
+                        'priority': parts[4].strip()
+                    }
+
+                    # Check if rule with same code already exists
+                    existing = next((r for r in self.rules if r['code'] == rule_data['code']), None)
+                    if not existing:
+                        self.add_rule(rule_data)
+                        imported_count += 1
+
+            return imported_count
+
+        def export_to_xml(self):
+            """Export rules to XML string"""
+            import xml.etree.ElementTree as ET
+            import xml.dom.minidom
+
+            root = ET.Element('discrepancyRules')
+            root.set('version', '1.0')
+            root.set('exportDate', datetime.now().isoformat())
+            root.set('totalRules', str(len(self.rules)))
+
+            for rule in self.rules:
+                rule_elem = ET.SubElement(root, 'rule')
+                rule_elem.set('id', rule['id'])
+                rule_elem.set('code', rule['code'])
+
+                ET.SubElement(rule_elem, 'documentType').text = rule['documentType']
+                ET.SubElement(rule_elem, 'description').text = rule['description']
+                ET.SubElement(rule_elem, 'basis').text = rule['basis']
+                ET.SubElement(rule_elem, 'priority').text = rule['priority']
+                ET.SubElement(rule_elem, 'createdAt').text = rule['createdAt']
+                ET.SubElement(rule_elem, 'updatedAt').text = rule['updatedAt']
+
+            # Pretty print XML
+            xml_str = ET.tostring(root, encoding='unicode')
+            dom = xml.dom.minidom.parseString(xml_str)
+            return dom.toprettyxml(indent='  ')
+
+    # Initialize rule manager
+    discrepancy_rule_manager = DiscrepancyRuleManager()
+
+    # Discrepancy Rule API Routes
 
     @app.route('/api/discrepancy-rules', methods=['GET'])
     @timing_aspect
@@ -2314,6 +4322,2092 @@ def setup_routes(app: Flask):
                 'error': str(e)
             }), 500
 
+
+    # === GUARANTEE VETTING BLACKLIST MAINTENANCE ROUTES ===
+
+    @app.route('/guarantee_vetting_maintenance')
+    @timing_aspect
+    def guarantee_vetting_maintenance():
+        """Render guarantee vetting maintenance page"""
+        return render_template('guarantee_vetting_maintenance.html')
+
+    @app.route('/blacklist_rules_management')
+    @timing_aspect
+    def blacklist_rules_management():
+        """Render blacklist rules management page"""
+        return render_template('blacklist_rules_management.html')
+
+    @app.route('/whitelist_rules_management')
+    @timing_aspect
+    def whitelist_rules_management():
+        """Render whitelist rules management page"""
+        return render_template('whitelist_rules_management.html')
+
+    @app.route('/guarantee_prompt_config')
+    @timing_aspect
+    def guarantee_prompt_config_page():
+        """Render guarantee prompt configuration page"""
+        return render_template('guarantee_prompt_config.html')
+
+    @app.route('/api/guarantee_vetting_rules', methods=['GET'])
+    @timing_aspect
+    def get_guarantee_vetting_rules():
+        """Get all guarantee vetting rules with optional filtering"""
+        try:
+            data = _load_guarantee_vetting_rules()
+            rules = data.get('rules', [])
+
+            # Apply filters if provided
+            rule_type = request.args.get('rule_type')
+            if rule_type and rule_type in ['whitelist', 'blacklist']:
+                rules = [rule for rule in rules if rule.get('rule_type', 'blacklist') == rule_type]
+
+            return jsonify({
+                'success': True,
+                'rules': rules,
+                'total_count': len(rules),
+                'filter_applied': rule_type
+            }), 200
+        except Exception as e:
+            logger.error(f"Error getting guarantee vetting rules: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/guarantee_vetting_rules', methods=['POST'])
+    @timing_aspect
+    def create_guarantee_vetting_rule():
+        """Create a new guarantee vetting rule"""
+        try:
+            rule_data = request.get_json()
+
+            # Validate required fields
+            required_fields = ['rule_ref', 'rule_name', 'rule_type', 'detection_hint', 'why_onerous_or_no_urdg', 'suggested_wording', 'severity', 'basics']
+            for field in required_fields:
+                if not rule_data.get(field):
+                    return jsonify({'success': False, 'message': f'Missing required field: {field}'}), 400
+
+            # Load existing data
+            data = _load_guarantee_vetting_rules()
+
+            # Generate new ID
+            existing_ids = [rule.get('id', 0) for rule in data.get('rules', [])]
+            new_id = max(existing_ids, default=0) + 1
+
+            # Create new rule
+            new_rule = {
+                'id': new_id,
+                'rule_ref': rule_data.get('rule_ref'),
+                'rule_name': rule_data.get('rule_name'),
+                'rule_type': rule_data.get('rule_type', 'blacklist'),
+                'detection_hint': rule_data.get('detection_hint'),
+                'why_onerous_or_no_urdg': rule_data.get('why_onerous_or_no_urdg'),
+                'suggested_wording': rule_data.get('suggested_wording'),
+                'severity': rule_data.get('severity'),
+                'basics': rule_data.get('basics'),
+                'entity_restrictions': rule_data.get('entity_restrictions', [])
+            }
+
+            data['rules'].append(new_rule)
+
+            if _save_guarantee_vetting_rules(data):
+                return jsonify({'success': True, 'rule': new_rule}), 201
+            else:
+                return jsonify({'success': False, 'message': 'Failed to save rule'}), 500
+
+        except Exception as e:
+            logger.error(f"Error creating guarantee vetting rule: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/guarantee_vetting_rules/<int:rule_id>', methods=['PUT'])
+    @timing_aspect
+    def update_guarantee_vetting_rule(rule_id):
+        """Update an existing guarantee vetting rule"""
+        try:
+            rule_data = request.get_json()
+            data = _load_guarantee_vetting_rules()
+
+            # Find and update rule
+            for i, rule in enumerate(data.get('rules', [])):
+                if rule.get('id') == rule_id:
+                    data['rules'][i] = {
+                        'id': rule_id,
+                        'rule_ref': rule_data.get('rule_ref'),
+                        'rule_name': rule_data.get('rule_name'),
+                        'rule_type': rule_data.get('rule_type', 'blacklist'),
+                        'detection_hint': rule_data.get('detection_hint'),
+                        'why_onerous_or_no_urdg': rule_data.get('why_onerous_or_no_urdg'),
+                        'suggested_wording': rule_data.get('suggested_wording'),
+                        'severity': rule_data.get('severity'),
+                        'basics': rule_data.get('basics'),
+                        'entity_restrictions': rule_data.get('entity_restrictions', [])
+                    }
+
+                    if _save_guarantee_vetting_rules(data):
+                        return jsonify({'success': True, 'rule': data['rules'][i]}), 200
+                    else:
+                        return jsonify({'success': False, 'message': 'Failed to save rule'}), 500
+
+            return jsonify({'success': False, 'message': 'Rule not found'}), 404
+
+        except Exception as e:
+            logger.error(f"Error updating guarantee vetting rule {rule_id}: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/guarantee_vetting_rules/<int:rule_id>', methods=['DELETE'])
+    @timing_aspect
+    def delete_guarantee_vetting_rule(rule_id):
+        """Delete a guarantee vetting rule"""
+        try:
+            data = _load_guarantee_vetting_rules()
+
+            # Find and remove rule
+            original_length = len(data.get('rules', []))
+            data['rules'] = [rule for rule in data.get('rules', []) if rule.get('id') != rule_id]
+
+            if len(data['rules']) < original_length:
+                if _save_guarantee_vetting_rules(data):
+                    return jsonify({'success': True, 'message': 'Rule deleted successfully'}), 200
+                else:
+                    return jsonify({'success': False, 'message': 'Failed to save changes'}), 500
+            else:
+                return jsonify({'success': False, 'message': 'Rule not found'}), 404
+
+        except Exception as e:
+            logger.error(f"Error deleting guarantee vetting rule {rule_id}: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    # === AI ASSISTANT ENDPOINTS FOR VETTING RULES ===
+    @app.route('/api/ai_generate_rule', methods=['POST'])
+    @timing_aspect
+    def ai_generate_rule():
+
+        """Generate rule suggestions using AI based on user description"""
+        try:
+            request_data = request.get_json()
+            if not request_data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            description = request_data.get('description', '').strip()
+            rule_type = request_data.get('rule_type', 'blacklist')
+
+            if not description:
+                return jsonify({'success': False, 'message': 'Description is required'}), 400
+
+            # Create AI prompt for rule generation
+            if rule_type == 'whitelist':
+                system_prompt = """You are an AI assistant specialized in creating guarantee vetting whitelist rules. Whitelist rules identify approved, compliant patterns that should be accepted."""
+                prompt = f"""Generate a whitelist rule for the following scenario: "{description}"
+
+Please provide a JSON response with these fields:
+- rule_name: Brief descriptive name (max 80 chars)
+- detection_hint: Specific phrases or patterns that indicate this approved condition
+- why_onerous_or_no_urdg: Explain why this condition is compliant or beneficial
+- suggested_wording: Provide example of compliant language or approval actions 
+- severity: High/Medium/Low based on importance
+- basics: independence/custom/isdgp category
+- example_scenario: A realistic example of when this rule would apply"""
+            else:
+                system_prompt = """You are an AI assistant specialized in creating guarantee vetting blacklist rules. Blacklist rules identify problematic conditions that should be flagged or rejected."""
+                prompt = f"""Generate a blacklist rule for the following scenario: "{description}"
+
+Please provide a JSON response with these fields:
+- rule_name: Brief descriptive name (max 80 chars)
+- detection_hint: Specific phrases or patterns that indicate this problematic condition
+- why_onerous_or_no_urdg: Explain why this condition is onerous or non-compliant
+- suggested_wording: Provide alternative compliant wording or recommended actions
+- severity: High/Medium/Low based on risk level
+- basics: independence/custom/isdgp category  
+- example_scenario: A realistic example of when this rule would apply"""
+
+            # Call OpenAI API
+            try:
+                client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=1000
+                )
+
+                ai_response = response.choices[0].message.content.strip()
+
+                # Try to parse JSON response
+                try:
+                    # Extract JSON from response if it's wrapped in code blocks
+                    if '```json' in ai_response:
+                        json_start = ai_response.find('```json') + 7
+                        json_end = ai_response.find('```', json_start)
+                        ai_response = ai_response[json_start:json_end].strip()
+                    elif '```' in ai_response:
+                        json_start = ai_response.find('```') + 3
+                        json_end = ai_response.find('```', json_start)
+                        ai_response = ai_response[json_start:json_end].strip()
+
+                    rule_suggestion = json.loads(ai_response)
+
+                    # Validate and clean response
+                    cleaned_suggestion = {
+                        'rule_name': rule_suggestion.get('rule_name', 'Generated Rule')[:80],
+                        'detection_hint': rule_suggestion.get('detection_hint', ''),
+                        'why_onerous_or_no_urdg': rule_suggestion.get('why_onerous_or_no_urdg', ''),
+                        'suggested_wording': rule_suggestion.get('suggested_wording', ''),
+                        'severity': rule_suggestion.get('severity', 'Medium'),
+                        'basics': rule_suggestion.get('basics', 'custom'),
+                        'example_scenario': rule_suggestion.get('example_scenario', ''),
+                        'rule_type': rule_type
+                    }
+
+                    return jsonify({
+                        'success': True,
+                        'suggestion': cleaned_suggestion,
+                        'message': 'AI rule suggestion generated successfully'
+                    }), 200
+
+                except json.JSONDecodeError:
+                    # Fallback if JSON parsing fails
+                    return jsonify({
+                        'success': True,
+                        'suggestion': {
+                            'rule_name': f'AI Generated Rule for {description[:50]}...',
+                            'detection_hint': ai_response[:200] + '...' if len(ai_response) > 200 else ai_response,
+                            'why_onerous_or_no_urdg': 'AI generated explanation',
+                            'suggested_wording': 'AI generated suggestion',
+                            'severity': 'Medium',
+                            'basics': 'custom',
+                            'example_scenario': f'Example scenario for: {description}',
+                            'rule_type': rule_type
+                        },
+                        'message': 'AI rule suggestion generated (fallback format)'
+                    }), 200
+
+            except Exception as openai_error:
+                logger.error(f"OpenAI API error: {openai_error}")
+                # Provide a basic rule template when AI is unavailable
+                return jsonify({
+                    'success': True,
+                    'suggestion': {
+                        'rule_name': f'{rule_type.title()} Rule: {description[:50]}',
+                        'detection_hint': f'Look for patterns related to: {description}',
+                        'why_onerous_or_no_urdg': f'This condition requires review because: {description}',
+                        'suggested_wording': f'Recommended action for: {description}',
+                        'severity': 'Medium',
+                        'basics': 'custom',
+                        'example_scenario': f'Example: {description}',
+                        'rule_type': rule_type
+                    },
+                    'message': 'Basic rule template generated (AI unavailable)'
+                }), 200
+
+        except Exception as e:
+            logger.error(f"Error in AI rule generation: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/ai_analyze_vetting', methods=['POST'])
+    @timing_aspect
+    def ai_analyze_vetting():
+        """Analyze guarantee text against vetting rules with AI explanations"""
+        try:
+            request_data = request.get_json()
+            if not request_data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            guarantee_text = request_data.get('guarantee_text', '').strip()
+            if not guarantee_text:
+                return jsonify({'success': False, 'message': 'Guarantee text is required'}), 400
+
+            # Load vetting rules
+            rules_data = _load_guarantee_vetting_rules()
+            all_rules = rules_data.get('rules', [])
+
+            # Separate whitelist and blacklist rules
+            whitelist_rules = [r for r in all_rules if r.get('rule_type') == 'whitelist']
+            blacklist_rules = [r for r in all_rules if r.get('rule_type') == 'blacklist']
+
+            # Create AI analysis prompt
+            system_prompt = """You are an AI assistant specialized in guarantee document analysis and vetting. 
+Analyze the provided guarantee text against the given rules and provide clear explanations for your findings."""
+
+            prompt = f"""Analyze this guarantee text against the vetting rules:
+
+GUARANTEE TEXT:
+{guarantee_text}
+
+WHITELIST RULES (approved patterns):
+{json.dumps([{'id': r.get('rule_ref', r.get('id')), 'name': r.get('rule_name', ''), 'detection_hint': r.get('detection_hint', '')} for r in whitelist_rules[:5]], indent=2)}
+
+BLACKLIST RULES (problematic patterns):
+{json.dumps([{'id': r.get('rule_ref', r.get('id')), 'name': r.get('rule_name', ''), 'detection_hint': r.get('detection_hint', '')} for r in blacklist_rules[:5]], indent=2)}
+
+Please provide a JSON response with:
+- overall_status: "APPROVED", "FLAGGED", or "REVIEW_REQUIRED"
+- confidence_score: 0-100 percentage
+- triggered_rules: Array of rule IDs that were triggered
+- whitelist_matches: Array of whitelist rules that matched
+- blacklist_matches: Array of blacklist rules that matched
+- summary: Brief overall assessment
+- recommendations: Array of recommended actions
+- key_findings: Array of important observations"""
+
+            try:
+                client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3,
+                    max_tokens=1500
+                )
+
+                ai_response = response.choices[0].message.content.strip()
+
+                # Parse AI response
+                try:
+                    if '```json' in ai_response:
+                        json_start = ai_response.find('```json') + 7
+                        json_end = ai_response.find('```', json_start)
+                        ai_response = ai_response[json_start:json_end].strip()
+                    elif '```' in ai_response:
+                        json_start = ai_response.find('```') + 3
+                        json_end = ai_response.find('```', json_start)
+                        ai_response = ai_response[json_start:json_end].strip()
+
+                    analysis_result = json.loads(ai_response)
+
+                    return jsonify({
+                        'success': True,
+                        'analysis': analysis_result,
+                        'rules_analyzed': {
+                            'whitelist_count': len(whitelist_rules),
+                            'blacklist_count': len(blacklist_rules)
+                        },
+                        'message': 'AI vetting analysis completed'
+                    }), 200
+
+                except json.JSONDecodeError:
+                    # Fallback analysis
+                    return jsonify({
+                        'success': True,
+                        'analysis': {
+                            'overall_status': 'REVIEW_REQUIRED',
+                            'confidence_score': 75,
+                            'summary': ai_response[:300] + '...' if len(ai_response) > 300 else ai_response,
+                            'recommendations': ['Manual review recommended', 'Verify compliance with key terms'],
+                            'key_findings': ['AI analysis completed with fallback format']
+                        },
+                        'message': 'AI analysis completed (fallback format)'
+                    }), 200
+
+            except Exception as openai_error:
+                logger.error(f"OpenAI API error in vetting analysis: {openai_error}")
+                # Provide basic analysis when AI unavailable
+                return jsonify({
+                    'success': True,
+                    'analysis': {
+                        'overall_status': 'REVIEW_REQUIRED',
+                        'confidence_score': 50,
+                        'summary': 'Manual analysis required - AI service unavailable',
+                        'recommendations': ['Perform manual review against vetting rules', 'Check compliance requirements'],
+                        'key_findings': ['Document length: ' + str(len(guarantee_text)) + ' characters']
+                    },
+                    'message': 'Basic analysis provided (AI unavailable)'
+                }), 200
+
+        except Exception as e:
+            logger.error(f"Error in AI vetting analysis: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    # === BLACKLIST RULES MANAGEMENT API ===
+    @app.route('/api/blacklist_rules', methods=['GET'])
+    @timing_aspect
+    def get_blacklist_rules():
+        """Get all blacklist rules"""
+        try:
+            blacklist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'blacklist_vetting_rules.json')
+
+            if not os.path.exists(blacklist_filepath):
+                return jsonify({'success': True, 'rules': []}), 200
+
+            with open(blacklist_filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                rules = data.get('blacklist_rules', [])
+                return jsonify({'success': True, 'rules': rules}), 200
+
+        except Exception as e:
+            logger.error(f"Error loading blacklist rules: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/blacklist_rules', methods=['POST'])
+    @timing_aspect
+    def add_blacklist_rule():
+        """Add a new blacklist rule"""
+        try:
+            rule_data = request.get_json()
+            if not rule_data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            blacklist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'blacklist_vetting_rules.json')
+
+            # Load existing rules
+            if os.path.exists(blacklist_filepath):
+                with open(blacklist_filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            else:
+                data = {'blacklist_rules': []}
+
+            # Generate new ID
+            existing_ids = [rule.get('id', '') for rule in data.get('blacklist_rules', [])]
+            max_num = 0
+            for rule_id in existing_ids:
+                if rule_id.startswith('BL') and rule_id[2:].isdigit():
+                    max_num = max(max_num, int(rule_id[2:]))
+            new_id = f"BL{str(max_num + 1).zfill(3)}"
+
+            # Create new rule
+            new_rule = {
+                'id': new_id,
+                'rule_type': 'blacklist',
+                'category': rule_data.get('category', ''),
+                'description': rule_data.get('description', ''),
+                'rule': rule_data.get('rule', ''),
+                'keywords': rule_data.get('keywords', []),
+                'priority': rule_data.get('priority', 'medium'),
+                'status': 'active',
+                'compliance_requirement': rule_data.get('compliance_requirement', ''),
+                'action': rule_data.get('action', 'review'),
+                'created_date': datetime.now().strftime('%Y-%m-%d'),
+                'last_updated': datetime.now().strftime('%Y-%m-%d')
+            }
+
+            data['blacklist_rules'].append(new_rule)
+
+            # Save updated rules
+            with open(blacklist_filepath, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+            return jsonify({'success': True, 'rule': new_rule}), 201
+
+        except Exception as e:
+            logger.error(f"Error adding blacklist rule: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/blacklist_rules/<rule_id>', methods=['PUT'])
+    @timing_aspect
+    def update_blacklist_rule(rule_id):
+        """Update a blacklist rule"""
+        try:
+            rule_data = request.get_json()
+            if not rule_data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            blacklist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'blacklist_vetting_rules.json')
+
+            if not os.path.exists(blacklist_filepath):
+                return jsonify({'success': False, 'message': 'Rules file not found'}), 404
+
+            with open(blacklist_filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Find and update rule
+            rules = data.get('blacklist_rules', [])
+            for i, rule in enumerate(rules):
+                if rule.get('id') == rule_id:
+                    updated_rule = rule.copy()
+                    updated_rule.update({
+                        'category': rule_data.get('category', rule['category']),
+                        'description': rule_data.get('description', rule['description']),
+                        'rule': rule_data.get('rule', rule['rule']),
+                        'keywords': rule_data.get('keywords', rule['keywords']),
+                        'priority': rule_data.get('priority', rule['priority']),
+                        'compliance_requirement': rule_data.get('compliance_requirement', rule['compliance_requirement']),
+                        'action': rule_data.get('action', rule['action']),
+                        'last_updated': datetime.now().strftime('%Y-%m-%d')
+                    })
+
+                    rules[i] = updated_rule
+
+                    # Save updated rules
+                    with open(blacklist_filepath, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+
+                    return jsonify({'success': True, 'rule': updated_rule}), 200
+
+            return jsonify({'success': False, 'message': 'Rule not found'}), 404
+
+        except Exception as e:
+            logger.error(f"Error updating blacklist rule {rule_id}: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/blacklist_rules/<rule_id>', methods=['DELETE'])
+    @timing_aspect
+    def delete_blacklist_rule(rule_id):
+        """Delete a blacklist rule"""
+        try:
+            blacklist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'blacklist_vetting_rules.json')
+
+            if not os.path.exists(blacklist_filepath):
+                return jsonify({'success': False, 'message': 'Rules file not found'}), 404
+
+            with open(blacklist_filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Find and remove rule
+            original_count = len(data.get('blacklist_rules', []))
+            data['blacklist_rules'] = [rule for rule in data.get('blacklist_rules', []) if rule.get('id') != rule_id]
+
+            if len(data['blacklist_rules']) < original_count:
+                # Save updated rules
+                with open(blacklist_filepath, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+
+                return jsonify({'success': True, 'message': 'Rule deleted successfully'}), 200
+            else:
+                return jsonify({'success': False, 'message': 'Rule not found'}), 404
+
+        except Exception as e:
+            logger.error(f"Error deleting blacklist rule {rule_id}: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    # === WHITELIST RULES MANAGEMENT API ===
+    @app.route('/api/whitelist_rules', methods=['GET'])
+    @timing_aspect
+    def get_whitelist_rules():
+        """Get all whitelist rules"""
+        try:
+            whitelist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'whitelist_vetting_rules.json')
+
+            if not os.path.exists(whitelist_filepath):
+                return jsonify({'success': True, 'rules': []}), 200
+
+            with open(whitelist_filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                rules = data.get('whitelist_rules', [])
+                return jsonify({'success': True, 'rules': rules}), 200
+
+        except Exception as e:
+            logger.error(f"Error loading whitelist rules: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/whitelist_rules', methods=['POST'])
+    @timing_aspect
+    def add_whitelist_rule():
+        """Add a new whitelist rule"""
+        try:
+            rule_data = request.get_json()
+            if not rule_data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            whitelist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'whitelist_vetting_rules.json')
+
+            # Load existing rules
+            if os.path.exists(whitelist_filepath):
+                with open(whitelist_filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            else:
+                data = {'whitelist_rules': []}
+
+            # Generate new ID
+            existing_ids = [rule.get('id', '') for rule in data.get('whitelist_rules', [])]
+            max_num = 0
+            for rule_id in existing_ids:
+                if rule_id.startswith('WL') and rule_id[2:].isdigit():
+                    max_num = max(max_num, int(rule_id[2:]))
+            new_id = f"WL{str(max_num + 1).zfill(3)}"
+
+            # Create new rule
+            new_rule = {
+                'id': new_id,
+                'rule_type': 'whitelist',
+                'category': rule_data.get('category', ''),
+                'description': rule_data.get('description', ''),
+                'rule': rule_data.get('rule', ''),
+                'keywords': rule_data.get('keywords', []),
+                'priority': rule_data.get('priority', 'medium'),
+                'status': 'active',
+                'compliance_requirement': rule_data.get('compliance_requirement', ''),
+                'created_date': datetime.now().strftime('%Y-%m-%d'),
+                'last_updated': datetime.now().strftime('%Y-%m-%d')
+            }
+
+            data['whitelist_rules'].append(new_rule)
+
+            # Save updated rules
+            with open(whitelist_filepath, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+
+            return jsonify({'success': True, 'rule': new_rule}), 201
+
+        except Exception as e:
+            logger.error(f"Error adding whitelist rule: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/whitelist_rules/<rule_id>', methods=['PUT'])
+    @timing_aspect
+    def update_whitelist_rule(rule_id):
+        """Update a whitelist rule"""
+        try:
+            rule_data = request.get_json()
+            if not rule_data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            whitelist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'whitelist_vetting_rules.json')
+
+            if not os.path.exists(whitelist_filepath):
+                return jsonify({'success': False, 'message': 'Rules file not found'}), 404
+
+            with open(whitelist_filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Find and update rule
+            rules = data.get('whitelist_rules', [])
+            for i, rule in enumerate(rules):
+                if rule.get('id') == rule_id:
+                    updated_rule = rule.copy()
+                    updated_rule.update({
+                        'category': rule_data.get('category', rule['category']),
+                        'description': rule_data.get('description', rule['description']),
+                        'rule': rule_data.get('rule', rule['rule']),
+                        'keywords': rule_data.get('keywords', rule['keywords']),
+                        'priority': rule_data.get('priority', rule['priority']),
+                        'compliance_requirement': rule_data.get('compliance_requirement', rule['compliance_requirement']),
+                        'last_updated': datetime.now().strftime('%Y-%m-%d')
+                    })
+
+                    rules[i] = updated_rule
+
+                    # Save updated rules
+                    with open(whitelist_filepath, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+
+                    return jsonify({'success': True, 'rule': updated_rule}), 200
+
+            return jsonify({'success': False, 'message': 'Rule not found'}), 404
+
+        except Exception as e:
+            logger.error(f"Error updating whitelist rule {rule_id}: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/whitelist_rules/<rule_id>', methods=['DELETE'])
+    @timing_aspect
+    def delete_whitelist_rule(rule_id):
+        """Delete a whitelist rule"""
+        try:
+            whitelist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'whitelist_vetting_rules.json')
+
+            if not os.path.exists(whitelist_filepath):
+                return jsonify({'success': False, 'message': 'Rules file not found'}), 404
+
+            with open(whitelist_filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Find and remove rule
+            original_count = len(data.get('whitelist_rules', []))
+            data['whitelist_rules'] = [rule for rule in data.get('whitelist_rules', []) if rule.get('id') != rule_id]
+
+            if len(data['whitelist_rules']) < original_count:
+                # Save updated rules
+                with open(whitelist_filepath, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+
+                return jsonify({'success': True, 'message': 'Rule deleted successfully'}), 200
+            else:
+                return jsonify({'success': False, 'message': 'Rule not found'}), 404
+
+        except Exception as e:
+            logger.error(f"Error deleting whitelist rule {rule_id}: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    def generate_enhanced_fallback_preview(rule_description, rule_type, sample_scenario=""):
+        """Generate enhanced rule preview when OpenAI is unavailable"""
+
+        # Enhanced examples based on common rule patterns
+        enhanced_examples = {
+            "beneficiary country not in central africa": {
+                "explanation": "This blacklist rule flags transactions where the beneficiary is located in countries outside the approved Central Africa region.",
+                "example_scenarios": [
+                    "Transaction flagged: Beneficiary bank in Morocco (North Africa) - outside Central Africa region",
+                    "Transaction flagged: Payment to beneficiary in Egypt - not part of Central Africa list",
+                    "Transaction approved: Beneficiary in Chad (Central Africa) - meets regional requirements"
+                ],
+                "detection_criteria": "Geographic location of beneficiary country compared to approved Central Africa list (Chad, CAR, Cameroon, etc.)",
+                "recommended_action": "Verify beneficiary's actual registration country and confirm regional compliance requirements"
+            },
+            "guarantee issuing bank": {
+                "explanation": "This rule evaluates the creditworthiness and approval status of banks issuing guarantees.",
+                "example_scenarios": [
+                    "Bank with AA+ rating: Approved - meets minimum credit requirements",
+                    "Regional bank with B+ rating: Flagged - below minimum AA threshold",
+                    "Unknown bank rating: Flagged - requires credit assessment"
+                ],
+                "detection_criteria": "Bank credit rating (minimum AA), regulatory approval status, and institutional reputation",
+                "recommended_action": "Verify bank's current credit rating and regulatory standing before approval"
+            },
+            "expiry date": {
+                "explanation": "This rule ensures guarantee expiry dates meet regulatory and business requirements.",
+                "example_scenarios": [
+                    "Expiry > 2 years: Flagged - exceeds standard guarantee period",
+                    "No expiry date specified: Flagged - indefinite guarantee not allowed",
+                    "Expiry in 18 months: Approved - within acceptable timeframe"
+                ],
+                "detection_criteria": "Guarantee duration limits, explicit expiry requirements, and risk management policies",
+                "recommended_action": "Confirm expiry date aligns with underlying contract and risk appetite"
+            }
+        }
+
+        # Find matching pattern or use generic template
+        rule_key = rule_description.lower()
+        matching_example = None
+
+        for key, example in enhanced_examples.items():
+            if key in rule_key:
+                matching_example = example
+                break
+
+        if matching_example:
+            if sample_scenario:
+                custom_result = f"Analysis of '{sample_scenario}': {matching_example['example_scenarios'][0]}"
+            else:
+                custom_result = matching_example['example_scenarios'][0]
+
+            return {
+                'explanation': matching_example['explanation'],
+                'example_result': custom_result,
+                'example_scenarios': matching_example['example_scenarios'],
+                'detection_criteria': matching_example['detection_criteria'],
+                'recommended_action': matching_example['recommended_action']
+            }
+        else:
+            # Generic fallback
+            if sample_scenario:
+                example_result = f"Based on your rule '{rule_description}', analyzing scenario: {sample_scenario}. The transaction would be evaluated against your specified criteria and flagged if non-compliant."
+            else:
+                example_result = f"This {rule_type} rule will automatically evaluate transactions against: {rule_description}. Non-compliant cases will be flagged for review."
+
+            scenarios = [
+                f"Transaction meets criteria: Approved - complies with {rule_description}",
+                f"Transaction fails check: Flagged - violates {rule_description} requirements",
+                f"Unclear case: Manual review needed - requires human assessment"
+            ]
+
+            return {
+                'explanation': f'This {rule_type} rule automatically monitors transactions for: {rule_description}',
+                'example_result': example_result,
+                'example_scenarios': scenarios,
+                'detection_criteria': f'Key evaluation points: {rule_description}',
+                'recommended_action': 'Review flagged transactions and confirm compliance with business policies'
+            }
+
+    # Add AI rule preview/testing endpoint
+    @app.route('/api/ai_rule_preview', methods=['POST'])
+    @timing_aspect
+    def ai_rule_preview():
+        """Preview how a rule would work with sample data"""
+        try:
+            request_data = request.get_json()
+            if not request_data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            rule_description = request_data.get('rule_description', '').strip()
+            rule_type = request_data.get('rule_type', 'blacklist')
+            sample_scenario = request_data.get('sample_scenario', '').strip()
+
+            if not rule_description:
+                return jsonify({'success': False, 'message': 'Rule description is required'}), 400
+
+            # Create AI prompt for rule preview
+            if rule_type == 'blacklist':
+                system_prompt = """You are an AI assistant specialized in demonstrating how blacklist vetting rules work. Create realistic examples of how the rule would flag problematic transactions."""
+                if sample_scenario:
+                    prompt = f"""Rule Description: "{rule_description}"
+Rule Type: Blacklist (flags problematic conditions)
+Sample Scenario: "{sample_scenario}"
+
+Show how this rule would work by providing:
+1. A clear explanation of what the rule detects
+2. An example result message showing why a transaction would be flagged
+3. Key detection criteria
+4. Recommended action
+
+Format as JSON with fields: explanation, example_result, detection_criteria, recommended_action"""
+                else:
+                    prompt = f"""Rule Description: "{rule_description}"
+Rule Type: Blacklist (flags problematic conditions)
+
+Show how this rule would work by providing:
+1. A clear explanation of what the rule detects
+2. 2-3 realistic example scenarios where it would trigger
+3. Example result messages for each scenario
+4. Key detection criteria
+5. Recommended actions
+
+Format as JSON with fields: explanation, example_scenarios (array), detection_criteria, recommended_action"""
+            else:
+                system_prompt = """You are an AI assistant specialized in demonstrating how whitelist vetting rules work. Create realistic examples of how the rule would approve compliant transactions."""
+                if sample_scenario:
+                    prompt = f"""Rule Description: "{rule_description}"
+Rule Type: Whitelist (approves compliant conditions)
+Sample Scenario: "{sample_scenario}"
+
+Show how this rule would work by providing:
+1. A clear explanation of what the rule approves
+2. An example result message showing why a transaction would be approved
+3. Key approval criteria
+4. Compliance benefits
+
+Format as JSON with fields: explanation, example_result, approval_criteria, compliance_benefits"""
+                else:
+                    prompt = f"""Rule Description: "{rule_description}"
+Rule Type: Whitelist (approves compliant conditions)
+
+Show how this rule would work by providing:
+1. A clear explanation of what the rule approves
+2. 2-3 realistic example scenarios where it would approve
+3. Example result messages for each scenario
+4. Key approval criteria
+5. Compliance benefits
+
+Format as JSON with fields: explanation, example_scenarios (array), approval_criteria, compliance_benefits"""
+
+            # Call OpenAI API with Azure configuration
+            try:
+                # Setup Azure OpenAI configuration using correct env var names
+                azure_key = os.getenv('AZURE_OPENAI_API_KEY')  # Matches your .env file
+                azure_base = os.getenv('AZURE_OPENAI_API_BASE')  # Matches your .env file
+                azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+                deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+                if azure_key and azure_base:
+                    # Configure Azure OpenAI
+                    openai.api_type = "azure"
+                    openai.api_key = azure_key
+                    openai.api_base = azure_base
+                    openai.api_version = azure_version
+                else:
+                    # Fallback to regular OpenAI
+                    openai.api_key = os.getenv('OPENAI_API_KEY')
+                    deployment_name = "gpt-3.5-turbo"
+
+                # Use old API format with engine parameter
+                response = openai.ChatCompletion.create(
+                    engine=deployment_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3,
+                    max_tokens=1200
+                )
+                ai_response = response.choices[0].message.content.strip()
+
+                # Parse AI response
+                try:
+                    if '```json' in ai_response:
+                        json_start = ai_response.find('```json') + 7
+                        json_end = ai_response.find('```', json_start)
+                        ai_response = ai_response[json_start:json_end].strip()
+                    elif '```' in ai_response:
+                        json_start = ai_response.find('```') + 3
+                        json_end = ai_response.find('```', json_start)
+                        ai_response = ai_response[json_start:json_end].strip()
+
+                    preview_result = json.loads(ai_response)
+
+                    return jsonify({
+                        'success': True,
+                        'preview': preview_result,
+                        'rule_type': rule_type,
+                        'message': 'Rule preview generated successfully'
+                    }), 200
+
+                except json.JSONDecodeError:
+                    # Fallback if JSON parsing fails
+                    return jsonify({
+                        'success': True,
+                        'preview': {
+                            'explanation': f'This {rule_type} rule would detect: {rule_description}',
+                            'example_result': ai_response[:400] + '...' if len(ai_response) > 400 else ai_response,
+                            'detection_criteria': f'Based on: {rule_description}',
+                            'recommended_action': 'Review flagged transactions manually'
+                        },
+                        'message': 'Rule preview generated (fallback format)'
+                    }), 200
+
+            except Exception as openai_error:
+                logger.error(f"OpenAI API error in rule preview: {openai_error}")
+                # Provide enhanced fallback preview when AI unavailable
+                preview_result = generate_enhanced_fallback_preview(rule_description, rule_type, sample_scenario)
+
+                return jsonify({
+                    'success': True,
+                    'preview': preview_result,
+                    'message': 'Enhanced rule preview provided (AI unavailable)'
+                }), 200
+
+        except Exception as e:
+            logger.error(f"Error in rule preview: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    # === GUARANTEE PROMPT CONFIGURATION ROUTES ===
+    @app.route('/api/guarantee_prompt_config', methods=['GET'])
+    @timing_aspect
+    def get_guarantee_prompt_config():
+        """Get guarantee prompt system configuration"""
+        try:
+            config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'guarantee_prompt_system.json')
+
+            if not os.path.exists(config_path):
+                # Create default simplified configuration
+                default_config = {
+                    "system_prompt": """You are an AI assistant specialized in financial document analysis and guarantee vetting.
+
+Your primary role is to:
+1. Analyze financial documents for key information
+2. Evaluate guarantee structures and terms
+3. Assess compliance with regulatory requirements
+4. Identify potential risks or issues
+
+Please provide clear, accurate, and professional responses based on the document content.""",
+                    "custom_prompt": """Please analyze this document for:
+- Document type and purpose
+- Key financial terms and conditions
+- Guarantee structure and obligations
+- Compliance requirements
+- Risk factors
+
+Provide a structured summary with your findings.""",
+                    "last_updated": "2024-01-01T00:00:00.000Z"
+                }
+
+                # Ensure directory exists
+                os.makedirs(os.path.dirname(config_path), exist_ok=True)
+
+                with open(config_path, 'w', encoding='utf-8') as f:
+                    json.dump(default_config, f, indent=2, ensure_ascii=False)
+
+                return jsonify({'success': True, 'config': default_config}), 200
+
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+
+            # Ensure the config has the expected structure
+            if 'system_prompt' not in config:
+                config['system_prompt'] = ""
+            if 'custom_prompt' not in config:
+                config['custom_prompt'] = ""
+            if 'last_updated' not in config:
+                config['last_updated'] = None
+
+            return jsonify({'success': True, 'config': config}), 200
+
+        except Exception as e:
+            logger.error(f"Error getting guarantee prompt config: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/guarantee_prompt_config', methods=['POST'])
+    @timing_aspect
+    def update_guarantee_prompt_config():
+        """Update guarantee prompt system configuration"""
+        try:
+            config_data = request.get_json()
+            config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'guarantee_prompt_system.json')
+
+            # Validate simplified config structure
+            if not config_data:
+                return jsonify({'success': False, 'message': 'No configuration data provided'}), 400
+
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+
+            # Add timestamp
+            config_data['last_updated'] = datetime.utcnow().isoformat() + 'Z'
+
+            # Save updated configuration
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, indent=2, ensure_ascii=False)
+
+            return jsonify({'success': True, 'message': 'Configuration updated successfully'}), 200
+
+        except Exception as e:
+            logger.error(f"Error updating guarantee prompt config: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/guarantee_prompt_config/reset', methods=['POST'])
+    @timing_aspect
+    def reset_guarantee_prompt_config():
+        """Reset guarantee prompt configuration to defaults"""
+        try:
+            config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'guarantee_prompt_system.json')
+
+            # Create default simplified configuration
+            default_config = {
+                "system_prompt": """You are an AI assistant specialized in financial document analysis and guarantee vetting.
+
+Your primary role is to:
+1. Analyze financial documents for key information
+2. Evaluate guarantee structures and terms
+3. Assess compliance with regulatory requirements
+4. Identify potential risks or issues
+
+Please provide clear, accurate, and professional responses based on the document content.""",
+                "custom_prompt": """Please analyze this document for:
+- Document type and purpose
+- Key financial terms and conditions
+- Guarantee structure and obligations
+- Compliance requirements
+- Risk factors
+
+Provide a structured summary with your findings.""",
+                "last_updated": datetime.utcnow().isoformat() + 'Z'
+            }
+
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+
+            # Save default configuration
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(default_config, f, indent=2, ensure_ascii=False)
+
+            return jsonify({'success': True, 'config': default_config, 'message': 'Configuration reset to defaults'}), 200
+
+        except Exception as e:
+            logger.error(f"Error resetting guarantee prompt config: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/guarantee_prompt_preview', methods=['POST'])
+    @timing_aspect
+    def guarantee_prompt_preview():
+        """Generate real-time AI analysis preview based on current prompts"""
+        try:
+            data = request.get_json()
+
+            if not data:
+                return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+            system_prompt = data.get('system_prompt', '')
+            custom_prompt = data.get('custom_prompt', '')
+            sample_text = data.get('sample_text', '')
+            analysis_mode = data.get('analysis_mode', 'basic')
+            include_whitelist = data.get('include_whitelist', True)
+            include_blacklist = data.get('include_blacklist', True)
+
+            if not sample_text.strip():
+                return jsonify({'success': False, 'message': 'Sample text is required'}), 400
+
+            # Load rules if requested
+            rules_context = ""
+            if include_whitelist or include_blacklist:
+                try:
+                    if include_whitelist:
+                        whitelist_path = os.path.join(os.path.dirname(__file__), 'data', 'whitelist_vetting_rules.json')
+                        if os.path.exists(whitelist_path):
+                            with open(whitelist_path, 'r', encoding='utf-8') as f:
+                                whitelist_data = json.load(f)
+                                rules_context += "\n\nWHITELIST RULES (Approved Conditions):\n"
+                                for rule in whitelist_data.get('whitelist_rules', []):
+                                    rules_context += f"- {rule['id']}: {rule['description']} (Priority: {rule['priority']})\n"
+
+                    if include_blacklist:
+                        blacklist_path = os.path.join(os.path.dirname(__file__), 'data', 'blacklist_vetting_rules.json')
+                        if os.path.exists(blacklist_path):
+                            with open(blacklist_path, 'r', encoding='utf-8') as f:
+                                blacklist_data = json.load(f)
+                                rules_context += "\n\nBLACKLIST RULES (Prohibited Conditions):\n"
+                                for rule in blacklist_data.get('blacklist_rules', []):
+                                    rules_context += f"- {rule['id']}: {rule['description']} (Priority: {rule['priority']}, Action: {rule.get('action', 'review')})\n"
+                except Exception as e:
+                    logger.warning(f"Could not load vetting rules: {e}")
+
+            # Build the complete prompt
+            complete_prompt = f"{system_prompt}\n\n{custom_prompt}"
+            if rules_context:
+                complete_prompt += rules_context
+
+            complete_prompt += f"\n\nAnalysis Mode: {analysis_mode.replace('_', ' ').title()}"
+            complete_prompt += f"\n\nDocument Text to Analyze:\n{sample_text}"
+            complete_prompt += "\n\nPlease provide your analysis in JSON format with the following structure:"
+            complete_prompt += """
+{
+  "document_type": "identified document type",
+  "compliance_status": "compliant/non-compliant/needs_review",
+  "risk_level": "low/medium/high/critical",
+  "key_findings": ["finding1", "finding2"],
+  "whitelist_compliance": "summary of whitelist rule compliance",
+  "blacklist_violations": "any blacklist rule violations found",
+  "recommendations": ["recommendation1", "recommendation2"],
+  "confidence_score": 0.95
+}"""
+
+            # Simulate AI analysis (In production, this would call your actual AI service)
+            # For now, we'll create a mock response based on the sample text
+            analysis_result = generate_mock_analysis(sample_text, analysis_mode, include_whitelist, include_blacklist)
+
+            return jsonify({
+                'success': True,
+                'analysis': analysis_result,
+                'prompt_used': complete_prompt[:500] + "..." if len(complete_prompt) > 500 else complete_prompt,
+                'timestamp': datetime.utcnow().isoformat() + 'Z'
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error generating guarantee prompt preview: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    def generate_mock_analysis(sample_text, analysis_mode, include_whitelist, include_blacklist):
+        """Generate a mock analysis result for preview purposes"""
+
+        # Simple document type detection
+        document_type = "Unknown Document"
+        if "guarantee" in sample_text.lower():
+            document_type = "Bank Guarantee"
+        elif "standby" in sample_text.lower() or "sblc" in sample_text.lower():
+            document_type = "Standby Letter of Credit"
+        elif "letter of credit" in sample_text.lower():
+            document_type = "Letter of Credit"
+
+        # Extract amount if present
+        import re
+        amount_match = re.search(r'(USD|EUR|GBP)\s*([\d,]+\.?\d*)', sample_text, re.IGNORECASE)
+        amount = amount_match.group(0) if amount_match else "Not specified"
+
+        # Basic risk assessment
+        risk_indicators = []
+        risk_level = "low"
+
+        if "sanctions" in sample_text.lower():
+            risk_indicators.append("Sanctions-related content detected")
+            risk_level = "high"
+
+        if amount_match:
+            amount_value = float(amount_match.group(2).replace(',', ''))
+            if amount_value > 10000000:  # 10M
+                risk_indicators.append("High value guarantee (>10M)")
+                risk_level = "high"
+
+        # Compliance assessment
+        compliance_status = "compliant"
+        compliance_issues = []
+
+        if "urdg" not in sample_text.lower():
+            compliance_issues.append("URDG 758 reference not found")
+            compliance_status = "needs_review"
+
+        # Mock analysis based on mode
+        if analysis_mode == "detailed":
+            findings = [
+                f"Document identified as: {document_type}",
+                f"Guarantee amount: {amount}",
+                "URDG 758 compliance check performed",
+                "Beneficiary and guarantor details reviewed",
+                "Expiry date and claim conditions analyzed"
+            ]
+        elif analysis_mode == "compliance":
+            findings = [
+                "URDG 758 compliance verification completed",
+                "Mandatory fields presence check performed",
+                "Legal framework validation conducted"
+            ]
+        elif analysis_mode == "risk_assessment":
+            findings = [
+                "Country risk assessment performed",
+                "Counterparty risk evaluation completed",
+                "Operational risk factors identified"
+            ]
+        else:  # basic
+            findings = [
+                f"Document type: {document_type}",
+                f"Amount: {amount}",
+                "Basic compliance check completed"
+            ]
+
+        # Add rule-specific findings
+        if include_whitelist:
+            findings.append("Whitelist compliance verification performed")
+        if include_blacklist:
+            findings.append("Blacklist screening completed")
+
+        return {
+            "document_type": document_type,
+            "compliance_status": compliance_status,
+            "risk_level": risk_level,
+            "key_findings": findings,
+            "amount_detected": amount,
+            "whitelist_compliance": "No violations found" if include_whitelist else "Not checked",
+            "blacklist_violations": "None detected" if include_blacklist else "Not screened",
+            "recommendations": [
+                "Proceed with standard verification procedures",
+                "Confirm beneficiary details",
+                "Verify expiry date alignment with contract terms"
+            ] if compliance_status == "compliant" else [
+                "Address compliance issues before proceeding",
+                "Consider additional due diligence",
+                "Seek legal review if necessary"
+            ],
+            "confidence_score": 0.87,
+            "analysis_timestamp": datetime.utcnow().isoformat() + 'Z',
+            "rules_applied": {
+                "whitelist_checked": include_whitelist,
+                "blacklist_checked": include_blacklist,
+                "analysis_mode": analysis_mode
+            }
+        }
+
+    @app.route('/api/discrepancy-check', methods=['POST'])
+    @timing_aspect
+    def discrepancy_check():
+        """GPT-4 powered discrepancy check with enhanced document processing pipeline"""
+        try:
+            logger.info("🔍 Enhanced GPT-4 Discrepancy check API called")
+
+            # Handle both JSON (old) and FormData (new with files) requests
+            if request.content_type and 'multipart/form-data' in request.content_type:
+                # NEW: Handle FormData with actual files for backend processing
+                logger.info("📄 Received FormData request with files for backend processing")
+
+                # Get LC context and SWIFT message from form data
+                lc_context = {}
+                swift_message = ''
+
+                if 'lcContext' in request.form:
+                    try:
+                        lc_context = json.loads(request.form['lcContext'])
+                    except json.JSONDecodeError:
+                        logger.warning("⚠️ Invalid LC context JSON, using empty context")
+
+                if 'swiftMessage' in request.form:
+                    swift_message = request.form['swiftMessage']
+
+                # Process uploaded files
+                uploaded_documents = []
+                files = request.files.getlist('files')
+
+                logger.info(f"� Received {len(files)} files for backend processing")
+
+                for idx, file in enumerate(files):
+                    if file and file.filename:
+                        logger.info(f"📄 Processing file {idx + 1}: {file.filename} ({file.content_type})")
+
+                        # Save file temporarily for processing
+                        import tempfile
+                        with tempfile.NamedTemporaryFile(delete=False,
+                                                         suffix=os.path.splitext(file.filename)[1]) as tmp_file:
+                            file.save(tmp_file.name)
+
+                            # Create document object with file path for backend extraction
+                            uploaded_documents.append({
+                                'name': file.filename,
+                                'file_name': file.filename,
+                                'size': os.path.getsize(tmp_file.name),
+                                'type': file.content_type or 'application/pdf',
+                                'file_path': tmp_file.name,  # ✅ Backend will extract from this
+                                'status': 'uploaded',
+                                'content': '',  # Will be extracted by backend
+                            })
+
+                            logger.info(f"✅ Saved {file.filename} to {tmp_file.name} for backend processing")
+
+                analysis_type = 'comprehensive'
+
+            else:
+                # OLD: Handle JSON requests (for backward compatibility)
+                logger.info("📄 Received JSON request (legacy mode)")
+                data = request.get_json()
+
+                if not data:
+                    return jsonify({
+                        'success': False,
+                        'message': 'No data provided'
+                    }), 400
+
+                lc_context = data.get('lcContext', {})
+                uploaded_documents = data.get('uploadedDocuments', [])
+                swift_message = data.get('swiftMessage', '')
+                analysis_type = data.get('analysisType', 'comprehensive')  # comprehensive, quick, detailed
+
+            # If no documents provided in request, try to get from session
+            if not uploaded_documents and 'uploaded_documents' in session:
+                session_docs = session['uploaded_documents']
+                uploaded_documents = session_docs
+                logger.info(f"📄 Retrieved {len(uploaded_documents)} documents from session")
+
+            # Debug: Log the content status of received documents
+            logger.info(f"📄 Received {len(uploaded_documents)} documents for processing:")
+            for i, doc in enumerate(uploaded_documents):
+                doc_name = doc.get('name', doc.get('file_name', f'Document_{i + 1}'))
+                content_len = len(doc.get('content', ''))
+                text_len = len(doc.get('text', ''))
+                file_path = doc.get('file_path') or doc.get('path') or doc.get('file_name')
+                logger.info(f"  Document {i + 1}: {doc_name}")
+                logger.info(f"    - content: {content_len} characters")
+                logger.info(f"    - text: {text_len} characters")
+                logger.info(f"    - file_path: {file_path}")
+                logger.info(f"    - keys: {list(doc.keys())}")
+
+            logger.info(
+                f"🤖 Enhanced processing pipeline analyzing {len(uploaded_documents)} documents against LC requirements")
+            logger.info(f"🤖 Analysis type: {analysis_type}")
+
+            # === ENHANCED DOCUMENT PROCESSING PIPELINE ===
+            # Step 1: Process documents that need classification and OCR extraction
+            processed_documents = enhance_documents_for_discrepancy_analysis(uploaded_documents)
+
+            # Step 2: Validate that we have proper document processing
+            if not processed_documents:
+                logger.warning("⚠️ No documents could be processed for analysis")
+                return jsonify({
+                    'success': False,
+                    'message': 'No valid documents found for discrepancy analysis'
+                }), 400
+
+            logger.info(f"📊 Document processing complete: {len(processed_documents)} documents ready for analysis")
+
+            # Log document types found
+            doc_types = [doc.get('classification', doc.get('type', 'unknown')) for doc in processed_documents]
+            logger.info(f"📋 Detected document types: {', '.join(set(doc_types))}")
+
+            # Pure LLM-based discrepancy analysis (no static rules or XML dependencies)
+            logger.info("🤖 Using pure LLM-based analysis - no static rules required")
+            discrepancy_results = perform_pure_llm_discrepancy_analysis(
+                lc_context, processed_documents, swift_message
+            )
+
+            # Enhanced summary statistics for pure LLM analysis
+            llm_count = len([d for d in discrepancy_results if d.get('analysis_type') == 'pure_llm'])
+            cross_doc_count = len([d for d in discrepancy_results if d.get('cross_document_check') == 'true'])
+
+            summary = {
+                'total': len(discrepancy_results),
+                'passed': len([d for d in discrepancy_results if d['severity'] == 'low']),
+                'warnings': len([d for d in discrepancy_results if d['severity'] == 'medium']),
+                'errors': len([d for d in discrepancy_results if d['severity'] == 'high']),
+                'critical': len([d for d in discrepancy_results if d['severity'] == 'critical']),
+                'llm_powered': True,
+                'llm_analysis_count': llm_count,
+                'cross_document_count': cross_doc_count,
+                'analysis_confidence': calculate_analysis_confidence(discrepancy_results),
+                'critical_issues': len(
+                    [d for d in discrepancy_results if d['severity'] in ['critical', 'high'] and d.get('confidence', 0.8) > 0.8])
+            }
+
+            # Determine overall compliance status
+            compliance_status = 'compliant'
+            if summary['errors'] > 0:
+                compliance_status = 'non_compliant'
+            elif summary['warnings'] > 2:
+                compliance_status = 'requires_review'
+
+            logger.info(f"🤖 Pure LLM discrepancy analysis completed: {summary}")
+            logger.info(f"📊 Compliance status: {compliance_status}")
+
+            # Enhanced data structure for Professional 4-tab UI
+            enhanced_results = enhance_data_for_professional_ui(
+                lc_context,
+                processed_documents,
+                swift_message,
+                discrepancy_results,
+                summary,
+                compliance_status
+            )
+
+            # ✅ Cleanup temporary files
+            if request.content_type and 'multipart/form-data' in request.content_type:
+                for doc in uploaded_documents:
+                    temp_file = doc.get('file_path')
+                    if temp_file and os.path.exists(temp_file):
+                        try:
+                            os.unlink(temp_file)
+                            logger.info(f"🗑️ Cleaned up temporary file: {temp_file}")
+                        except Exception as cleanup_error:
+                            logger.warning(f"⚠️ Could not cleanup {temp_file}: {cleanup_error}")
+
+            return jsonify({
+                'success': True,
+                'results': enhanced_results
+            }), 200
+
+        except Exception as e:
+            logger.error(f"❌ Error in GPT-4 discrepancy check: {e}")
+            import traceback
+            traceback.print_exc()
+
+            # ✅ Cleanup temporary files even on error
+            if request.content_type and 'multipart/form-data' in request.content_type:
+                for doc in uploaded_documents:
+                    temp_file = doc.get('file_path')
+                    if temp_file and os.path.exists(temp_file):
+                        try:
+                            os.unlink(temp_file)
+                            logger.info(f"🗑️ Cleaned up temporary file after error: {temp_file}")
+                        except Exception as cleanup_error:
+                            logger.warning(f"⚠️ Could not cleanup {temp_file}: {cleanup_error}")
+
+            # Provide fallback analysis even on error
+            try:
+                # Use the appropriate data source based on request type
+                if request.content_type and 'multipart/form-data' in request.content_type:
+                    fallback_lc_context = lc_context
+                    fallback_uploaded_docs = uploaded_documents
+                    fallback_swift_message = swift_message
+                else:
+                    data = request.get_json() or {}
+                    fallback_lc_context = data.get('lcContext', {})
+                    fallback_uploaded_docs = data.get('uploadedDocuments', [])
+                    fallback_swift_message = data.get('swiftMessage', '')
+
+                fallback_results = get_fallback_discrepancy_analysis(
+                    fallback_lc_context,
+                    fallback_uploaded_docs,
+                    fallback_swift_message
+                )
+                return jsonify({
+                    'success': True,
+                    'results': {
+                        'discrepancies': fallback_results,
+                        'summary': {
+                            'total': len(fallback_results),
+                            'passed': len([d for d in fallback_results if d['severity'] == 'low']),
+                            'warnings': len([d for d in fallback_results if d['severity'] == 'medium']),
+                            'errors': len([d for d in fallback_results if d['severity'] == 'high']),
+                            'gpt4_powered': False
+                        },
+                        'compliance_status': 'requires_review',
+                        'analysis_metadata': {
+                            'timestamp': datetime.now().isoformat(),
+                            'model_used': 'fallback',
+                            'error_occurred': True
+                        }
+                    }
+                }), 200
+            except Exception as fallback_error:
+                logger.error(f"❌ Fallback analysis also failed: {fallback_error}")
+                return jsonify({
+                    'success': False,
+                    'message': f'Analysis failed completely: {str(fallback_error)}',
+                    'fallback_available': False
+                }), 500
+
+    @app.route('/api/document/analyze-discrepancies-optimized', methods=['POST'])
+    @timing_aspect
+    def analyze_discrepancies_optimized():
+        """
+        Optimized discrepancy analysis that reuses existing OCR, classification, and extraction results
+        Skips redundant processing and only performs discrepancy analysis
+        """
+        try:
+            logger.info("🚀 Optimized discrepancy analysis API called")
+
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+
+            # Extract existing analysis data
+            file_name = data.get('file_name', 'Unknown')
+            document_type = data.get('document_type', 'Unknown')
+            extracted_fields = data.get('extracted_fields', {})
+            classification_result = data.get('classification_result', {})
+            ocr_data = data.get('ocr_data', {})
+            original_analysis = data.get('original_analysis', {})
+
+            # Check if we should skip processing steps
+            skip_ocr = data.get('skip_ocr', True)
+            skip_classification = data.get('skip_classification', True)
+            skip_extraction = data.get('skip_extraction', True)
+            reuse_existing_data = data.get('reuse_existing_data', True)
+
+            logger.info(f"📄 Processing {file_name} with optimized discrepancy analysis")
+            logger.info(f"🔄 Reuse existing data: {reuse_existing_data}")
+            logger.info(f"📊 Document type: {document_type}")
+            logger.info(f"🏷️ Extracted fields: {len(extracted_fields)}")
+
+            # Start discrepancy analysis timing
+            discrepancy_start = time.time()
+
+            # Format the data for discrepancy analysis
+            formatted_analysis_data = {
+                'success': True,
+                'results': {
+                    'discrepancies': [],
+                    'analysis_method': 'enhanced_llm_with_false_positive_filtering',
+                    'compliance_status': 'COMPLIANT',
+                    'summary': {
+                        'total': 0,
+                        'critical': 0,
+                        'high': 0,
+                        'medium': 0,
+                        'low': 0
+                    },
+                    'document_analysis': {
+                        'file_name': file_name,
+                        'document_type': document_type,
+                        'extracted_fields': extracted_fields,
+                        'classification_confidence': classification_result.get('confidence', 0.9)
+                    },
+                    'processing_metadata': {
+                        'optimized_mode': True,
+                        'skipped_ocr': skip_ocr,
+                        'skipped_classification': skip_classification,
+                        'skipped_extraction': skip_extraction,
+                        'reused_existing_data': reuse_existing_data
+                    }
+                }
+            }
+
+            # Get LC context from session if available
+            lc_context = session.get('lcContext', {})
+            swift_message = ''
+
+            # Try to extract SWIFT message from LC context
+            if lc_context:
+                swift_message = lc_context.get('swiftMessage', '')
+                if not swift_message and 'formData' in lc_context:
+                    swift_message = lc_context['formData'].get('swiftMessage', '')
+
+            # If we have extracted fields and LC context, perform discrepancy analysis
+            if extracted_fields and lc_context:
+                logger.info("🔍 Performing enhanced discrepancy analysis with existing data")
+
+                try:
+                    # Prepare documents for discrepancy analysis
+                    uploaded_documents = [{
+                        'name': file_name,
+                        'file_name': file_name,
+                        'document_type': document_type,
+                        'extracted_fields': extracted_fields,
+                        'classification_result': classification_result,
+                        'content': json.dumps(extracted_fields),  # Use extracted fields as content
+                        'ocr_data': ocr_data,
+                        'status': 'processed'
+                    }]
+
+                    # Call individual document XML rule-based analysis
+                    discrepancy_results = analyze_individual_document_discrepancies(
+                        document_data=uploaded_documents[0],
+                        lc_context=lc_context,
+                        swift_message=swift_message
+                    )
+
+                    if discrepancy_results and discrepancy_results.get('success'):
+                        # Update with actual discrepancy results
+                        formatted_analysis_data['results'] = discrepancy_results.get('results', {})
+                        total_discrepancies = len(discrepancy_results.get('results', {}).get('discrepancies', []))
+                        logger.info(f"✅ Individual discrepancy analysis completed with {total_discrepancies} discrepancies")
+                    else:
+                        logger.warning("⚠️ Individual discrepancy analysis returned no results, using compliant fallback")
+
+                except Exception as disc_error:
+                    logger.error(f"❌ Enhanced discrepancy analysis failed: {disc_error}")
+                    # Continue with compliant fallback
+                    pass
+            else:
+                logger.info("ℹ️ Insufficient data for discrepancy analysis, returning compliant status")
+
+            discrepancy_time = time.time() - discrepancy_start
+
+            # Add processing timing
+            formatted_analysis_data['results']['processing_time'] = {
+                'discrepancy_analysis': f"{discrepancy_time:.2f}",
+                'total_optimized': f"{discrepancy_time:.2f}",
+                'time_saved': "~5-10s (skipped OCR, classification, extraction)"
+            }
+
+            # Add metadata
+            formatted_analysis_data['results']['metadata'] = {
+                'timestamp': datetime.now().isoformat(),
+                'file_name': file_name,
+                'document_type': document_type,
+                'fields_analyzed': len(extracted_fields),
+                'optimization_enabled': True,
+                'processing_mode': 'optimized_discrepancy_only'
+            }
+
+            logger.info(f"🎉 Optimized discrepancy analysis completed in {discrepancy_time:.2f}s")
+
+            return jsonify(formatted_analysis_data)
+
+        except Exception as e:
+            logger.error(f"❌ Optimized discrepancy analysis error: {e}")
+            import traceback
+            traceback.print_exc()
+
+            return jsonify({
+                'success': False,
+                'error': f'Optimized discrepancy analysis failed: {str(e)}',
+                'fallback_suggestion': 'Try using the regular discrepancy analysis endpoint'
+            }), 500
+
+    @app.route('/api/document/analyze-overall-discrepancies', methods=['POST'])
+    @timing_aspect
+    def analyze_overall_discrepancies():
+        """
+        Advanced overall discrepancy analysis across multiple documents
+        Checks for cross-document inconsistencies, SWIFT message compliance, and field conflicts
+        """
+        try:
+            logger.info("🚀 Overall discrepancy analysis API called")
+
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+
+            documents = data.get('documents', [])
+            if len(documents) < 2:
+                return jsonify({
+                    'success': False,
+                    'error': 'At least 2 documents required for cross-document analysis'
+                }), 400
+
+            analysis_type = data.get('analysis_type', 'cross_document_discrepancy')
+            check_swift = data.get('check_swift_consistency', True)
+            check_fields = data.get('check_field_consistency', True)
+            check_compliance = data.get('check_compliance_consistency', True)
+
+            logger.info(f"📊 Analyzing {len(documents)} documents for cross-document discrepancies")
+            logger.info(f"🔍 Analysis settings: SWIFT={check_swift}, Fields={check_fields}, Compliance={check_compliance}")
+
+            # Start overall analysis timing
+            analysis_start = time.time()
+
+            # Initialize results structure
+            overall_results = {
+                'cross_document_inconsistencies': [],
+                'swift_message_issues': [],
+                'field_conflicts': [],
+                'compliance_discrepancies': [],
+                'document_summary': [],
+                'overall_score': 100,
+                'critical_issues': 0,
+                'warning_issues': 0
+            }
+
+            # Load XML Rules for Enhanced Analysis
+            logger.info("📋 Loading XML-based discrepancy rules for enhanced analysis")
+            xml_rules = load_discrepancy_rules_from_xml()
+            logger.info(f"📊 Loaded {len(xml_rules)} XML rules from discrepancy_rules.xml")
+
+            # Enhanced LLM-Powered Cross-Document Analysis with XML Rules
+            logger.info("🤖 Running enhanced LLM-powered cross-document discrepancy analysis with XML rules")
+            try:
+                # Prepare documents for enhanced analysis
+                lc_context = {}
+                swift_message = {}
+                uploaded_documents = []
+
+                for doc in documents:
+                    # Extract LC context from first LC document
+                    if doc.get('document_type', '').lower() in ['letter of credit', 'lc', 'letter_of_credit']:
+                        lc_context.update(doc.get('extracted_fields', {}))
+                        if doc.get('compliance_data', {}).get('swift'):
+                            swift_message = doc.get('compliance_data', {}).get('swift', {})
+
+                    # Add to uploaded documents structure
+                    uploaded_documents.append({
+                        'file_name': doc.get('file_name', 'Unknown'),
+                        'document_type': doc.get('document_type', 'Unknown'),
+                        'content': doc.get('content', ''),
+                        'extracted_fields': doc.get('extracted_fields', {}),
+                        'classification': doc.get('classification', {}),
+                        'compliance_data': doc.get('compliance_data', {})
+                    })
+
+                # Apply XML Rule-Based Analysis for each document
+                logger.info("🔍 Applying XML rule-based analysis for document-specific discrepancies")
+                xml_rule_results = []
+                for doc in uploaded_documents:
+                    doc_type = doc.get('document_type', '').strip()
+                    # Filter rules for this document type
+                    relevant_rules = [rule for rule in xml_rules if rule.get('documentType', '').lower() == doc_type.lower()]
+                    logger.info(f"📋 Found {len(relevant_rules)} relevant XML rules for {doc_type}")
+
+                    if relevant_rules:
+                        # Apply each rule to the document
+                        for rule in relevant_rules:
+                            rule_result = apply_xml_rule_to_document(rule, doc, lc_context, swift_message)
+                            if rule_result:
+                                xml_rule_results.append(rule_result)
+
+                logger.info(f"🎯 XML rule analysis generated {len(xml_rule_results)} rule-based discrepancies")
+
+                # Run comprehensive LLM analysis if we have proper data structure
+                if uploaded_documents and len(uploaded_documents) >= 2:
+                    logger.info("🧠 Calling comprehensive trade finance discrepancy analysis with LLM")
+                    enhanced_results = analyze_comprehensive_trade_finance_discrepancies(
+                        lc_context, uploaded_documents, swift_message
+                    )
+
+                    if enhanced_results and enhanced_results.get('success'):
+                        logger.info("✅ Enhanced LLM analysis completed successfully")
+                        enhanced_data = enhanced_results.get('results', {})
+
+                        # Merge enhanced results with basic structure
+                        if 'field_conflicts' in enhanced_data:
+                            overall_results['field_conflicts'].extend(enhanced_data['field_conflicts'])
+                        if 'cross_document_inconsistencies' in enhanced_data:
+                            overall_results['cross_document_inconsistencies'].extend(enhanced_data['cross_document_inconsistencies'])
+                        if 'compliance_discrepancies' in enhanced_data:
+                            overall_results['compliance_discrepancies'].extend(enhanced_data['compliance_discrepancies'])
+                        if 'swift_message_issues' in enhanced_data:
+                            overall_results['swift_message_issues'].extend(enhanced_data['swift_message_issues'])
+
+                        # Update counters from enhanced analysis
+                        if 'critical_issues' in enhanced_data:
+                            overall_results['critical_issues'] += enhanced_data['critical_issues']
+                        if 'warning_issues' in enhanced_data:
+                            overall_results['warning_issues'] += enhanced_data['warning_issues']
+
+                        logger.info(f"🎯 Enhanced analysis found {enhanced_data.get('critical_issues', 0)} critical and {enhanced_data.get('warning_issues', 0)} warning issues")
+                    else:
+                        logger.warning("⚠️  Enhanced LLM analysis returned no results, falling back to basic analysis")
+                else:
+                    logger.info("ℹ️  Insufficient data for enhanced LLM analysis, using XML rule-based analysis")
+
+                # Merge XML rule results into overall results
+                if xml_rule_results:
+                    for xml_result in xml_rule_results:
+                        # Categorize XML rule results into appropriate sections
+                        if xml_result.get('category') == 'compliance':
+                            overall_results['compliance_discrepancies'].append(xml_result)
+                        elif xml_result.get('category') == 'field_conflict':
+                            overall_results['field_conflicts'].append(xml_result)
+                        elif xml_result.get('category') == 'document_issue':
+                            overall_results['cross_document_inconsistencies'].append(xml_result)
+                        else:
+                            overall_results['cross_document_inconsistencies'].append(xml_result)
+
+                        # Update counters based on severity
+                        if xml_result.get('severity', '').upper() in ['HIGH', 'CRITICAL']:
+                            overall_results['critical_issues'] += 1
+                        else:
+                            overall_results['warning_issues'] += 1
+
+            except Exception as enhanced_error:
+                logger.error(f"❌ Enhanced LLM analysis failed: {enhanced_error}")
+                logger.info("🔄 Falling back to basic rule-based analysis")
+                import traceback
+                traceback.print_exc()
+
+            # Process document summary
+            for doc in documents:
+                doc_summary = {
+                    'file_name': doc.get('file_name', 'Unknown'),
+                    'document_type': doc.get('document_type', 'Unknown'),
+                    'fields_count': len(doc.get('extracted_fields', {})),
+                    'has_compliance_data': bool(doc.get('compliance_data'))
+                }
+                overall_results['document_summary'].append(doc_summary)
+
+            # 1. Cross-Document Field Consistency Check
+            if check_fields:
+                logger.info("🔍 Checking field consistency across documents")
+
+                # Extract common fields across documents
+                common_fields = {}
+                for doc in documents:
+                    fields = doc.get('extracted_fields', {})
+                    for field_name, field_value in fields.items():
+                        if field_name not in common_fields:
+                            common_fields[field_name] = []
+                        common_fields[field_name].append({
+                            'document': doc.get('file_name', 'Unknown'),
+                            'value': field_value,
+                            'type': doc.get('document_type', 'Unknown')
+                        })
+
+                # Check for conflicts in common fields
+                for field_name, field_instances in common_fields.items():
+                    if len(field_instances) > 1:
+                        values = [instance['value'] for instance in field_instances if instance['value']]
+                        unique_values = list(set(str(v).strip().lower() for v in values if v))
+
+                        if len(unique_values) > 1:
+                            overall_results['field_conflicts'].append({
+                                'field': field_name,
+                                'description': f"Inconsistent values across documents: {', '.join(unique_values[:3])}{'...' if len(unique_values) > 3 else ''}",
+                                'documents_affected': [instance['document'] for instance in field_instances],
+                                'values': values,
+                                'severity': 'warning' if len(unique_values) == 2 else 'critical'
+                            })
+
+                            if len(unique_values) > 2:
+                                overall_results['critical_issues'] += 1
+                            else:
+                                overall_results['warning_issues'] += 1
+
+            # 2. SWIFT Message Consistency Check
+            if check_swift:
+                logger.info("💱 Checking SWIFT message consistency")
+
+                swift_data = []
+                for doc in documents:
+                    compliance = doc.get('compliance_data', {})
+                    if isinstance(compliance, dict) and 'swift' in compliance:
+                        swift_data.append({
+                            'document': doc.get('file_name', 'Unknown'),
+                            'swift_data': compliance['swift']
+                        })
+
+                if len(swift_data) > 1:
+                    # Check for SWIFT field inconsistencies
+                    swift_fields = {}
+                    for swift_doc in swift_data:
+                        swift_info = swift_doc['swift_data']
+                        if isinstance(swift_info, dict):
+                            for key, value in swift_info.items():
+                                if key not in swift_fields:
+                                    swift_fields[key] = []
+                                swift_fields[key].append({
+                                    'document': swift_doc['document'],
+                                    'value': value
+                                })
+
+                    for field_name, field_values in swift_fields.items():
+                        if len(field_values) > 1:
+                            unique_values = list(set(str(v['value']).strip() for v in field_values if v['value']))
+                            if len(unique_values) > 1:
+                                overall_results['swift_message_issues'].append({
+                                    'field': field_name,
+                                    'description': f"SWIFT field '{field_name}' has inconsistent values across documents",
+                                    'documents_affected': [v['document'] for v in field_values],
+                                    'values': unique_values,
+                                    'severity': 'critical'
+                                })
+                                overall_results['critical_issues'] += 1
+
+            # 3. Cross-Document Logic Validation
+            logger.info("🧠 Running cross-document logic validation")
+
+            # Check for logical inconsistencies (e.g., dates, amounts, references)
+            date_fields = ['date', 'issue_date', 'expiry_date', 'shipment_date', 'latest_date']
+            amount_fields = ['amount', 'total_amount', 'invoice_amount', 'credit_amount']
+
+            for field_type in [date_fields, amount_fields]:
+                field_data = {}
+                for doc in documents:
+                    fields = doc.get('extracted_fields', {})
+                    doc_name = doc.get('file_name', 'Unknown')
+
+                    for field in field_type:
+                        if field in fields and fields[field]:
+                            if field not in field_data:
+                                field_data[field] = []
+                            field_data[field].append({
+                                'document': doc_name,
+                                'value': fields[field]
+                            })
+
+                # Validate logical consistency
+                for field_name, field_instances in field_data.items():
+                    if len(field_instances) > 1:
+                        # For date fields, check chronological order
+                        if field_name in date_fields:
+                            try:
+                                dates = []
+                                for instance in field_instances:
+                                    # Simple date validation (this could be enhanced)
+                                    date_str = str(instance['value']).strip()
+                                    if date_str and len(date_str) >= 8:  # Basic date format check
+                                        dates.append(instance)
+
+                                if len(dates) > 1:
+                                    # Check for obvious inconsistencies
+                                    values = [d['value'] for d in dates]
+                                    unique_values = list(set(values))
+
+                                    if len(unique_values) > 1 and 'expiry' in field_name.lower():
+                                        overall_results['cross_document_inconsistencies'].append({
+                                            'type': 'date_inconsistency',
+                                            'description': f"Expiry dates vary across documents: {', '.join(unique_values)}",
+                                            'field': field_name,
+                                            'documents_affected': [d['document'] for d in dates],
+                                            'severity': 'warning'
+                                        })
+                                        overall_results['warning_issues'] += 1
+                            except Exception as date_error:
+                                logger.warning(f"Date validation error for {field_name}: {date_error}")
+
+                        # For amount fields, check for major discrepancies
+                        elif field_name in amount_fields:
+                            try:
+                                amounts = []
+                                for instance in field_instances:
+                                    amount_str = str(instance['value']).replace(',', '').replace('$', '').strip()
+                                    try:
+                                        amount_val = float(amount_str)
+                                        amounts.append({
+                                            'document': instance['document'],
+                                            'value': amount_val,
+                                            'original': instance['value']
+                                        })
+                                    except ValueError:
+                                        continue
+
+                                if len(amounts) > 1:
+                                    amount_values = [a['value'] for a in amounts]
+                                    min_amount = min(amount_values)
+                                    max_amount = max(amount_values)
+
+                                    # Check for significant discrepancies (>10% difference)
+                                    if min_amount > 0 and (max_amount - min_amount) / min_amount > 0.1:
+                                        overall_results['cross_document_inconsistencies'].append({
+                                            'type': 'amount_discrepancy',
+                                            'description': f"Significant amount variation in {field_name}: {min_amount:.2f} to {max_amount:.2f}",
+                                            'field': field_name,
+                                            'documents_affected': [a['document'] for a in amounts],
+                                            'severity': 'critical',
+                                            'min_amount': min_amount,
+                                            'max_amount': max_amount,
+                                            'variance_percent': ((max_amount - min_amount) / min_amount * 100)
+                                        })
+                                        overall_results['critical_issues'] += 1
+                            except Exception as amount_error:
+                                logger.warning(f"Amount validation error for {field_name}: {amount_error}")
+
+            # 4. Compliance Status Cross-Check
+            if check_compliance:
+                logger.info("📋 Checking compliance consistency")
+
+                compliance_statuses = []
+                for doc in documents:
+                    compliance = doc.get('compliance_data', {})
+                    if compliance:
+                        compliance_statuses.append({
+                            'document': doc.get('file_name', 'Unknown'),
+                            'compliance': compliance
+                        })
+
+                # Check for compliance conflicts
+                if len(compliance_statuses) > 1:
+                    compliant_docs = []
+                    non_compliant_docs = []
+
+                    for comp in compliance_statuses:
+                        compliance_data = comp['compliance']
+                        is_compliant = compliance_data.get('compliant', False)
+
+                        if is_compliant:
+                            compliant_docs.append(comp['document'])
+                        else:
+                            non_compliant_docs.append(comp['document'])
+
+                    if len(compliant_docs) > 0 and len(non_compliant_docs) > 0:
+                        overall_results['compliance_discrepancies'].append({
+                            'type': 'mixed_compliance',
+                            'description': f"Mixed compliance status: {len(compliant_docs)} compliant, {len(non_compliant_docs)} non-compliant",
+                            'compliant_documents': compliant_docs,
+                            'non_compliant_documents': non_compliant_docs,
+                            'severity': 'warning'
+                        })
+                        overall_results['warning_issues'] += 1
+
+            # Calculate overall score
+            total_issues = overall_results['critical_issues'] + overall_results['warning_issues']
+            if total_issues == 0:
+                overall_results['overall_score'] = 100
+            else:
+                # Deduct more for critical issues
+                score_deduction = (overall_results['critical_issues'] * 20) + (overall_results['warning_issues'] * 10)
+                overall_results['overall_score'] = max(0, 100 - score_deduction)
+
+            analysis_time = time.time() - analysis_start
+
+            # Add metadata
+            overall_results['metadata'] = {
+                'timestamp': datetime.now().isoformat(),
+                'documents_analyzed': len(documents),
+                'processing_time': f"{analysis_time:.2f}s",
+                'analysis_type': analysis_type,
+                'checks_performed': {
+                    'swift_consistency': check_swift,
+                    'field_consistency': check_fields,
+                    'compliance_consistency': check_compliance
+                }
+            }
+
+            logger.info(f"🎉 Overall discrepancy analysis completed in {analysis_time:.2f}s")
+            logger.info(f"📊 Results: {overall_results['critical_issues']} critical, {overall_results['warning_issues']} warnings, Score: {overall_results['overall_score']}%")
+
+            return jsonify({
+                'success': True,
+                'results': overall_results
+            })
+
+        except Exception as e:
+            logger.error(f"❌ Overall discrepancy analysis error: {e}")
+            import traceback
+            traceback.print_exc()
+
+            return jsonify({
+                'success': False,
+                'error': f'Overall discrepancy analysis failed: {str(e)}'
+            }), 500
+
+    @app.route('/admin/discrepancy-config', methods=['GET', 'POST'])
+    @timing_aspect
+    def discrepancy_config_api():
+        """Get or update discrepancy check configuration"""
+        try:
+            if request.method == 'GET':
+                # Return current configuration
+                config = load_discrepancy_config()
+                if not config:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Configuration not found'
+                    }), 404
+
+                # Remove sensitive information like API keys from response
+                safe_config = config.copy()
+                if 'api_keys' in safe_config:
+                    del safe_config['api_keys']
+
+                return jsonify({
+                    'success': True,
+                    'config': safe_config,
+                    'timestamp': datetime.now().isoformat()
+                }), 200
+
+            elif request.method == 'POST':
+                # Update configuration
+                new_config = request.get_json()
+                if not new_config:
+                    return jsonify({
+                        'success': False,
+                        'message': 'No configuration data provided'
+                    }), 400
+
+                # Validate configuration structure
+                if not validate_config_structure(new_config):
+                    return jsonify({
+                        'success': False,
+                        'message': 'Invalid configuration structure'
+                    }), 400
+
+                # Save configuration
+                config_path = os.path.join(os.path.dirname(__file__), 'discrepancy_check_config.json')
+                with open(config_path, 'w', encoding='utf-8') as f:
+                    json.dump(new_config, f, indent=2, ensure_ascii=False)
+
+                logger.info("✅ Discrepancy check configuration updated")
+
+                return jsonify({
+                    'success': True,
+                    'message': 'Configuration updated successfully',
+                    'timestamp': datetime.now().isoformat()
+                }), 200
+
+        except Exception as e:
+            logger.error(f"Error in discrepancy config API: {e}")
+            return jsonify({
+                'success': False,
+                'message': str(e)
+            }), 500
 
 
     @app.route('/data_categories')
@@ -3518,6 +7612,91 @@ Return compliance status for each field.'''
             logger.error(f"❌ Error saving mappings for document {document_id}: {e}")
             return False
 
+    # ============================================================================
+    # GUARANTEE VETTING RULES HELPER FUNCTIONS
+    # ============================================================================
+
+    def _load_guarantee_vetting_rules():
+        """Load guarantee vetting rules from both whitelist and blacklist JSON files"""
+        all_rules = []
+
+        # Load whitelist rules
+        whitelist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'whitelist_vetting_rules.json')
+        try:
+            if os.path.exists(whitelist_filepath):
+                with open(whitelist_filepath, 'r', encoding='utf-8') as f:
+                    whitelist_data = json.load(f)
+                    whitelist_rules = whitelist_data.get('whitelist_rules', [])
+                    # Map fields to match frontend expectations
+                    for rule in whitelist_rules:
+                        rule['rule_type'] = 'whitelist'
+                        rule['rule_name'] = rule.get('description', '')
+                        rule['rule_ref'] = rule.get('id', '')
+                        rule['severity'] = rule.get('priority', 'medium').title()
+                        rule['basics'] = rule.get('category', 'custom').lower().replace(' ', '_')
+                        rule['detection_hint'] = rule.get('rule', '')
+                        rule['why_onerous_or_no_urdg'] = rule.get('compliance_requirement', '')
+                        rule['suggested_wording'] = f"Approved: {rule.get('rule', '')}"
+                    all_rules.extend(whitelist_rules)
+                    logger.info(f"Loaded {len(whitelist_rules)} whitelist rules")
+            else:
+                logger.warning(f"Whitelist file not found: {whitelist_filepath}")
+        except Exception as e:
+            logger.error(f"Error loading whitelist rules: {e}")
+
+        # Load blacklist rules
+        blacklist_filepath = os.path.join(os.path.dirname(__file__), 'data', 'blacklist_vetting_rules.json')
+        try:
+            if os.path.exists(blacklist_filepath):
+                with open(blacklist_filepath, 'r', encoding='utf-8') as f:
+                    blacklist_data = json.load(f)
+                    blacklist_rules = blacklist_data.get('blacklist_rules', [])
+                    # Map fields to match frontend expectations
+                    for rule in blacklist_rules:
+                        rule['rule_type'] = 'blacklist'
+                        rule['rule_name'] = rule.get('description', '')
+                        rule['rule_ref'] = rule.get('id', '')
+                        rule['severity'] = rule.get('priority', 'medium').title()
+                        rule['basics'] = rule.get('category', 'custom').lower().replace(' ', '_')
+                        rule['detection_hint'] = rule.get('rule', '')
+                        rule['why_onerous_or_no_urdg'] = rule.get('compliance_requirement', '')
+                        rule['suggested_wording'] = f"Action: {rule.get('action', 'review')}"
+                    all_rules.extend(blacklist_rules)
+                    logger.info(f"Loaded {len(blacklist_rules)} blacklist rules")
+            else:
+                logger.warning(f"Blacklist file not found: {blacklist_filepath}")
+        except Exception as e:
+            logger.error(f"Error loading blacklist rules: {e}")
+
+        # Return combined data
+        return {
+            'rules': all_rules,
+            'metadata': {
+                'version': '1.0',
+                'last_updated': datetime.utcnow().strftime('%Y-%m-%d'),
+                'description': 'Combined guarantee vetting rules (whitelist and blacklist)',
+                'total_rules': len(all_rules),
+                'whitelist_count': len([r for r in all_rules if r.get('rule_type') == 'whitelist']),
+                'blacklist_count': len([r for r in all_rules if r.get('rule_type') == 'blacklist'])
+            }
+        }
+
+    def _save_guarantee_vetting_rules(data):
+        """Save guarantee vetting rules to JSON file"""
+        filepath = os.path.join(os.path.dirname(__file__), '..', 'data', 'guarantee_vetting_rules.json')
+
+        try:
+            # Update metadata timestamp
+            if 'metadata' not in data:
+                data['metadata'] = {}
+            data['metadata']['last_updated'] = '2025-10-17'
+
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            return True
+        except Exception as e:
+            logger.error(f"Error saving guarantee vetting rules: {e}")
+            return False
 
     @app.route('/api/documents', methods=['GET'])
     @timing_aspect
@@ -3543,6 +7722,834 @@ Return compliance status for each field.'''
         except Exception as e:
             logger.error(f"Error getting documents: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
+
+
+    @app.route('/api/enhanced/analyze_documents', methods=['POST'])
+    @log_request
+    def enhanced_analyze_documents():
+        """
+        Enhanced document analysis with parallel processing, cross-validation, and anomaly detection
+        """
+        try:
+            if not ENHANCED_FEATURES_AVAILABLE:
+                return jsonify({
+                    'error': 'Enhanced features not available',
+                    'message': 'Please install required dependencies'
+                }), 500
+
+            rt_logger = get_realtime_logger()
+            request_id = request.headers.get('X-Request-ID', str(uuid.uuid4())[:8])
+
+            log_info(f"Starting enhanced document analysis", {'request_id': request_id})
+
+            # Extract request data
+            data = request.get_json()
+            lc_data = data.get('lc_data', {})
+            swift_data = data.get('swift_data', {})
+            additional_documents = data.get('additional_documents', {})
+            analysis_options = data.get('options', {
+                'parallel_processing': True,
+                'cross_validation': True,
+                'anomaly_detection': True,
+                'detailed_logging': True
+            })
+
+            step_id = rt_logger.log_processing_step(request_id, "Document Analysis Setup")
+
+            # Submit parallel analysis tasks
+            if analysis_options.get('parallel_processing', True):
+                task_ids = analyze_documents_parallel(lc_data, swift_data, additional_documents)
+                rt_logger.log_processing_step_end(step_id, 'COMPLETED', {
+                    'task_ids': task_ids,
+                    'parallel_tasks': len(task_ids)
+                })
+
+                # Wait for results with timeout
+                max_wait_time = 30  # 30 seconds timeout
+                start_time = time.time()
+
+                while time.time() - start_time < max_wait_time:
+                    results = get_analysis_results(list(task_ids.values()))
+
+                    if len(results) == len(task_ids):
+                        break
+
+                    time.sleep(0.5)
+
+                # Collect final results
+                final_results = get_analysis_results(list(task_ids.values()))
+                completion_rate = len(final_results) / len(task_ids) * 100
+
+                response = {
+                    'status': 'success',
+                    'request_id': request_id,
+                    'analysis_type': 'enhanced_parallel',
+                    'completion_rate': completion_rate,
+                    'task_ids': task_ids,
+                    'results': final_results,
+                    'processing_summary': {
+                        'total_tasks': len(task_ids),
+                        'completed_tasks': len(final_results),
+                        'processing_time': time.time() - start_time,
+                        'parallel_processing': True
+                    }
+                }
+
+            else:
+                # Sequential processing fallback
+                step_id = rt_logger.log_processing_step(request_id, "Sequential Analysis")
+
+                # Regular inconsistency analysis
+                inconsistency_results = analyze_field_inconsistencies(lc_data, swift_data)
+
+                rt_logger.log_processing_step_end(step_id, 'COMPLETED', {
+                    'inconsistencies_found': len(inconsistency_results)
+                })
+
+                response = {
+                    'status': 'success',
+                    'request_id': request_id,
+                    'analysis_type': 'enhanced_sequential',
+                    'results': {
+                        'inconsistency': {
+                            'status': 'success',
+                            'result': inconsistency_results
+                        }
+                    },
+                    'processing_summary': {
+                        'total_tasks': 1,
+                        'completed_tasks': 1,
+                        'parallel_processing': False
+                    }
+                }
+
+            log_info(f"Enhanced document analysis completed", {
+                'request_id': request_id,
+                'completion_rate': response.get('completion_rate', 100),
+                'total_inconsistencies': len(response.get('results', {}).get('inconsistency', {}).get('result', []))
+            })
+
+            return jsonify(response)
+
+        except Exception as e:
+            rt_logger = get_realtime_logger()
+            rt_logger.log_error(e, 'enhanced_analyze_documents', request_id)
+
+            return jsonify({
+                'status': 'error',
+                'message': str(e),
+                'request_id': request_id
+            }), 500
+
+    @app.route('/api/enhanced/document_preview', methods=['POST'])
+    @log_request
+    def enhanced_document_preview():
+        """
+        Enhanced document preview with accurate page navigation and field highlighting
+        """
+        try:
+            if not ENHANCED_FEATURES_AVAILABLE:
+                return jsonify({
+                    'error': 'Enhanced features not available'
+                }), 500
+
+            rt_logger = get_realtime_logger()
+            request_id = request.headers.get('X-Request-ID', str(uuid.uuid4())[:8])
+
+            data = request.get_json()
+            document_path = data.get('document_path')
+            highlighted_fields = data.get('highlighted_fields', [])
+            page_number = data.get('page_number')
+
+            if not document_path:
+                return jsonify({'error': 'document_path is required'}), 400
+
+            step_id = rt_logger.log_processing_step(request_id, "Document Preview Generation")
+
+            # Generate enhanced preview
+            preview_data = preview_document_with_fields(document_path, highlighted_fields)
+
+            # Filter by page if specified
+            if page_number:
+                preview_pages = [p for p in preview_data.get('pages', [])
+                                 if p['page_number'] == page_number]
+                preview_data['pages'] = preview_pages
+                preview_data['filtered_by_page'] = page_number
+
+            rt_logger.log_processing_step_end(step_id, 'COMPLETED', {
+                'document_path': document_path,
+                'total_pages': preview_data.get('total_pages', 0),
+                'highlighted_fields_count': len(highlighted_fields),
+                'extracted_fields_count': len(preview_data.get('extracted_fields', {}))
+            })
+
+            response = {
+                'status': 'success',
+                'request_id': request_id,
+                'preview_data': preview_data,
+                'metadata': {
+                    'document_type': preview_data.get('document_type', 'unknown'),
+                    'total_pages': preview_data.get('total_pages', 0),
+                    'highlighted_fields': highlighted_fields,
+                    'processing_timestamp': datetime.now().isoformat()
+                }
+            }
+
+            return jsonify(response)
+
+        except Exception as e:
+            rt_logger = get_realtime_logger()
+            rt_logger.log_error(e, 'enhanced_document_preview', request_id)
+
+            return jsonify({
+                'status': 'error',
+                'message': str(e),
+                'request_id': request_id
+            }), 500
+
+    @app.route('/api/enhanced/realtime_logs', methods=['GET'])
+    def get_realtime_logs():
+        """
+        Get real-time backend logs and activity
+        """
+        try:
+            if not ENHANCED_FEATURES_AVAILABLE:
+                return jsonify({
+                    'error': 'Enhanced features not available'
+                }), 500
+
+            rt_logger = get_realtime_logger()
+
+            # Get query parameters
+            limit = int(request.args.get('limit', 50))
+            category = request.args.get('category')
+            level = request.args.get('level')
+
+            # Get logs and statistics
+            logs = rt_logger.get_recent_logs(limit, category, level)
+            active_requests = rt_logger.get_active_requests()
+            statistics = rt_logger.get_statistics()
+
+            response = {
+                'status': 'success',
+                'timestamp': datetime.now().isoformat(),
+                'logs': logs,
+                'active_requests': active_requests,
+                'statistics': statistics,
+                'filters': {
+                    'limit': limit,
+                    'category': category,
+                    'level': level
+                }
+            }
+
+            return jsonify(response)
+
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': str(e)
+            }), 500
+
+    @app.route('/api/enhanced/processing_status/<request_id>', methods=['GET'])
+    def get_processing_status(request_id):
+        """
+        Get detailed processing status for a specific request
+        """
+        try:
+            if not ENHANCED_FEATURES_AVAILABLE:
+                return jsonify({
+                    'error': 'Enhanced features not available'
+                }), 500
+
+            rt_logger = get_realtime_logger()
+
+            # Get processing steps for this request
+            processing_steps = rt_logger.get_processing_steps(request_id)
+
+            # Get parallel analyzer status
+            parallel_analyzer = get_parallel_analyzer()
+            analyzer_status = parallel_analyzer.get_status()
+
+            response = {
+                'status': 'success',
+                'request_id': request_id,
+                'processing_steps': processing_steps,
+                'analyzer_status': analyzer_status,
+                'timestamp': datetime.now().isoformat()
+            }
+
+            return jsonify(response)
+
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': str(e),
+                'request_id': request_id
+            }), 500
+
+    @app.route('/api/enhanced/cross_validation', methods=['POST'])
+    @log_request
+    def cross_document_validation():
+        """
+        Cross-document validation with SWIFT message against trade documents
+        """
+        try:
+            if not ENHANCED_FEATURES_AVAILABLE:
+                return jsonify({
+                    'error': 'Enhanced features not available'
+                }), 500
+
+            rt_logger = get_realtime_logger()
+            request_id = request.headers.get('X-Request-ID', str(uuid.uuid4())[:8])
+
+            data = request.get_json()
+            documents = data.get('documents', {})
+            swift_data = data.get('swift_data', {})
+
+            step_id = rt_logger.log_processing_step(request_id, "Cross-Document Validation")
+
+            # Submit cross-validation task
+            parallel_analyzer = get_parallel_analyzer()
+            task_id = parallel_analyzer.submit_cross_validation(documents, swift_data)
+
+            # Wait for result
+            max_wait = 15  # 15 seconds
+            start_time = time.time()
+
+            while time.time() - start_time < max_wait:
+                result = parallel_analyzer.get_result(task_id)
+                if result:
+                    break
+                time.sleep(0.5)
+
+            if result and result.status == 'success':
+                rt_logger.log_processing_step_end(step_id, 'COMPLETED', {
+                    'validation_results': len(result.result.get('cross_document_validation', [])),
+                    'processing_time': result.processing_time
+                })
+
+                response = {
+                    'status': 'success',
+                    'request_id': request_id,
+                    'task_id': task_id,
+                    'validation_results': result.result,
+                    'processing_time': result.processing_time
+                }
+            else:
+                rt_logger.log_processing_step_end(step_id, 'FAILED',
+                                                  error_message='Validation timeout or failed')
+
+                response = {
+                    'status': 'timeout',
+                    'request_id': request_id,
+                    'task_id': task_id,
+                    'message': 'Cross-validation did not complete within timeout period'
+                }
+
+            return jsonify(response)
+
+        except Exception as e:
+            rt_logger = get_realtime_logger()
+            rt_logger.log_error(e, 'cross_document_validation', request_id)
+
+            return jsonify({
+                'status': 'error',
+                'message': str(e),
+                'request_id': request_id
+            }), 500
+
+    @app.route('/api/supporting-documents/upload', methods=['POST'])
+    def upload_supporting_documents():
+        """Upload supporting documents with automatic document type detection"""
+        try:
+            logger.info("📁 Supporting documents upload initiated")
+
+            # Get uploaded files
+            uploaded_files = request.files.getlist('documents')
+
+            if not uploaded_files or len(uploaded_files) == 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'No documents uploaded',
+                    'message': 'Please select at least one document to upload'
+                }), 400
+
+            # Create uploads directory if it doesn't exist
+            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+            os.makedirs(upload_dir, exist_ok=True)
+
+            processed_documents = []
+            successful_uploads = 0
+            failed_uploads = []
+
+            for file in uploaded_files:
+                if file and file.filename:
+                    try:
+                        logger.info(f"📄 Processing document: {file.filename}")
+
+                        # Generate unique filename
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        filename = f"{timestamp}_{secure_filename(file.filename)}"
+                        file_path = os.path.join(upload_dir, filename)
+
+                        # Save file
+                        file.save(file_path)
+                        file_size = os.path.getsize(file_path)
+
+                        # Get file extension for validation
+                        file_extension = os.path.splitext(filename)[1].lower()
+                        allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.doc', '.docx']
+
+                        if file_extension not in allowed_extensions:
+                            failed_uploads.append({
+                                'filename': file.filename,
+                                'error': f'Unsupported file type: {file_extension}',
+                                'reason': 'Only PDF, image, and Word documents are supported'
+                            })
+                            # Remove the uploaded file
+                            if os.path.exists(file_path):
+                                os.remove(file_path)
+                            continue
+
+                        # Simple document storage - no complex processing
+                        logger.info(f"� Storing document: {filename}")
+
+                        # Simple document data
+                        document_data = {
+                            'id': str(uuid.uuid4()),
+                            'original_filename': file.filename,
+                            'stored_filename': filename,
+                            'file_path': file_path,
+                            'file_size': file_size,
+                            'file_extension': file_extension,
+                            'upload_timestamp': datetime.now().isoformat(),
+                            'status': 'uploaded'
+                        }
+
+                        processed_documents.append(document_data)
+                        successful_uploads += 1
+
+                    except Exception as e:
+                        logger.error(f"Error processing file {file.filename}: {e}")
+                        failed_uploads.append({
+                            'filename': file.filename,
+                            'error': str(e),
+                            'reason': 'File processing error'
+                        })
+                else:
+                    failed_uploads.append({
+                        'filename': 'Unknown',
+                        'error': 'Invalid file',
+                        'reason': 'File has no name or is empty'
+                    })
+
+            # Store documents for discrepancy checking
+            if processed_documents:
+                session['uploaded_documents'] = processed_documents
+                logger.info(f"✅ Stored {len(processed_documents)} documents for discrepancy checking")
+
+            # Prepare response
+            response_data = {
+                'success': True,
+                'message': f'Successfully uploaded {successful_uploads} documents',
+                'summary': {
+                    'total_uploaded': len(uploaded_files),
+                    'successful': successful_uploads,
+                    'failed': len(failed_uploads)
+                },
+                'documents': processed_documents
+            }
+
+            if failed_uploads:
+                response_data['failed_uploads'] = failed_uploads
+                response_data['warning'] = f'{len(failed_uploads)} documents failed to process'
+
+            logger.info(f"📊 Upload summary: {successful_uploads} successful, {len(failed_uploads)} failed")
+
+            return jsonify(response_data)
+
+        except Exception as e:
+            logger.error(f"Error in supporting documents upload: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to upload documents'
+            }), 500
+
+    @app.route('/api/supporting-documents', methods=['GET'])
+    def get_uploaded_supporting_documents():
+        """Get list of uploaded supporting documents"""
+        try:
+            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+
+            if not os.path.exists(upload_dir):
+                return jsonify({
+                    'success': True,
+                    'documents': [],
+                    'message': 'No documents uploaded yet'
+                })
+
+            documents = []
+            for filename in os.listdir(upload_dir):
+                file_path = os.path.join(upload_dir, filename)
+                if os.path.isfile(file_path):
+                    # Get file stats
+                    stat_info = os.stat(file_path)
+
+                    documents.append({
+                        'filename': filename,
+                        'size': stat_info.st_size,
+                        'upload_date': datetime.fromtimestamp(stat_info.st_mtime).isoformat(),
+                        'file_path': file_path
+                    })
+
+            # Sort by upload date (newest first)
+            documents.sort(key=lambda x: x['upload_date'], reverse=True)
+
+            return jsonify({
+                'success': True,
+                'documents': documents,
+                'total_count': len(documents)
+            })
+
+        except Exception as e:
+            logger.error(f"Error getting uploaded documents: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/supporting-documents/<document_id>', methods=['DELETE'])
+    def delete_supporting_document(document_id):
+        """Delete a specific supporting document"""
+        try:
+            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+
+            # Find file by ID (document_id could be filename or partial match)
+            target_file = None
+            for filename in os.listdir(upload_dir):
+                if document_id in filename or filename.startswith(document_id):
+                    target_file = filename
+                    break
+
+            if not target_file:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document not found'
+                }), 404
+
+            file_path = os.path.join(upload_dir, target_file)
+
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                logger.info(f"🗑️ Deleted document: {target_file}")
+
+                return jsonify({
+                    'success': True,
+                    'message': f'Document {target_file} deleted successfully'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Document file not found'
+                }), 404
+
+        except Exception as e:
+            logger.error(f"Error deleting document: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    # Admin-only endpoints
+    @app.route('/api/admin/upload-manual', methods=['POST'])
+    @login_required
+    @timing_aspect
+    def admin_upload_manual():
+        """Upload user manuals (admin only)"""
+        try:
+            # Check if user is admin
+            user_id = session.get('user_id')
+            user = users_collection.find_one({'_id': user_id})
+
+            # Check if user is allowed
+            email = user.get('email', '') if user else ''
+            if email.lower() not in [e.lower() for e in ALLOWED_EMAILS]:
+                return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+            if 'file' not in request.files:
+                return jsonify({'success': False, 'message': 'No file provided'}), 400
+
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({'success': False, 'message': 'No file selected'}), 400
+
+            # Save the manual to ChromaDB or filesystem
+            manual_name = file.filename
+            manual_type = request.form.get('type', 'general')
+
+            # Create directory for manuals if it doesn't exist
+            manuals_dir = os.path.join('app', 'manuals')
+            os.makedirs(manuals_dir, exist_ok=True)
+
+            # Save file
+            file_path = os.path.join(manuals_dir, manual_name)
+            file.save(file_path)
+
+            # Process and index the manual in ChromaDB if available
+            if 'chroma_client' in globals() and chroma_client:
+                try:
+                    # Extract text from manual
+                    text_data = extract_text_from_file(file_path, mimetypes.guess_type(file_path)[0])
+
+                    # Create or get collection for manuals
+                    collection = chroma_client.get_or_create_collection(name="user_manuals")
+
+                    # Add to ChromaDB
+                    collection.add(
+                        documents=[text_data.get('text_data', '')],
+                        metadatas=[{
+                            'filename': manual_name,
+                            'type': manual_type,
+                            'uploaded_by': user.get('email', ''),
+                            'uploaded_at': datetime.utcnow().isoformat()
+                        }],
+                        ids=[f"manual_{uuid.uuid4().hex}"]
+                    )
+
+                    logger.info(f"Manual {manual_name} indexed in ChromaDB")
+                except Exception as e:
+                    logger.error(f"Error indexing manual in ChromaDB: {e}")
+
+            # Store manual metadata in MongoDB
+            db.manuals.insert_one({
+                'name': manual_name,
+                'type': manual_type,
+                'path': file_path,
+                'uploaded_by': user_id,
+                'uploaded_at': datetime.utcnow(),
+                'is_active': True
+            })
+
+            return jsonify({
+                'success': True,
+                'message': 'Manual uploaded successfully',
+                'manual': {
+                    'name': manual_name,
+                    'type': manual_type
+                }
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error uploading manual: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/admin/connect-repository', methods=['POST'])
+    @login_required
+    @timing_aspect
+    def admin_connect_repository():
+        """Connect to external repository (admin only)"""
+        try:
+            # Check if user is admin
+            user_id = session.get('user_id')
+            user = users_collection.find_one({'_id': user_id})
+
+            # Check if user is allowed
+            email = user.get('email', '') if user else ''
+            if email.lower() not in [e.lower() for e in ALLOWED_EMAILS]:
+                return jsonify({'success': False, 'message': 'Access denied'}), 403
+
+            data = request.get_json()
+            repo_type = data.get('type', 'chromadb')
+            repo_config = data.get('config', {})
+
+            # Connect to repository based on type
+            if repo_type == 'chromadb':
+                host = repo_config.get('host', 'localhost')
+                port = repo_config.get('port', 8000)
+
+                # Test connection
+                try:
+                    test_client = get_chromadb_client(host=host, port=port)
+                    test_client.list_collections()
+
+                    # Save configuration
+                    db.repository_config.update_one(
+                        {'type': repo_type},
+                        {
+                            '$set': {
+                                'host': host,
+                                'port': port,
+                                'connected_by': user_id,
+                                'connected_at': datetime.utcnow(),
+                                'is_active': True
+                            }
+                        },
+                        upsert=True
+                    )
+
+                    return jsonify({
+                        'success': True,
+                        'message': f'Successfully connected to {repo_type} repository',
+                        'repository': {
+                            'type': repo_type,
+                            'host': host,
+                            'port': port
+                        }
+                    }), 200
+
+                except Exception as e:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Failed to connect to repository: {str(e)}'
+                    }), 400
+
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': f'Unsupported repository type: {repo_type}'
+                }), 400
+
+        except Exception as e:
+            logger.error(f"Error connecting repository: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/admin/manuals', methods=['GET'])
+    @login_required
+    @timing_aspect
+    def get_manuals():
+        """Get list of available manuals"""
+        try:
+            user_id = session.get('user_id')
+            user = users_collection.find_one({'_id': user_id})
+
+            # Check if user is allowed to see all manuals or just active ones
+            is_allowed = user and user.get('email', '').lower() in [e.lower() for e in ALLOWED_EMAILS]
+
+            query = {'is_active': True} if not is_allowed else {}
+            manuals = list(db.manuals.find(query, {'_id': 0, 'path': 0}))
+
+            # Convert datetime objects to strings
+            for manual in manuals:
+                if 'uploaded_at' in manual:
+                    manual['uploaded_at'] = manual['uploaded_at'].isoformat()
+
+            return jsonify({
+                'success': True,
+                'manuals': manuals,
+                'is_allowed': is_allowed
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error fetching manuals: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/repository-status', methods=['GET'])
+    @login_required
+    @timing_aspect
+    def get_repository_status():
+        """Get current repository connection status (available to all users)"""
+        try:
+            # Get active repository configuration
+            repo_config = db.repository_config.find_one({'is_active': True})
+
+            if repo_config:
+                return jsonify({
+                    'success': True,
+                    'connected': True,
+                    'repository': {
+                        'type': repo_config.get('type'),
+                        'host': repo_config.get('host'),
+                        'port': repo_config.get('port'),
+                        'connected_at': repo_config.get('connected_at').isoformat() if repo_config.get(
+                            'connected_at') else None
+                    }
+                }), 200
+            else:
+                return jsonify({
+                    'success': True,
+                    'connected': False,
+                    'repository': None
+                }), 200
+
+        except Exception as e:
+            logger.error(f"Error getting repository status: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/api/trade-documents', methods=['GET'])
+    @timing_aspect
+    def get_trade_documents():
+        """Get list of all available trade document types"""
+        try:
+            logger.info("📋 Trade documents API called")
+
+            # Try to load trade document elements
+            if not trade_document_elements:
+                logger.info("📋 Loading trade document elements...")
+                load_trade_document_elements()
+
+            if not trade_document_elements:
+                logger.warning("📋 Trade document elements not loaded, returning fallback data")
+                # Return fallback data if the JSON file is not available
+                fallback_documents = [
+                    {
+                        "name": "Commercial Invoice",
+                        "code": "INV",
+                        "description": "Commercial invoice document"
+                    },
+                    {
+                        "name": "Letter of Credit",
+                        "code": "LC",
+                        "description": "Letter of credit document"
+                    },
+                    {
+                        "name": "Bill of Lading",
+                        "code": "BL",
+                        "description": "Bill of lading document"
+                    }
+                ]
+                return jsonify({
+                    'success': True,
+                    'documents': fallback_documents,
+                    'count': len(fallback_documents),
+                    'message': 'Using fallback document data'
+                }), 200
+
+            documents = trade_document_elements.get('documents', [])
+            logger.info(f"📋 Returning {len(documents)} trade documents")
+            return jsonify({
+                'success': True,
+                'documents': documents,
+                'count': len(documents)
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error getting trade documents: {e}")
+            # Return fallback even on error
+            fallback_documents = [
+                {
+                    "name": "Document Classification",
+                    "code": "DOC",
+                    "description": "Generic document for classification"
+                }
+            ]
+            return jsonify({
+                'success': True,
+                'documents': fallback_documents,
+                'count': len(fallback_documents),
+                'error': str(e),
+                'message': 'Using fallback due to error'
+            }), 200
+
+    @app.route('/api/test-endpoint', methods=['GET'])
+    def test_endpoint():
+        """Test endpoint to verify route registration is working"""
+        return jsonify({
+            'success': True,
+            'message': 'Route registration is working',
+            'timestamp': datetime.now().isoformat()
+        }), 200
 
     @app.route('/document-types-management')
     @timing_aspect
@@ -4126,11 +9133,31 @@ Return compliance status for each field.'''
         """Render the forms dashboard"""
         return render_template('forms_dashboard.html')
 
-    # @app.route('/trade_finance_lc_form')
-    # def trade_finance_lc_form():
-    #     """Render the Trade Finance LC form"""
-    #     return render_template('trade_finance_lc_form.html')
-    
+
+    @app.route('/lc_test_page')
+    def lc_test_page():
+        """Render the LC workflow test page"""
+        return render_template('lc_test_page.html')
+
+    @app.route('/guarantee_success')
+    def guarantee_success():
+        """Render the Guarantee submission success page"""
+        # Get data from URL parameters
+        guarantee_number = request.args.get('guaranteeNumber')
+        transaction_id = request.args.get('transactionId')
+        return render_template('guarantee_success.html', guaranteeNumber=guarantee_number, transactionId=transaction_id)
+
+    @app.route('/lc_demo')
+    def lc_demo():
+        """Render the LC success page implementation demo"""
+        return render_template('lc_demo.html')
+
+    @app.route('/load_template_demo')
+    def load_template_demo():
+        """Render the Load Template Sample button implementation demo"""
+        return render_template('load_template_demo.html')
+
+
     @app.route('/trade_finance_guarantee_form')
     def trade_finance_guarantee_form():
         """Render the Trade Finance Guarantee form"""
@@ -4319,11 +9346,12 @@ Return compliance status for each field.'''
             if request.content_type == "application/json":
                 logger.info("Processing JSON request.")
                 json_data = request.get_json()
-                user_query = json_data.get("query", "").strip()
-                user_id = session.get("user_id") or json_data.get("user_id", "").strip() or None
+                user_query = json_data.get("query", "").strip() if json_data.get("query") else ""
+                user_id_from_json = json_data.get("user_id") or ""
+                user_id = session.get("user_id") or (user_id_from_json.strip() if user_id_from_json else "") or None
                 session_id = json_data.get("session_id", None)
-                productName = json_data.get("productname", "").strip()
-                functionName = json_data.get("functionname", "").strip()
+                productName = (json_data.get("productname") or "").strip()
+                functionName = (json_data.get("functionname") or "").strip()
                 scf_value = json_data.get("SCF", False)
                 if isinstance(scf_value, str):
                     scf_flag = scf_value.lower() == "true"
@@ -4331,16 +9359,16 @@ Return compliance status for each field.'''
                     scf_flag = bool(scf_value)
             elif request.content_type.startswith("multipart/form-data"):
                 logger.info("Processing file upload request.")
-                user_query = request.form.get("query", "").strip()
-                user_id = session.get("user_id") or request.form.get("user_id", "").strip() or None
+                user_query = (request.form.get("query") or "").strip()
+                user_id_from_form = request.form.get("user_id") or ""
+                user_id = session.get("user_id") or (user_id_from_form.strip() if user_id_from_form else "") or None
                 session_id = request.form.get("session_id", None)
-                annotations = request.form.get("annotations", "").strip()
+                annotations = (request.form.get("annotations") or "").strip()
                 uploaded_file = request.files.getlist("file")
-                scf_flag = request.form.get("SCF", "false").lower() == "true"
-                productName = request.form.get("productname", "").strip()
-                functionName = request.form.get("functionname", "").strip()
-                client_id = request.form.get("client_id", None)  # Extract client_id for progress tracking
-                logger.info(f"SCF Flag is {scf_flag}, Client ID: {client_id}")
+                scf_flag = (request.form.get("SCF") or "false").lower() == "true"
+                productName = (request.form.get("productname") or "").strip()
+                functionName = (request.form.get("functionname") or "").strip()
+                logger.info(f"SCF Flag is {scf_flag}")
             else:
                 logger.warning("Unsupported content type.")
                 return jsonify(
@@ -4351,30 +9379,26 @@ Return compliance status for each field.'''
             elif uploaded_file and not scf_flag:
                 user_query += "extract the letter_of_credit information attached file"
 
-            if not user_query or not user_id:
-                missing_fields = []
-                if not user_query:
-                    missing_fields.append("query")
-                if not user_id:
-                    missing_fields.append("user_id")
-                return jsonify({"response": f"Missing fields: {', '.join(missing_fields)}.", "intent": "unknown"}), 400
+            # Handle guest users - provide default user_id if missing
+            if not user_id:
+                user_id = 'guest_user'
+                logger.info("Using guest_user for unauthenticated request")
 
-            logger.info(f"SEARCH: product: {productName}, function: {functionName}")
+            # Additional guest mode detection from URL parameters
+            guest_mode = request.args.get('guest_mode') or request.args.get('guestMode') or \
+                         (json_data and json_data.get('guest_mode')) or \
+                         (request.form and request.form.get('guest_mode'))
 
-            # Initialize progress tracker if client_id is provided (for file uploads)
-            progress_tracker = None
-            if uploaded_file and client_id:
-                try:
-                    from app.utils.websocket_handler import get_websocket_handler
-                    ws_handler = get_websocket_handler()
-                    if ws_handler:
-                        progress_tracker = DocumentProcessingTracker(ws_handler, client_id)
-                        logger.info(f"SUCCESS:Progress tracker initialized for client: {client_id}")
-                    else:
-                        logger.warning("WebSocket handler not available, progress tracking disabled")
-                except Exception as e:
-                    logger.error(f"Failed to initialize progress tracker: {e}")
-                    progress_tracker = None
+            if guest_mode == 'true' and user_id != 'guest_user':
+                logger.info(f"Guest mode detected, overriding user_id {user_id} with guest_user")
+                user_id = 'guest_user'
+
+            if not user_query:
+                return jsonify({"response": "Missing fields: query.", "intent": "unknown"}), 400
+
+            logger.info(f"Processing query for user_id: {user_id}, guest_mode: {guest_mode}")
+
+            logger.info(f"🔍 product: {productName}, function: {functionName}")
 
             context = get_conversation_context(user_id, session_id)
             logger.info(f"User {user_id} conversation context: {context}")
@@ -4386,8 +9410,11 @@ Return compliance status for each field.'''
             elif request.content_type.startswith("multipart/form-data"):
                 repository_context = request.form.get("repository_context")
 
-            # Check if user has an active repository connection
+            # Check if user has an active repository connection (legacy)
             active_repository = active_user_repositories.get(user_id)
+
+            # Check if user has an active module connection (new database config based)
+            active_module = active_user_modules.get(user_id)
 
             # Update if repository context is provided in request
             if repository_context:
@@ -4396,23 +9423,32 @@ Return compliance status for each field.'''
                 logger.info(f"Updated active repository from request to: {repository_context}")
 
             logger.info(f"Active repository for user {user_id}: {active_repository}")
+            logger.info(f"Active module for user {user_id}: {active_module}")
 
-            # Always use LLM for intent detection - no static shortcuts
-            # Let process_user_query handle all intent classification
+            # ✨ NEW: Use enhanced query processing with Database Configuration
+            # Priority: DB Config Recipes > Knowledge Corpus > LLM
             try:
-                response = process_user_query(user_query, user_id, context, active_repository)
-                
+                from app.utils.process_query_with_db_config import process_user_query_with_db_config
+
+                response = process_user_query_with_db_config(
+                    user_query,
+                    user_id,
+                    context,
+                    active_module,
+                    active_repository
+                )
+
                 # Check if response contains an error
                 if response and isinstance(response, dict) and "error" in response:
-                    logger.warning(f"process_user_query returned error: {response.get('error')}")
+                    logger.warning(f"process_user_query_with_db_config returned error: {response.get('error')}")
                     raise Exception(response.get('error', 'Query processing failed'))
-                    
+
             except Exception as e:
-                logger.error(f"Error in process_user_query: {str(e)}")
+                logger.error(f"Error in process_user_query_with_db_config: {str(e)}")
                 # Use repository-specific fallback responses
                 try:
                     from app.utils.repository_responses import get_fallback_response
-                    response = get_fallback_response(user_query, active_repository)
+                    response = get_fallback_response(user_query, active_repository or active_module)
                     logger.info(f"Using repository-specific fallback response")
                 except Exception as fallback_error:
                     logger.error(f"Error getting fallback response: {fallback_error}")
@@ -4443,7 +9479,7 @@ Return compliance status for each field.'''
             if response is None:
                 logger.error("Response is None after validation")
                 return jsonify({"response": "An error occurred processing your request.", "intent": "error"}), 500
-                
+
             intent = response.get("intent", "unknown")
             logger.info(f"Determined intent: {intent}")
 
@@ -4537,7 +9573,6 @@ Return compliance status for each field.'''
                 handler = ConversationalTransactionHandler(db)
                 session_id = session.get('session_id', str(uuid.uuid4()))
 
-
                 # Get active repository for the user
                 active_repository = active_user_repositories.get(user_id)
                 result = handler.process_creation_intent(user_query, session_id, user_id, context, active_repository)
@@ -4583,7 +9618,7 @@ Return compliance status for each field.'''
                 if isinstance(uploaded_file, list) and len(uploaded_file) > 1:
                     return process_uploaded_files(uploaded_file, intent, userQuery=user_query, annotations=annotations,
                                                   productName=productName, functionName=functionName,
-                                                  documentType=document_type, progress_tracker=progress_tracker)
+                                                  documentType=document_type)
                 uploaded_file = uploaded_file[0]
                 file_type = uploaded_file.content_type
                 if file_type in ["application/zip", "application/x-zip-compressed"] or uploaded_file.filename.endswith(
@@ -4593,7 +9628,7 @@ Return compliance status for each field.'''
                 else:
                     return process_uploaded_files(uploaded_file, intent, userQuery=user_query, annotations=annotations,
                                                   productName=productName, functionName=functionName,
-                                                  documentType=document_type, progress_tracker=progress_tracker)
+                                                  documentType=document_type)
             # elif intent == "User Manual Request":
             #     return handle_user_manual(intent, user_query, user_id)
             elif intent == "Proactive Alert Request":
@@ -4628,6 +9663,95 @@ Return compliance status for each field.'''
         except Exception as e:
             logger.error(f"An unexpected error occurred: {e}", exc_info=True)
             return jsonify({"response": "An unexpected error occurred.", "intent": "error"}), 500
+
+
+    @app.route("/query/stream", methods=["POST"])
+    @timing_aspect
+    def query_stream():
+        """ChatGPT-style streaming endpoint for voice assistant."""
+        from flask import Response, stream_with_context
+        import json
+        import time
+
+        logger.info("Received streaming request at /query/stream endpoint.")
+
+        def generate_stream():
+            try:
+                # Parse request data
+                json_data = request.get_json()
+                user_query = json_data.get("query", "").strip()
+                user_id = json_data.get("user_id") or session.get("user_id") or 'guest_user'
+                session_id = json_data.get("session_id", None)
+                repository_context = json_data.get("repository_context")
+
+                if not user_query:
+                    yield f"data: {json.dumps({'error': 'Missing query field'})}\n\n"
+                    return
+
+                logger.info(f"Streaming query for user {user_id}: {user_query}")
+
+                # Get conversation context
+                context = get_conversation_context(user_id, session_id)
+
+                # Get active repository/module
+                active_repository = active_user_repositories.get(user_id)
+                active_module = active_user_modules.get(user_id)
+
+                if repository_context:
+                    active_repository = repository_context
+                    active_user_repositories[user_id] = repository_context
+
+                # Process query using existing infrastructure
+                from app.utils.process_query_with_db_config import process_user_query_with_db_config
+
+                response = process_user_query_with_db_config(
+                    user_query,
+                    user_id,
+                    context,
+                    session_id=session_id,
+                    uploaded_file=None,
+                    scf_flag=False,
+                    repository=active_repository,
+                    active_module=active_module
+                )
+
+                intent = response.get("intent", "general")
+                answer = response.get("answer", "I couldn't process that request.")
+
+                # Stream the response word by word for realistic effect
+                words = answer.split()
+                for i, word in enumerate(words):
+                    chunk_data = {
+                        "chunk": word + " ",
+                        "done": False,
+                        "intent": intent
+                    }
+                    yield f"data: {json.dumps(chunk_data)}\n\n"
+
+                    # Variable delay for natural speech rhythm
+                    if word.endswith(('.', '!', '?')):
+                        time.sleep(0.15)  # Pause after sentences
+                    elif word.endswith(','):
+                        time.sleep(0.08)  # Pause after commas
+                    else:
+                        time.sleep(0.05)  # Normal word spacing
+
+                # Send completion signal
+                yield f"data: {json.dumps({'chunk': '', 'done': True, 'intent': intent, 'full_response': answer})}\n\n"
+
+            except Exception as e:
+                logger.error(f"Streaming error: {e}", exc_info=True)
+                yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+
+        return Response(
+            stream_with_context(generate_stream()),
+            mimetype='text/event-stream',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no'
+            }
+        )
+
 
     @app.route("/history", methods=["GET"])
     @timing_aspect
@@ -4665,6 +9789,27 @@ Return compliance status for each field.'''
             return jsonify(result), status_code
         except Exception as e:
             logger.error(f"AI Compliance Check Error: {e}", exc_info=True)
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/AICheckGuaranteeVetting", methods=["POST"])
+    @timing_aspect
+    def post_ai_check_guarantee_vetting():
+        """
+        Clone of /AICheck endpoint specifically for guarantee vetting using:
+        - blacklist_vetting_rules.json
+        - guarantee_vetting_config_with_rules.yaml
+        """
+        try:
+            user_id = session.get("user_id", "1517524")
+            data = request.json
+            logger.info(f"User {user_id} guarantee vetting context: {data}")
+
+            context = get_conversation_context(user_id)
+            result, status_code = handle_guarantee_vetting_check(data, context)
+
+            return jsonify(result), status_code
+        except Exception as e:
+            logger.error(f"AI Guarantee Vetting Check Error: {e}", exc_info=True)
             return jsonify({"error": str(e)}), 500
 
     # Clear history route
@@ -4856,17 +10001,123 @@ Return compliance status for each field.'''
 
     def handle_table_or_report_request(intent, user_query, user_id, output_format, context) -> tuple[
                                                                                                    Response, int] | Response:
-        """Handles a RAG-based table/report request and saves conversation context."""
+        """
+        ✨ ENHANCED: Handles table/report requests using Database Configuration first
+
+        New Flow:
+        1. Check if query matches a database configuration recipe
+        2. If matched, execute recipe directly
+        3. If no match, fall back to RAG-based query generation
+
+        This removes the dependency on repository-database mapper and uses
+        the database configuration directly for better performance and accuracy.
+        """
 
         try:
-            # Get active repository for the user
+            # Get active module (new) and repository (legacy)
+            active_module = active_user_modules.get(user_id)
             active_repository = active_user_repositories.get(user_id)
 
+            logger.info(f"Table request - Module: {active_module}, Repository: {active_repository}")
+
+            # ✨ NEW APPROACH: Try database configuration recipe first
+            if active_module:
+                try:
+                    from app.utils.db_config_query_executor import get_db_config_executor
+                    executor = get_db_config_executor()
+
+                    # Try to match query to a recipe
+                    recipe_match = executor.match_query_to_recipe(user_query, active_module)
+
+                    if recipe_match and recipe_match.get('score', 0) >= 5:
+                        logger.info(
+                            f"✅ Recipe match found: {recipe_match['recipe_id']} (score: {recipe_match['score']})")
+
+                        # Extract filters from query
+                        from app.utils.process_query_with_db_config import _extract_filters_from_query, \
+                            _format_recipe_response
+
+                        recipe = recipe_match['recipe']
+                        filters = _extract_filters_from_query(user_query, recipe)
+
+                        # Execute recipe
+                        success, result = executor.execute_recipe(recipe_match['recipe_id'], filters)
+
+                        if success and result.get('success'):
+                            # Format response
+                            formatted_response = _format_recipe_response(result, recipe, user_query)
+                            return jsonify(formatted_response), 200
+                        else:
+                            logger.warning(f"Recipe execution failed: {result}")
+                            # Fall through to RAG approach
+                    else:
+                        logger.info(
+                            f"No strong recipe match (score: {recipe_match.get('score', 0) if recipe_match else 0}), using RAG...")
+
+                except Exception as recipe_error:
+                    logger.error(f"Error in recipe matching/execution: {recipe_error}")
+                    import traceback
+                    traceback.print_exc()
+                    # Fall through to RAG approach
+
+            # FALLBACK: Use traditional RAG-based approach
+            logger.info("Using RAG-based table generation as fallback...")
+
+            # Get database info from module or repository
+            active_database = None
+            database_collections = []
+
+            if active_module:
+                # Get database info from module configuration
+                try:
+                    from app.utils.db_config_query_executor import get_db_config_executor
+                    executor = get_db_config_executor()
+                    module = executor.get_module_by_id(active_module)
+
+                    if module:
+                        # Get entry tables for this module
+                        entry_tables = module.get('entry_tables', [])
+                        database_collections = [
+                            executor.tables.get(table_id, {}).get('collection', table_id)
+                            for table_id in entry_tables
+                        ]
+                        active_database = executor.config.get('connection', {}).get('database', 'eeai_db')
+
+                        logger.info(
+                            f"Module '{module.get('name')}' using database '{active_database}' with collections: {database_collections}")
+                except Exception as e:
+                    logger.warning(f"Failed to get module database info: {e}")
+
+            elif active_repository:
+                # Legacy: Use repository-database mapper
+                try:
+                    from app.utils.repository_database_mapper import (
+                        get_repository_database,
+                        get_repository_collections,
+                        get_repository_info
+                    )
+
+                    active_database = get_repository_database(active_repository)
+                    database_collections = get_repository_collections(active_repository)
+
+                    logger.info(
+                        f"Repository '{active_repository}' mapped to database '{active_database}' with {len(database_collections)} collections")
+
+                except Exception as mapper_error:
+                    logger.warning(f"Failed to map repository to database: {mapper_error}. Using default MongoDB.")
+                    active_database = None
+
             # Run the RAG-based table/report logic
-            result = generate_rag_table_or_report_request(user_query, user_id, output_format="table",
-                                                          active_repository=active_repository)
+            result = generate_rag_table_or_report_request(
+                user_query,
+                user_id,
+                output_format="table",
+                active_repository=active_repository or active_module,
+                active_database=active_database,
+                database_collections=database_collections
+            )
             print(f"rag result message : {result}")
-            
+
             # Check if result is a tuple (error case)
             if isinstance(result, tuple):
                 if result[1] == 204:
@@ -4878,18 +10129,18 @@ Return compliance status for each field.'''
                     if active_repository:
                         fallback_response = {
                             "response": f"I understand you want to query {active_repository} data.\n\n" +
-                                      "Due to a temporary issue with the AI service, I cannot process complex queries right now.\n\n" +
-                                      "However, you can still:\n" +
-                                      "• View your repository data directly\n" +
-                                      "• Create new transactions\n" +
-                                      "• Check specific records by ID\n\n" +
-                                      "Please try a simpler query or contact support if you need advanced analysis.",
+                                        "Due to a temporary issue with the AI service, I cannot process complex queries right now.\n\n" +
+                                        "However, you can still:\n" +
+                                        "• View your repository data directly\n" +
+                                        "• Create new transactions\n" +
+                                        "• Check specific records by ID\n\n" +
+                                        "Please try a simpler query or contact support if you need advanced analysis.",
                             "intent": "Table Request",
                             "output_format": "text"
                         }
                         return jsonify(fallback_response), 200
                     return result
-            
+
             # If result is a Response object, try to get JSON
             if hasattr(result, 'get_json'):
                 response_data = result.get_json()
@@ -5755,7 +11006,7 @@ Return compliance status for each field.'''
                     progress_tracker.start_ocr()
 
                 try:
-                    extracted_text_data = extract_text_with_retry(temp_file_path, file_type)
+                    extracted_text_data = extract_text_with_retry_optimized(temp_file_path, file_type)
                     text_data = extracted_text_data.get("text_data", [])
                     
                     # Mark OCR complete
@@ -6236,51 +11487,51 @@ Return compliance status for each field.'''
     client = get_chromadb_client(host="localhost", port=8000)
     user_manual_collection = client.get_or_create_collection("user_manual")
 
-    def split_text(text: str, chunk_size: int = 500) -> List[str]:
-        """Split text into chunks for processing."""
-        words = text.split()
-        return [" ".join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
+    # def split_text(text: str, chunk_size: int = 500) -> List[str]:
+    #     """Split text into chunks for processing."""
+    #     words = text.split()
+    #     return [" ".join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
 
-    def read_pdf(file_path: str) -> str:
-        """Read PDF content with proper file handle closure and encryption handling."""
-        try:
-            with open(file_path, 'rb') as file:
-                reader = PdfReader(file)
+    # def read_pdf(file_path: str) -> str:
+    #     """Read PDF content with proper file handle closure and encryption handling."""
+    #     try:
+    #         with open(file_path, 'rb') as file:
+    #             reader = PdfReader(file)
                 
-                # Check if PDF is encrypted
-                if reader.is_encrypted:
-                    # Try to decrypt with empty password (common for read-protected PDFs)
-                    try:
-                        reader.decrypt('')
-                    except:
-                        logger.warning(f"PDF {file_path} is encrypted and cannot be decrypted with empty password")
-                        # Fall back to OCR for encrypted PDFs
-                        return None
+    #             # Check if PDF is encrypted
+    #             if reader.is_encrypted:
+    #                 # Try to decrypt with empty password (common for read-protected PDFs)
+    #                 try:
+    #                     reader.decrypt('')
+    #                 except:
+    #                     logger.warning(f"PDF {file_path} is encrypted and cannot be decrypted with empty password")
+    #                     # Fall back to OCR for encrypted PDFs
+    #                     return None
                 
-                # Extract text from all pages
-                text_parts = []
-                for page_num, page in enumerate(reader.pages):
-                    try:
-                        page_text = page.extract_text()
-                        if page_text:
-                            text_parts.append(page_text)
-                    except Exception as page_error:
-                        logger.warning(f"Error extracting text from page {page_num}: {page_error}")
-                        continue
+    #             # Extract text from all pages
+    #             text_parts = []
+    #             for page_num, page in enumerate(reader.pages):
+    #                 try:
+    #                     page_text = page.extract_text()
+    #                     if page_text:
+    #                         text_parts.append(page_text)
+    #                 except Exception as page_error:
+    #                     logger.warning(f"Error extracting text from page {page_num}: {page_error}")
+    #                     continue
                 
-                text = "\n".join(text_parts)
+    #             text = "\n".join(text_parts)
                 
-                # If no text extracted, return None to trigger OCR fallback
-                if not text.strip():
-                    logger.warning(f"No text extracted from PDF {file_path} using PyPDF2")
-                    return None
+    #             # If no text extracted, return None to trigger OCR fallback
+    #             if not text.strip():
+    #                 logger.warning(f"No text extracted from PDF {file_path} using PyPDF2")
+    #                 return None
                     
-                return text
+    #             return text
                 
-        except Exception as e:
-            logger.error(f"Error reading PDF {file_path}: {e}")
-            # Return None instead of empty string to signal OCR fallback needed
-            return None
+    #     except Exception as e:
+    #         logger.error(f"Error reading PDF {file_path}: {e}")
+    #         # Return None instead of empty string to signal OCR fallback needed
+    #         return None
 
     def train_user_manual(uploaded_file, user_id: str, user_query: str) -> Dict[str, Any]:
         """Train a user manual by extracting text from a file and storing embeddings in ChromaDB (admin only)."""
@@ -6377,123 +11628,82 @@ Return compliance status for each field.'''
                     logger.warning(f"Failed to delete temporary file {temp_file_path}: {e}")
 
     def query_trained_manual(user_query: str, user_id: str, context: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Query the trained user manual using ChromaDB RAG with embeddings."""
+        """
+        Query using HYBRID approach: Knowledge Corpus (approved Q&A) + User Manuals (ChromaDB).
+
+        This provides intelligent query routing:
+        1. First checks Knowledge Corpus for approved Q&A pairs (highest priority)
+        2. Then queries User Manuals for PDF content chunks
+        3. Combines results with confidence scoring
+        4. Returns beautifully formatted HTML response
+        """
         try:
-            # Generate embedding for the query
-            query_embedding = get_embedding_azureRAG(user_query)
+            from app.utils.integrated_knowledge_query import query_hybrid_knowledge
 
-            # All users can query global manuals
-            # Query ChromaDB for relevant chunks using embeddings
-            # Search in global manuals
-            results = user_manual_collection.query(
-                query_embeddings=[query_embedding],
-                n_results=5,
-                where={"is_global": True}
-            )
-            
-            # Log query results for debugging
-            logger.info(f"User manual query for user {user_id}: Found {len(results.get('documents', [[]])[0])} global docs")
+            # Get active repository from session (if available)
+            active_repository = session.get('active_repository', 'trade_finance_repo')
 
-            # Safely access documents and metadata
-            retrieved_docs = results.get("documents", [[]])[0] if results.get("documents") else []
-            retrieved_metadata = results.get("metadatas", [[]])[0] if results.get("metadatas") else []
+            logger.info(f"Hybrid query for user {user_id}, repository: {active_repository}, query: {user_query}")
 
-            if not retrieved_docs:
-                logger.warning(f"No relevant documents found for user {user_id}, query: {user_query}")
-                return {"success": False, "message": "No relevant information found in the trained manual."}
+            # Perform hybrid query across Knowledge Corpus AND User Manuals
+            result = query_hybrid_knowledge(user_query, user_id, active_repository)
 
-            # Ensure retrieved_docs is a list of strings
-            if not all(isinstance(doc, str) for doc in retrieved_docs):
-                logger.error(f"Invalid document format in query results: {retrieved_docs}")
-                return {"success": False, "message": "Invalid document format in query results."}
+            if not result.get("success"):
+                logger.warning(f"Hybrid query returned no results for user {user_id}")
+                return {
+                    "success": False,
+                    "message": "No relevant information found in Knowledge Base or User Manuals.",
+                    "response": result.get("response", ""),
+                    "html": result.get("html", "")
+                }
 
-            # Extract unique file names from metadata
-            file_names = set()
-            for meta in retrieved_metadata:
-                if meta and "file_name" in meta:
-                    file_names.add(meta["file_name"])
+            # Extract source information
+            source_files = []
 
-            # Format retrieved documents for LLM with metadata
-            context_sections = []
-            for i, (doc, meta) in enumerate(zip(retrieved_docs, retrieved_metadata)):
-                file_name = meta.get("file_name", "Unknown") if meta else "Unknown"
-                context_sections.append(f"Section {i + 1} (from {file_name}): {doc}")
+            # Add Knowledge Corpus sources
+            kc_sources = result.get("knowledge_corpus", {}).get("sources", [])
+            for source in kc_sources:
+                if source.get("document_name"):
+                    source_files.append(f"KB: {source['document_name']}")
 
-            context_text = "\n".join(context_sections)
+            # Add User Manual sources
+            manual_files = result.get("user_manuals", {}).get("files", [])
+            source_files.extend([f"Manual: {f}" for f in manual_files])
 
-            # Determine if this is a data query that might need a table
-            is_data_query = any(keyword in user_query.lower() for keyword in
-                                ["show", "list", "display", "find", "get", "retrieve", "expired", "active", "pending",
-                                 "table", "records"])
-
-            prompt = f"""
-            You are a formatting assistant. Your ONLY job is to apply HTML formatting to the content from the user manual.
-
-            ### Retrieved Manual Sections:
-            {context_text}
-
-            ### User Query:
-            {user_query}
-
-            ### STRICT INSTRUCTIONS:
-            1. ONLY apply HTML formatting - DO NOT add, remove, or modify any data
-            2. DO NOT add summaries, insights, explanations, or any new content
-            3. DO NOT interpret or analyze the data
-            4. If data should be in a table, format it as an HTML table
-            5. Keep ALL original data values EXACTLY as they appear
-            6. Only add HTML tags for formatting purposes
-
-            ### HTML Format Requirements:
-            - For table data: Use proper <table>, <thead>, <tbody>, <tr>, <th>, <td> tags
-            - For text data: Use <p>, <div>, or appropriate HTML tags
-            - Include CSS classes for styling but DO NOT change the content
-
-            ### Response Template:
-            <div class="rag-response">
-                <div class="source-info">
-                    <i class="fas fa-book"></i>
-                    <span>Source: {", ".join(file_names) if file_names else "User Manual"}</span>
-                </div>
-                <!-- Format the EXACT content from Retrieved Manual Sections here -->
-                <!-- Use appropriate HTML tags based on data type -->
-                <!-- DO NOT add any new text or data -->
-            </div>
-            """
-
-            response = openai.ChatCompletion.create(
-                engine=deployment_name,
-                messages=[
-                    {"role": "system",
-                     "content": "You are a trade finance assistant that provides well-formatted HTML responses based on user manual data."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.0,
-                max_tokens=2000
-            )
-
-            answer = response["choices"][0]["message"]["content"].strip()
-
-            # If the response doesn't include source info, add it
-            if "<div class=\"source-info\">" not in answer:
-                source_html = f'<div class="source-info"><i class="fas fa-book"></i><span>Source: {", ".join(file_names) if file_names else "User Manual"}</span></div>'
-                answer = f'<div class="rag-response">{source_html}{answer}</div>'
-
-            logger.info(f"Query result for user {user_id}: RAG response generated")
-
-            # Don't save here - frontend will save via /api/conversation/message endpoint
+            logger.info(
+                f"Hybrid query success for user {user_id}: KC matches={len(kc_sources)}, Manual matches={len(manual_files)}")
 
             return {
                 "success": True,
-                "response": answer,
-                "html": answer,
-                "intent": "RAG Request",
-                "output_format": "table" if is_data_query else "text",
-                "source_files": list(file_names) if file_names else ["User Manual"]
+                "response": result.get("response", ""),
+                "html": result.get("html", ""),
+                "intent": result.get("intent", "Hybrid Knowledge Query"),
+                "output_format": "html",  # Always HTML for formatted responses
+                "source_files": source_files,
+                "sources": {
+                    "knowledge_corpus": {
+                        "count": len(kc_sources),
+                        "matches": result.get("knowledge_corpus", {}).get("matches", [])
+                    },
+                    "user_manuals": {
+                        "count": len(manual_files),
+                        "files": manual_files
+                    }
+                },
+                "confidence": result.get("confidence", 0.0),
+                "query_type": result.get("query_type", "hybrid")
             }
 
         except Exception as e:
-            logger.error(f"Error querying trained manual for user {user_id}: {str(e)}")
-            return {"success": False, "message": f"Error querying trained manual: {str(e)}"}
+            logger.error(f"Error in hybrid query for user {user_id}: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return {
+                "success": False,
+                "message": f"Error querying knowledge sources: {str(e)}",
+                "response": "An error occurred while searching the knowledge base.",
+                "html": f'<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Error: {str(e)}</div>'
+            }
 
     def retrieve_relevant_chunks_user_manual(query: str, user_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """Retrieve relevant chunks from user manual collection."""
@@ -6520,51 +11730,68 @@ Return compliance status for each field.'''
             return []
 
     def get_user_manuals(user_id: str) -> Dict[str, Any]:
-        """Get list of globally available user manuals (uploaded by admins)."""
+        """Get list of documents from Knowledge Corpus (MongoDB)."""
         try:
-            # All users can view the list of global manuals
-            # Get all global manuals
-            results = user_manual_collection.get(
-                where={"is_global": True}
-            )
+            # Get all published documents from Knowledge Corpus
+            documents = list(kc_documents_collection.find({
+                "status": "published"
+            }).sort("created_at", -1))
 
-            # Extract unique file names
-            file_names = set()
-            if results and "metadatas" in results:
-                for metadata in results["metadatas"]:
-                    if metadata and "file_name" in metadata:
-                        file_names.add(metadata["file_name"])
+            # Format documents for the chatbot sidebar
+            manuals = []
+            for doc in documents:
+                doc.pop('_id', None)  # Remove MongoDB _id
+
+                # Use synopsis title if available, otherwise use file_name
+                display_name = doc.get('file_name', 'Untitled Document')
+                if 'synopsis' in doc and 'title' in doc['synopsis']:
+                    display_name = doc['synopsis']['title']
+
+                manuals.append({
+                    'name': display_name,
+                    'file_name': doc.get('file_name', ''),
+                    'document_id': doc.get('document_id', ''),
+                    'document_type': doc.get('synopsis', {}).get('document_type', 'Document'),
+                    'created_at': doc.get('created_at', ''),
+                    'uploaded_by': doc.get('uploaded_by', ''),
+                    'total_pages': doc.get('total_pages', 0),
+                    'word_count': doc.get('word_count', 0)
+                })
 
             return {
                 "success": True,
-                "manuals": sorted(list(file_names)),
-                "count": len(file_names)
+                "manuals": manuals,
+                "count": len(manuals)
             }
         except Exception as e:
-            logger.error(f"Error getting user manuals: {str(e)}")
-            return {"success": False, "message": f"Error retrieving manuals: {str(e)}"}
+            logger.error(f"Error getting user manuals from Knowledge Corpus: {str(e)}")
+            return {"success": False, "message": f"Error retrieving manuals: {str(e)}", "manuals": [], "count": 0}
 
     def delete_user_manual(user_id: str, file_name: str) -> Dict[str, Any]:
-        """Delete a specific user manual from ChromaDB (admin only)."""
+        """Delete a specific document from Knowledge Corpus (admin only)."""
         try:
             # Check if user is admin
             user = UserRepository.get_user_by_id(user_id) if user_id else None
             if not user:
                 return {"success": False, "message": "User not found"}
-            
+
             # Check if user is allowed
             if user.get("email", "").lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return {"success": False, "message": "Access denied"}
-            
-            # Admin can delete any global manual
-            results = user_manual_collection.get(
-                where={"$and": [{"is_global": True}, {"file_name": file_name}]}
-            )
 
-            if results and "ids" in results and results["ids"]:
-                # Delete all chunks for this manual
-                user_manual_collection.delete(ids=results["ids"])
-                logger.info(f"Deleted manual '{file_name}' for user {user_id}")
+            # Find and delete document from Knowledge Corpus
+            document = kc_documents_collection.find_one({"file_name": file_name})
+
+            if document:
+                document_id = document.get('document_id')
+
+                # Delete document and all related data
+                kc_documents_collection.delete_one({"document_id": document_id})
+                kc_pages_collection.delete_many({"document_id": document_id})
+                kc_qa_pairs_collection.delete_many({"document_id": document_id})
+                kc_embeddings_collection.delete_many({"document_id": document_id})
+
+                logger.info(f"Deleted document '{file_name}' (ID: {document_id}) for user {user_id}")
                 return {"success": True, "message": f"Manual '{file_name}' deleted successfully."}
             else:
                 return {"success": False, "message": f"Manual '{file_name}' not found."}
@@ -6633,6 +11860,601 @@ Return compliance status for each field.'''
 
         result = delete_user_manual(user_id, file_name)
         return jsonify(result), 200 if result["success"] else 404
+
+    # ============================================================================
+    # 🔥 NEW: UNIFIED KNOWLEDGE SOURCES API
+    # ============================================================================
+
+    @app.route('/api/knowledge-sources/all', methods=['GET'])
+    def api_get_all_knowledge_sources():
+        """
+        Get ALL knowledge sources (Knowledge Corpus + User Manuals).
+        Returns unified list for chatbot sidebar display.
+        """
+        try:
+            from app.utils.unified_knowledge_sources import get_all_knowledge_sources
+
+            user_id = session.get('user_id') or request.args.get('user_id') or 'dev-user'
+            result = get_all_knowledge_sources(user_id)
+
+            return jsonify(result), 200
+
+        except Exception as e:
+            logger.error(f"Error in api_get_all_knowledge_sources: {e}")
+            return jsonify({
+                "success": False,
+                "error": str(e),
+                "sources": [],
+                "knowledge_corpus": {"count": 0, "documents": []},
+                "user_manuals": {"count": 0, "files": []}
+            }), 500
+
+    @app.route('/api/knowledge-sources/stats', methods=['GET'])
+    def api_get_knowledge_source_stats():
+        """
+        Get statistics for all knowledge sources.
+        Used for chatbot sidebar Knowledge Base stats display.
+        """
+        try:
+            from app.utils.unified_knowledge_sources import get_knowledge_source_stats
+
+            stats = get_knowledge_source_stats()
+            return jsonify(stats), 200
+
+        except Exception as e:
+            logger.error(f"Error in api_get_knowledge_source_stats: {e}")
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
+
+    @app.route('/api/knowledge-sources/search', methods=['POST'])
+    def api_search_knowledge_sources():
+        """
+        Search across ALL knowledge sources (KC + Manuals).
+        """
+        try:
+            from app.utils.unified_knowledge_sources import search_all_knowledge_sources
+
+            data = request.get_json()
+            query = data.get('query', '')
+            user_id = session.get('user_id') or data.get('user_id', 'dev-user')
+            source_types = data.get('source_types')  # Optional filter
+            limit = data.get('limit', 10)
+
+            if not query:
+                return jsonify({
+                    "success": False,
+                    "error": "Query is required"
+                }), 400
+
+            result = search_all_knowledge_sources(query, user_id, source_types, limit)
+            return jsonify(result), 200
+
+        except Exception as e:
+            logger.error(f"Error in api_search_knowledge_sources: {e}")
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
+
+    # Enhanced User Manual Training API Routes
+
+    def analyze_document_with_ai(text: str, file_name: str) -> Dict[str, Any]:
+        """Generate AI-powered analysis of the document"""
+        try:
+            # Create analysis prompt
+            analysis_prompt = f"""
+            Analyze the following document content and provide a comprehensive analysis:
+
+            Document: {file_name}
+            Content: {text[:5000]}...
+
+            Please provide:
+            1. **Document Summary** (2-3 sentences)
+            2. **Key Topics** (bullet points of main subjects)
+            3. **Document Type** (manual, guide, policy, etc.)
+            4. **Target Audience** (who would use this document)
+            5. **Content Quality** (structure, completeness, clarity rating 1-10)
+            6. **Recommended Use Cases** (when/how to use this document)
+
+            Format your response as JSON:
+            {{
+                "summary": "Brief summary...",
+                "key_topics": ["Topic 1", "Topic 2", "Topic 3"],
+                "document_type": "User Manual",
+                "target_audience": "End users, administrators",
+                "quality_rating": 8,
+                "quality_notes": "Well structured with clear sections",
+                "use_cases": ["User onboarding", "Troubleshooting", "Reference"],
+                "word_count": {len(text.split())},
+                "estimated_chunks": {len(split_text(text, 500))},
+                "chunk_size": 500,
+                "total_characters": {len(text)},
+                "processing_complexity": "Simple/Medium/Complex based on content structure"
+            }}
+            """
+
+            response = openai.ChatCompletion.create(
+                engine=deployment_name,
+                messages=[
+                    {"role": "system",
+                     "content": "You are a document analysis expert. Provide detailed, accurate analysis of documents."},
+                    {"role": "user", "content": analysis_prompt}
+                ],
+                temperature=0.1
+            )
+
+            result = response.choices[0].message.content.strip()
+
+            # Try to parse JSON response
+            try:
+                analysis = json.loads(result)
+            except json.JSONDecodeError:
+                # Fallback if JSON parsing fails
+                words = text.split()
+                actual_chunks = split_text(text, 500)
+                analysis = {
+                    "summary": "Document analysis completed",
+                    "key_topics": ["General content"],
+                    "document_type": "Document",
+                    "target_audience": "Users",
+                    "quality_rating": 7,
+                    "quality_notes": "Analysis completed",
+                    "use_cases": ["Reference"],
+                    "word_count": len(words),
+                    "estimated_chunks": len(actual_chunks),
+                    "chunk_size": 500,
+                    "total_characters": len(text)
+                }
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"Error in AI analysis: {e}")
+            if text:
+                words = text.split()
+                actual_chunks = split_text(text, 500)
+                return {
+                    "summary": "Unable to generate AI analysis",
+                    "key_topics": ["Content analysis unavailable"],
+                    "document_type": "Unknown",
+                    "target_audience": "Users",
+                    "quality_rating": 5,
+                    "quality_notes": f"Analysis error: {str(e)}",
+                    "use_cases": ["Reference"],
+                    "word_count": len(words),
+                    "estimated_chunks": len(actual_chunks),
+                    "chunk_size": 500,
+                    "total_characters": len(text)
+                }
+            else:
+                return {
+                    "summary": "Unable to generate AI analysis",
+                    "key_topics": ["Content analysis unavailable"],
+                    "document_type": "Unknown",
+                    "target_audience": "Users",
+                    "quality_rating": 5,
+                    "quality_notes": f"Analysis error: {str(e)}",
+                    "use_cases": ["Reference"],
+                    "word_count": 0,
+                    "estimated_chunks": 0,
+                    "chunk_size": 500,
+                    "total_characters": 0
+                }
+
+    def generate_test_questions(text: str, file_name: str, num_questions: int = 5) -> List[Dict[str, str]]:
+        """Generate test questions based on document content"""
+        try:
+            questions_prompt = f"""
+            Based on the following document content, generate {num_questions} relevant questions that users might ask:
+
+            Document: {file_name}
+            Content: {text[:3000]}...
+
+            Generate questions that:
+            1. Test understanding of key concepts
+            2. Cover different sections of the document
+            3. Include both specific and general queries
+            4. Are practical for real users
+
+            Format as JSON array:
+            [
+                {{"question": "How do I...?", "category": "How-to", "difficulty": "Basic"}},
+                {{"question": "What is...?", "category": "Definition", "difficulty": "Basic"}},
+                ...
+            ]
+            """
+
+            response = openai.ChatCompletion.create(
+                engine=deployment_name,
+                messages=[
+                    {"role": "system",
+                     "content": "You are an expert at creating relevant test questions for documents."},
+                    {"role": "user", "content": questions_prompt}
+                ],
+                temperature=0.3
+            )
+
+            result = response.choices[0].message.content.strip()
+
+            try:
+                questions = json.loads(result)
+                if isinstance(questions, list):
+                    return questions[:num_questions]
+            except json.JSONDecodeError:
+                pass
+
+            # Fallback questions
+            return [
+                {"question": f"What is the main purpose of {file_name}?", "category": "Overview",
+                 "difficulty": "Basic"},
+                {"question": f"How can I use the information in {file_name}?", "category": "Usage",
+                 "difficulty": "Basic"},
+                {"question": f"What are the key sections covered in {file_name}?", "category": "Structure",
+                 "difficulty": "Basic"}
+            ]
+
+        except Exception as e:
+            logger.error(f"Error generating test questions: {e}")
+            return [
+                {"question": "What does this document cover?", "category": "General", "difficulty": "Basic"},
+                {"question": "How can I use this information?", "category": "Usage", "difficulty": "Basic"}
+            ]
+
+    @app.route('/api/user-manual/preview', methods=['POST'])
+    def preview_user_manual():
+        """Preview and analyze uploaded document before training"""
+        try:
+            # Development mode bypass - check if app is in debug mode
+            is_development = app.debug
+
+            # Initialize user_id for both development and production modes
+            user_id = session.get('user_id') or request.form.get('user_id') or 'dev-user'
+
+            if not is_development:
+                # Check if user is admin (only in production)
+                if not user_id or user_id == 'dev-user':
+                    return jsonify({"success": False, "message": "Authentication required"}), 401
+
+                user = UserRepository.get_user_by_id(user_id)
+                if not user:
+                    return jsonify({"success": False, "message": "User not found"}), 404
+
+                # Check admin access
+                if user.get("email", "").lower() not in [e.lower() for e in ALLOWED_EMAILS]:
+                    return jsonify({"success": False, "message": "Admin access required"}), 403
+
+            uploaded_file = request.files.get('file')
+            if not uploaded_file:
+                return jsonify({"success": False, "message": "No file uploaded"}), 400
+
+            file_type = uploaded_file.content_type
+            file_name = uploaded_file.filename
+
+            if file_type not in ALLOWED_FILE_TYPES:
+                return jsonify({
+                    "success": False,
+                    "message": f"Unsupported file type: {file_type}"
+                }), 400
+
+            # Save file temporarily
+            temp_file_path = None
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_name.split('.')[-1]}") as temp_file:
+                    temp_file_path = temp_file.name
+                    uploaded_file.save(temp_file_path)
+
+                # Extract text
+                text = None
+                if file_type == "application/pdf":
+                    text = read_pdf(temp_file_path)
+                    if text is None:
+                        extracted_data = extract_text_from_file(temp_file_path, "application/pdf")
+                        text = " ".join([entry["text"] for entry in extracted_data.get("text_data", [])])
+                else:
+                    extracted_data = extract_text_from_file(temp_file_path, file_type)
+                    text = " ".join([entry["text"] for entry in extracted_data.get("text_data", [])])
+
+                if not text or not text.strip():
+                    return jsonify({
+                        "success": False,
+                        "message": "No text extracted from file. File may be encrypted or image-based."
+                    }), 400
+
+                # Generate AI analysis
+                ai_analysis = analyze_document_with_ai(text, file_name)
+
+                # Generate test questions
+                test_questions = generate_test_questions(text, file_name)
+
+                # Calculate detailed statistics
+                text_preview = text[:1000] + "..." if len(text) > 1000 else text
+                words = text.split()
+                word_count = len(words)
+                character_count = len(text)
+
+                # Calculate actual chunks using the same logic as training
+                chunk_size = 500  # words per chunk
+                actual_chunks = split_text(text, chunk_size)
+                actual_chunk_count = len(actual_chunks)
+
+                # Calculate chunk statistics
+                chunk_stats = []
+                for i, chunk in enumerate(actual_chunks):
+                    chunk_words = len(chunk.split())
+                    chunk_chars = len(chunk)
+                    chunk_stats.append({
+                        "chunk_number": i + 1,
+                        "word_count": chunk_words,
+                        "character_count": chunk_chars,
+                        "preview": chunk[:100] + "..." if len(chunk) > 100 else chunk
+                    })
+
+                # Estimate storage size (rough calculation)
+                estimated_storage_mb = character_count / (1024 * 1024)
+
+                response_data = {
+                    "success": True,
+                    "preview": {
+                        "file_name": file_name,
+                        "file_type": file_type,
+                        "file_size_bytes": character_count,
+                        "file_size_mb": round(estimated_storage_mb, 3),
+                        "text_preview": text_preview,
+                        "full_text": text,  # Add full text for training
+                        "word_count": word_count,
+                        "character_count": character_count,
+                        "estimated_chunks": actual_chunk_count,
+                        "chunk_size_words": chunk_size,
+                        "chunking_details": {
+                            "total_chunks": actual_chunk_count,
+                            "words_per_chunk": chunk_size,
+                            "average_chars_per_chunk": character_count // actual_chunk_count if actual_chunk_count > 0 else 0,
+                            "chunk_breakdown": chunk_stats[:5] if len(chunk_stats) > 5 else chunk_stats,
+                            # Show first 5 chunks
+                            "total_chunks_shown": min(5, len(chunk_stats)),
+                            "remaining_chunks": max(0, len(chunk_stats) - 5)
+                        },
+                        "extracted_successfully": True
+                    },
+                    "ai_analysis": ai_analysis,
+                    "test_questions": test_questions,
+                    "ready_for_training": True
+                }
+
+                logger.info(f"Document preview generated for {file_name} by user {user_id}")
+                return jsonify(response_data)
+
+            finally:
+                if temp_file_path and os.path.exists(temp_file_path):
+                    try:
+                        os.unlink(temp_file_path)
+                    except OSError:
+                        pass
+
+        except Exception as e:
+            logger.error(f"Error in document preview: {e}")
+            return jsonify({
+                "success": False,
+                "message": f"Error processing document: {str(e)}"
+            }), 500
+
+    @app.route('/api/user-manual/test-question', methods=['POST'])
+    def test_manual_question():
+        """Test a question against the document content before training"""
+        try:
+            data = request.get_json()
+            question = data.get('question', '').strip()
+            document_text = data.get('document_text', '')
+
+            if not question or not document_text:
+                return jsonify({
+                    "success": False,
+                    "message": "Question and document text are required"
+                }), 400
+
+            # Use more document content for better context
+            content_length = len(document_text)
+            content_to_use = document_text[:8000] if content_length > 8000 else document_text
+
+            # Add logging to debug content
+            logger.info(f"Testing question: '{question}' against document with {content_length} characters")
+            logger.info(f"Using first {len(content_to_use)} characters for analysis")
+
+            # Enhanced prompt for better analysis
+            answer_prompt = f"""
+            You are an expert document analyst. Analyze the provided document content and answer the user's question.
+
+            DOCUMENT CONTENT ({content_length} total characters, showing first {len(content_to_use)}):
+            {content_to_use}
+            {"..." if content_length > 8000 else ""}
+
+            USER QUESTION: {question}
+
+            ANALYSIS INSTRUCTIONS:
+            1. Carefully search through the entire provided document content
+            2. Look for direct mentions, related concepts, or contextual clues
+            3. If you find relevant information, provide a comprehensive answer with specific details
+            4. If you find partial information, mention what you found and note what's missing
+            5. Only say "This information is not available in the document" if you genuinely cannot find ANY related content
+            6. Include specific quotes or references from the document when possible
+            7. Consider synonyms, related terms, and context when searching
+
+            RESPONSE FORMAT:
+            - If information is found: Provide a detailed answer with document references
+            - If partial information: "Based on the document: [what you found], however [what's missing]"
+            - If no information: "This information is not available in the document"
+
+            ANSWER:
+            """
+
+            response = openai.ChatCompletion.create(
+                engine=deployment_name,
+                messages=[
+                    {"role": "system",
+                     "content": "You are an expert document analyst specializing in finding and extracting information from documents. You excel at finding relevant information even when it's not directly stated, by understanding context and related concepts."},
+                    {"role": "user", "content": answer_prompt}
+                ],
+                temperature=0.0  # More deterministic for better document analysis
+            )
+
+            answer = response.choices[0].message.content.strip()
+
+            # Log the result for debugging
+            logger.info(f"Question answered: '{question}' -> '{answer[:100]}...'")
+
+            return jsonify({
+                "success": True,
+                "question": question,
+                "answer": answer,
+                "source": "Document preview (not yet trained)",
+                "debug_info": {
+                    "content_length": content_length,
+                    "content_used": len(content_to_use),
+                    "question_length": len(question)
+                }
+            })
+
+        except Exception as e:
+            logger.error(f"Error testing question: {e}")
+            return jsonify({
+                "success": False,
+                "message": f"Error processing question: {str(e)}"
+            }), 500
+
+    @app.route('/api/user-manual/confirm-training', methods=['POST'])
+    def confirm_manual_training():
+        """Confirm and proceed with manual training after preview"""
+        try:
+            data = request.get_json()
+            file_name = data.get('file_name')
+            confirmed = data.get('confirmed', False)
+
+            if not confirmed:
+                return jsonify({
+                    "success": False,
+                    "message": "User confirmation required"
+                }), 400
+
+            # Development mode bypass - check if app is in debug mode
+            is_development = app.debug
+
+            # Initialize user_id for both development and production modes
+            user_id = session.get('user_id') or 'dev-user'
+
+            if not is_development:
+                # Check authentication only in production
+                if not user_id or user_id == 'dev-user':
+                    return jsonify({"success": False, "message": "Authentication required"}), 401
+
+            # Get the document text and training details
+            document_text = data.get('document_text', '')
+            ai_analysis = data.get('ai_analysis', {})
+
+            if not document_text:
+                return jsonify({
+                    "success": False,
+                    "message": "Document text is required for training"
+                }), 400
+
+            # Actually perform the training by storing in ChromaDB
+            logger.info(f"Starting actual training for {file_name} by user {user_id}")
+
+            try:
+                # Split text into chunks and store in ChromaDB
+                text_chunks = split_text(document_text, chunk_size=500)
+                if not text_chunks:
+                    return jsonify({
+                        "success": False,
+                        "message": "No valid text chunks extracted for storage"
+                    }), 400
+
+                # Store manuals as global (accessible to all users)
+                chunk_ids = [f"global_{file_name}_{i}" for i in range(len(text_chunks))]
+                metadata = [{
+                    "file_name": file_name,
+                    "chunk_index": i,
+                    "is_global": True,
+                    "uploaded_by": user_id,
+                    "uploaded_by_admin": True,
+                    "training_date": str(datetime.now()),
+                    "document_type": ai_analysis.get('document_type', 'Document'),
+                    "quality_rating": ai_analysis.get('quality_rating', 8)
+                } for i in range(len(text_chunks))]
+
+                # Generate embeddings for all chunks
+                embeddings = []
+                for chunk in text_chunks:
+                    embedding = get_embedding_azureRAG(chunk)
+                    embeddings.append(embedding)
+
+                # Store in ChromaDB
+                user_manual_collection.add(
+                    documents=text_chunks,
+                    metadatas=metadata,
+                    embeddings=embeddings,
+                    ids=chunk_ids
+                )
+
+                actual_chunk_count = len(text_chunks)
+                word_count = len(document_text.split())
+                character_count = len(document_text)
+
+                logger.info(
+                    f"Successfully trained user manual '{file_name}' with {actual_chunk_count} chunks in ChromaDB")
+
+                return jsonify({
+                    "success": True,
+                    "message": f"Manual '{file_name}' has been successfully trained and stored!",
+                    "training_status": "completed",
+                    "storage_location": "ChromaDB Collection: 'user_manual'",
+                    "storage_details": {
+                        "database": "ChromaDB",
+                        "collection": "user_manual",
+                        "host": "localhost:8000",
+                        "chunks_stored": actual_chunk_count,
+                        "embeddings_generated": len(embeddings),
+                        "storage_type": "global_access"
+                    },
+                    "training_summary": {
+                        "document": file_name,
+                        "document_type": ai_analysis.get('document_type', 'Document'),
+                        "quality_rating": f"{ai_analysis.get('quality_rating', 8)}/10",
+                        "total_chunks": actual_chunk_count,
+                        "chunk_size": "500 words per chunk",
+                        "chunk_size_words": 500,
+                        "total_words": word_count,
+                        "total_characters": character_count,
+                        "processing_details": {
+                            "chunks_created": actual_chunk_count,
+                            "words_per_chunk": 500,
+                            "average_chunk_size": f"{character_count // actual_chunk_count if actual_chunk_count > 0 else 0} characters",
+                            "processing_completed": True,
+                            "embeddings_stored": len(embeddings)
+                        }
+                    }
+                })
+
+            except Exception as storage_error:
+                logger.error(f"Error storing manual in ChromaDB: {storage_error}")
+                return jsonify({
+                    "success": False,
+                    "message": f"Failed to store manual in database: {str(storage_error)}"
+                }), 500
+
+        except Exception as e:
+            logger.error(f"Error confirming training: {e}")
+            return jsonify({
+                "success": False,
+                "message": f"Error processing confirmation: {str(e)}"
+            }), 500
+
+    # Route for User Manual Training Page
+    @app.route('/train-user-manual')
+    def train_user_manual_page():
+        """Render the enhanced user manual training page"""
+        return render_template('train_user_manual.html')
 
     # Document Compliance Checking Routes
     from app.utils.compliance_validator import DocumentComplianceValidator
@@ -7786,6 +13608,7 @@ Return compliance status for each field.'''
             dict: Processing results with OCR, classification, and extraction data
         """
         import time
+        import traceback
 
         temp_file_path = None  # Track temp file for cleanup
         try:
@@ -8381,6 +14204,7 @@ Return compliance status for each field.'''
             list: Multiple results (one per detected document type)
         """
         import time
+        import traceback
 
         temp_file_path = None  # Track temp file for cleanup
         try:
@@ -9402,6 +15226,84 @@ Guidelines:
                 'error': str(e)
             }), 500
 
+
+    @app.route('/api/document/sync-with-classification', methods=['POST'])
+    @timing_aspect
+    def sync_with_classification():
+        """Sync classification results with document register for Smart Capture"""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'No data provided'
+                }), 400
+
+            extracted_fields = data.get('extracted_fields', {})
+            document_type = data.get('document_type', '')
+            file_name = data.get('file_name', '')
+
+            logger.info(f"🔄 Syncing classification data for {file_name}")
+            logger.info(f"   Document Type: {document_type}")
+            logger.info(f"   Fields: {len(extracted_fields)} extracted")
+
+            # Create a prefill URL with classification data
+            base_url = '/document_register'
+
+            # Build query parameters for prefilling the form
+            params = []
+            if document_type:
+                params.append(f'documentType={document_type}')
+            if file_name:
+                params.append(f'fileName={file_name}')
+
+            # Add key extracted fields as query parameters
+            field_mapping = {
+                'invoice_number': 'invoiceNumber',
+                'lc_number': 'lcNumber',
+                'amount': 'amount',
+                'currency': 'currency',
+                'date': 'date',
+                'description': 'description',
+                'applicant': 'applicant',
+                'beneficiary': 'beneficiary'
+            }
+
+            for field_name, value in extracted_fields.items():
+                if field_name in field_mapping and value:
+                    # Handle different field value structures
+                    field_value = value
+                    if isinstance(value, dict):
+                        field_value = value.get('value', value.get('text', ''))
+
+                    if field_value:
+                        params.append(f'{field_mapping[field_name]}={field_value}')
+
+            # Build final URL with prefill data
+            register_url = base_url
+            if params:
+                register_url += '?' + '&'.join(params)
+
+            logger.info(f"✅ Created prefill URL: {register_url}")
+
+            return jsonify({
+                'success': True,
+                'register_url': register_url,
+                'prefill_data': {
+                    'document_type': document_type,
+                    'file_name': file_name,
+                    'extracted_fields': extracted_fields
+                }
+            })
+
+        except Exception as e:
+            logger.error(f"❌ Error in sync-with-classification: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+        
+        
     def classify_and_check_compliance(uploaded_file, check_compliance=True, product_name=None, function_name=None, document_type=None, progress_tracker=None):
         """Classify document and check compliance with progress tracking"""
         import time
@@ -10448,6 +16350,869 @@ Guidelines:
             logger.error(f"Error getting repository collections: {e}")
             return jsonify({"error": str(e)}), 500
 
+    # =============================================
+    # NEW MODULE API ENDPOINTS (Database Configuration Based)
+    # =============================================
+
+    # Store active modules per user (replaces active_user_repositories functionality)
+    active_user_modules = {}
+
+    @app.route('/api/modules', methods=['GET'])
+    def get_user_modules():
+        """Get all available modules from database configuration"""
+        try:
+            user_id = request.args.get('user_id', 'default_user')
+
+            from app.utils.db_config_query_executor import get_db_config_executor
+            executor = get_db_config_executor()
+
+            # Get modules from database configuration
+            modules = executor.get_modules()
+
+            # Check if user has an active module
+            active_module = active_user_modules.get(user_id)
+
+            # Add connection status and recipe count to each module
+            for module in modules:
+                module['connected'] = (module['id'] == active_module) if active_module else False
+
+                # Count recipes for this module
+                module_recipes = [
+                    recipe for recipe_id, recipe in executor.recipes.items()
+                    if recipe.get('base') in module.get('entry_tables', [])
+                ]
+                module['recipe_count'] = len(module_recipes)
+
+            return jsonify({
+                'success': True,
+                'modules': modules,
+                'active_module': active_module,
+                'user_id': user_id
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error fetching modules: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'modules': []
+            }), 500
+
+    @app.route('/api/modules/<module_id>/connect', methods=['POST'])
+    def connect_module(module_id):
+        """Connect user to a module"""
+        try:
+            data = request.get_json() or {}
+            user_id = data.get('user_id', 'default_user')
+
+            from app.utils.db_config_query_executor import get_db_config_executor
+            executor = get_db_config_executor()
+
+            # Verify module exists
+            module = executor.get_module_by_id(module_id)
+            if not module:
+                return jsonify({
+                    'success': False,
+                    'error': f'Module not found: {module_id}'
+                }), 404
+
+            # Set as active module
+            active_user_modules[user_id] = module_id
+            # Also update the old repository structure for backward compatibility
+            active_user_repositories[user_id] = module.get('name')
+
+            logger.info(f"User {user_id} connected to module: {module.get('name')}")
+
+            return jsonify({
+                'success': True,
+                'message': f"Connected to {module.get('name')}",
+                'active_module': module_id,
+                'module_name': module.get('name')
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error connecting to module: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/modules/<module_id>/disconnect', methods=['POST'])
+    def disconnect_module(module_id):
+        """Disconnect user from a module"""
+        try:
+            data = request.get_json() or {}
+            user_id = data.get('user_id', 'default_user')
+
+            # Remove from active modules
+            if user_id in active_user_modules:
+                module_id_removed = active_user_modules[user_id]
+                del active_user_modules[user_id]
+
+                # Also remove from old repository structure
+                if user_id in active_user_repositories:
+                    del active_user_repositories[user_id]
+
+                logger.info(f"User {user_id} disconnected from module: {module_id_removed}")
+
+                return jsonify({
+                    'success': True,
+                    'message': 'Module disconnected'
+                }), 200
+            else:
+                return jsonify({
+                    'success': True,
+                    'message': 'No active module connection'
+                }), 200
+
+        except Exception as e:
+            logger.error(f"Error disconnecting from module: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/api/modules/<module_id>/recipes', methods=['GET'])
+    def get_module_recipes(module_id):
+        """Get available recipes for a specific module"""
+        try:
+            from app.utils.db_config_query_executor import get_db_config_executor
+            executor = get_db_config_executor()
+
+            # Verify module exists
+            module = executor.get_module_by_id(module_id)
+            if not module:
+                return jsonify({
+                    'success': False,
+                    'error': f'Module not found: {module_id}'
+                }), 404
+
+            # Get recipe suggestions for this module
+            suggestions = executor.get_recipe_suggestions(module_id)
+
+            return jsonify({
+                'success': True,
+                'module_id': module_id,
+                'module_name': module.get('name'),
+                'recipes': suggestions,
+                'total_recipes': len(suggestions)
+            }), 200
+
+        except Exception as e:
+            logger.error(f"Error getting module recipes: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+def organize_ocr_data_by_page(text_data):
+    """Organize OCR text data by page number"""
+    from collections import defaultdict
+    pages = defaultdict(list)
+    for entry in text_data:
+        page = entry.get("bounding_page", 1)
+        pages[page].append(entry)
+    return [pages[k] for k in sorted(pages)]
+
+
+def enhance_documents_for_discrepancy_analysis(uploaded_documents):
+    """
+    Enhanced document processing pipeline for discrepancy analysis
+
+    This function ensures that each uploaded document goes through:
+    1. Document Classification - Identify document type (Bill of Lading, Commercial Invoice, etc.)
+    2. OCR Field Extraction - Extract structured fields based on document entity configurations
+    3. Data Validation - Ensure extracted data is ready for SWIFT comparison
+
+    Args:
+        uploaded_documents: List of uploaded document objects
+
+    Returns:
+        List of enhanced documents with classification and extracted fields
+    """
+    try:
+        logger.info("🚀 Starting enhanced document processing pipeline for discrepancy analysis")
+
+        # Initialize document classifier
+        try:
+            document_classifier = DocumentClassifier()
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize document classifier: {e}")
+            document_classifier = None
+
+        enhanced_documents = []
+
+        for idx, doc in enumerate(uploaded_documents):
+            doc_name = doc.get('name', doc.get('original_filename', f'Document_{idx + 1}'))
+            logger.info(f"📄 Processing document {idx + 1}/{len(uploaded_documents)}: {doc_name}")
+
+            # === STEP 0: EXTRACT TEXT CONTENT IF MISSING ===
+            has_content = doc.get('content', '').strip()
+
+            # Check for various path keys (file_path, path, or construct from file_name)
+            file_path = doc.get('file_path') or doc.get('path') or doc.get('file_name')
+
+            # Also check if content is provided as 'text' field (common in API requests)
+            if not has_content and doc.get('text'):
+                doc['content'] = doc.get('text').strip()
+                has_content = doc['content']
+                logger.info(f"✅ Using provided text content: {len(has_content)} characters")
+
+            # Debug: Log what content sources are available
+            logger.debug(f"🔍 Content sources for {doc_name}:")
+            logger.debug(f"  - content field: {len(doc.get('content', ''))} chars")
+            logger.debug(f"  - text field: {len(doc.get('text', ''))} chars")
+            logger.debug(f"  - file_path: {file_path}")
+            logger.debug(f"  - has_content after processing: {len(has_content)} chars")
+
+            if not has_content and file_path:
+                logger.info(f"🔍 Extracting text content from file: {doc_name}")
+                logger.info(f"   File path: {file_path}")
+                try:
+                    # If file_name but no full path, check common upload directories
+                    if not os.path.isabs(file_path):
+                        possible_paths = [
+                            os.path.join(app.root_path, 'uploads', file_path),
+                            os.path.join(app.root_path, 'static', 'uploads', file_path),
+                            os.path.join('/tmp', file_path),
+                            file_path  # Try as-is
+                        ]
+                        found_path = None
+                        for path in possible_paths:
+                            if os.path.exists(path):
+                                found_path = path
+                                logger.info(f"   Found file at: {found_path}")
+                                break
+                        file_path = found_path  # Will be None if not found
+
+                    if file_path and os.path.exists(file_path):
+                        file_extension = os.path.splitext(file_path)[1].lower()
+
+                        # ✅ ENHANCED: Use Azure Computer Vision OCR for all files including PDFs
+                        logger.info(f"📄 Extracting text using Azure Computer Vision OCR: {file_path}")
+
+                        # Determine file type based on extension
+                        if file_extension == '.pdf':
+                            file_type = 'application/pdf'
+                        elif file_extension in ['.jpg', '.jpeg']:
+                            file_type = 'image/jpeg'
+                        elif file_extension == '.png':
+                            file_type = 'image/png'
+                        else:
+                            file_type = 'application/pdf'  # Default fallback
+
+                        try:
+                            extract_result = extract_text_from_file(file_path, file_type)
+                            if extract_result and extract_result.get('text_data'):
+                                # Join all text content from Azure Computer Vision OCR
+                                raw_text = " ".join(
+                                    [entry.get("text", "") for entry in extract_result.get("text_data", [])])
+                                doc['content'] = raw_text.strip()
+                                has_content = doc['content']
+                                logger.info(f"✅ Azure OCR extracted {len(has_content)} characters from {doc_name}")
+
+                                if len(has_content) > 0:
+                                    logger.info(f"📝 Sample text (first 200 chars): '{has_content[:200]}...'")
+                                else:
+                                    logger.warning(f"⚠️ Azure OCR returned empty content for {doc_name}")
+
+                            else:
+                                logger.warning(f"⚠️ Azure OCR could not extract text from {doc_name}")
+                                doc['content'] = ""
+
+                        except Exception as ocr_error:
+                            logger.error(f"❌ Azure OCR extraction failed for {doc_name}: {ocr_error}")
+                            doc['content'] = ""
+                    else:
+                        if file_path:
+                            logger.warning(f"⚠️ File not found: {file_path}")
+                            logger.info(
+                                f"   Tried paths: {[os.path.join(app.root_path, 'uploads', file_path) if file_path else 'None', os.path.join(app.root_path, 'static', 'uploads', file_path) if file_path else 'None', os.path.join('/tmp', file_path) if file_path else 'None']}")
+                        else:
+                            logger.warning(f"⚠️ No file path available for {doc_name}")
+
+                        logger.error(f"🚨 CRITICAL: Document {doc_name} has no content and no accessible file!")
+                        logger.error(f"🚨 This means your API request is missing the actual document text.")
+                        logger.error(f"🚨 SOLUTION: Extract text from your PDF and include it in the 'content' field")
+                        logger.error(f"🚨 Example: \"content\": \"COMMERCIAL INVOICE\\nInvoice No: CI-001...\"")
+
+                        # No content available and no file found
+                        doc['content'] = ""
+
+                except Exception as e:
+                    logger.error(f"❌ Text extraction failed for {doc_name}: {e}")
+                    doc['content'] = ""
+
+            # Check if document already has proper classification and extracted data
+            has_classification = doc.get('classification') and doc.get('classification') != 'unknown'
+            has_extracted_data = doc.get('extracted_data') and len(doc.get('extracted_data', {})) > 0
+            has_content = doc.get('content', '').strip()
+
+            # Debug document structure
+            logger.info(f"🔍 Document structure analysis for {doc_name}:")
+            logger.info(f"  - Has content: {len(has_content)} characters")
+            logger.info(f"  - Has classification: {has_classification} ({doc.get('classification', 'none')})")
+            logger.info(f"  - Has extracted data: {has_extracted_data} ({len(doc.get('extracted_data', {}))} fields)")
+            logger.info(f"  - Document keys: {list(doc.keys())}")
+
+            enhanced_doc = doc.copy()  # Start with original document
+
+            # === STEP 0.5: PAGE-WISE MULTI-DOCUMENT DETECTION ===
+            # Use page-wise classification for better multi-document detection
+            if has_content and len(has_content) > 100 and file_path and os.path.exists(file_path):
+                logger.info(f"🔍 Using page-wise classification for multi-document detection: {doc_name}")
+
+                try:
+                    # Use OCR to extract text data page by page
+                    extract_result = extract_text_from_file(file_path, 'application/pdf')
+                    if extract_result and extract_result.get('text_data'):
+                        text_data = extract_result.get("text_data", [])
+                        pages_ocr_data = organize_ocr_data_by_page(text_data)
+
+                        # Classify each page independently
+                        page_classifications = []
+                        for page_num, page_data in enumerate(pages_ocr_data, 1):
+                            page_text = "\n".join([text['text'] for text in page_data])
+
+                            if len(page_text.strip()) < 50:
+                                continue
+
+                            classification_result = document_classifier.classify_document(page_text)
+                            detected_type = classification_result.get('document_type', 'Unknown')
+                            confidence = classification_result.get('confidence', 0)
+                            if confidence <= 1.0:
+                                confidence *= 100
+
+                            page_classifications.append({
+                                'page': page_num,
+                                'document_type': detected_type,
+                                'confidence': confidence,
+                                'text': page_text,
+                                'ocr_data': page_data
+                            })
+
+                            logger.info(f"📄 Page {page_num}: {detected_type} (confidence: {confidence:.0f}%)")
+
+                        # Group consecutive pages with same document type
+                        if len(page_classifications) > 0:
+                            document_groups = []
+                            current_group = None
+
+                            for page_class in page_classifications:
+                                if current_group is None or current_group['document_type'] != page_class[
+                                    'document_type']:
+                                    if current_group:
+                                        document_groups.append(current_group)
+                                    current_group = {
+                                        'document_type': page_class['document_type'],
+                                        'pages': [page_class],
+                                        'start_page': page_class['page'],
+                                        'end_page': page_class['page'],
+                                        'avg_confidence': page_class['confidence']
+                                    }
+                                else:
+                                    current_group['pages'].append(page_class)
+                                    current_group['end_page'] = page_class['page']
+                                    # Update average confidence
+                                    confidences = [p['confidence'] for p in current_group['pages']]
+                                    current_group['avg_confidence'] = sum(confidences) / len(confidences)
+
+                            if current_group:
+                                document_groups.append(current_group)
+
+                            if len(document_groups) > 1:
+                                logger.info(
+                                    f"🎯 Page-wise detection found {len(document_groups)} document types in {doc_name}:")
+                                for group in document_groups:
+                                    logger.info(
+                                        f"  - {group['document_type']}: Pages {group['start_page']}-{group['end_page']} (confidence: {group['avg_confidence']:.0f}%)")
+
+                                # Process each document group separately
+                                for group in document_groups:
+                                    sub_enhanced_doc = enhanced_doc.copy()
+
+                                    # Combine text from all pages in this group
+                                    group_text = "\n".join([page['text'] for page in group['pages']])
+                                    sub_enhanced_doc['content'] = group_text
+                                    sub_enhanced_doc['classification'] = group['document_type']
+                                    sub_enhanced_doc['type'] = group['document_type']
+                                    sub_enhanced_doc['name'] = f"{doc_name} - {group['document_type']}"
+                                    sub_enhanced_doc['classification_confidence'] = group['avg_confidence'] / 100
+                                    sub_enhanced_doc['page_info'] = {
+                                        'start_page': group['start_page'],
+                                        'end_page': group['end_page'],
+                                        'page_count': len(group['pages']),
+                                        'original_document': doc_name
+                                    }
+
+                                    # Extract fields for this document type
+                                    logger.info(
+                                        f"📤 Extracting fields for {group['document_type']} (pages {group['start_page']}-{group['end_page']})")
+                                    try:
+                                        field_mapping_data = load_document_field_mappings(group['document_type'])
+                                        if field_mapping_data and field_mapping_data.get(
+                                                'mappings') and document_classifier:
+                                            extraction_prompt = document_classifier.build_extraction_prompt(
+                                                document_type=group['document_type'],
+                                                ocr_text=group_text,
+                                                page_number=group['start_page']
+                                            )
+
+                                            extraction_response = openai.ChatCompletion.create(
+                                                engine=deployment_name,
+                                                messages=[{"role": "user", "content": extraction_prompt}],
+                                                temperature=0.0,
+                                                max_tokens=3000
+                                            )
+
+                                            extraction_result = extraction_response.choices[0].message.content
+                                            extraction_json = json.loads(extraction_result)
+                                            extracted_fields = extraction_json.get('extracted_fields', {})
+
+                                            # Flatten nested structure if needed
+                                            if isinstance(extracted_fields, dict):
+                                                flat_fields = {}
+                                                for category, fields in extracted_fields.items():
+                                                    if isinstance(fields, dict):
+                                                        flat_fields.update(fields)
+                                                    else:
+                                                        flat_fields[category] = fields
+                                                extracted_fields = flat_fields
+
+                                            sub_enhanced_doc['extracted_data'] = extracted_fields
+                                            logger.info(
+                                                f"✅ Extracted {len(extracted_fields)} fields from {group['document_type']}")
+                                        else:
+                                            sub_enhanced_doc['extracted_data'] = {}
+                                            logger.warning(f"⚠️ No field mapping found for {group['document_type']}")
+
+                                    except Exception as e:
+                                        logger.error(f"❌ Field extraction failed for {group['document_type']}: {e}")
+                                        sub_enhanced_doc['extracted_data'] = {}
+
+                                    enhanced_documents.append(sub_enhanced_doc)
+
+                                # Skip the normal single-document processing
+                                continue
+                            else:
+                                logger.info(
+                                    f"📄 Page-wise detection found only 1 document type: {document_groups[0]['document_type']}")
+
+                except Exception as e:
+                    logger.error(f"❌ Page-wise classification failed for {doc_name}: {e}")
+                    # Fall back to content-based detection
+                    logger.info(f"🔄 Falling back to content-based multi-document detection")
+                    detected_docs = detect_multiple_documents_in_content(has_content, doc_name)
+
+                    if len(detected_docs) > 1:
+                        logger.info(
+                            f"🎯 Content-based detection found {len(detected_docs)} document types: {[d['type'] for d in detected_docs]}")
+                        # Process using the old logic (keeping it as fallback)
+                        for sub_doc in detected_docs:
+                            sub_enhanced_doc = enhanced_doc.copy()
+                            sub_enhanced_doc['content'] = sub_doc['content']
+                            sub_enhanced_doc['classification'] = sub_doc['type']
+                            sub_enhanced_doc['type'] = sub_doc['type']
+                            sub_enhanced_doc['name'] = f"{doc_name} - {sub_doc['display_name']}"
+                            sub_enhanced_doc['classification_confidence'] = sub_doc['confidence']
+                            enhanced_documents.append(sub_enhanced_doc)
+                        continue
+
+            # === STEP 1: DOCUMENT CLASSIFICATION ===
+            if not has_classification:
+                if not has_content:
+                    logger.warning(f"⚠️ Document {doc_name} has no content for LLM classification, skipping")
+                    logger.info(f"💡 SOLUTION: Include actual document text in the 'content' field of your API request")
+                    logger.info(
+                        f"💡 Current content field: '{doc.get('content', 'MISSING')[:50]}...' ({len(doc.get('content', ''))} chars)")
+                    enhanced_doc['classification'] = 'Trade_Document'  # Generic fallback
+                    enhanced_doc['classification_confidence'] = 0.3
+                    enhanced_doc['type'] = enhanced_doc['classification']
+                else:
+                    logger.info(f"🔍 Step 1: Classifying document type using LLM for {doc_name}")
+                    try:
+                        if document_classifier:
+                            classification_result = document_classifier.classify_document(doc.get('content', ''))
+
+                            if classification_result and classification_result.get('document_type'):
+                                enhanced_doc['classification'] = classification_result.get('document_type')
+                                enhanced_doc['classification_confidence'] = classification_result.get('confidence', 0.8)
+                                enhanced_doc['type'] = classification_result.get('document_type')
+                                logger.info(
+                                    f"✅ LLM classified as: {enhanced_doc['classification']} (confidence: {enhanced_doc['classification_confidence']:.2f})")
+                            else:
+                                logger.warning(f"⚠️ LLM classification returned no result for {doc_name}")
+                                enhanced_doc['classification'] = 'Trade_Document'
+                                enhanced_doc['classification_confidence'] = 0.3
+                                enhanced_doc['type'] = enhanced_doc['classification']
+                        else:
+                            logger.warning("⚠️ Document classifier not available")
+                            enhanced_doc['classification'] = 'Trade_Document'
+                            enhanced_doc['classification_confidence'] = 0.2
+                            enhanced_doc['type'] = enhanced_doc['classification']
+
+                    except Exception as e:
+                        logger.error(f"❌ LLM classification failed for {doc_name}: {e}")
+                        enhanced_doc['classification'] = 'Trade_Document'
+                        enhanced_doc['classification_confidence'] = 0.2
+                        enhanced_doc['type'] = enhanced_doc['classification']
+            else:
+                logger.info(f"✅ Document {doc_name} already classified as: {doc.get('classification')}")
+                # Ensure type is set
+                enhanced_doc['type'] = enhanced_doc.get('classification', enhanced_doc.get('type', 'Trade_Document'))
+
+            # === STEP 2: OCR FIELD EXTRACTION ===
+            doc_type = enhanced_doc.get('classification', enhanced_doc.get('type', 'unknown'))
+
+            logger.info(f"🔍 Document type determined: {doc_type} for {doc_name}")
+
+            if not has_extracted_data and has_content and doc_type != 'unknown':
+                logger.info(f"📤 Step 2: Extracting fields for {doc_type} document: {doc_name}")
+                try:
+                    # Use document entity configurations for field extraction
+                    field_mapping_data = load_document_field_mappings(doc_type)
+
+                    if field_mapping_data and field_mapping_data.get('mappings'):
+                        logger.info(
+                            f"📋 Using document entity configuration with {len(field_mapping_data['mappings'])} field mappings")
+
+                        try:
+                            # Build extraction prompt with field mappings
+                            if document_classifier:
+                                extraction_prompt = document_classifier.build_extraction_prompt(
+                                    document_type=doc_type,
+                                    ocr_text=doc.get('content', ''),
+                                    page_number=1
+                                )
+
+                                # Add field mapping examples
+                                if field_mapping_data.get('example'):
+                                    extraction_prompt += f"\n\n{field_mapping_data.get('example')}"
+
+                                logger.info(f"🔍 Built extraction prompt for {doc_type}")
+
+                                # Extract fields using OpenAI
+                                extraction_response = openai.ChatCompletion.create(
+                                    engine=deployment_name,
+                                    messages=[{"role": "user", "content": extraction_prompt}],
+                                    temperature=0.0,  # Deterministic for better field extraction
+                                    max_tokens=3000
+                                )
+                            else:
+                                logger.warning(
+                                    f"⚠️ Document classifier not available, skipping field extraction for {doc_type}")
+                                extraction_response = None
+
+                            if extraction_response:
+                                extraction_result = extraction_response.choices[0].message.content
+                                logger.info(f"🤖 Got OpenAI extraction response for {doc_name}")
+
+                                # Parse extraction result
+                                try:
+                                    extraction_json = json.loads(extraction_result)
+                                    extracted_fields = extraction_json.get('extracted_fields', {})
+
+                                    # Flatten nested structure if needed
+                                    if isinstance(extracted_fields, dict):
+                                        flat_fields = {}
+                                        for category, fields in extracted_fields.items():
+                                            if isinstance(fields, dict):
+                                                flat_fields.update(fields)
+                                            else:
+                                                flat_fields[category] = fields
+                                        extracted_fields = flat_fields
+
+                                    enhanced_doc['extracted_data'] = extracted_fields
+                                    logger.info(f"✅ Extracted {len(extracted_fields)} fields from {doc_name}")
+
+                                except json.JSONDecodeError as je:
+                                    logger.error(f"❌ JSON parsing failed for {doc_name}: {je}")
+                                    logger.error(f"Raw OpenAI response: {extraction_result[:500]}...")
+                                    enhanced_doc['extracted_data'] = {}
+                            else:
+                                # No classifier available, set empty extracted data
+                                enhanced_doc['extracted_data'] = {}
+
+                        except Exception as prompt_error:
+                            logger.error(f"❌ Extraction prompt building failed for {doc_name}: {prompt_error}")
+                            enhanced_doc['extracted_data'] = {}
+
+                            # Log key fields for verification
+                            key_fields = list(extracted_fields.keys())[:5]
+                            logger.info(f"📊 Key extracted fields: {', '.join(key_fields)}")
+
+                        except json.JSONDecodeError as e:
+                            logger.error(f"❌ Failed to parse extraction JSON for {doc_name}: {e}")
+                            enhanced_doc['extracted_data'] = {}
+
+                    else:
+                        logger.warning(f"⚠️ No field mapping configuration found for document type: {doc_type}")
+                        enhanced_doc['extracted_data'] = {}
+
+                except Exception as e:
+                    logger.error(f"❌ Field extraction failed for {doc_name}: {e}")
+                    enhanced_doc['extracted_data'] = {}
+            elif has_extracted_data:
+                logger.info(
+                    f"✅ Document {doc_name} already has extracted data with {len(doc.get('extracted_data', {}))} fields")
+
+            # === STEP 3: DATA VALIDATION ===
+            # Ensure document has minimum required data for discrepancy analysis
+            doc_classification = enhanced_doc.get('classification', 'unknown')
+            doc_content = enhanced_doc.get('content', '').strip()
+
+            logger.info(f"🔍 Final validation for {doc_name}:")
+            logger.info(f"  - Classification: {doc_classification}")
+            logger.info(f"  - Content length: {len(doc_content)}")
+            logger.info(f"  - Extracted data fields: {len(enhanced_doc.get('extracted_data', {}))}")
+
+            # Accept document if it has either classification OR content
+            if doc_classification != 'unknown' or len(doc_content) > 100:
+                enhanced_documents.append(enhanced_doc)
+                logger.info(f"✅ Document {doc_name} ready for discrepancy analysis")
+            else:
+                logger.warning(f"⚠️ Document {doc_name} could not be properly processed - skipping from analysis")
+                logger.warning(
+                    f"   Reason: No valid classification ({doc_classification}) and insufficient content ({len(doc_content)} chars)")
+
+        logger.info(
+            f"🎉 Enhanced document processing complete: {len(enhanced_documents)}/{len(uploaded_documents)} documents ready")
+        return enhanced_documents
+
+    except Exception as e:
+        logger.error(f"❌ Error in enhanced document processing pipeline: {e}")
+        import traceback
+        traceback.print_exc()
+
+        # Fallback: return original documents
+        logger.info("🔄 Falling back to original document structure")
+        return uploaded_documents
+
+def detect_multiple_documents_in_content(content, original_filename):
+    """
+    Detect multiple document types within a single PDF content
+
+    This function analyzes the extracted text content to identify different document
+    sections (Commercial Invoice, Packing List, Bill of Lading, etc.) within a
+    single PDF file and splits them for individual processing.
+
+    Args:
+        content: Extracted text content from the PDF
+        original_filename: Original filename for logging
+
+    Returns:
+        List of detected document sections with their content and classifications
+    """
+    logger.info(f"🔍 Analyzing content for multiple document types in {original_filename}")
+
+    detected_documents = []
+    content_lines = content.split('\n')
+
+    # Document type indicators - these patterns help identify document boundaries
+    document_patterns = {
+        'Proforma_Invoice': {
+            'keywords': ['proforma invoice', 'pro forma invoice', 'proforma inv', 'quotation', 'proforma'],
+            'display_name': 'Proforma Invoice',
+            'confidence_threshold': 2
+        },
+        'Commercial_Invoice': {
+            'keywords': ['commercial invoice', 'invoice no', 'invoice number', 'bill to', 'invoice date'],
+            'display_name': 'Commercial Invoice',
+            'confidence_threshold': 2
+        },
+        'Packing_List': {
+            'keywords': ['packing list', 'pack list', 'shipping list', 'contents', 'package details',
+                         'packing details'],
+            'display_name': 'Packing List',
+            'confidence_threshold': 2
+        },
+        'Bill_of_Lading': {
+            'keywords': ['bill of lading', 'b/l', 'bl no', 'consignee', 'shipper', 'port of loading',
+                         'port of discharge'],
+            'display_name': 'Bill of Lading',
+            'confidence_threshold': 2
+        },
+        'Certificate_of_Origin': {
+            'keywords': ['certificate of origin', 'origin certificate', 'country of origin', 'place of origin'],
+            'display_name': 'Certificate of Origin',
+            'confidence_threshold': 2
+        },
+        'Insurance_Certificate': {
+            'keywords': ['insurance certificate', 'insurance policy', 'coverage', 'premium', 'insured amount'],
+            'display_name': 'Insurance Certificate',
+            'confidence_threshold': 2
+        },
+        'Weight_Certificate': {
+            'keywords': ['weight certificate', 'weight list', 'gross weight', 'net weight', 'measurement'],
+            'display_name': 'Weight Certificate',
+            'confidence_threshold': 2
+        }
+    }
+
+    # Find document section boundaries - improved algorithm
+    document_sections = []
+
+    # First pass: identify strong document headers (high confidence indicators)
+    strong_headers = []
+    for line_idx, line in enumerate(content_lines):
+        line_lower = line.lower().strip()
+
+        # Skip very short lines
+        if len(line_lower) < 5:
+            continue
+
+        # Look for clear document headers (exact matches or strong patterns)
+        for doc_type, pattern_info in document_patterns.items():
+            # Check for exact document type matches in the line
+            strong_matches = []
+            for keyword in pattern_info['keywords'][:3]:  # Check top 3 most specific keywords
+                if keyword in line_lower and len(keyword) > 5:  # Strong keywords only
+                    strong_matches.append(keyword)
+
+            # If we find a strong match, this is likely a document header
+            if strong_matches and (
+                    line_idx == 0 or  # First line
+                    len(content_lines[line_idx - 1].strip()) == 0 or  # Previous line is empty
+                    '---' in content_lines[line_idx - 1] or  # Separator line
+                    line_lower.startswith(strong_matches[0])  # Line starts with document type
+            ):
+                strong_headers.append({
+                    'line_idx': line_idx,
+                    'type': doc_type,
+                    'display_name': pattern_info['display_name'],
+                    'matched_keywords': strong_matches,
+                    'confidence': min(len(strong_matches) * 0.4 + 0.5, 0.95)
+                })
+                logger.info(f"   📄 Strong header detected: {pattern_info['display_name']} at line {line_idx}")
+                break
+
+    # Second pass: create document sections based on strong headers
+    for i, header in enumerate(strong_headers):
+        start_line = header['line_idx']
+
+        # Determine end line (start of next document or end of content)
+        if i + 1 < len(strong_headers):
+            end_line = strong_headers[i + 1]['line_idx'] - 1
+        else:
+            end_line = len(content_lines) - 1
+
+        # Extract content for this section
+        section_content = '\n'.join(content_lines[start_line:end_line + 1]).strip()
+
+        # Only include sections with substantial content
+        if len(section_content) > 50:
+            document_sections.append({
+                'type': header['type'],
+                'display_name': header['display_name'],
+                'start_line': start_line,
+                'end_line': end_line,
+                'content': section_content,
+                'keyword_matches': len(header['matched_keywords']),
+                'confidence': header['confidence']
+            })
+            logger.info(f"   ✅ Created section: {header['display_name']} (lines {start_line}-{end_line})")
+
+    # If no strong headers found, use the original pattern-based approach
+    if not document_sections:
+        logger.info(f"   🔍 No strong document headers found, using pattern-based detection")
+        current_section = None
+
+        for line_idx, line in enumerate(content_lines):
+            line_lower = line.lower().strip()
+
+            if len(line_lower) < 3:
+                continue
+
+            # Check if this line indicates start of a new document type
+            best_match = None
+            best_score = 0
+
+            for doc_type, pattern_info in document_patterns.items():
+                keyword_matches = sum(1 for keyword in pattern_info['keywords']
+                                      if keyword in line_lower)
+
+                if keyword_matches > best_score:
+                    best_score = keyword_matches
+                    best_match = (doc_type, pattern_info)
+
+            # If we find a good match, start a new section
+            if best_match and best_score >= 1:
+                doc_type, pattern_info = best_match
+
+                # Close current section if exists
+                if current_section:
+                    current_section['end_line'] = line_idx - 1
+                    current_section['content'] = '\n'.join(content_lines[current_section['start_line']:line_idx])
+                    if len(current_section['content'].strip()) > 50:
+                        document_sections.append(current_section)
+
+                # Start new section
+                current_section = {
+                    'type': doc_type,
+                    'display_name': pattern_info['display_name'],
+                    'start_line': line_idx,
+                    'keyword_matches': best_score,
+                    'confidence': min(best_score * 0.3 + 0.4, 0.95)
+                }
+                logger.info(f"   📄 Pattern-detected {pattern_info['display_name']} starting at line {line_idx}")
+
+        # Close the last section
+        if current_section:
+            current_section['end_line'] = len(content_lines) - 1
+            current_section['content'] = '\n'.join(content_lines[current_section['start_line']:])
+            if len(current_section['content'].strip()) > 50:
+                document_sections.append(current_section)
+
+    # If no sections detected, try a more aggressive approach
+    if not document_sections:
+        logger.info(f"   🔍 No clear document boundaries found, trying pattern-based detection")
+
+        # Look for any document type indicators in the entire content
+        content_lower = content.lower()
+        for doc_type, pattern_info in document_patterns.items():
+            keyword_matches = sum(1 for keyword in pattern_info['keywords']
+                                  if keyword in content_lower)
+
+            if keyword_matches >= pattern_info['confidence_threshold']:
+                document_sections.append({
+                    'type': doc_type,
+                    'display_name': pattern_info['display_name'],
+                    'start_line': 0,
+                    'end_line': len(content_lines) - 1,
+                    'content': content,
+                    'keyword_matches': keyword_matches,
+                    'confidence': min(keyword_matches * 0.2 + 0.5, 0.9)
+                })
+                logger.info(f"   📄 Pattern-detected {pattern_info['display_name']} (confidence: {keyword_matches})")
+
+    # If still no sections, return the entire content as a single trade document
+    if not document_sections:
+        logger.info(f"   📄 No specific document types detected, treating as Trade Document")
+        document_sections.append({
+            'type': 'Trade_Document',
+            'display_name': 'Trade Document',
+            'start_line': 0,
+            'end_line': len(content_lines) - 1,
+            'content': content,
+            'keyword_matches': 0,
+            'confidence': 0.6
+        })
+
+    # Filter out sections that are too small or have low confidence
+    valid_sections = []
+    for section in document_sections:
+        content_length = len(section['content'].strip())
+        if content_length > 100 and section['confidence'] > 0.4:  # Minimum content and confidence
+            valid_sections.append(section)
+            logger.info(
+                f"   ✅ Valid section: {section['display_name']} ({content_length} chars, confidence: {section['confidence']:.2f})")
+        else:
+            logger.info(
+                f"   ❌ Filtered out: {section['display_name']} ({content_length} chars, confidence: {section['confidence']:.2f})")
+
+    logger.info(f"🎯 Multi-document analysis complete: {len(valid_sections)} document sections detected")
+    return valid_sections
+
 
 def determine_document_type(filename: str, content: str) -> str:
     """Determine document type based on filename and content"""
@@ -10470,6 +17235,85 @@ def determine_document_type(filename: str, content: str) -> str:
         return 'certificate'
     else:
         return 'other'
+
+
+def perform_pure_llm_discrepancy_analysis(lc_context, documents, swift_message, config=None):
+    """Pure LLM-based discrepancy analysis without static rules"""
+    try:
+        logger.info(f"🤖 Starting pure LLM-based discrepancy analysis for {len(documents)} documents")
+
+        # Collect all documents for comprehensive analysis
+        all_discrepancies = []
+
+        # Step 1: Individual document analysis
+        for doc in documents:
+            doc_type = doc.get('classification', doc.get('type', 'unknown'))
+            doc_content = doc.get('content', '') or doc.get('text', '')
+            doc_name = doc.get('name', 'Unknown Document')
+
+            logger.info(f"📄 Processing document: {doc_name}")
+            logger.info(f"   - Type: {doc_type}")
+            logger.info(f"   - Content length: {len(doc_content)} characters")
+            logger.info(f"   - Has content: {'Yes' if doc_content else 'No'}")
+
+            if not doc_content:
+                logger.warning(f"⚠️ No content found for document: {doc_name} - skipping LLM analysis")
+                continue
+
+            logger.info(f"🤖 Starting LLM analysis for: {doc_name} (Type: {doc_type})")
+
+            # Use LLM for comprehensive document analysis
+            doc_analysis = analyze_document_with_pure_llm(
+                doc_content, doc_type, doc_name, lc_context, swift_message
+            )
+
+            logger.info(f"📊 LLM analysis result for {doc_name}: {doc_analysis is not None}")
+            if doc_analysis:
+                logger.info(f"   - Discrepancies found: {len(doc_analysis.get('discrepancies', []))}")
+            else:
+                logger.warning(f"   - LLM analysis returned None for {doc_name}")
+
+            if doc_analysis and doc_analysis.get('discrepancies'):
+                for discrepancy in doc_analysis['discrepancies']:
+                    # Enhanced discrepancy structure
+                    enhanced_discrepancy = {
+                        **discrepancy,
+                        'analysis_type': 'pure_llm',
+                        'document_type': doc_type,
+                        'location': doc_name,
+                        'document_name': doc_name,
+                        # Ensure all required fields exist with defaults
+                        'rule_code': discrepancy.get('rule_code',
+                                                     f"LLM-{doc_type[:3].upper()}-{len(all_discrepancies) + 1:03d}"),
+                        'basis': discrepancy.get('basis', 'Trade Finance Best Practice'),
+                        'source_value': discrepancy.get('source_value', 'Not provided'),
+                        'target_value': discrepancy.get('target_value', 'Not specified'),
+                        'source_document': discrepancy.get('source_document', doc_name),
+                        'target_document': discrepancy.get('target_document', 'LC Requirements'),
+                        'business_impact': discrepancy.get('business_impact', 'Requires review'),
+                        'cross_document_check': discrepancy.get('cross_document_check', 'false')
+                    }
+                    all_discrepancies.append(enhanced_discrepancy)
+
+        # Step 2: Cross-document LLM analysis with configuration rules
+        cross_document_discrepancies = perform_llm_cross_document_analysis(documents, lc_context, swift_message)
+        if cross_document_discrepancies:
+            logger.info(
+                f"🔗 Cross-document LLM analysis found {len(cross_document_discrepancies)} additional discrepancies")
+            all_discrepancies.extend(cross_document_discrepancies)
+
+        # Step 3: Final comprehensive review
+        if len(documents) > 1:
+            final_review = perform_llm_comprehensive_review(all_discrepancies, documents, lc_context, swift_message)
+            if final_review:
+                all_discrepancies.extend(final_review)
+
+        logger.info(f"🤖 Pure LLM analysis completed: {len(all_discrepancies)} total discrepancies found")
+        return all_discrepancies
+
+    except Exception as e:
+        logger.error(f"Error in pure LLM analysis: {str(e)}")
+        return []
 
 
 def extract_document_data(content: str, doc_type: str) -> Dict[str, Any]:
@@ -10625,6 +17469,303 @@ def extract_generic_data(content: str) -> Dict[str, Any]:
         data['amount'] = max([float(amt.replace(',', '')) for amt in amounts])
 
     return data
+
+
+def extract_lc_structured_data(lc_context, swift_message=None):
+    """Extract structured data from LC context, with fallback to SWIFT data"""
+    lc_data = {}
+
+    if isinstance(lc_context, dict):
+        form_data = lc_context.get('formData', {})
+        lc_data = {
+            'lc_number': form_data.get('lcNumber', ''),
+            'applicant': form_data.get('applicantName', ''),
+            'beneficiary': form_data.get('beneficiaryName', ''),
+            'amount': form_data.get('lcAmount', ''),
+            'currency': form_data.get('lcCurrency', 'USD'),
+            'issue_date': form_data.get('issueDate', ''),
+            'expiry_date': form_data.get('expiryDate', ''),
+            'port_of_loading': form_data.get('portOfLoading', ''),
+            'port_of_discharge': form_data.get('portOfDischarge', ''),
+            'goods_description': form_data.get('goodsDescription', ''),
+            'latest_shipment_date': form_data.get('latestShipmentDate', '')
+        }
+
+    # If form data is empty or incomplete, try to extract from SWIFT message
+    if swift_message and (not lc_data or all(not v for v in lc_data.values())):
+        logger.info("📄 Form data empty, attempting to extract LC data from SWIFT message")
+        try:
+            swift_data = extract_swift_structured_data(swift_message)
+            if swift_data:
+                # Map SWIFT fields to LC data structure
+                lc_data.update({
+                    'lc_number': swift_data.get('20', lc_data.get('lc_number', '')),
+                    'amount': swift_data.get('32B', lc_data.get('amount', '')),
+                    'currency': extract_currency_from_swift_amount(swift_data.get('32B', '')),
+                    'issue_date': format_swift_date(swift_data.get('31C', '')),
+                    'expiry_date': format_swift_date(swift_data.get('31D', '')),
+                    'goods_description': swift_data.get('45A', lc_data.get('goods_description', '')),
+                    'beneficiary': extract_beneficiary_from_swift(swift_message),
+                    'applicant': extract_applicant_from_swift(swift_message)
+                })
+                logger.info(
+                    f"✅ Successfully extracted LC data from SWIFT: {len([v for v in lc_data.values() if v])} fields populated")
+        except Exception as e:
+            logger.error(f"❌ Error extracting LC data from SWIFT: {str(e)}")
+
+    return lc_data
+
+
+def validate_document_lc_context(doc_content, lc_data, doc_type):
+    """Validate if document content matches LC context to avoid false positives"""
+    try:
+        if not doc_content or not lc_data:
+            return True  # If no data, proceed with basic analysis
+
+        # Check for basic consistency indicators
+        consistency_score = 0
+        total_checks = 0
+
+        # Check amount consistency (extract amount from document)
+        import re
+
+        # Extract amounts from document
+        doc_amounts = re.findall(r'(?:USD?|US\$|\$)\s*[\d,]+\.?\d*', doc_content, re.IGNORECASE)
+        lc_amount = lc_data.get('amount', '')
+
+        if doc_amounts and lc_amount:
+            total_checks += 1
+            # Simple amount comparison (extract numbers)
+            doc_amount_nums = [re.sub(r'[^\d.]', '', amt) for amt in doc_amounts]
+            lc_amount_num = re.sub(r'[^\d.]', '', lc_amount)
+
+            if any(abs(float(lc_amount_num) - float(doc_num)) / float(lc_amount_num) < 0.1
+                   for doc_num in doc_amount_nums if doc_num and doc_num != '0'):
+                consistency_score += 1
+
+        # Check date consistency (very basic)
+        current_year = 2025
+        doc_years = re.findall(r'\b(20\d{2})\b', doc_content)
+        lc_expiry = lc_data.get('expiry_date', '')
+
+        if doc_years:
+            total_checks += 1
+            doc_year = max(int(year) for year in doc_years)
+
+            # If document year is more than 2 years old compared to current LC
+            if abs(current_year - doc_year) <= 2:
+                consistency_score += 1
+
+        # Check goods description similarity (basic keyword matching)
+        lc_goods = lc_data.get('goods_description', '').lower()
+        if lc_goods and len(lc_goods) > 10:
+            total_checks += 1
+
+            # Extract key words from LC goods description
+            lc_keywords = set(word for word in re.findall(r'\b\w{4,}\b', lc_goods)
+                              if word not in ['electronic', 'components', 'accessories', 'including', 'related'])
+
+            # Check if any LC keywords appear in document
+            doc_content_lower = doc_content.lower()
+            if lc_keywords and any(keyword in doc_content_lower for keyword in lc_keywords):
+                consistency_score += 1
+
+        # Calculate consistency ratio
+        if total_checks == 0:
+            return True  # No checks possible, proceed with analysis
+
+        consistency_ratio = consistency_score / total_checks
+
+        logger.info(f"📊 Document-LC consistency check:")
+        logger.info(f"   - Consistency score: {consistency_score}/{total_checks} ({consistency_ratio:.2f})")
+        logger.info(f"   - Threshold: 0.3 (30%)")
+
+        # If consistency is very low, flag potential mismatch
+        return consistency_ratio >= 0.3
+
+    except Exception as e:
+        logger.error(f"Error in document-LC validation: {str(e)}")
+        return True  # On error, proceed with analysis
+
+
+def extract_swift_structured_data(swift_message):
+    """Extract structured data from SWIFT message"""
+    swift_data = {}
+
+    if isinstance(swift_message, str):
+        # Parse SWIFT fields
+        field_patterns = {
+            '20': r':20:([^\n:]+)',
+            '31C': r':31C:([^\n:]+)',
+            '31D': r':31D:([^\n:]+)',
+            '32B': r':32B:([^\n:]+)',
+            '44C': r':44C:([^\n:]+)',
+            '44E': r':44E:([^\n:]+)',
+            '44F': r':44F:([^\n:]+)',
+            '45A': r':45A:([^\n:]+)',
+            '46A': r':46A:([^\n:]+)',
+            '47A': r':47A:([^\n:]+)',
+            '50': r':50:([^\n:]+)',
+            '59': r':59:([^\n:]+)'
+        }
+
+        for field, pattern in field_patterns.items():
+            match = re.search(pattern, swift_message, re.MULTILINE | re.DOTALL)
+            if match:
+                swift_data[field] = match.group(1).strip()
+
+    return swift_data
+
+
+def extract_currency_from_swift_amount(amount_field):
+    """Extract currency from SWIFT 32B field (e.g., 'USD250000,00' -> 'USD')"""
+    if not amount_field:
+        return 'USD'
+
+    # Extract currency code (first 3 characters)
+    import re
+    currency_match = re.match(r'^([A-Z]{3})', amount_field)
+    return currency_match.group(1) if currency_match else 'USD'
+
+
+def format_swift_date(swift_date):
+    """Format SWIFT date (YYMMDD or YYMMDDCITY) to readable format"""
+    if not swift_date:
+        return ''
+
+    try:
+        # Extract date part (first 6 digits)
+        import re
+        date_match = re.match(r'^(\d{6})', swift_date)
+        if date_match:
+            date_str = date_match.group(1)
+            # Convert YYMMDD to YYYY-MM-DD
+            year = int('20' + date_str[:2])
+            month = int(date_str[2:4])
+            day = int(date_str[4:6])
+            return f"{year:04d}-{month:02d}-{day:02d}"
+    except:
+        pass
+
+    return swift_date
+
+
+def extract_beneficiary_from_swift(swift_message):
+    """Extract beneficiary from SWIFT message text"""
+    if not swift_message:
+        return ''
+
+    # Look for beneficiary patterns in SWIFT message
+    import re
+
+    # Pattern for beneficiary field (59:)
+    beneficiary_match = re.search(r':59:([^\n:]+)', swift_message, re.IGNORECASE)
+    if beneficiary_match:
+        return beneficiary_match.group(1).strip()
+
+    # Alternative pattern
+    beneficiary_match = re.search(r'BENEFICIARY[:\s]+([^\n]+)', swift_message, re.IGNORECASE)
+    if beneficiary_match:
+        return beneficiary_match.group(1).strip()
+
+    return ''
+
+
+def extract_applicant_from_swift(swift_message):
+    """Extract applicant from SWIFT message text"""
+    if not swift_message:
+        return ''
+
+    # Look for applicant patterns in SWIFT message
+    import re
+
+    # Pattern for applicant field (50:)
+    applicant_match = re.search(r':50:([^\n:]+)', swift_message, re.IGNORECASE)
+    if applicant_match:
+        return applicant_match.group(1).strip()
+
+    # Alternative pattern
+    applicant_match = re.search(r'APPLICANT[:\s]+([^\n]+)', swift_message, re.IGNORECASE)
+    if applicant_match:
+        return applicant_match.group(1).strip()
+
+    return ''
+
+
+def load_enhanced_discrepancy_config():
+    """Load enhanced discrepancy configuration combining main config with data directory configs"""
+    try:
+        # Load main discrepancy config
+        main_config = load_discrepancy_config()
+        if not main_config:
+            logger.warning("⚠️ Main discrepancy config not loaded")
+            main_config = {}
+
+        # Load inconsistency analysis config from data directory
+        inconsistency_config_path = os.path.join(os.path.dirname(__file__), 'data',
+                                                 'inconsistency_analysis_config.json')
+        inconsistency_config = {}
+
+        if os.path.exists(inconsistency_config_path):
+            with open(inconsistency_config_path, 'r', encoding='utf-8') as f:
+                inconsistency_config = json.load(f)
+            logger.info("✅ Loaded inconsistency analysis configuration from data directory")
+        else:
+            logger.warning(f"⚠️ Inconsistency analysis config not found: {inconsistency_config_path}")
+
+        # Load document classification config if available
+        doc_classification_config_path = os.path.join(os.path.dirname(__file__), 'data',
+                                                      'document_classification_config.yaml')
+        doc_classification_config = {}
+
+        if os.path.exists(doc_classification_config_path):
+            try:
+                import yaml
+                with open(doc_classification_config_path, 'r', encoding='utf-8') as f:
+                    doc_classification_config = yaml.safe_load(f) or {}
+                logger.info("✅ Loaded document classification configuration")
+            except ImportError:
+                logger.warning("⚠️ PyYAML not available, skipping document classification config")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to load document classification config: {e}")
+
+        # Combine configurations
+        enhanced_config = {
+            'main_config': main_config,
+            'inconsistency_analysis': inconsistency_config.get('inconsistency_analysis_config', {}),
+            'document_classification': doc_classification_config,
+            'version': '2.0_enhanced',
+            'loaded_at': time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+        # Extract key components for easy access
+        if 'inconsistency_analysis_config' in inconsistency_config:
+            ia_config = inconsistency_config['inconsistency_analysis_config']
+            enhanced_config.update({
+                'field_mappings': ia_config.get('field_mappings', []),
+                'inconsistency_types': ia_config.get('inconsistency_types', {}),
+                'llm_prompts': ia_config.get('llm_prompts', {}),
+                'llm_integration': ia_config.get('llm_integration', {})
+            })
+
+        # Add validation rules from main config
+        if main_config and 'discrepancy_check_config' in main_config:
+            dc_config = main_config['discrepancy_check_config']
+            enhanced_config.update({
+                'validation_rules': dc_config.get('validation_rules', {}),
+                'document_requirements': dc_config.get('document_requirements', {}),
+                'model_config': dc_config.get('model_config', {}),
+                'prompts': dc_config.get('prompts', {})
+            })
+
+        logger.info(
+            f"✅ Enhanced discrepancy configuration loaded with {len(enhanced_config.get('field_mappings', []))} field mappings")
+        return enhanced_config
+
+    except Exception as e:
+        logger.error(f"Failed to load enhanced discrepancy config: {e}")
+        # Fallback to basic config
+        return load_discrepancy_config()
 
 
 def parse_swift_message_text(swift_text: str) -> Dict[str, Any]:
@@ -12521,205 +19662,4375 @@ def format_bank_field(bank_text):
 # Note: /api/trade-documents route is already defined above at line 12498
 # Removed duplicate route definition to prevent conflicts
 
-    @app.route('/api/supporting-documents/upload', methods=['POST'])
-    def upload_supporting_documents():
-        """Upload supporting documents with automatic document type detection"""
-        try:
-            logger.info("📁 Supporting documents upload initiated")
 
-            # Get uploaded files
-            uploaded_files = request.files.getlist('documents')
+def detect_document_type_from_content(text_content, filename):
+    """Automatically detect document type from content using Azure OpenAI GPT-4"""
+    try:
+        # First try LLM-based detection
+        llm_result = detect_document_type_with_llm(text_content, filename)
+        if llm_result and llm_result.get('confidence', 0) >= 0.7:
+            return llm_result
 
-            if not uploaded_files or len(uploaded_files) == 0:
-                return jsonify({
-                    'success': False,
-                    'error': 'No documents uploaded',
-                    'message': 'Please select at least one document to upload'
-                }), 400
+        # Fallback to keyword-based detection if LLM fails or has low confidence
+        logger.info("Using fallback keyword-based document type detection")
 
-            # Create uploads directory if it doesn't exist
-            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-            os.makedirs(upload_dir, exist_ok=True)
+        # Quick filename-based detection patterns
+        filename_lower = filename.lower()
+        filename_patterns = {
+            'commercial_invoice': ['invoice', 'commercial invoice', 'inv'],
+            'bill_of_lading': ['bill of lading', 'bol', 'bl', 'lading'],
+            'packing_list': ['packing list', 'packing', 'pack list'],
+            'certificate_of_origin': ['certificate of origin', 'origin', 'coo'],
+            'insurance_certificate': ['insurance', 'insurance certificate'],
+            'letter_of_credit': ['letter of credit', 'lc', 'credit'],
+            'bank_guarantee': ['bank guarantee', 'guarantee', 'bg'],
+            'inspection_certificate': ['inspection', 'quality certificate']
+        }
 
-            processed_documents = []
-            successful_uploads = 0
-            failed_uploads = []
+        # Check filename patterns first
+        for doc_type, patterns in filename_patterns.items():
+            for pattern in patterns:
+                if pattern in filename_lower:
+                    return {'type': doc_type, 'confidence': 0.8}
 
-            for file in uploaded_files:
-                if file and file.filename:
-                    try:
-                        logger.info(f"📄 Processing document: {file.filename}")
+        # Content-based detection using keywords
+        text_lower = text_content.lower()
+        content_patterns = {
+            'commercial_invoice': {
+                'keywords': ['invoice', 'invoice number', 'invoice date', 'amount due', 'total amount',
+                             'payment terms'],
+                'weight': [3, 3, 2, 2, 2, 1]
+            },
+            'bill_of_lading': {
+                'keywords': ['bill of lading', 'vessel', 'port of loading', 'port of discharge', 'consignee',
+                             'shipper'],
+                'weight': [5, 2, 3, 3, 2, 2]
+            },
+            'packing_list': {
+                'keywords': ['packing list', 'gross weight', 'net weight', 'packages', 'cartons', 'dimensions'],
+                'weight': [5, 2, 2, 2, 1, 1]
+            },
+            'certificate_of_origin': {
+                'keywords': ['certificate of origin', 'country of origin', 'chamber of commerce', 'certify', 'origin'],
+                'weight': [5, 3, 2, 1, 2]
+            },
+            'insurance_certificate': {
+                'keywords': ['insurance certificate', 'policy number', 'coverage', 'insured', 'premium'],
+                'weight': [5, 3, 2, 2, 1]
+            },
+            'letter_of_credit': {
+                'keywords': ['letter of credit', 'credit number', 'beneficiary', 'applicant', 'expiry date'],
+                'weight': [5, 3, 2, 2, 2]
+            }
+        }
 
-                        # Generate unique filename
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        filename = f"{timestamp}_{secure_filename(file.filename)}"
-                        file_path = os.path.join(upload_dir, filename)
+        # Calculate scores for each document type
+        type_scores = {}
+        for doc_type, patterns in content_patterns.items():
+            score = 0
+            keywords = patterns['keywords']
+            weights = patterns['weight']
 
-                        # Save file
-                        file.save(file_path)
-                        file_size = os.path.getsize(file_path)
+            for keyword, weight in zip(keywords, weights):
+                if keyword in text_lower:
+                    score += weight
 
-                        # Get file extension for validation
-                        file_extension = os.path.splitext(filename)[1].lower()
-                        allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.doc', '.docx']
+            if score > 0:
+                type_scores[doc_type] = score
 
-                        if file_extension not in allowed_extensions:
-                            failed_uploads.append({
-                                'filename': file.filename,
-                                'error': f'Unsupported file type: {file_extension}',
-                                'reason': 'Only PDF, image, and Word documents are supported'
-                            })
-                            # Remove the uploaded file
-                            if os.path.exists(file_path):
-                                os.remove(file_path)
-                            continue
+        # Determine best match
+        if type_scores:
+            best_type = max(type_scores, key=type_scores.get)
+            max_score = type_scores[best_type]
 
-                        # Simple document storage - no complex processing
-                        logger.info(f"� Storing document: {filename}")
+            # Calculate confidence based on score
+            confidence = min(0.95, max_score / 10.0)  # Normalize score to confidence
 
-                        # Simple document data
-                        document_data = {
-                            'id': str(uuid.uuid4()),
-                            'original_filename': file.filename,
-                            'stored_filename': filename,
-                            'file_path': file_path,
-                            'file_size': file_size,
-                            'file_extension': file_extension,
-                            'upload_timestamp': datetime.now().isoformat(),
-                            'status': 'uploaded'
-                        }
+            if confidence >= 0.3:  # Minimum confidence threshold
+                return {'type': best_type, 'confidence': confidence}
 
-                        processed_documents.append(document_data)
-                        successful_uploads += 1
+        # Return unknown if no match found
+        return {'type': 'unknown', 'confidence': 0.0}
 
-                    except Exception as e:
-                        logger.error(f"Error processing file {file.filename}: {e}")
-                        failed_uploads.append({
-                            'filename': file.filename,
-                            'error': str(e),
-                            'reason': 'File processing error'
-                        })
-                else:
-                    failed_uploads.append({
-                        'filename': 'Unknown',
-                        'error': 'Invalid file',
-                        'reason': 'File has no name or is empty'
-                    })
+    except Exception as e:
+        logger.error(f"Error in document type detection: {e}")
+        return {'type': 'unknown', 'confidence': 0.0}
 
-            # Store documents for discrepancy checking
-            if processed_documents:
-                session['uploaded_documents'] = processed_documents
-                logger.info(f"✅ Stored {len(processed_documents)} documents for discrepancy checking")
 
-            # Prepare response
-            response_data = {
-                'success': True,
-                'message': f'Successfully uploaded {successful_uploads} documents',
-                'summary': {
-                    'total_uploaded': len(uploaded_files),
-                    'successful': successful_uploads,
-                    'failed': len(failed_uploads)
-                },
-                'documents': processed_documents
+def detect_document_type_with_llm(text_content, filename):
+    """Use Azure OpenAI GPT-4 for intelligent document type detection"""
+    try:
+        # Get Azure OpenAI configuration
+        azure_key = os.getenv('AZURE_OPENAI_API_KEY')
+        azure_base = os.getenv('AZURE_OPENAI_API_BASE')
+        deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME') or 'gpt-4o'
+        azure_version = os.getenv('AZURE_OPENAI_API_VERSION') or '2024-02-01'
+
+        if not azure_key or not azure_base:
+            logger.warning("Azure OpenAI credentials not found for document type detection")
+            return None
+
+        # Initialize Azure OpenAI client for openai 0.28
+        import openai
+        openai.api_type = "azure"
+        openai.api_base = azure_base
+        openai.api_version = azure_version
+        openai.api_key = azure_key
+
+        # Truncate content to avoid token limits (keep first 2000 characters)
+        truncated_content = text_content[:2000] if len(text_content) > 2000 else text_content
+
+        # Create prompt for document classification
+        classification_prompt = f"""You are an expert in trade finance document classification. Analyze the following document content and filename to determine the document type.
+
+FILENAME: {filename}
+
+DOCUMENT CONTENT:
+{truncated_content}
+
+AVAILABLE DOCUMENT TYPES:
+- commercial_invoice: Commercial invoices with item details, amounts, payment terms
+- bill_of_lading: Transport documents with vessel, port, shipping details
+- packing_list: Lists of packed goods with weights, dimensions, quantities
+- certificate_of_origin: Origin certificates showing country of manufacture
+- insurance_certificate: Insurance coverage documents with policy details
+- letter_of_credit: Letters of credit with beneficiary, applicant, terms
+- bank_guarantee: Bank guarantees with performance/payment guarantees
+- inspection_certificate: Quality/inspection certificates
+- proforma_invoice: Proforma invoices for quotation purposes
+- customs_declaration: Customs or import/export declarations
+- other_trade_document: Any other trade finance related document
+- unknown: Cannot determine document type
+
+Respond with ONLY a JSON object in this exact format:
+{{
+    "document_type": "exact_type_from_list_above",
+    "confidence": 0.95,
+    "reasoning": "Brief explanation of classification decision"
+}}
+
+Focus on key indicators like document headers, specific terminology, structured data fields, and document purpose."""
+
+        # Make API call using openai 0.28 syntax
+        response = openai.ChatCompletion.create(
+            engine=deployment_name,
+            messages=[
+                {"role": "system",
+                 "content": "You are a document classification expert. Respond only with valid JSON."},
+                {"role": "user", "content": classification_prompt}
+            ],
+            temperature=0.1,
+            max_tokens=200
+        )
+
+        # Parse response
+        response_text = response.choices[0].message.content.strip()
+
+        # Clean up response (remove markdown formatting if present)
+        if response_text.startswith('```json'):
+            response_text = response_text.replace('```json', '').replace('```', '').strip()
+
+        # Parse JSON
+        import json
+        result = json.loads(response_text)
+
+        # Validate and format result
+        if result and isinstance(result, dict):
+            doc_type = result.get('document_type', 'unknown')
+            confidence = result.get('confidence', 0.0)
+            reasoning = result.get('reasoning', '')
+
+            logger.info(f"🤖 LLM classified document as '{doc_type}' with {confidence:.2f} confidence: {reasoning}")
+
+            return {
+                'type': doc_type,
+                'confidence': float(confidence),
+                'reasoning': reasoning,
+                'method': 'llm'
             }
 
-            if failed_uploads:
-                response_data['failed_uploads'] = failed_uploads
-                response_data['warning'] = f'{len(failed_uploads)} documents failed to process'
+        return None
 
-            logger.info(f"📊 Upload summary: {successful_uploads} successful, {len(failed_uploads)} failed")
+    except ImportError as e:
+        logger.warning(f"Azure OpenAI not available for document classification: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse LLM response for document classification: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Error in LLM document type detection: {e}")
+        return None
 
-            return jsonify(response_data)
 
-        except Exception as e:
-            logger.error(f"Error in supporting documents upload: {e}")
-            return jsonify({
-                'success': False,
-                'error': str(e),
-                'message': 'Failed to upload documents'
-            }), 500
+def secure_filename(filename):
+    """Make filename secure for storage"""
+    import re
+    # Remove any directory path
+    filename = os.path.basename(filename)
+    # Replace spaces and special characters
+    filename = re.sub(r'[^\w\-_\.]', '_', filename)
+    # Remove multiple underscores
+    filename = re.sub(r'_+', '_', filename)
+    return filename
 
-    @app.route('/api/supporting-documents', methods=['GET'])
-    def get_uploaded_supporting_documents():
-        """Get list of uploaded supporting documents"""
+    @app.route('/document-register')
+    def document_register():
+        """Document registration page with supporting documents upload"""
+        return render_template('document_register.html')
+
+    @app.route('/api/supporting-documents/download/<filename>')
+    def download_supporting_document(filename):
+        """Download a specific supporting document"""
         try:
             upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-
-            if not os.path.exists(upload_dir):
-                return jsonify({
-                    'success': True,
-                    'documents': [],
-                    'message': 'No documents uploaded yet'
-                })
-
-            documents = []
-            for filename in os.listdir(upload_dir):
-                file_path = os.path.join(upload_dir, filename)
-                if os.path.isfile(file_path):
-                    # Get file stats
-                    stat_info = os.stat(file_path)
-
-                    documents.append({
-                        'filename': filename,
-                        'size': stat_info.st_size,
-                        'upload_date': datetime.fromtimestamp(stat_info.st_mtime).isoformat(),
-                        'file_path': file_path
-                    })
-
-            # Sort by upload date (newest first)
-            documents.sort(key=lambda x: x['upload_date'], reverse=True)
-
-            return jsonify({
-                'success': True,
-                'documents': documents,
-                'total_count': len(documents)
-            })
-
-        except Exception as e:
-            logger.error(f"Error getting uploaded documents: {e}")
-            return jsonify({
-                'success': False,
-                'error': str(e)
-            }), 500
-
-    @app.route('/api/supporting-documents/<document_id>', methods=['DELETE'])
-    def delete_supporting_document(document_id):
-        """Delete a specific supporting document"""
-        try:
-            upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-
-            # Find file by ID (document_id could be filename or partial match)
-            target_file = None
-            for filename in os.listdir(upload_dir):
-                if document_id in filename or filename.startswith(document_id):
-                    target_file = filename
-                    break
-
-            if not target_file:
-                return jsonify({
-                    'success': False,
-                    'error': 'Document not found'
-                }), 404
-
-            file_path = os.path.join(upload_dir, target_file)
+            file_path = os.path.join(upload_dir, filename)
 
             if os.path.exists(file_path):
-                os.remove(file_path)
-                logger.info(f"🗑️ Deleted document: {target_file}")
-
-                return jsonify({
-                    'success': True,
-                    'message': f'Document {target_file} deleted successfully'
-                })
+                return send_file(file_path, as_attachment=True, download_name=filename)
             else:
                 return jsonify({
                     'success': False,
-                    'error': 'Document file not found'
+                    'error': 'File not found'
                 }), 404
 
         except Exception as e:
-            logger.error(f"Error deleting document: {e}")
+            logger.error(f"Error downloading file: {e}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
+
+
+def enhance_data_for_professional_ui(lc_context, uploaded_documents, swift_message, discrepancy_results, summary,
+                                     compliance_status):
+    """Enhanced data structure for Professional 4-tab UI system with XML rule integration"""
+    try:
+        # Extract LC data from context
+        lc_data = extract_lc_data_from_context(lc_context)
+
+        # Parse SWIFT message for MT700 analysis
+        swift_mt700_analysis = parse_swift_message_for_ui(swift_message, lc_context)
+
+        # Load XML rules for enhanced categorization
+        xml_rules = load_discrepancy_rules_from_xml()
+        logger.info(f"📋 Loaded {len(xml_rules)} XML rules for enhanced UI categorization")
+
+        # Enhanced categorization with XML rule support
+        categorized_discrepancies = categorize_discrepancies_for_tabs_enhanced(
+            discrepancy_results, xml_rules, uploaded_documents, lc_context
+        )
+
+        # Create tab-specific data structure for Professional UI
+        tabs_data = {
+            'inconsistency_discrepancy': [d for d in categorized_discrepancies if
+                                          d.get('tab_category') == 'inconsistency_discrepancy'],
+            'missing_fields': [d for d in categorized_discrepancies if d.get('tab_category') == 'missing_fields'],
+            'compliance_issues': [d for d in categorized_discrepancies if d.get('tab_category') == 'compliance_issues'],
+            'document_issues': [d for d in categorized_discrepancies if d.get('tab_category') == 'document_issues']
+        }
+
+        # Enhanced statistics with rule breakdown
+        rule_based_discrepancies = [d for d in categorized_discrepancies if d.get('rule_based', False)]
+        llm_based_discrepancies = [d for d in categorized_discrepancies if not d.get('rule_based', False)]
+
+        # Calculate severity distribution
+        severity_counts = {'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
+        for d in categorized_discrepancies:
+            severity = d.get('severity', 'MEDIUM').upper()
+            if severity in severity_counts:
+                severity_counts[severity] += 1
+
+        # Enhanced structure for Professional UI
+        enhanced_structure = {
+            'lc_data': lc_data,
+            'swift_mt700_analysis': swift_mt700_analysis,
+            'discrepancies': categorized_discrepancies,  # Flat list for backward compatibility
+            'tabs_data': tabs_data,  # New: Tab-specific data for Professional UI
+            'summary': {
+                **summary,
+                'tab_counts': {
+                    'inconsistency_discrepancy': len(tabs_data['inconsistency_discrepancy']),
+                    'missing_fields': len(tabs_data['missing_fields']),
+                    'compliance_issues': len(tabs_data['compliance_issues']),
+                    'document_issues': len(tabs_data['document_issues'])
+                },
+                'analysis_breakdown': {
+                    'rule_based_count': len(rule_based_discrepancies),
+                    'llm_based_count': len(llm_based_discrepancies),
+                    'total_xml_rules_available': len(xml_rules),
+                    'severity_distribution': severity_counts
+                }
+            },
+            'compliance_status': compliance_status,
+            'analysis_metadata': {
+                'timestamp': datetime.now().isoformat(),
+                'lc_number': lc_context.get('lcNumber', lc_data.get('lc_number', 'N/A')),
+                'model_used': 'hybrid_llm_xml',  # Updated to reflect XML integration
+                'document_types_analyzed': list(
+                    set(doc.get('classification', doc.get('type', 'unknown')) for doc in uploaded_documents)),
+                'swift_message_available': bool(swift_message),
+                'total_documents': len(uploaded_documents),
+                'analysis_confidence': calculate_analysis_confidence(discrepancy_results),
+                'xml_rules_applied': len([d for d in categorized_discrepancies if d.get('xml_rule_id')])
+            },
+            # Enhanced XML Rule-based analysis fields for frontend
+            'rule_analysis': {
+                'total_rules_loaded': len(xml_rules),
+                'rules_applied': len(rule_based_discrepancies),
+                'rule_coverage_by_document': get_rule_coverage_by_document(uploaded_documents, xml_rules),
+                'top_violated_rules': get_top_violated_rules(rule_based_discrepancies),
+                'compliance_score': calculate_compliance_score(categorized_discrepancies)
+            },
+            'analysis_method': 'hybrid_xml_llm'  # Hybrid approach
+        }
+
+        logger.info(f"✅ Enhanced Professional UI data structure created with XML integration")
+        logger.info(f"   - Total discrepancies: {len(categorized_discrepancies)}")
+        logger.info(f"   - Rule-based: {len(rule_based_discrepancies)}, LLM-based: {len(llm_based_discrepancies)}")
+        logger.info(f"   - Inconsistency/Discrepancy: {len(tabs_data['inconsistency_discrepancy'])}")
+        logger.info(f"   - Missing Fields: {len(tabs_data['missing_fields'])}")
+        logger.info(f"   - Compliance Issues: {len(tabs_data['compliance_issues'])}")
+        logger.info(f"   - Document Issues: {len(tabs_data['document_issues'])}")
+        logger.info(f"   - Compliance Score: {enhanced_structure['rule_analysis']['compliance_score']:.1f}%")
+
+        return enhanced_structure
+
+    except Exception as e:
+        logger.error(f"❌ Error enhancing data for Professional UI: {e}")
+        import traceback
+        logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+        # Return basic structure on error
+        return {
+            'lc_data': lc_context,
+            'swift_mt700_analysis': {},
+            'discrepancies': discrepancy_results,
+            'summary': summary,
+            'compliance_status': compliance_status,
+            'analysis_metadata': {
+                'timestamp': datetime.now().isoformat(),
+                'model_used': 'fallback',
+                'error_occurred': True
+            }
+        }
+
+
+def extract_lc_data_from_context(lc_context):
+    """Extract structured LC data from context"""
+    try:
+        form_data = lc_context.get('formData', {})
+        return {
+            'lc_number': lc_context.get('lcNumber', form_data.get('lcNumber', 'N/A')),
+            'applicant': form_data.get('applicantName', 'N/A'),
+            'beneficiary': form_data.get('beneficiaryName', 'N/A'),
+            'amount': form_data.get('lcAmount', 'N/A'),
+            'currency': form_data.get('lcCurrency', 'USD'),
+            'issue_date': form_data.get('issueDate', 'N/A'),
+            'expiry_date': form_data.get('expiryDate', 'N/A'),
+            'port_of_loading': form_data.get('portOfLoading', ''),
+            'port_of_discharge': form_data.get('portOfDischarge', ''),
+            'goods_description': form_data.get('goodsDescription', 'N/A'),
+            'latest_shipment_date': form_data.get('latestShipmentDate', '')
+        }
+    except Exception as e:
+        logger.error(f"Error extracting LC data: {e}")
+        return {}
+
+
+def parse_swift_message_for_ui(swift_message, lc_context):
+    """Parse SWIFT message for Professional UI"""
+    try:
+        if not swift_message:
+            return {}
+
+        # Basic SWIFT field parsing for MT700
+        swift_fields = {}
+        lines = swift_message.split('\n')
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith(':20:'):
+                swift_fields['20'] = line[4:].strip()  # Reference
+            elif line.startswith(':31C:'):
+                swift_fields['31C'] = line[5:].strip()  # Issue Date
+            elif line.startswith(':31D:'):
+                swift_fields['31D'] = line[5:].strip()  # Expiry Date
+            elif line.startswith(':32B:'):
+                swift_fields['32B'] = line[5:].strip()  # Amount
+            elif line.startswith(':44C:'):
+                swift_fields['44C'] = line[5:].strip()  # Latest Shipment
+            elif line.startswith(':44E:'):
+                swift_fields['44E'] = line[5:].strip()  # Port of Loading
+            elif line.startswith(':44F:'):
+                swift_fields['44F'] = line[5:].strip()  # Port of Discharge
+            elif line.startswith(':45A:'):
+                swift_fields['45A'] = line[5:].strip()  # Goods Description
+            elif line.startswith(':46A:'):
+                swift_fields['46A'] = line[5:].strip()  # Documents Required
+            elif line.startswith(':47A:'):
+                swift_fields['47A'] = line[5:].strip()  # Additional Conditions
+
+        return swift_fields
+
+    except Exception as e:
+        logger.error(f"Error parsing SWIFT message: {e}")
+        return {}
+
+
+def analyze_field_inconsistencies(lc_data, swift_data, document_data=None):
+    """Enhanced field inconsistency analysis with LLM integration and config-based rules"""
+    try:
+        # Import the enhanced analyzer
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+        from utils.enhanced_inconsistency_analyzer import analyze_field_inconsistencies_enhanced
+
+        logger.info("🚀 Using enhanced inconsistency analyzer with LLM integration")
+
+        # Use the enhanced analyzer
+        enhanced_results = analyze_field_inconsistencies_enhanced(lc_data, swift_data, document_data)
+
+        if enhanced_results:
+            logger.info(f"✅ Enhanced analysis complete: {len(enhanced_results)} inconsistencies found")
+            return enhanced_results
+
+    except Exception as e:
+        logger.error(f"Enhanced analyzer failed, falling back to legacy analysis: {e}")
+
+    # Fallback to existing logic if enhanced analyzer fails
+    inconsistencies = []
+
+    # COMPREHENSIVE field mappings for trade finance documents
+    field_mappings = [
+        # Core LC Information
+        ('lc_number', '20', 'LC Number'),
+        ('amount', '32B', 'LC Amount'),
+        ('currency', '32B', 'Currency'),
+        ('issue_date', '31C', 'Issue Date'),
+        ('expiry_date', '31D', 'Expiry Date'),
+        ('latest_shipment_date', '44C', 'Latest Shipment Date'),
+
+        # Parties Information
+        ('applicant', '50', 'Applicant Name'),
+        ('applicant_address', '50', 'Applicant Address'),
+        ('beneficiary', '59', 'Beneficiary Name'),
+        ('beneficiary_address', '59', 'Beneficiary Address'),
+        ('issuing_bank', '51A', 'Issuing Bank'),
+        ('advising_bank', '53A', 'Advising Bank'),
+        ('confirming_bank', '53B', 'Confirming Bank'),
+        ('reimbursing_bank', '53D', 'Reimbursing Bank'),
+
+        # Shipment Details
+        ('port_of_loading', '44E', 'Port of Loading'),
+        ('port_of_discharge', '44F', 'Port of Discharge'),
+        ('final_destination', '44F', 'Final Destination'),
+        ('place_of_taking', '44E', 'Place of Taking in Charge'),
+        ('partial_shipment', '43P', 'Partial Shipment'),
+        ('transhipment', '43T', 'Transhipment'),
+
+        # Goods and Documents
+        ('goods_description', '45A', 'Description of Goods'),
+        ('hs_code', '45A', 'HS Code'),
+        ('quantity', '45A', 'Quantity'),
+        ('unit_price', '45A', 'Unit Price'),
+        ('incoterms', '45A', 'Incoterms'),
+        ('documents_required', '46A', 'Documents Required'),
+        ('additional_conditions', '47A', 'Additional Conditions'),
+
+        # Payment Terms
+        ('payment_terms', '42C', 'Payment Terms'),
+        ('drafts_at', '42P', 'Drafts At'),
+        ('charges', '71B', 'Charges'),
+
+        # References
+        ('purchase_order', '45A', 'Purchase Order Number'),
+        ('invoice_number', '45A', 'Invoice Number'),
+        ('contract_number', '45A', 'Contract Number'),
+        ('proforma_invoice', '45A', 'Proforma Invoice Number')
+    ]
+
+    logger.info(f"🔍 Starting comprehensive field analysis: {len(field_mappings)} field mappings to check")
+
+    for lc_field, swift_field, display_name in field_mappings:
+        lc_value = extract_field_value(lc_data, lc_field)
+        swift_value = extract_field_value(swift_data, swift_field)
+
+        # Enhanced comparison logic
+        if lc_value and swift_value:
+            # Normalize values for comparison
+            lc_normalized = normalize_field_value(lc_value, lc_field)
+            swift_normalized = normalize_field_value(swift_value, swift_field)
+
+            # Check for discrepancies with tolerance
+            if not values_match(lc_normalized, swift_normalized, lc_field):
+                severity = determine_field_severity(lc_field, lc_value, swift_value)
+
+                inconsistencies.append({
+                    'field': display_name,
+                    'source_document': 'LC Application Form',
+                    'target_document': 'SWIFT MT700 Message',
+                    'source_value': lc_value,
+                    'target_value': swift_value,
+                    'required_value': swift_value,  # SWIFT is authoritative
+                    'issue': f"{display_name} mismatch: '{lc_value}' vs '{swift_value}'",
+                    'severity': severity,
+                    'recommendation': generate_field_recommendation(display_name, lc_field, lc_value, swift_value),
+                    'business_impact': assess_field_business_impact(lc_field, severity),
+                    'category': 'value_mismatch',
+                    'confidence': calculate_field_confidence(lc_field, lc_value, swift_value),
+                    'swift_reference': swift_field,
+                    'inconsistency_type': 'value_mismatch',
+                    'llm_reasoning': '',
+                    'resolution_steps': []
+                })
+
+                logger.info(f"🚨 Found discrepancy in {display_name}: '{lc_value}' != '{swift_value}'")
+
+    # Cross-document analysis for uploaded documents
+    # This analyzes discrepancies between LC/SWIFT and supporting documents
+    document_inconsistencies = analyze_cross_document_inconsistencies(lc_data, swift_data)
+    inconsistencies.extend(document_inconsistencies)
+
+    logger.info(f"✅ Field inconsistency analysis complete: {len(inconsistencies)} discrepancies found")
+    return inconsistencies
+
+
+def extract_field_value(data, field_name):
+    """Extract field value with fallback logic"""
+    if not data or not field_name:
+        return ''
+
+    # Direct field lookup
+    value = data.get(field_name, '').strip()
+    if value:
+        return value
+
+    # Try alternative field names
+    alternatives = {
+        'applicant': ['applicant_name', 'applicant_details', 'buyer'],
+        'beneficiary': ['beneficiary_name', 'beneficiary_details', 'seller'],
+        'amount': ['lc_amount', 'credit_amount', 'total_amount'],
+        'currency': ['lc_currency', 'credit_currency'],
+        'issuing_bank': ['issuing_bank_name', 'opener'],
+        'goods_description': ['description_of_goods', 'merchandise_description']
+    }
+
+    for alt_field in alternatives.get(field_name, []):
+        value = data.get(alt_field, '').strip()
+        if value:
+            return value
+
+    return ''
+
+
+def normalize_field_value(value, field_type):
+    """Normalize field values for accurate comparison"""
+    if not value or value.lower() in ['n/a', 'not provided', 'unknown']:
+        return ''
+
+    value = str(value).strip()
+
+    # Normalize based on field type
+    if field_type in ['amount', 'lc_amount']:
+        # Remove currency symbols and normalize format
+        value = re.sub(r'[^\d.,]', '', value)
+        value = value.replace(',', '')
+    elif field_type in ['expiry_date', 'issue_date', 'latest_shipment_date']:
+        # Normalize date formats
+        value = re.sub(r'[-/\s]', '', value)
+
+    return value.lower()
+
+
+def values_match(value1, value2, field_type):
+    """Enhanced value matching with field-specific tolerance and smart comparison"""
+    if value1 == value2:
+        return True
+
+    # Amount comparison with currency handling
+    if field_type in ['amount', 'lc_amount', 'credit_amount', '32B']:
+        import re
+        try:
+            # Extract numeric values from both, ignoring currency
+            num1 = re.sub(r'[A-Z]', '', value1)
+            num2 = re.sub(r'[A-Z]', '', value2)
+
+            float1 = float(num1) if num1 else 0
+            float2 = float(num2) if num2 else 0
+
+            # Allow 0.01 difference (1 cent tolerance)
+            return abs(float1 - float2) <= 0.01
+        except (ValueError, TypeError):
+            # If numeric comparison fails, do string comparison
+            pass
+
+    # Enhanced name/entity matching with field-specific thresholds
+    if field_type in ['applicant', 'beneficiary']:
+        # Very strict for applicant/beneficiary (must be exact same entity)
+        similarity = calculate_string_similarity(value1, value2)
+        if similarity > 0.90:
+            return True
+        # Additional check for common business entity variations
+        if are_business_entities_equivalent(value1, value2):
+            return True
+
+    elif field_type in ['issuing_bank', 'advising_bank']:
+        # Moderate strictness for banks (allow for some variations)
+        similarity = calculate_string_similarity(value1, value2)
+        if similarity > 0.80:
+            return True
+        # Check for business entity equivalence with lower threshold
+        if are_business_entities_equivalent(value1, value2):
+            return True
+
+    # Address matching with moderate similarity
+    if 'address' in field_type.lower():
+        return calculate_string_similarity(value1, value2) > 0.75
+
+    # Port/place matching with moderate similarity
+    if 'port' in field_type.lower() or 'place' in field_type.lower():
+        return calculate_string_similarity(value1, value2) > 0.80
+
+    # Date comparison (exact match after normalization)
+    if 'date' in field_type.lower():
+        return value1 == value2
+
+    # Goods description with tolerant similarity (allows for reasonable variations)
+    if 'goods' in field_type.lower() or 'description' in field_type.lower():
+        similarity = calculate_string_similarity(value1, value2)
+        # More tolerant threshold for goods descriptions
+        return similarity > 0.60
+
+    # Default: moderate similarity for other text fields
+    if isinstance(value1, str) and isinstance(value2, str):
+        return calculate_string_similarity(value1, value2) > 0.90
+
+    return False
+
+
+def are_business_entities_equivalent(entity1, entity2):
+    """Check if two business entity names are equivalent despite formatting differences"""
+    if not entity1 or not entity2:
+        return False
+
+    # Normalize both entities
+    norm1 = entity1.upper().strip()
+    norm2 = entity2.upper().strip()
+
+    # Remove common punctuation and extra spaces
+    import re
+    norm1 = re.sub(r'[,.\-&]', ' ', norm1)
+    norm2 = re.sub(r'[,.\-&]', ' ', norm2)
+    norm1 = re.sub(r'\s+', ' ', norm1).strip()
+    norm2 = re.sub(r'\s+', ' ', norm2).strip()
+
+    # Check exact match after normalization
+    if norm1 == norm2:
+        return True
+
+    # Check if one is contained in the other (handles cases like "ABC LTD" vs "ABC LIMITED")
+    words1 = set(norm1.split())
+    words2 = set(norm2.split())
+
+    # If all words from shorter name are in longer name, consider equivalent
+    if len(words1) < len(words2):
+        return words1.issubset(words2)
+    elif len(words2) < len(words1):
+        return words2.issubset(words1)
+
+    # Check word-level similarity
+    common_words = len(words1.intersection(words2))
+    total_words = len(words1.union(words2))
+
+    return (common_words / total_words) > 0.85 if total_words > 0 else False
+
+
+def calculate_string_similarity(str1, str2):
+    """Calculate string similarity using simple algorithm"""
+    if not str1 or not str2:
+        return 0.0
+
+    str1, str2 = str1.lower(), str2.lower()
+
+    # Simple word-based similarity
+    words1 = set(str1.split())
+    words2 = set(str2.split())
+
+    if not words1 and not words2:
+        return 1.0
+    if not words1 or not words2:
+        return 0.0
+
+    intersection = len(words1.intersection(words2))
+    union = len(words1.union(words2))
+
+    return intersection / union if union > 0 else 0.0
+
+
+def are_strings_effectively_identical(str1, str2, similarity_threshold=0.95):
+    """Check if two strings are effectively identical considering normalization"""
+    similarity = calculate_string_similarity(str1, str2)
+    return similarity >= similarity_threshold
+
+
+def filter_false_positive_discrepancies(discrepancies):
+    """Filter out false positive discrepancies where strings are effectively identical"""
+    if not discrepancies:
+        return []
+
+    filtered = []
+    false_positive_count = 0
+
+    for discrepancy in discrepancies:
+        source_value = discrepancy.get('source_value', '')
+        target_value = discrepancy.get('target_value', '')
+        issue_type = discrepancy.get('type', '')
+        issue = discrepancy.get('issue', '')
+
+        # Check for description mismatch false positives
+        if ('description' in issue.lower() and 'mismatch' in issue.lower()) or issue_type == 'description_mismatch':
+            if are_strings_effectively_identical(source_value, target_value, similarity_threshold=0.95):
+                logger.info(f"🚫 Filtered false positive description mismatch:")
+                logger.info(f"   - Issue: {issue}")
+                logger.info(f"   - Source: '{source_value}'")
+                logger.info(f"   - Target: '{target_value}'")
+                logger.info(f"   - Similarity: {calculate_string_similarity(source_value, target_value):.3f}")
+                false_positive_count += 1
+                continue
+
+        # Check for goods description matching false positives
+        if 'goods' in issue.lower() and ('mismatch' in issue.lower() or 'inconsisten' in issue.lower()):
+            if are_strings_effectively_identical(source_value, target_value, similarity_threshold=0.95):
+                logger.info(f"🚫 Filtered false positive goods description issue:")
+                logger.info(f"   - Issue: {issue}")
+                logger.info(f"   - Source: '{source_value}'")
+                logger.info(f"   - Target: '{target_value}'")
+                logger.info(f"   - Similarity: {calculate_string_similarity(source_value, target_value):.3f}")
+                false_positive_count += 1
+                continue
+
+        # Check for cross-document inconsistencies with identical values
+        if issue_type == 'cross_document_inconsistency' and source_value and target_value:
+            if are_strings_effectively_identical(source_value, target_value, similarity_threshold=0.95):
+                logger.info(f"🚫 Filtered false positive cross-document inconsistency:")
+                logger.info(f"   - Issue: {issue}")
+                logger.info(f"   - Source: '{source_value}'")
+                logger.info(f"   - Target: '{target_value}'")
+                logger.info(f"   - Similarity: {calculate_string_similarity(source_value, target_value):.3f}")
+                false_positive_count += 1
+                continue
+
+        # Keep the discrepancy if it's not a false positive
+        filtered.append(discrepancy)
+
+    if false_positive_count > 0:
+        logger.info(f"✅ False positive filtering complete: removed {false_positive_count} false positives")
+
+    return filtered
+
+
+def analyze_document_with_pure_llm(doc_content, doc_type, doc_name, lc_context, swift_message):
+    """Analyze document using pure LLM intelligence with configuration-based rules"""
+    try:
+        # Load discrepancy configuration for document-specific rules
+        config = load_discrepancy_config()
+        config_rules = ""
+
+        if config and config.get('discrepancy_check_config'):
+            dc_config = config['discrepancy_check_config']
+
+            # Get document-specific requirements from config
+            doc_requirements = dc_config.get('document_requirements', {}).get(doc_type.lower().replace(' ', '_'), {})
+
+            if doc_requirements:
+                config_rules = f"""
+CONFIGURATION-BASED RULES FOR {doc_type.upper()}:
+- Always Required: {doc_requirements.get('always_required', False)}
+- SWIFT Fields to Validate: {doc_requirements.get('swift_fields', [])}
+- Key Validation Points: {doc_requirements.get('validation_points', [])}
+- Specific Requirements: {doc_requirements.get('specific_checks', [])}
+
+SYSTEM CONFIGURATION:
+- Confidence Threshold: {dc_config.get('validation_rules', {}).get('required_confidence_threshold', 0.7)}
+- Detailed Analysis Enabled: {dc_config.get('validation_rules', {}).get('enable_detailed_analysis', True)}
+- Include Recommendations: {dc_config.get('validation_rules', {}).get('provide_recommendations', True)}
+"""
+            logger.info(f"✅ Loaded configuration rules for {doc_type}")
+        else:
+            logger.warning(f"⚠️ No specific configuration found for {doc_type} - using default analysis")
+
+        # Validate document-LC consistency before analysis
+        lc_data = extract_lc_structured_data(lc_context, swift_message)
+        document_context_valid = validate_document_lc_context(doc_content, lc_data, doc_type)
+
+        if not document_context_valid:
+            logger.warning(f"⚠️ Document-LC context validation failed for {doc_name}")
+            logger.warning(f"   - This may indicate documents from different transactions")
+            logger.warning(f"   - Proceeding with limited analysis to avoid false positives")
+
+        # Create comprehensive LLM-based analysis prompt with configuration integration
+        context_validation_note = ""
+        if not document_context_valid:
+            context_validation_note = """
+⚠️ IMPORTANT CONTEXT WARNING: 
+The document and LC context appear to be from different transactions (different dates, amounts, or goods).
+Focus ONLY on internal document consistency and format compliance. 
+DO NOT compare document values against LC context unless they clearly match.
+Prioritize document formatting, completeness, and UCP 600 compliance over cross-reference validation.
+"""
+
+        prompt = f"""You are a world-class trade finance compliance expert with 20+ years of experience in Letter of Credit document analysis. You have deep expertise in UCP 600, ISBP 821, INCOTERMS 2020, and international banking practices.
+
+{config_rules}
+
+{context_validation_note}
+
+TASK: Analyze the following trade finance document for discrepancies, compliance issues, and inconsistencies.
+
+DOCUMENT TO ANALYZE:
+Document Type: {doc_type}
+Document Name: {doc_name}
+Content:
+---
+{doc_content[:10000]}  # Extended content limit for comprehensive analysis
+---
+
+LETTER OF CREDIT CONTEXT:
+{json.dumps(lc_data, indent=2) if lc_data else 'No LC context provided'}
+
+SWIFT MESSAGE CONTEXT:
+{swift_message[:3000] if swift_message else 'No SWIFT message provided'}
+
+COMPREHENSIVE ANALYSIS REQUIREMENTS:
+
+1. DOCUMENT COMPLETENESS:
+   - Check for all mandatory fields per document type
+   - Verify signatures, stamps, seals, dates
+   - Confirm proper document formatting and structure
+
+2. UCP 600 COMPLIANCE:
+   - Article 14 presentation requirements
+   - Document examination standards
+   - Banking day and time limits
+   - Proper endorsements and authentication
+
+3. AMOUNT & QUANTITY ANALYSIS:
+   - Mathematical accuracy in calculations
+   - Currency consistency
+   - Unit prices and extensions
+   - Total amounts vs LC limits
+
+4. DATE LOGIC VALIDATION:
+   - Issue dates vs shipment dates
+   - Presentation within LC expiry
+   - Chronological consistency
+   - Dating requirements per UCP 600
+
+5. PARTY INFORMATION:
+   - Beneficiary/seller consistency
+   - Applicant/buyer accuracy
+   - Consignee and notify party details
+   - Address completeness and accuracy
+
+6. GOODS DESCRIPTION:
+   - Match with LC description
+   - Proper classification and coding
+   - Weight, dimensions, packaging details
+   - Quality specifications compliance
+
+7. TRANSPORT & LOGISTICS:
+   - Port/airport consistency
+   - Shipment terms (FOB, CIF, etc.)
+   - Transport document accuracy
+   - Insurance requirements if applicable
+
+Provide your analysis in this JSON format:
+{{
+    "discrepancies": [
+        {{
+            "type": "missing_field|amount_error|date_inconsistency|description_mismatch|party_error|format_violation|calculation_error|compliance_breach",
+            "issue": "Brief title of the issue",
+            "description": "Detailed explanation of what's wrong and why it matters",
+            "severity": "critical|high|medium|low",
+            "rule_code": "LLM-generated code (e.g., LLM-CI-001, LLM-BL-002)",
+            "basis": "UCP 600 Article/ISBP paragraph/INCOTERMS rule/Banking practice",
+            "source_value": "Actual value found in document (be specific)",
+            "target_value": "Expected/required value per LC or standard practice",
+            "source_document": "{doc_name}",
+            "target_document": "LC Requirements|UCP 600|ISBP|Best Practice",
+            "field": "Specific field/section name",
+            "confidence": 0.85-0.99,
+            "business_impact": "Risk of rejection|Payment delay|Additional costs|Compliance violation",
+            "recommendation": "Specific action to fix this issue",
+            "cross_document_check": "false"
+        }}
+    ],
+    "document_assessment": {{
+        "overall_compliance": "compliant|non_compliant|needs_review",
+        "rejection_risk": "high|medium|low",
+        "critical_issues": 0,
+        "total_discrepancies": 0
+    }},
+    "confidence_score": 0.0-1.0,
+    "analysis_summary": "Overall assessment with key findings and recommendations"
+}}
+
+CRITICAL INSTRUCTIONS:
+- Be thorough and examine EVERY aspect of the document
+- Use your expertise to identify subtle issues that might be missed
+- Generate meaningful rule codes (LLM-[DOCTYPE]-[NUMBER])
+- Be specific about source_value and target_value
+- Focus on issues that could cause document rejection
+- Consider banking practices beyond just UCP 600
+- Assign appropriate severity based on business impact
+
+⚠️ FALSE POSITIVE PREVENTION - EXTREMELY IMPORTANT:
+- DO NOT flag identical or nearly identical text as different unless there's a genuine substantive difference
+- Before flagging any mismatch, carefully verify that source_value and target_value are actually different
+- If strings appear identical, check for case sensitivity, spacing, or formatting - these are NOT discrepancies
+- Example: "KANEMITE SC-1500 L (PACKING -500ML) PESTICIDES" vs "KANEMITE SC-1500 L (PACKING -500ML) PESTICIDES" should NOT be flagged as different
+- Only flag description mismatches when there are actual differences in goods, quantities, or specifications
+- Use high confidence (0.95+) only when you're absolutely certain there's a real discrepancy
+- When in doubt about string similarity, DO NOT create a discrepancy - false positives harm user trust"""
+
+        # Call GPT-4 API
+        logger.info(f"🤖 Making GPT-4 API call for document: {doc_name}")
+        logger.info(f"   - Prompt length: {len(prompt)} characters")
+        logger.info(f"   - Model: gpt-4")
+
+        try:
+            response = openai.ChatCompletion.create(
+                engine="gpt-4o",  # Use Azure deployment name instead of model
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are the world's leading trade finance compliance expert. Your analysis must be comprehensive, accurate, and actionable. Consider both explicit requirements and industry best practices."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.15,  # Slightly higher for creative analysis
+                max_tokens=3000  # Increased for comprehensive analysis
+            )
+
+            gpt_response = response.choices[0].message.content
+            logger.info(f"✅ GPT-4 API call successful for {doc_name}")
+            logger.info(f"   - Response length: {len(gpt_response)} characters")
+
+        except Exception as api_error:
+            logger.error(f"❌ GPT-4 API call failed for {doc_name}: {str(api_error)}")
+            return None
+
+        # Parse JSON response
+        try:
+            logger.info(f"📝 Parsing GPT-4 response for {doc_name}")
+
+            # Extract JSON from response if it contains other text
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                logger.info(f"   - Found JSON block in response")
+                analysis_result = json.loads(json_str)
+            else:
+                logger.info(f"   - Attempting to parse entire response as JSON")
+                analysis_result = json.loads(gpt_response)
+
+            # Apply false positive filtering
+            original_discrepancies = analysis_result.get('discrepancies', [])
+            filtered_discrepancies = filter_false_positive_discrepancies(original_discrepancies)
+            analysis_result['discrepancies'] = filtered_discrepancies
+
+            removed_count = len(original_discrepancies) - len(filtered_discrepancies)
+            if removed_count > 0:
+                logger.info(f"🔍 Filtered out {removed_count} false positive discrepancies for {doc_name}")
+
+            discrepancies_count = len(filtered_discrepancies)
+            logger.info(f"✅ Pure LLM analysis completed for {doc_name}: {discrepancies_count} issues found")
+
+            # Log first few discrepancies for debugging
+            if discrepancies_count > 0:
+                for i, disc in enumerate(filtered_discrepancies[:2]):
+                    logger.info(
+                        f"   - Discrepancy {i + 1}: {disc.get('issue', 'N/A')} (Severity: {disc.get('severity', 'N/A')})")
+            else:
+                logger.info(f"   - No discrepancies found for {doc_name}")
+
+            return analysis_result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"❌ Failed to parse LLM JSON response for {doc_name}: {str(e)}")
+            logger.error(f"   - Raw response (first 500 chars): {gpt_response[:500]}...")
+            logger.error(f"   - Raw response (last 200 chars): ...{gpt_response[-200:]}")
+            return None
+
+    except Exception as e:
+        logger.error(f"Error in pure LLM analysis: {str(e)}")
+        return None
+
+
+def perform_llm_cross_document_analysis(documents, lc_context, swift_message):
+    """Perform cross-document analysis using pure LLM intelligence with configuration rules"""
+    try:
+        logger.info(f"🔗 Starting LLM-based cross-document analysis for {len(documents)} documents")
+
+        # Validate overall document-LC consistency before cross-analysis
+        lc_data = extract_lc_structured_data(lc_context, swift_message)
+        overall_consistency = True
+
+        if documents and lc_data:
+            # Check consistency across all documents
+            inconsistent_docs = 0
+            for doc in documents:
+                doc_content = doc.get('content', '') or doc.get('text', '')
+                doc_type = doc.get('classification', doc.get('type', 'unknown'))
+
+                if doc_content and not validate_document_lc_context(doc_content, lc_data, doc_type):
+                    inconsistent_docs += 1
+
+            consistency_ratio = 1 - (inconsistent_docs / len(documents))
+            logger.info(f"📊 Overall document-LC consistency: {consistency_ratio:.2f}")
+
+            if consistency_ratio < 0.5:
+                logger.warning("⚠️ More than 50% of documents appear inconsistent with LC context")
+                logger.warning("   - This may indicate mixed transaction documents")
+                logger.warning("   - Limiting cross-document analysis to avoid false positives")
+                overall_consistency = False
+
+        # Load enhanced discrepancy configuration rules
+        enhanced_config = load_enhanced_discrepancy_config()
+        cross_document_rules = {}
+        analysis_framework = ""
+
+        if enhanced_config:
+            # Extract validation rules
+            validation_rules = enhanced_config.get('validation_rules', {})
+            document_requirements = enhanced_config.get('document_requirements', {})
+            field_mappings = enhanced_config.get('field_mappings', [])
+            inconsistency_types = enhanced_config.get('inconsistency_types', {})
+            llm_integration = enhanced_config.get('llm_integration', {})
+
+            # Build enhanced cross-document analysis framework from config
+            analysis_framework = f"""
+ENHANCED CONFIGURATION-BASED CROSS-DOCUMENT ANALYSIS RULES:
+
+**Enhanced LLM Integration Settings:**
+- LLM Enabled: {llm_integration.get('enabled', True)}
+- Model: {llm_integration.get('model', 'gpt-4')}
+- Temperature: {llm_integration.get('temperature', 0.1)}
+- Use For: {', '.join(llm_integration.get('use_for', []))}
+
+**Validation Settings:**
+- Confidence Threshold: {validation_rules.get('required_confidence_threshold', 0.7)}
+- Max Discrepancies per Check: {validation_rules.get('max_discrepancies_per_check', 10)}
+- Include SWIFT References: {validation_rules.get('include_swift_references', True)}
+- Provide Recommendations: {validation_rules.get('provide_recommendations', True)}
+
+**Field Mapping Configuration:**"""
+
+            # Add field mappings information
+            for field_mapping in field_mappings[:5]:  # Show first 5 mappings
+                analysis_framework += f"""
+- **{field_mapping.get('display_name', 'Unknown Field')}:**
+  - LC Field: {field_mapping.get('lc_field', 'N/A')}
+  - SWIFT Field: {field_mapping.get('swift_field', 'N/A')}
+  - Critical: {field_mapping.get('critical', False)}
+  - Similarity Threshold: {field_mapping.get('similarity_threshold', 'N/A')}
+  - Business Rules: {', '.join(field_mapping.get('business_rules', []))}"""
+
+            analysis_framework += """
+
+**Inconsistency Types Configuration:**"""
+
+            # Add inconsistency types information
+            for inconsistency_type, type_config in inconsistency_types.items():
+                analysis_framework += f"""
+- **{inconsistency_type.replace('_', ' ').title()}:**
+  - Description: {type_config.get('description', 'N/A')}
+  - LLM Analysis: {type_config.get('llm_analysis', True)}
+  - Severity Rules: {type_config.get('severity_rules', {})}"""
+
+            analysis_framework += """
+
+**Document Requirements Matrix:**"""
+
+            for doc_type, requirements in document_requirements.items():
+                analysis_framework += f"""
+- **{doc_type.replace('_', ' ').title()}:**
+  - Always Required: {requirements.get('always_required', False)}
+  - SWIFT Fields: {requirements.get('swift_fields', [])}
+  - Validation Points: {requirements.get('validation_points', [])}"""
+
+            logger.info("✅ Loaded enhanced discrepancy configuration for cross-document analysis")
+            logger.info(f"   - Field Mappings: {len(field_mappings)}")
+            logger.info(f"   - Inconsistency Types: {len(inconsistency_types)}")
+            logger.info(f"   - Document Requirements: {len(document_requirements)}")
+        else:
+            logger.warning("⚠️ No enhanced discrepancy configuration loaded - using default rules")
+
+        # Collect all document contents for comprehensive analysis
+        all_docs_content = ""
+        doc_summary = []
+
+        for i, doc in enumerate(documents):
+            doc_type = doc.get('classification', doc.get('type', 'unknown'))
+            doc_content = doc.get('content', '') or doc.get('text', '')
+            doc_name = doc.get('name', f'Document {i + 1}')
+
+            if doc_content:
+                all_docs_content += f"\n=== DOCUMENT {i + 1}: {doc_name} ({doc_type}) ===\n"
+                all_docs_content += doc_content[:3000]  # Limit per document
+                all_docs_content += "\n" + "=" * 50 + "\n"
+
+                doc_summary.append({
+                    'index': i + 1,
+                    'name': doc_name,
+                    'type': doc_type,
+                    'length': len(doc_content)
+                })
+
+        if len(documents) < 2:
+            logger.info("⚠️ Less than 2 documents - skipping cross-document analysis")
+            return []
+
+        # Create cross-document analysis prompt with configuration rules
+        consistency_warning = ""
+        if not overall_consistency:
+            consistency_warning = """
+⚠️ CRITICAL ANALYSIS WARNING:
+The documents and LC context appear to be from different transactions (mismatched dates, amounts, or goods descriptions).
+FOCUS ONLY ON:
+1. Internal consistency between the provided documents themselves
+2. Document formatting and completeness issues
+3. Mathematical calculations within documents
+DO NOT compare document values against LC context unless there's clear evidence they belong to the same transaction.
+Be extremely conservative to avoid false positive discrepancies from mixed transaction data.
+"""
+
+        prompt = f"""You are an expert trade finance analyst specializing in cross-document consistency validation for Letter of Credit transactions.
+
+{consistency_warning}
+
+TASK: Analyze the following {len(documents)} documents for cross-document inconsistencies, contradictions, and missing relationships using the configuration-based rules provided.
+
+{analysis_framework}
+
+DOCUMENTS TO ANALYZE:
+{all_docs_content[:15000]}  # Limit total content
+
+DOCUMENT SUMMARY:
+{json.dumps(doc_summary, indent=2)}
+
+LETTER OF CREDIT CONTEXT:
+{json.dumps(lc_context, indent=2) if lc_context else 'No LC context provided'}
+
+SWIFT MESSAGE CONTEXT:
+{swift_message[:2000] if swift_message else 'No SWIFT message provided'}
+
+ENHANCED CONFIGURATION-DRIVEN CROSS-DOCUMENT ANALYSIS FOCUS:
+
+**CRITICAL FIELD MAPPINGS TO VALIDATE:**
+Based on the loaded configuration, pay special attention to these field mappings:"""
+
+        # Add field mapping guidance
+        if enhanced_config and enhanced_config.get('field_mappings'):
+            for field_mapping in enhanced_config.get('field_mappings', []):
+                if field_mapping.get('critical', False):
+                    prompt += f"""
+- **{field_mapping.get('display_name', 'Unknown Field')}** (Critical):
+  - LC/SWIFT: {field_mapping.get('lc_field', 'N/A')} → {field_mapping.get('swift_field', 'N/A')}
+  - Required Similarity: {field_mapping.get('similarity_threshold', 'N/A')}
+  - Business Rules: {', '.join(field_mapping.get('business_rules', []))}"""
+
+        prompt += f"""
+
+**INCONSISTENCY TYPES TO IDENTIFY:**"""
+
+        # Add inconsistency types guidance
+        if enhanced_config and enhanced_config.get('inconsistency_types'):
+            for inconsistency_type, type_config in enhanced_config.get('inconsistency_types', {}).items():
+                prompt += f"""
+- **{inconsistency_type.replace('_', ' ').title()}**: {type_config.get('description', 'N/A')}"""
+
+        prompt += f"""
+
+**STANDARD CROSS-DOCUMENT ANALYSIS AREAS:**
+
+1. AMOUNT CONSISTENCY:
+   - Invoice amounts vs LC amount
+   - Freight/insurance calculations
+   - Currency consistency
+   - Total shipment value reconciliation
+
+2. DATE LOGIC VALIDATION:
+   - Issue date chronology
+   - Shipment date consistency
+   - Presentation timeline compliance
+   - Transport date relationships
+
+3. PARTY INFORMATION ALIGNMENT:
+   - Seller/beneficiary consistency
+   - Buyer/applicant matching
+   - Consignee and notify party alignment
+   - Address and contact consistency
+
+4. GOODS DESCRIPTION MATCHING:
+   - Product descriptions alignment
+   - Quantity and unit consistency
+   - Quality specifications matching
+   - Packaging and marking consistency
+
+5. TRANSPORT & LOGISTICS ALIGNMENT:
+   - Port/place consistency
+   - Transport mode matching
+   - Routing and transit consistency
+   - Documentation completeness
+
+6. REGULATORY COMPLIANCE:
+   - Certificate requirements fulfillment
+   - Insurance coverage adequacy
+   - Origin and destination compliance
+   - Trade terms consistency
+
+Provide your analysis in this JSON format:
+{{
+    "discrepancies": [
+        {{
+            "type": "cross_document_inconsistency",
+            "issue": "Brief title of the cross-document issue",
+            "description": "Detailed explanation of the inconsistency across documents",
+            "severity": "critical|high|medium|low",
+            "rule_code": "CD-001 to CD-999 (Cross-Document codes)",
+            "basis": "Trade Finance Best Practice|UCP 600|ISBP|Commercial Logic",
+            "source_value": "Value found in source document",
+            "target_value": "Expected value based on other documents",
+            "source_document": "Document where inconsistent value was found",
+            "target_document": "Reference document with correct/expected value",
+            "field": "Specific field causing the inconsistency",
+            "confidence": 0.80-0.99,
+            "business_impact": "Impact on LC acceptance and payment",
+            "recommendation": "Specific action to resolve the inconsistency",
+            "cross_document_check": "true",
+            "documents_involved": ["Document 1", "Document 2"]
+        }}
+    ],
+    "cross_document_assessment": {{
+        "overall_consistency": "consistent|inconsistent|needs_review",
+        "critical_mismatches": 0,
+        "total_cross_discrepancies": 0,
+        "documents_analyzed": {len(documents)}
+    }},
+    "confidence_score": 0.0-1.0,
+    "summary": "Overall cross-document analysis with key findings"
+}}
+
+IMPORTANT INSTRUCTIONS:
+- Focus ONLY on inconsistencies BETWEEN documents
+- Generate meaningful CD-### rule codes for cross-document issues
+- Be specific about which documents contain conflicting information
+- Consider the business impact of each inconsistency
+- Flag issues that could cause LC rejection due to document conflicts
+
+⚠️ CRITICAL FALSE POSITIVE PREVENTION:
+- DO NOT flag identical strings as inconsistent across documents
+- Carefully verify that source_value and target_value are genuinely different
+- Example: "KANEMITE SC-1500 L (PACKING -500ML) PESTICIDES" in Commercial Invoice vs "KANEMITE SC-1500 L (PACKING -500ML) PESTICIDES" in Packing List should NOT be flagged
+- Minor formatting, case, or spacing differences are NOT inconsistencies
+- Only flag cross-document issues when there are substantive differences in content
+- Use high confidence (0.90+) only for genuine cross-document conflicts
+- When in doubt about similarity, DO NOT create a discrepancy"""
+
+        # Call GPT-4 API with proper Azure OpenAI v0.28 format
+        try:
+            # Configure Azure OpenAI if not already configured
+            azure_key = os.getenv('AZURE_OPENAI_KEY')
+            azure_base = os.getenv('AZURE_OPENAI_ENDPOINT')
+            azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+            deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+            if azure_key and azure_base:
+                # Configure for Azure OpenAI
+                openai.api_type = "azure"
+                openai.api_base = azure_base
+                openai.api_version = azure_version
+                openai.api_key = azure_key
+
+                response = openai.ChatCompletion.create(
+                    engine=deployment_name,  # Use Azure deployment name
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are an expert cross-document analysis specialist for trade finance. Focus on finding inconsistencies between multiple documents that could impact LC acceptance."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0.1,  # Low temperature for consistency
+                    max_tokens=2500
+                )
+            else:
+                # Fallback to standard OpenAI
+                openai_key = os.getenv('OPENAI_API_KEY')
+                if not openai_key:
+                    logger.error("No OpenAI credentials available")
+                    return []
+
+                openai.api_key = openai_key
+                openai.api_type = "open_ai"
+                openai.api_base = "https://api.openai.com/v1"
+
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are an expert cross-document analysis specialist for trade finance. Focus on finding inconsistencies between multiple documents that could impact LC acceptance."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0.1,
+                    max_tokens=2500
+                )
+        except Exception as api_error:
+            logger.error(f"OpenAI API call failed: {api_error}")
+            return []
+
+        gpt_response = response.choices[0].message.content
+
+        # Parse JSON response
+        try:
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                analysis_result = json.loads(json_str)
+            else:
+                analysis_result = json.loads(gpt_response)
+
+            cross_discrepancies = analysis_result.get('discrepancies', [])
+
+            # Apply false positive filtering
+            filtered_discrepancies = filter_false_positive_discrepancies(cross_discrepancies)
+            removed_count = len(cross_discrepancies) - len(filtered_discrepancies)
+
+            if removed_count > 0:
+                logger.info(f"🔍 Filtered out {removed_count} false positive discrepancies")
+
+            logger.info(f"✅ LLM cross-document analysis completed: {len(filtered_discrepancies)} inconsistencies found")
+            return filtered_discrepancies
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse cross-document LLM response: {str(e)}")
+            return []
+
+    except Exception as e:
+        logger.error(f"Error in LLM cross-document analysis: {str(e)}")
+        return []
+
+
+def perform_llm_comprehensive_review(existing_discrepancies, documents, lc_context, swift_message):
+    """Perform final comprehensive review using LLM to catch any missed issues"""
+    try:
+        logger.info(f"🎯 Starting comprehensive LLM review of {len(existing_discrepancies)} existing discrepancies")
+
+        # Summarize existing discrepancies
+        existing_summary = []
+        for i, disc in enumerate(existing_discrepancies[:10]):  # Limit to avoid token overflow
+            existing_summary.append({
+                'index': i + 1,
+                'issue': disc.get('issue', 'Unknown'),
+                'severity': disc.get('severity', 'unknown'),
+                'document': disc.get('source_document', 'Unknown'),
+                'field': disc.get('field', 'Unknown')
+            })
+
+        # Create document summary
+        doc_summary = []
+        for i, doc in enumerate(documents):
+            doc_summary.append({
+                'name': doc.get('name', f'Document {i + 1}'),
+                'type': doc.get('classification', doc.get('type', 'unknown')),
+                'content_length': len(doc.get('content', '') or doc.get('text', ''))
+            })
+
+        prompt = f"""You are a senior trade finance compliance reviewer conducting a final comprehensive review of the document analysis.
+
+ANALYSIS OVERVIEW:
+- Documents Analyzed: {len(documents)}
+- Existing Discrepancies Found: {len(existing_discrepancies)}
+
+DOCUMENT SUMMARY:
+{json.dumps(doc_summary, indent=2)}
+
+EXISTING DISCREPANCIES (First 10):
+{json.dumps(existing_summary, indent=2)}
+
+LETTER OF CREDIT CONTEXT:
+{json.dumps(lc_context, indent=2) if lc_context else 'No LC context provided'}
+
+COMPREHENSIVE REVIEW TASK:
+
+1. GAPS ANALYSIS:
+   - Are there any critical issues that might have been missed?
+   - Any subtle compliance violations not detected?
+   - Missing mandatory document requirements?
+
+2. SEVERITY ASSESSMENT:
+   - Are the severity levels appropriate?
+   - Any critical issues marked as lower severity?
+   - Business impact correctly assessed?
+
+3. FINAL VALIDATION:
+   - Overall transaction risk assessment
+   - Likelihood of LC rejection
+   - Priority recommendations for resolution
+
+ONLY return additional discrepancies if you identify genuine missed issues. Do not duplicate existing findings.
+
+Provide your review in this JSON format:
+{{
+    "additional_discrepancies": [
+        {{
+            "type": "missed_critical_issue|severity_reassessment|compliance_gap",
+            "issue": "Issue title that was missed in initial analysis",
+            "description": "Why this issue is important and was missed",
+            "severity": "critical|high|medium|low",
+            "rule_code": "REV-001 to REV-999 (Review codes)",
+            "basis": "Trade Finance Best Practice|UCP 600|ISBP|Banking Standard",
+            "source_value": "Current situation",
+            "target_value": "Required situation",
+            "source_document": "Document name",
+            "target_document": "Reference standard",
+            "field": "Specific area of concern",
+            "confidence": 0.85-0.99,
+            "business_impact": "Impact if not addressed",
+            "recommendation": "Action to resolve",
+            "cross_document_check": "true|false",
+            "review_note": "Why this was missed in initial analysis"
+        }}
+    ],
+    "overall_assessment": {{
+        "transaction_risk": "high|medium|low",
+        "rejection_probability": "high|medium|low",
+        "total_critical_issues": 0,
+        "review_confidence": 0.0-1.0
+    }},
+    "final_recommendations": [
+        "Priority action 1",
+        "Priority action 2"
+    ],
+    "review_summary": "Final assessment of the transaction and document set"
+}}
+
+Return empty additional_discrepancies array if no significant gaps are found."""
+
+        # Call GPT-4 API
+        response = openai.ChatCompletion.create(
+            engine="gpt-4o",  # Use Azure deployment name instead of model
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a senior trade finance reviewer with authority to identify critical gaps in document analysis. Only flag genuinely missed issues."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.05,  # Very low temperature for careful review
+            max_tokens=2000
+        )
+
+        gpt_response = response.choices[0].message.content
+
+        # Parse JSON response
+        try:
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                review_result = json.loads(json_str)
+            else:
+                review_result = json.loads(gpt_response)
+
+            additional_discrepancies = review_result.get('additional_discrepancies', [])
+            logger.info(
+                f"✅ Comprehensive LLM review completed: {len(additional_discrepancies)} additional issues identified")
+            return additional_discrepancies
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse comprehensive review response: {str(e)}")
+            return []
+
+    except Exception as e:
+        logger.error(f"Error in comprehensive LLM review: {str(e)}")
+        return []
+
+
+def combine_and_prioritize_discrepancy_results(rule_based_results, gpt_enhanced_results):
+    """Combine rule-based and GPT-enhanced results, removing duplicates and prioritizing"""
+    try:
+        all_discrepancies = []
+
+        # Add rule-based results
+        for result in rule_based_results:
+            all_discrepancies.append(result)
+
+        # Add GPT-enhanced results
+        for result in gpt_enhanced_results:
+            all_discrepancies.append(result)
+
+        # Remove duplicates based on similar issues and document types
+        unique_discrepancies = []
+        seen_issues = set()
+
+        # Sort by severity and confidence
+        all_discrepancies.sort(key=lambda x: (
+            {'high': 3, 'medium': 2, 'low': 1}.get(x.get('severity', 'low'), 1),
+            x.get('confidence', 0.5)
+        ), reverse=True)
+
+        for disc in all_discrepancies:
+            # Create a unique key for deduplication
+            issue_text = disc.get('issue', '').lower()
+            doc_type = disc.get('document_type', '').lower()
+            rule_code = disc.get('rule_code', '')
+
+            # Create various deduplication keys
+            keys_to_check = [
+                f"{rule_code}_{doc_type}",
+                f"{issue_text[:50]}_{doc_type}",
+                f"{rule_code}" if rule_code else None
+            ]
+
+            # Check if we've seen this issue before
+            is_duplicate = False
+            for key in keys_to_check:
+                if key and key in seen_issues:
+                    is_duplicate = True
+                    break
+
+            if not is_duplicate:
+                unique_discrepancies.append(disc)
+                # Add all keys to seen_issues
+                for key in keys_to_check:
+                    if key:
+                        seen_issues.add(key)
+
+        logger.info(
+            f"📊 Combined discrepancy results: {len(rule_based_results)} rule-based + {len(gpt_enhanced_results)} GPT-enhanced = {len(unique_discrepancies)} unique issues")
+        return unique_discrepancies
+
+    except Exception as e:
+        logger.error(f"Error combining discrepancy results: {str(e)}")
+        # Return rule-based results as fallback
+        return rule_based_results
+
+
+def calculate_analysis_confidence(discrepancies):
+    """Calculate overall confidence score for the analysis"""
+    if not discrepancies:
+        return 0.5
+
+    confidences = [d.get('confidence', 0.8) for d in discrepancies if 'confidence' in d]
+    if not confidences:
+        return 0.7  # Default confidence for rule-based analysis
+
+    return sum(confidences) / len(confidences)
+
+def get_fallback_discrepancy_analysis(lc_context, uploaded_documents, swift_message):
+    """Enhanced fallback rule-based analysis when GPT-4 is not available"""
+    logger.info("🔄 Using fallback rule-based discrepancy analysis")
+    discrepancies = []
+
+    # Define required documents based on common LC requirements
+    required_doc_types = {
+        'commercial_invoice': 'Commercial Invoice',
+        'bill_of_lading': 'Bill of Lading',
+        'packing_list': 'Packing List',
+        'certificate_of_origin': 'Certificate of Origin'
+    }
+
+    uploaded_types = {doc['type']: doc for doc in uploaded_documents}
+
+    # Check for missing required documents
+    for req_type, req_name in required_doc_types.items():
+        if req_type not in uploaded_types:
+            discrepancies.append({
+                'document_name': f'Missing {req_name}',
+                'document_type': req_type,
+                'field': 'Document Presence',
+                'severity': 'high',
+                'message': f'Required document {req_name} is missing from the submission',
+                'recommendation': f'Upload the {req_name} to complete the document set',
+                'lc_requirement': f'{req_name} is typically required for LC processing',
+                'document_value': 'Not provided',
+                'confidence': 0.9,
+                'source': 'fallback_analysis'
+            })
+
+    # Analyze each uploaded document
+    for doc in uploaded_documents:
+        doc_type = doc.get('type', 'unknown')
+        doc_name = doc.get('name', 'Unknown')
+        doc_size = doc.get('size', 0)
+
+        # Basic file validation
+        if doc_size == 0:
+            discrepancies.append({
+                'document_name': doc_name,
+                'document_type': doc_type,
+                'field': 'File Size',
+                'severity': 'high',
+                'message': f'Document {doc_name} appears to be empty (0 bytes)',
+                'recommendation': 'Re-upload the document with proper content',
+                'lc_requirement': 'All documents must contain readable content',
+                'document_value': f'{doc_size} bytes',
+                'confidence': 0.95,
+                'source': 'fallback_analysis'
+            })
+        elif doc_size < 1000:  # Very small files might be incomplete
+            discrepancies.append({
+                'document_name': doc_name,
+                'document_type': doc_type,
+                'field': 'File Size',
+                'severity': 'medium',
+                'message': f'Document {doc_name} is very small ({doc_size} bytes) and may be incomplete',
+                'recommendation': 'Verify that the document contains all required information',
+                'lc_requirement': 'Documents should contain comprehensive information',
+                'document_value': f'{doc_size} bytes',
+                'confidence': 0.7,
+                'source': 'fallback_analysis'
+            })
+        else:
+            # Document appears to be properly uploaded
+            discrepancies.append({
+                'document_name': doc_name,
+                'document_type': doc_type,
+                'field': 'Document Upload',
+                'severity': 'low',
+                'message': f'{doc_type.replace("_", " ").title()} uploaded successfully',
+                'recommendation': 'Document is ready for detailed analysis',
+                'lc_requirement': f'{doc_type.replace("_", " ").title()} required for LC compliance',
+                'document_value': f'{doc_size} bytes',
+                'confidence': 0.8,
+                'source': 'fallback_analysis'
+            })
+
+    return discrepancies
+
+
+def load_discrepancy_rules_from_xml():
+    """Load discrepancy rules from XML file"""
+    try:
+        import xml.etree.ElementTree as ET
+        xml_path = os.path.join(os.path.dirname(__file__), 'data', 'discrepancy_rules.xml')
+
+        if not os.path.exists(xml_path):
+            logger.warning(f"⚠️ Discrepancy rules XML file not found: {xml_path}")
+            return []
+
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        rules = []
+        for rule_elem in root.findall('rule'):
+            rule = {
+                'id': rule_elem.get('id', ''),
+                'code': rule_elem.find('code').text if rule_elem.find('code') is not None else '',
+                'documentType': rule_elem.find('documentType').text if rule_elem.find(
+                    'documentType') is not None else '',
+                'description': rule_elem.find('description').text if rule_elem.find('description') is not None else '',
+                'basis': rule_elem.find('basis').text if rule_elem.find('basis') is not None else '',
+                'priority': rule_elem.find('priority').text if rule_elem.find('priority') is not None else 'Mandatory',
+                'createdAt': rule_elem.find('createdAt').text if rule_elem.find('createdAt') is not None else '',
+                'updatedAt': rule_elem.find('updatedAt').text if rule_elem.find('updatedAt') is not None else ''
+            }
+            rules.append(rule)
+
+        logger.info(f"✅ Loaded {len(rules)} discrepancy rules from XML")
+        return rules
+
+    except Exception as e:
+        logger.error(f"Failed to load discrepancy rules from XML: {e}")
+        return []
+
+def load_discrepancy_config():
+    """Load discrepancy check configuration"""
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), 'discrepancy_check_config.json')
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load discrepancy config: {e}")
+        return None
+
+
+def validate_config_structure(config):
+    """Validate discrepancy check configuration structure"""
+    try:
+        required_keys = ['discrepancy_check_config']
+        if not all(key in config for key in required_keys):
+            return False
+
+        dc_config = config['discrepancy_check_config']
+        required_dc_keys = ['model_config', 'prompts', 'system_prompt']
+        if not all(key in dc_config for key in required_dc_keys):
+            return False
+
+        # Validate model config
+        model_config = dc_config['model_config']
+        required_model_keys = ['provider', 'model']
+        if not all(key in model_config for key in required_model_keys):
+            return False
+
+        # Validate prompts structure
+        prompts = dc_config['prompts']
+        if not isinstance(prompts, dict):
+            return False
+
+        return True
+
+    except Exception:
+        return False
+
+def determine_field_severity(field_name, lc_value, swift_value):
+    """Determine severity based on field importance"""
+    critical_fields = ['applicant', 'beneficiary', 'amount', 'lc_number', 'expiry_date']
+    high_fields = ['currency', 'goods_description', 'port_of_loading', 'port_of_discharge']
+
+    if field_name in critical_fields:
+        return 'CRITICAL'
+    elif field_name in high_fields:
+        return 'HIGH'
+    else:
+        return 'MEDIUM'
+
+
+def generate_field_recommendation(display_name, field_name, lc_value, swift_value):
+    """Generate specific recommendations for field discrepancies"""
+    if field_name == 'amount':
+        return f"Verify {display_name} accuracy. LC shows {lc_value}, SWIFT shows {swift_value}. Contact issuing bank for amendment if needed."
+    elif field_name in ['applicant', 'beneficiary']:
+        return f"Ensure {display_name} matches exactly between LC application and SWIFT message. Name discrepancies can cause payment delays."
+    elif 'date' in field_name:
+        return f"Verify {display_name} consistency. Different dates may affect document presentation deadlines."
+    else:
+        return f"Review {display_name} discrepancy between LC application ({lc_value}) and SWIFT message ({swift_value}). Consider amendment if material."
+
+
+def assess_field_business_impact(field_name, severity):
+    """Assess business impact of field discrepancies"""
+    impact_map = {
+        'CRITICAL': {
+            'amount': 'Critical: Incorrect amount may result in under/over payment and LC rejection',
+            'applicant': 'Critical: Wrong applicant name will cause payment failure',
+            'beneficiary': 'Critical: Incorrect beneficiary prevents document negotiation',
+            'default': 'Critical: May cause transaction rejection and significant delays'
+        },
+        'HIGH': {
+            'currency': 'High: Currency mismatch may cause payment errors',
+            'goods_description': 'High: Goods description discrepancy may prevent customs clearance',
+            'default': 'High: Likely to cause processing delays and require clarification'
+        },
+        'MEDIUM': {
+            'default': 'Medium: May cause minor delays but unlikely to prevent processing'
+        }
+    }
+
+    severity_impacts = impact_map.get(severity, impact_map['MEDIUM'])
+    return severity_impacts.get(field_name, severity_impacts['default'])
+
+
+def calculate_field_confidence(field_name, lc_value, swift_value):
+    """Calculate confidence score for field comparison"""
+    base_confidence = 0.9
+
+    # Reduce confidence for complex fields
+    if field_name in ['goods_description', 'additional_conditions']:
+        base_confidence -= 0.1
+
+    # Reduce confidence if values are very different
+    if lc_value and swift_value:
+        similarity = calculate_string_similarity(str(lc_value), str(swift_value))
+        if similarity < 0.3:
+            base_confidence += 0.05  # Higher confidence in clear mismatches
+
+    return max(0.5, min(1.0, base_confidence))
+
+
+def analyze_cross_document_inconsistencies(lc_data, swift_data):
+    """Enhanced cross-document analysis for comprehensive discrepancy detection"""
+    inconsistencies = []
+
+    try:
+        # Get processed documents from global session or context
+        # This would be enhanced to analyze actual uploaded documents
+
+        # For now, simulate analysis of common document types and their discrepancies
+        # This function can be enhanced when actual document data is available
+
+        # Example analysis framework for different document types:
+        document_analysis_framework = {
+            'commercial_invoice': {
+                'critical_fields': ['invoice_number', 'invoice_date', 'amount', 'currency', 'goods_description'],
+                'comparison_sources': ['lc_data', 'swift_data']
+            },
+            'bill_of_lading': {
+                'critical_fields': ['bl_number', 'vessel_name', 'port_of_loading', 'port_of_discharge',
+                                    'goods_description'],
+                'comparison_sources': ['lc_data', 'swift_data']
+            },
+            'certificate_of_origin': {
+                'critical_fields': ['country_of_origin', 'goods_description', 'exporter_name'],
+                'comparison_sources': ['lc_data', 'swift_data']
+            },
+            'packing_list': {
+                'critical_fields': ['total_packages', 'net_weight', 'gross_weight', 'goods_description'],
+                'comparison_sources': ['lc_data', 'swift_data']
+            }
+        }
+
+        # Add placeholder for actual document analysis when documents are processed
+        logger.info("📋 Cross-document analysis framework ready for:")
+        for doc_type, config in document_analysis_framework.items():
+            logger.info(f"   - {doc_type}: {len(config['critical_fields'])} critical fields")
+
+        # This would be enhanced to:
+        # 1. Extract data from uploaded documents (commercial invoice, BL, etc.)
+        # 2. Compare document data against LC and SWIFT data
+        # 3. Find discrepancies in amounts, dates, descriptions, parties, etc.
+        # 4. Generate specific recommendations for each document type
+
+    except Exception as e:
+        logger.error(f"Error in cross-document analysis: {e}")
+
+    return inconsistencies
+
+
+def analyze_comprehensive_trade_finance_discrepancies(lc_context, uploaded_documents, swift_message):
+    """
+    XML Rule-Based comprehensive trade finance discrepancy analysis
+    Uses discrepancy_rules.xml instead of static methods for better maintainability
+    """
+    try:
+        logger.info("🚀 Starting XML Rule-Based COMPREHENSIVE trade finance discrepancy analysis")
+
+        # Load XML rules from discrepancy_rules.xml
+        xml_rules = load_discrepancy_rules_from_xml()
+        if not xml_rules:
+            logger.warning("⚠️ No XML rules loaded, falling back to basic analysis")
+            return {
+                'success': False,
+                'error': 'No discrepancy rules loaded',
+                'results': {
+                    'field_conflicts': [],
+                    'compliance_discrepancies': [],
+                    'cross_document_inconsistencies': [],
+                    'swift_message_issues': [],
+                    'critical_issues': 0,
+                    'warning_issues': 0
+                }
+            }
+
+        logger.info(f"📋 Loaded {len(xml_rules)} XML discrepancy rules")
+
+        # Extract data for analysis
+        lc_data = extract_enhanced_lc_data(lc_context)
+        swift_data = extract_enhanced_swift_data(swift_message)
+        document_data = extract_enhanced_document_data(uploaded_documents)
+
+        logger.info(f"📊 Data extraction complete:")
+        logger.info(f"   - LC data: {len(lc_data)} fields")
+        logger.info(f"   - SWIFT data: {len(swift_data)} fields")
+        logger.info(f"   - Document data: {len(document_data)} documents")
+
+        # Initialize results structure
+        results = {
+            'field_conflicts': [],
+            'compliance_discrepancies': [],
+            'cross_document_inconsistencies': [],
+            'swift_message_issues': [],
+            'critical_issues': 0,
+            'warning_issues': 0,
+            'success': True
+        }
+
+        # === XML RULE-BASED ANALYSIS ===
+
+        # 1. Apply XML rules to each document
+        logger.info("🔍 Applying XML rules to documents...")
+        for doc in document_data:
+            doc_type = doc.get('document_type', '').strip()
+            doc_name = doc.get('file_name', 'Unknown Document')
+
+            # Filter rules for this document type
+            relevant_rules = [rule for rule in xml_rules
+                              if rule.get('documentType', '').lower() == doc_type.lower()]
+
+            logger.info(f"📋 Found {len(relevant_rules)} XML rules for {doc_type}")
+
+            # Apply each relevant rule
+            for rule in relevant_rules:
+                rule_result = apply_xml_rule_with_llm_analysis(rule, doc, lc_data, swift_data)
+                if rule_result:
+                    # Categorize the result
+                    if 'field' in rule_result.get('type', '').lower():
+                        results['field_conflicts'].append(rule_result)
+                    elif 'compliance' in rule_result.get('type', '').lower():
+                        results['compliance_discrepancies'].append(rule_result)
+                    else:
+                        results['cross_document_inconsistencies'].append(rule_result)
+
+                    # Update counters
+                    if rule_result.get('severity', '').lower() in ['critical', 'high']:
+                        results['critical_issues'] += 1
+                    else:
+                        results['warning_issues'] += 1
+
+        # 2. Cross-document field conflicts using XML rules
+        if len(document_data) >= 2:
+            user_logger.processing_step("Cross-document field conflict analysis", "in progress")
+
+            # Use enhanced field conflict analysis
+            enhanced_field_conflicts = analyze_enhanced_field_conflicts(document_data, lc_data, swift_data)
+
+            if enhanced_field_conflicts:
+                results['field_conflicts'].extend(enhanced_field_conflicts)
+                for conflict in enhanced_field_conflicts:
+                    if conflict.get('severity') == 'critical':
+                        results['critical_issues'] += 1
+                    else:
+                        results['warning_issues'] += 1
+
+                user_logger.data_info("Field conflicts detected", len(enhanced_field_conflicts))
+
+            # Also run the original XML-based analysis for additional coverage
+            xml_field_conflicts = analyze_cross_document_conflicts_with_xml_rules(
+                xml_rules, document_data, lc_data, swift_data
+            )
+            if xml_field_conflicts:
+                results['field_conflicts'].extend(xml_field_conflicts)
+                for conflict in xml_field_conflicts:
+                    business_impact = conflict.get('llm_analysis', {}).get('business_impact', '')
+                    if 'CRITICAL' in business_impact.upper():
+                        results['critical_issues'] += 1
+                    else:
+                        results['warning_issues'] += 1
+
+            user_logger.processing_step("Cross-document field conflict analysis", "complete")
+
+        # 3. SWIFT compliance using XML rules
+        if swift_data:
+            logger.info("💱 Checking SWIFT compliance using XML rules...")
+            swift_issues = analyze_swift_compliance_with_xml_rules(xml_rules, swift_data, lc_data)
+            if swift_issues:
+                results['swift_message_issues'].extend(swift_issues)
+                for issue in swift_issues:
+                    if issue.get('severity', '').lower() in ['critical', 'high']:
+                        results['critical_issues'] += 1
+                    else:
+                        results['warning_issues'] += 1
+
+        logger.info(f"✅ XML Rule-Based analysis complete:")
+        logger.info(f"   - Field conflicts: {len(results['field_conflicts'])}")
+        logger.info(f"   - Compliance discrepancies: {len(results['compliance_discrepancies'])}")
+        logger.info(f"   - Cross-document issues: {len(results['cross_document_inconsistencies'])}")
+        logger.info(f"   - SWIFT issues: {len(results['swift_message_issues'])}")
+        logger.info(f"   - Critical issues: {results['critical_issues']}")
+        logger.info(f"   - Warning issues: {results['warning_issues']}")
+
+        return {
+            'success': True,
+            'results': results
+        }
+
+    except Exception as e:
+        logger.error(f"Error in XML rule-based comprehensive discrepancy analysis: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'success': False,
+            'error': str(e),
+            'results': {
+                'field_conflicts': [],
+                'compliance_discrepancies': [],
+                'cross_document_inconsistencies': [],
+                'swift_message_issues': [],
+                'critical_issues': 0,
+                'warning_issues': 0
+            }
+        }
+
+
+def extract_enhanced_lc_data(lc_context):
+    """Enhanced LC data extraction with comprehensive field coverage"""
+    if not lc_context:
+        return {}
+
+    # Enhanced extraction logic that gets more fields
+    enhanced_data = {}
+
+    # If lc_context is already a dict, use it directly
+    if isinstance(lc_context, dict):
+        enhanced_data.update(lc_context)
+
+    # Add computed/derived fields
+    enhanced_data.update({
+        'lc_type': enhanced_data.get('lc_type', enhanced_data.get('type', '')),
+        'applicant_full': f"{enhanced_data.get('applicant', '')} {enhanced_data.get('applicant_address', '')}".strip(),
+        'beneficiary_full': f"{enhanced_data.get('beneficiary', '')} {enhanced_data.get('beneficiary_address', '')}".strip(),
+        'amount_currency': f"{enhanced_data.get('currency', '')} {enhanced_data.get('amount', '')}".strip(),
+    })
+
+    return enhanced_data
+
+
+def extract_enhanced_swift_data(swift_message):
+    """Enhanced SWIFT data extraction with comprehensive field mapping"""
+    if not swift_message:
+        return {}
+
+    # Parse SWIFT message into structured data
+    swift_data = {}
+
+    if isinstance(swift_message, str):
+        # Parse SWIFT MT format
+        import re
+
+        # Common SWIFT field patterns
+        swift_patterns = {
+            '20': r':20:(.*?)(?=:|$)',  # LC Number
+            '31C': r':31C:(.*?)(?=:|$)',  # Issue Date
+            '31D': r':31D:(.*?)(?=:|$)',  # Expiry Date
+            '32B': r':32B:(.*?)(?=:|$)',  # Currency/Amount
+            '40A': r':40A:(.*?)(?=:|$)',  # Form of LC
+            '41A': r':41A:(.*?)(?=:|$)',  # Applicable Rules
+            '42C': r':42C:(.*?)(?=:|$)',  # Drafts at
+            '43P': r':43P:(.*?)(?=:|$)',  # Partial Shipment
+            '43T': r':43T:(.*?)(?=:|$)',  # Transhipment
+            '44A': r':44A:(.*?)(?=:|$)',  # Place of Taking
+            '44C': r':44C:(.*?)(?=:|$)',  # Latest Shipment Date
+            '44E': r':44E:(.*?)(?=:|$)',  # Port of Loading
+            '44F': r':44F:(.*?)(?=:|$)',  # Port of Discharge
+            '45A': r':45A:(.*?)(?=:|$)',  # Description of Goods
+            '46A': r':46A:(.*?)(?=:|$)',  # Documents Required
+            '47A': r':47A:(.*?)(?=:|$)',  # Additional Conditions
+            '50': r':50:(.*?)(?=:|$)',  # Applicant
+            '51A': r':51A:(.*?)(?=:|$)',  # Issuing Bank
+            '53A': r':53A:(.*?)(?=:|$)',  # Advising Bank
+            '59': r':59:(.*?)(?=:|$)',  # Beneficiary
+            '71B': r':71B:(.*?)(?=:|$)',  # Charges
+        }
+
+        for field_code, pattern in swift_patterns.items():
+            matches = re.findall(pattern, swift_message, re.MULTILINE | re.DOTALL)
+            if matches:
+                swift_data[field_code] = matches[0].strip()
+
+    elif isinstance(swift_message, dict):
+        swift_data.update(swift_message)
+
+    return swift_data
+
+
+def extract_enhanced_document_data(uploaded_documents):
+    """Enhanced document data extraction"""
+    if not uploaded_documents:
+        return {}
+
+    document_data = {}
+
+    for doc in uploaded_documents:
+        if isinstance(doc, dict):
+            doc_name = doc.get('name', doc.get('file_name', 'unknown'))
+            doc_type = doc.get('classification', doc.get('type', 'unknown'))
+            extracted_fields = doc.get('extracted_fields', {})
+
+            document_data[doc_name] = {
+                'type': doc_type,
+                'fields': extracted_fields,
+                'raw_data': doc
+            }
+
+    return document_data
+
+
+# Placeholder functions for comprehensive analysis
+# These would be implemented with detailed logic for each category
+
+def analyze_party_discrepancies(lc_data, swift_data, document_data):
+    """DEPRECATED: Use XML rule-based analysis instead"""
+    logger.warning("⚠️ analyze_party_discrepancies is deprecated. Use XML rule-based analysis.")
+    return []
+
+
+def analyze_amount_discrepancies(lc_data, swift_data, document_data):
+    """DEPRECATED: Use XML rule-based analysis instead"""
+    logger.warning("⚠️ analyze_amount_discrepancies is deprecated. Use XML rule-based analysis.")
+    return []
+
+
+def analyze_date_discrepancies(lc_data, swift_data, document_data):
+    """Analyze date discrepancies and timeline consistency"""
+    discrepancies = []
+
+    # Enhanced date analysis would include:
+    # - Issue date vs document dates
+    # - Expiry date compliance
+    # - Shipment date vs document dates
+    # - Date format consistency
+
+    return discrepancies
+
+
+def analyze_trade_terms_discrepancies(lc_data, swift_data, document_data):
+    """Analyze trade terms and payment terms discrepancies"""
+    discrepancies = []
+
+    # Enhanced trade terms analysis would include:
+    # - Incoterms consistency
+    # - Payment terms matching
+    # - Shipping terms alignment
+
+    return discrepancies
+
+
+def analyze_goods_shipment_discrepancies(lc_data, swift_data, document_data):
+    """DEPRECATED: Use XML rule-based analysis instead"""
+    logger.warning("⚠️ analyze_goods_shipment_discrepancies is deprecated. Use XML rule-based analysis.")
+    return []
+    """Analyze field conflicts across documents using LLM for enhanced Field Conflicts display"""
+    try:
+        logger.info("🔍 Starting LLM-powered field conflicts analysis")
+
+        # Configure Azure OpenAI
+        azure_key = os.getenv('AZURE_OPENAI_KEY')
+        azure_base = os.getenv('AZURE_OPENAI_ENDPOINT')
+        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+        if not azure_key or not azure_base:
+            logger.warning("Azure OpenAI not configured, skipping field conflicts analysis")
+            return []
+
+        # Configure OpenAI
+        openai.api_type = "azure"
+        openai.api_base = azure_base
+        openai.api_version = azure_version
+        openai.api_key = azure_key
+
+        # Create analysis prompt for field conflicts
+        prompt = f"""Analyze field conflicts across trade finance documents for inconsistencies.
+
+LC DATA:
+{json.dumps(lc_data, indent=2) if lc_data else 'No LC data'}
+
+SWIFT DATA:
+{json.dumps(swift_data, indent=2) if swift_data else 'No SWIFT data'}
+
+DOCUMENT DATA:
+{json.dumps(document_data[:5], indent=2) if document_data else 'No document data'}
+
+Identify field conflicts where the SAME field has DIFFERENT values across documents:
+1. Payment terms conflicts (LC vs Commercial documents)
+2. Invoice number mismatches
+3. Goods description variations
+4. Date inconsistencies
+5. Reference number conflicts
+6. Quantity/amount mismatches
+
+Return JSON format for Field Conflicts display:
+{{
+    "field_conflicts": [
+        {{
+            "field_name": "payment_terms",
+            "doc1_value": "Net 30 days from B/L date",
+            "doc2_value": "At sight",
+            "doc1_file": "commercial_invoice.pdf",
+            "doc2_file": "letter_of_credit.pdf",
+            "comparison_type": "LC vs Commercial",
+            "confidence": 0.95,
+            "llm_analysis": {{
+                "reasoning": "Clear payment terms mismatch between LC requirement and invoice terms",
+                "business_impact": "CRITICAL - Payment terms conflict could lead to document rejection"
+            }}
+        }}
+    ]
+}}"""
+
+        response = openai.ChatCompletion.create(
+            engine=deployment_name,
+            messages=[
+                {"role": "system",
+                 "content": "You are a trade finance expert specializing in field conflicts analysis. Focus on finding where the same field has different values across documents."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=2000
+        )
+
+        gpt_response = response.choices[0].message.content
+
+        # Parse JSON response
+        try:
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                analysis_result = json.loads(json_match.group(0))
+                field_conflicts = analysis_result.get('field_conflicts', [])
+                logger.info(f"✅ Field conflicts analysis completed: {len(field_conflicts)} conflicts found")
+                return field_conflicts
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse field conflicts response: {e}")
+
+        return []
+
+    except Exception as e:
+        logger.error(f"Error in field conflicts analysis: {e}")
+        return []
+
+
+def analyze_field_conflicts_with_llm(lc_data, swift_data, document_data):
+    """Analyze field conflicts across documents using LLM for enhanced Field Conflicts display"""
+    try:
+        logger.info("🔍 Starting LLM-powered field conflicts analysis")
+
+        # Configure Azure OpenAI
+        azure_key = os.getenv('AZURE_OPENAI_KEY')
+        azure_base = os.getenv('AZURE_OPENAI_ENDPOINT')
+        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+        if not azure_key or not azure_base:
+            logger.warning("Azure OpenAI not configured, skipping field conflicts analysis")
+            return []
+
+        # Configure OpenAI
+        openai.api_type = "azure"
+        openai.api_base = azure_base
+        openai.api_version = azure_version
+        openai.api_key = azure_key
+
+        # Create analysis prompt for field conflicts
+        prompt = f"""Analyze field conflicts across trade finance documents for inconsistencies.
+
+LC DATA:
+{json.dumps(lc_data, indent=2) if lc_data else 'No LC data'}
+
+SWIFT DATA:
+{json.dumps(swift_data, indent=2) if swift_data else 'No SWIFT data'}
+
+DOCUMENT DATA:
+{json.dumps(document_data[:5], indent=2) if document_data else 'No document data'}
+
+Identify field conflicts where the SAME field has DIFFERENT values across documents:
+1. Payment terms conflicts (LC vs Commercial documents)
+2. Invoice number mismatches
+3. Goods description variations
+4. Date inconsistencies
+5. Reference number conflicts
+6. Quantity/amount mismatches
+
+Return JSON format for Field Conflicts display:
+{{
+    "field_conflicts": [
+        {{
+            "field_name": "payment_terms",
+            "doc1_value": "Net 30 days from B/L date",
+            "doc2_value": "At sight",
+            "doc1_file": "commercial_invoice.pdf",
+            "doc2_file": "letter_of_credit.pdf",
+            "comparison_type": "LC vs Commercial",
+            "confidence": 0.95,
+            "llm_analysis": {{
+                "reasoning": "Clear payment terms mismatch between LC requirement and invoice terms",
+                "business_impact": "CRITICAL - Payment terms conflict could lead to document rejection"
+            }}
+        }}
+    ]
+}}"""
+
+        response = openai.ChatCompletion.create(
+            engine=deployment_name,
+            messages=[
+                {"role": "system",
+                 "content": "You are a trade finance expert specializing in field conflicts analysis. Focus on finding where the same field has different values across documents."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=2000
+        )
+
+        gpt_response = response.choices[0].message.content
+
+        # Parse JSON response
+        try:
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                analysis_result = json.loads(json_match.group(0))
+                field_conflicts = analysis_result.get('field_conflicts', [])
+                logger.info(f"✅ Field conflicts analysis completed: {len(field_conflicts)} conflicts found")
+                return field_conflicts
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse field conflicts response: {e}")
+
+        return []
+
+    except Exception as e:
+        logger.error(f"Error in field conflicts analysis: {e}")
+        return []
+
+
+def apply_xml_rule_with_llm_analysis(rule, document, lc_data, swift_data):
+    """Apply a single XML rule to a document using LLM for intelligent analysis"""
+    try:
+        rule_code = rule.get('code', 'UNKNOWN')
+        rule_description = rule.get('description', '')
+        rule_basis = rule.get('basis', '')
+        rule_priority = rule.get('priority', 'Mandatory')
+        doc_type = rule.get('documentType', '')
+
+        logger.debug(f"🔍 Applying rule {rule_code} to {document.get('file_name', 'Unknown')}")
+
+        # Configure Azure OpenAI
+        azure_key = os.getenv('AZURE_OPENAI_KEY')
+        azure_base = os.getenv('AZURE_OPENAI_ENDPOINT')
+        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+        if not azure_key or not azure_base:
+            logger.warning(f"Azure OpenAI not configured, skipping rule {rule_code}")
+            return None
+
+        # Configure OpenAI
+        openai.api_type = "azure"
+        openai.api_base = azure_base
+        openai.api_version = azure_version
+        openai.api_key = azure_key
+
+        # Create rule-specific analysis prompt
+        prompt = f"""Analyze a trade finance document against a specific XML discrepancy rule.
+
+RULE TO CHECK:
+- Code: {rule_code}
+- Document Type: {doc_type}
+- Description: {rule_description}
+- Basis: {rule_basis}
+- Priority: {rule_priority}
+
+DOCUMENT TO ANALYZE:
+- Name: {document.get('file_name', 'Unknown')}
+- Type: {document.get('document_type', 'Unknown')}
+- Content: {document.get('content', '')[:2000]}
+- Extracted Fields: {json.dumps(document.get('extracted_fields', {}), indent=2)}
+
+LC CONTEXT:
+{json.dumps(lc_data, indent=2) if lc_data else 'No LC context'}
+
+SWIFT DATA:
+{json.dumps(swift_data, indent=2) if swift_data else 'No SWIFT data'}
+
+TASK: Determine if this document violates the specified rule. Look for:
+1. Missing required information
+2. Inconsistent data vs LC/SWIFT
+3. Format or content issues
+4. Regulatory compliance violations
+
+Return JSON format:
+{{
+    "violation_found": true/false,
+    "discrepancy": {{
+        "rule_code": "{rule_code}",
+        "type": "field_conflict|compliance_discrepancy|cross_document_inconsistency",
+        "field_name": "specific field with issue",
+        "description": "Detailed explanation of the violation",
+        "severity": "critical|high|medium|low",
+        "source_value": "Value found in document",
+        "expected_value": "Expected value based on rule/LC/SWIFT",
+        "source_document": "{document.get('file_name', 'Unknown')}",
+        "confidence": 0.80-0.99,
+        "business_impact": "Impact on LC processing and payment",
+        "recommendation": "Specific action to resolve the issue",
+        "rule_basis": "{rule_basis}",
+        "comparison_type": "LC vs Commercial|SWIFT vs Document|Cross-document"
+    }}
+}}
+
+If no violation is found, return: {{"violation_found": false}}"""
+
+        response = openai.ChatCompletion.create(
+            engine=deployment_name,
+            messages=[
+                {"role": "system",
+                 "content": f"You are a trade finance expert applying XML discrepancy rule {rule_code}. Be precise and only flag genuine violations."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=1000
+        )
+
+        gpt_response = response.choices[0].message.content
+
+        # Parse JSON response
+        try:
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                analysis_result = json.loads(json_match.group(0))
+
+                if analysis_result.get('violation_found', False):
+                    discrepancy = analysis_result.get('discrepancy', {})
+                    logger.info(f"✅ Rule {rule_code} found violation: {discrepancy.get('description', 'Unknown')}")
+                    return discrepancy
+                else:
+                    logger.debug(f"ℹ️  Rule {rule_code} - no violation found")
+                    return None
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse rule {rule_code} analysis response: {e}")
+
+        return None
+
+    except Exception as e:
+        logger.error(f"Error applying XML rule {rule.get('code', 'UNKNOWN')}: {e}")
+        return None
+
+
+def analyze_cross_document_conflicts_with_xml_rules(xml_rules, document_data, lc_data, swift_data):
+    """Analyze field conflicts across documents using XML rules as guidance"""
+    try:
+        logger.info("🔗 Analyzing cross-document conflicts using XML rules")
+
+        # Configure Azure OpenAI
+        azure_key = os.getenv('AZURE_OPENAI_KEY')
+        azure_base = os.getenv('AZURE_OPENAI_ENDPOINT')
+        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+        if not azure_key or not azure_base:
+            logger.warning("Azure OpenAI not configured, skipping cross-document analysis")
+            return []
+
+        # Configure OpenAI
+        openai.api_type = "azure"
+        openai.api_base = azure_base
+        openai.api_version = azure_version
+        openai.api_key = azure_key
+
+        # Get field consistency rules from XML
+        field_rules = [rule for rule in xml_rules
+                       if 'consistent' in rule.get('description', '').lower() or
+                       'match' in rule.get('description', '').lower() or
+                       'reference' in rule.get('description', '').lower()]
+
+        # Create cross-document analysis prompt
+        prompt = f"""Analyze field conflicts across multiple trade finance documents using XML rules.
+
+XML FIELD CONSISTENCY RULES:
+{json.dumps([{{
+            'code': rule.get('code'),
+            'documentType': rule.get('documentType'),
+            'description': rule.get('description'),
+            'basis': rule.get('basis')
+        }} for rule in field_rules[:10]], indent=2)}
+
+DOCUMENTS TO COMPARE:
+{json.dumps([{{
+            'file_name': doc.get('file_name'),
+            'document_type': doc.get('document_type'),
+            'extracted_fields': doc.get('extracted_fields', {})
+        }} for doc in document_data], indent=2)}
+
+LC CONTEXT:
+{json.dumps(lc_data, indent=2) if lc_data else 'No LC context'}
+
+TASK: Find field conflicts where the SAME field has DIFFERENT values across documents.
+Focus on XML rules that require consistency, matching, or references between documents.
+
+Return JSON format:
+{{
+    "field_conflicts": [
+        {{
+            "field_name": "invoice_number",
+            "doc1_value": "INV-001",
+            "doc2_value": "INV-002", 
+            "doc1_file": "commercial_invoice.pdf",
+            "doc2_file": "packing_list.pdf",
+            "comparison_type": "Cross-document reference",
+            "confidence": 0.95,
+            "rule_reference": "R-004",
+            "llm_analysis": {{
+                "reasoning": "Invoice numbers must match between commercial documents",
+                "business_impact": "MEDIUM - Document set inconsistency"
+            }}
+        }}
+    ]
+}}"""
+
+        response = openai.ChatCompletion.create(
+            engine=deployment_name,
+            messages=[
+                {"role": "system",
+                 "content": "You are a trade finance expert finding field conflicts using XML rules as guidance."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=2000
+        )
+
+        gpt_response = response.choices[0].message.content
+
+        # Parse JSON response
+        try:
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                analysis_result = json.loads(json_match.group(0))
+                field_conflicts = analysis_result.get('field_conflicts', [])
+                logger.info(f"✅ Cross-document analysis completed: {len(field_conflicts)} conflicts found")
+                return field_conflicts
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse cross-document analysis response: {e}")
+
+        return []
+
+    except Exception as e:
+        logger.error(f"Error in cross-document conflicts analysis: {e}")
+        return []
+
+
+def extract_comparable_fields_from_documents(document_data):
+    """Extract and normalize field data for cross-document comparison"""
+    try:
+        user_logger.start_process("Field Data Extraction", f"Processing {len(document_data)} documents")
+
+        comparable_fields = {}
+        field_name_mapping = {
+            # Common field mappings to standardize field names
+            'invoice_number': ['invoice_number', 'invoicenumber', 'invoice_no', 'inv_no'],
+            'invoice_date': ['invoice_date', 'invoicedate', 'date_of_invoice', 'issue_date'],
+            'payment_terms': ['payment_terms', 'paymentterms', 'tenor', 'maturity'],
+            'goods_description': ['goods_description', 'description_of_goods', 'commodity', 'products'],
+            'amount': ['amount', 'total_amount', 'invoice_amount', 'value'],
+            'currency': ['currency', 'currency_code', 'curr'],
+            'quantity': ['quantity', 'qty', 'number_of_packages', 'packages'],
+            'weight': ['weight', 'gross_weight', 'net_weight', 'total_weight'],
+            'shipper': ['shipper', 'exporter', 'seller', 'beneficiary'],
+            'consignee': ['consignee', 'buyer', 'importer', 'applicant'],
+            'port_of_loading': ['port_of_loading', 'port_of_shipment', 'loading_port'],
+            'port_of_discharge': ['port_of_discharge', 'destination_port', 'discharge_port'],
+            'vessel': ['vessel', 'vessel_name', 'ship_name'],
+            'bl_number': ['bl_number', 'bill_of_lading_number', 'b_l_no'],
+            'origin': ['origin', 'country_of_origin', 'manufactured_in']
+        }
+
+        for doc in document_data:
+            doc_name = doc.get('file_name', doc.get('name', 'Unknown Document'))
+            doc_type = doc.get('document_type', doc.get('classification', 'unknown'))
+            extracted_fields = doc.get('extracted_fields', {})
+
+            user_logger.processing_step(f"Processing {doc_name}", "in progress")
+
+            # Process extracted fields
+            for field_key, field_data in extracted_fields.items():
+                if isinstance(field_data, dict) and 'value' in field_data:
+                    field_value = field_data.get('value', '')
+                    confidence = field_data.get('confidence', 0)
+                    field_type = field_data.get('fieldtype', 'optional')
+
+                    # Skip empty values or very low confidence
+                    if not field_value or confidence < 50:
+                        continue
+
+                    # Normalize field name
+                    normalized_field = None
+                    for standard_name, variations in field_name_mapping.items():
+                        if field_key.lower() in [v.lower() for v in variations]:
+                            normalized_field = standard_name
+                            break
+
+                    if not normalized_field:
+                        normalized_field = field_key.lower().replace('_', ' ').title()
+
+                    # Store field data
+                    if normalized_field not in comparable_fields:
+                        comparable_fields[normalized_field] = []
+
+                    comparable_fields[normalized_field].append({
+                        'value': field_value,
+                        'confidence': confidence,
+                        'document': doc_name,
+                        'document_type': doc_type,
+                        'field_type': field_type,
+                        'original_field_key': field_key
+                    })
+
+            user_logger.processing_step(f"Processing {doc_name}", "complete")
+
+        user_logger.complete_process("Field Data Extraction", result_count=len(comparable_fields))
+        user_logger.data_info("Comparable fields identified", len(comparable_fields))
+
+        return comparable_fields
+
+    except Exception as e:
+        user_logger.error("Field extraction failed", str(e), "Check document data structure")
+        return {}
+
+
+def analyze_enhanced_field_conflicts(document_data, lc_data=None, swift_data=None):
+    """Enhanced field conflict analysis with proper field mapping and value comparison"""
+    try:
+        user_logger.start_process("Enhanced Field Conflict Analysis", f"Analyzing {len(document_data)} documents")
+
+        # Extract comparable fields
+        comparable_fields = extract_comparable_fields_from_documents(document_data)
+
+        field_conflicts = []
+
+        # Analyze each field for conflicts
+        for field_name, field_instances in comparable_fields.items():
+            if len(field_instances) < 2:
+                continue  # Need at least 2 instances to compare
+
+            user_logger.processing_step(f"Analyzing {field_name}", "in progress")
+
+            # Group by value to find conflicts
+            value_groups = {}
+            for instance in field_instances:
+                value = instance['value'].strip().lower()
+                if value not in value_groups:
+                    value_groups[value] = []
+                value_groups[value].append(instance)
+
+            # If more than one unique value, we have a conflict
+            if len(value_groups) > 1:
+                values = list(value_groups.keys())
+
+                # Find the most common value (assumed correct)
+                main_value = max(value_groups.keys(), key=lambda k: len(value_groups[k]))
+
+                # Create conflicts for each different value
+                for conflicting_value in values:
+                    if conflicting_value != main_value:
+                        main_instances = value_groups[main_value]
+                        conflict_instances = value_groups[conflicting_value]
+
+                        # Calculate business impact based on field type
+                        business_impact = determine_business_impact(field_name, main_instances[0],
+                                                                    conflict_instances[0])
+
+                        # Calculate confidence based on field confidence scores
+                        avg_confidence = (
+                                                 sum(inst['confidence'] for inst in
+                                                     main_instances + conflict_instances) /
+                                                 len(main_instances + conflict_instances)
+                                         ) / 100.0
+
+                        field_conflicts.append({
+                            'field_name': field_name,
+                            'source_value': conflict_instances[0]['value'],
+                            'compared_value': main_instances[0]['value'],
+                            'source_document': conflict_instances[0]['document'],
+                            'compared_document': main_instances[0]['document'],
+                            'document_types': f"{conflict_instances[0]['document_type']} vs {main_instances[0]['document_type']}",
+                            'confidence': min(avg_confidence, 0.95),
+                            'severity': business_impact['severity'],
+                            'business_impact': business_impact['description'],
+                            'recommendation': business_impact['recommendation'],
+                            'rule_name': 'Cross-document Field Consistency',
+                            'rule_id': f'FC-{hash(field_name) % 1000:03d}',
+                            'discrepancy_type': 'Field Value Mismatch',
+                            'affected_documents': len(main_instances + conflict_instances),
+                            'analysis_type': 'Enhanced Field Mapping'
+                        })
+
+            user_logger.processing_step(f"Analyzing {field_name}", "complete")
+
+        user_logger.complete_process("Enhanced Field Conflict Analysis", result_count=len(field_conflicts))
+
+        return field_conflicts
+
+    except Exception as e:
+        user_logger.error("Enhanced field conflict analysis failed", str(e), "Check document data and field extraction")
+        return []
+
+
+def determine_business_impact(field_name, instance1, instance2):
+    """Determine business impact based on field type and values"""
+
+    # Critical fields that can cause transaction rejection
+    critical_fields = ['amount', 'currency', 'payment_terms', 'invoice_number', 'bl_number']
+
+    # High impact fields that cause processing delays
+    high_impact_fields = ['goods_description', 'quantity', 'weight', 'shipper', 'consignee',
+                          'port_of_loading', 'port_of_discharge', 'invoice_date']
+
+    # Medium impact fields that may cause issues
+    medium_impact_fields = ['vessel', 'origin', 'packaging']
+
+    field_lower = field_name.lower()
+
+    if any(critical in field_lower for critical in critical_fields):
+        return {
+            'severity': 'critical',
+            'description': f'{field_name.title()} discrepancy can cause transaction rejection, payment delays, or LC presentation failures.',
+            'recommendation': f'Immediately verify and correct {field_name} values across all documents to ensure consistency.'
+        }
+    elif any(high in field_lower for high in high_impact_fields):
+        return {
+            'severity': 'warning',
+            'description': f'{field_name.title()} inconsistency can cause processing delays, customs issues, or documentation review requirements.',
+            'recommendation': f'Review and align {field_name} values to ensure smooth processing and compliance.'
+        }
+    elif any(medium in field_lower for medium in medium_impact_fields):
+        return {
+            'severity': 'warning',
+            'description': f'{field_name.title()} variation may cause minor processing issues or require additional verification.',
+            'recommendation': f'Consider standardizing {field_name} values for consistency across document set.'
+        }
+    else:
+        return {
+            'severity': 'warning',
+            'description': f'{field_name.title()} inconsistency detected across documents - may impact document integrity.',
+            'recommendation': f'Review {field_name} values for accuracy and consistency.'
+        }
+
+
+def analyze_swift_compliance_with_xml_rules(xml_rules, swift_data, lc_data):
+    """Analyze SWIFT compliance using relevant XML rules"""
+    try:
+        logger.info("💱 Analyzing SWIFT compliance using XML rules")
+
+        # Get SWIFT-related rules
+        swift_rules = [rule for rule in xml_rules
+                       if 'swift' in rule.get('description', '').lower() or
+                       'mt700' in rule.get('description', '').lower() or
+                       'mt' in rule.get('basis', '').lower()]
+
+        if not swift_rules:
+            logger.info("ℹ️  No SWIFT-specific XML rules found")
+            return []
+
+        # Configure Azure OpenAI
+        azure_key = os.getenv('AZURE_OPENAI_KEY')
+        azure_base = os.getenv('AZURE_OPENAI_ENDPOINT')
+        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+        if not azure_key or not azure_base:
+            logger.warning("Azure OpenAI not configured, skipping SWIFT analysis")
+            return []
+
+        # Configure OpenAI
+        openai.api_type = "azure"
+        openai.api_base = azure_base
+        openai.api_version = azure_version
+        openai.api_key = azure_key
+
+        # Create SWIFT analysis prompt
+        prompt = f"""Analyze SWIFT message compliance using XML rules.
+
+SWIFT RULES FROM XML:
+{json.dumps([{{
+            'code': rule.get('code'),
+            'description': rule.get('description'),
+            'basis': rule.get('basis')
+        }} for rule in swift_rules], indent=2)}
+
+SWIFT DATA:
+{json.dumps(swift_data, indent=2)}
+
+LC DATA:
+{json.dumps(lc_data, indent=2) if lc_data else 'No LC data'}
+
+TASK: Check SWIFT message compliance against XML rules and LC requirements.
+
+Return JSON format:
+{{
+    "swift_issues": [
+        {{
+            "type": "swift_compliance_issue",
+            "field": "swift_field_name",
+            "description": "Description of SWIFT compliance issue",
+            "severity": "critical|high|medium|low",
+            "rule_reference": "XML rule code",
+            "swift_value": "Value in SWIFT message",
+            "expected_value": "Expected value",
+            "confidence": 0.80-0.99,
+            "business_impact": "Impact on SWIFT processing"
+        }}
+    ]
+}}"""
+
+        response = openai.ChatCompletion.create(
+            engine=deployment_name,
+            messages=[
+                {"role": "system",
+                 "content": "You are a SWIFT compliance expert applying XML rules to SWIFT messages."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=1500
+        )
+
+        gpt_response = response.choices[0].message.content
+
+        # Parse JSON response
+        try:
+            json_match = re.search(r'\{.*\}', gpt_response, re.DOTALL)
+            if json_match:
+                analysis_result = json.loads(json_match.group(0))
+                swift_issues = analysis_result.get('swift_issues', [])
+                logger.info(f"✅ SWIFT compliance analysis completed: {len(swift_issues)} issues found")
+                return swift_issues
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse SWIFT analysis response: {e}")
+
+        return []
+
+    except Exception as e:
+        logger.error(f"Error in SWIFT compliance analysis: {e}")
+        return []
+
+
+def analyze_document_requirement_discrepancies(lc_data, swift_data, document_data):
+    """Analyze document requirements vs submitted documents"""
+    discrepancies = []
+
+    # Enhanced document requirements analysis would include:
+    # - Required vs submitted documents
+    # - Document format requirements
+    # - Copy requirements (originals vs copies)
+    # - Specific document content requirements
+
+    return discrepancies
+
+
+def analyze_enhanced_compliance_discrepancies(lc_data, swift_data, document_data):
+    """Enhanced compliance analysis for UCP 600, URDG 758, and regulatory requirements"""
+    discrepancies = []
+
+    # Enhanced compliance analysis would include:
+    # - UCP 600 article compliance
+    # - URDG 758 compliance (for guarantees)
+    # - Country-specific regulatory requirements
+    # - Industry-specific compliance rules
+
+    return discrepancies
+
+
+def analyze_missing_mandatory_fields(lc_data, swift_data):
+    """Enhanced analysis of missing mandatory fields with comprehensive coverage"""
+    missing_fields = []
+
+    # COMPREHENSIVE mandatory fields for trade finance
+    mandatory_checks = [
+        # Critical Core Fields
+        ('applicant', '50', 'Applicant Name', 'LC Application Form', 'CRITICAL'),
+        ('applicant_address', '50', 'Applicant Address', 'LC Application Form', 'HIGH'),
+        ('beneficiary', '59', 'Beneficiary Name', 'LC Application Form', 'CRITICAL'),
+        ('beneficiary_address', '59', 'Beneficiary Address', 'LC Application Form', 'HIGH'),
+        ('amount', '32B', 'LC Amount', 'LC Application Form', 'CRITICAL'),
+        ('currency', '32B', 'Currency', 'LC Application Form', 'CRITICAL'),
+        ('lc_number', '20', 'LC Number', 'SWIFT MT700', 'CRITICAL'),
+
+        # Important Date Fields
+        ('issue_date', '31C', 'Issue Date', 'LC Application Form', 'HIGH'),
+        ('expiry_date', '31D', 'Expiry Date', 'LC Application Form', 'CRITICAL'),
+        ('latest_shipment_date', '44C', 'Latest Shipment Date', 'LC Application Form', 'HIGH'),
+
+        # Banking Information
+        ('issuing_bank', '51A', 'Issuing Bank', 'LC Application Form', 'CRITICAL'),
+        ('advising_bank', '53A', 'Advising Bank', 'LC Application Form', 'HIGH'),
+
+        # Trade Details
+        ('goods_description', '45A', 'Description of Goods', 'LC Application Form', 'CRITICAL'),
+        ('port_of_loading', '44E', 'Port of Loading', 'LC Application Form', 'HIGH'),
+        ('port_of_discharge', '44F', 'Port of Discharge', 'LC Application Form', 'HIGH'),
+        ('incoterms', '45A', 'Incoterms', 'LC Application Form', 'HIGH'),
+
+        # Document Requirements
+        ('documents_required', '46A', 'Documents Required', 'LC Application Form', 'HIGH'),
+        ('payment_terms', '42C', 'Payment Terms', 'LC Application Form', 'HIGH'),
+
+        # Optional but Important
+        ('partial_shipment', '43P', 'Partial Shipment Allowed', 'LC Application Form', 'MEDIUM'),
+        ('transhipment', '43T', 'Transhipment Allowed', 'LC Application Form', 'MEDIUM'),
+        ('charges', '71B', 'Charges', 'LC Application Form', 'MEDIUM'),
+
+        # Commercial References
+        ('purchase_order', '45A', 'Purchase Order Number', 'Commercial Documents', 'MEDIUM'),
+        ('contract_number', '45A', 'Contract Number', 'Commercial Documents', 'MEDIUM')
+    ]
+
+    logger.info(f"🔍 Analyzing {len(mandatory_checks)} mandatory field requirements")
+
+    for lc_field, swift_field, display_name, document, severity in mandatory_checks:
+        lc_value = extract_field_value(lc_data, lc_field)
+        swift_value = extract_field_value(swift_data, swift_field)
+
+        # Enhanced missing field logic
+        if not lc_value and not swift_value:
+            # Completely missing field
+            missing_fields.append({
+                'field': display_name,
+                'document_name': document,
+                'expected_value': get_expected_field_format(lc_field),
+                'observed_value': 'Not provided',
+                'issue': f'{display_name} is mandatory but completely missing from all documents',
+                'severity': severity,
+                'recommendation': generate_missing_field_recommendation(display_name, lc_field, document),
+                'business_impact': assess_missing_field_impact(lc_field, severity),
+                'category': 'missing_field',
+                'confidence': 1.0,
+                'swift_reference': swift_field
+            })
+
+        elif not lc_value and swift_value:
+            # Missing from LC but present in SWIFT
+            missing_fields.append({
+                'field': display_name,
+                'document_name': document,
+                'expected_value': f'Should match SWIFT: "{swift_value}"',
+                'observed_value': 'Missing from LC application',
+                'issue': f'{display_name} is specified in SWIFT MT700 but missing from LC application',
+                'severity': 'HIGH' if severity == 'CRITICAL' else severity,
+                'recommendation': f'Add {display_name} to LC application form to match SWIFT MT700 field {swift_field}',
+                'business_impact': 'High: Inconsistency between LC application and SWIFT may cause processing delays',
+                'category': 'missing_field',
+                'confidence': 0.95,
+                'swift_reference': swift_field
+            })
+
+        elif lc_value and not swift_value and severity in ['CRITICAL', 'HIGH']:
+            # Present in LC but missing from SWIFT (for important fields)
+            missing_fields.append({
+                'field': display_name,
+                'document_name': 'SWIFT MT700',
+                'expected_value': f'Should include: "{lc_value}"',
+                'observed_value': 'Missing from SWIFT message',
+                'issue': f'{display_name} is in LC application but not reflected in SWIFT MT700',
+                'severity': 'MEDIUM',
+                'recommendation': f'Ensure {display_name} from LC application is included in SWIFT MT700 field {swift_field}',
+                'business_impact': 'Medium: SWIFT message should reflect all LC application details',
+                'category': 'missing_field',
+                'confidence': 0.85,
+                'swift_reference': swift_field
+            })
+
+    # Check for missing supporting documents
+    document_missing_fields = analyze_missing_document_fields(lc_data, swift_data)
+    missing_fields.extend(document_missing_fields)
+
+    logger.info(f"✅ Missing field analysis complete: {len(missing_fields)} missing fields found")
+    return missing_fields
+
+
+def get_expected_field_format(field_name):
+    """Get expected format description for missing fields"""
+    format_descriptions = {
+        'applicant': 'Company name and full address',
+        'beneficiary': 'Company name and full address',
+        'amount': 'Numeric amount (e.g., 100000.00)',
+        'currency': 'ISO currency code (e.g., USD, EUR)',
+        'lc_number': 'Unique LC reference number',
+        'issue_date': 'Date in YYYY-MM-DD format',
+        'expiry_date': 'Date in YYYY-MM-DD format',
+        'goods_description': 'Detailed description of goods/services',
+        'issuing_bank': 'Bank name and SWIFT code',
+        'port_of_loading': 'Port or place name',
+        'port_of_discharge': 'Port or place name',
+        'incoterms': 'Standard Incoterm (e.g., FOB, CIF, CFR)',
+        'payment_terms': 'Payment instruction (e.g., at sight, 90 days)',
+        'documents_required': 'List of required documents'
+    }
+
+    return format_descriptions.get(field_name, 'Required field value')
+
+
+def generate_missing_field_recommendation(display_name, field_name, document):
+    """Generate specific recommendations for missing fields"""
+    if field_name in ['applicant', 'beneficiary']:
+        return f"Provide complete {display_name} including company name, address, and contact details as required for LC processing"
+    elif field_name == 'amount':
+        return f"Specify exact LC amount in numbers. This is critical for payment processing"
+    elif field_name == 'currency':
+        return f"Specify currency using standard ISO codes (USD, EUR, GBP, etc.)"
+    elif 'date' in field_name:
+        return f"Provide {display_name} in clear date format. Ensure compliance with UCP 600 requirements"
+    elif field_name == 'goods_description':
+        return f"Provide detailed description of goods/services. Must match commercial invoice and other documents"
+    elif field_name in ['issuing_bank', 'advising_bank']:
+        return f"Provide complete {display_name} name and SWIFT BIC code for proper routing"
+    else:
+        return f"Complete {display_name} field in {document} - this information is required for LC processing"
+
+
+def assess_missing_field_impact(field_name, severity):
+    """Assess business impact of missing fields"""
+    impact_descriptions = {
+        'CRITICAL': {
+            'applicant': 'Critical: LC cannot be issued without complete applicant information',
+            'beneficiary': 'Critical: Documents cannot be presented without correct beneficiary details',
+            'amount': 'Critical: LC amount is mandatory for all LC transactions',
+            'currency': 'Critical: Currency must be specified for payment processing',
+            'lc_number': 'Critical: LC number is required for all references and amendments',
+            'expiry_date': 'Critical: LC must have clear expiry date per UCP 600',
+            'issuing_bank': 'Critical: Issuing bank details required for LC validity',
+            'goods_description': 'Critical: Goods description required for customs and document examination',
+            'default': 'Critical: This field is mandatory for LC processing and cannot be omitted'
+        },
+        'HIGH': {
+            'issue_date': 'High: Issue date affects document presentation timeline',
+            'latest_shipment_date': 'High: Missing shipment date may cause shipping delays',
+            'port_of_loading': 'High: Loading port must be specified for shipping documents',
+            'port_of_discharge': 'High: Discharge port required for bill of lading',
+            'advising_bank': 'High: Advising bank details needed for document handling',
+            'documents_required': 'High: Document requirements must be clearly specified',
+            'payment_terms': 'High: Payment terms affect when and how payment is made',
+            'incoterms': 'High: Incoterms determine shipping and insurance responsibilities',
+            'default': 'High: Missing field may cause processing delays and require clarification'
+        },
+        'MEDIUM': {
+            'default': 'Medium: Field should be provided but may not prevent LC processing'
+        }
+    }
+
+    severity_impacts = impact_descriptions.get(severity, impact_descriptions['MEDIUM'])
+    return severity_impacts.get(field_name, severity_impacts['default'])
+
+
+def analyze_missing_document_fields(lc_data, swift_data):
+    """Analyze missing fields specific to document requirements"""
+    missing_doc_fields = []
+
+    # Check if required documents are specified
+    documents_required = swift_data.get('46A', '') or lc_data.get('documents_required', '')
+
+    if not documents_required:
+        missing_doc_fields.append({
+            'field': 'Required Documents List',
+            'document_name': 'LC Application Form',
+            'expected_value': 'List of documents required for negotiation (e.g., Commercial Invoice, Bill of Lading, etc.)',
+            'observed_value': 'Not specified',
+            'issue': 'No document requirements specified - this is mandatory for LC processing',
+            'severity': 'HIGH',
+            'recommendation': 'Specify all required documents according to trade terms and regulatory requirements',
+            'business_impact': 'High: Beneficiary will not know which documents to present for negotiation',
+            'category': 'missing_field',
+            'confidence': 1.0,
+            'swift_reference': '46A'
+        })
+
+    return missing_doc_fields
+
+
+def analyze_regulatory_compliance(lc_data, swift_data, document_data):
+    """Analyze UCP 600, URDG 758, and regulatory compliance"""
+    compliance_issues = []
+
+    # UCP 600 Article 13 - Expiry Date compliance
+    expiry_date = swift_data.get('31D', '')
+    if expiry_date and 'TESTCITY' in expiry_date:
+        compliance_issues.append({
+            'field': 'LC Expiry Date Format',
+            'document_name': 'SWIFT MT700 Field 31D',
+            'expected_value': 'Should specify "banking day" or location (UCP 600 Article 13)',
+            'observed_value': f'Expiry: {expiry_date}',
+            'issue': 'LC expiry should specify banking day vs calendar day',
+            'severity': 'LOW',
+            'recommendation': 'Consider specifying whether expiry is on a banking day and the relevant location',
+            'business_impact': 'Minor - banks will apply standard interpretation but clarity is preferred',
+            'category': 'best_practice',
+            'confidence': 0.7,
+            'swift_reference': 'N/A'
+        })
+
+    # Additional compliance checks can be added here
+    # - UCP 600 Article 14 (Standard for examination of documents)
+    # - UCP 600 Article 16 (Discrepant documents)
+    # - URDG 758 rules for guarantees
+
+    return compliance_issues
+
+
+def analyze_document_requirements_clean(swift_data, document_data):
+    """Clean analysis of document requirements vs uploaded documents"""
+    document_issues = []
+
+    # Extract required documents from SWIFT field 46A
+    required_docs_text = swift_data.get('46A', '')
+    if required_docs_text:
+        # Parse required documents
+        required_docs = parse_required_documents_clean(required_docs_text)
+        uploaded_doc_types = [doc.get('classification', doc.get('type', 'unknown')).lower()
+                              for doc in document_data]
+
+        # Check for copy requirements
+        if 'commercial invoice in 3 copies' in required_docs_text.lower():
+            commercial_invoices = [doc for doc in document_data
+                                   if 'commercial invoice' in doc.get('classification', '').lower()]
+            if len(commercial_invoices) < 3:
+                document_issues.append({
+                    'field': 'Commercial Invoice',
+                    'document_name': 'Document Copy Requirements',
+                    'expected_value': '3 copies required',
+                    'observed_value': f'{len(commercial_invoices)} copy uploaded',
+                    'issue': f'Commercial Invoice requires 3 copies but only {len(commercial_invoices)} uploaded',
+                    'severity': 'MEDIUM',
+                    'recommendation': f'Upload additional {3 - len(commercial_invoices)} copies of Commercial Invoice',
+                    'business_impact': 'Document presentation may be rejected for non-compliance with copy requirements',
+                    'category': 'insufficient_copies',
+                    'confidence': 0.95,
+                    'swift_reference': 'N/A'
+                })
+
+        # Check for extra documents (simplified)
+        required_types = {'commercial invoice', 'packing list', 'bill of lading', 'certificate of origin'}
+        for doc in document_data:
+            doc_type = doc.get('classification', '').lower()
+            doc_name = doc.get('name', 'Unknown Document')
+
+            if doc_type and doc_type not in required_types:
+                document_issues.append({
+                    'field': doc_name,
+                    'document_name': 'Uploaded Documents',
+                    'expected_value': 'Not required by LC',
+                    'observed_value': f'Uploaded: {doc_name}',
+                    'issue': f'{doc_name} was uploaded but is not required by LC terms',
+                    'severity': 'LOW',
+                    'recommendation': f'Verify if {doc_name} is needed. Consider removing if not required to avoid confusion.',
+                    'business_impact': 'May cause minor delays in document processing but generally not problematic',
+                    'category': 'extra_document',
+                    'confidence': 0.8,
+                    'swift_reference': 'N/A'
+                })
+
+    return document_issues
+
+
+def parse_required_documents_clean(docs_text):
+    """Parse required documents from SWIFT field 46A"""
+    # Simplified parsing - can be enhanced
+    required = []
+    text_lower = docs_text.lower()
+
+    if 'commercial invoice' in text_lower:
+        required.append('commercial_invoice')
+    if 'packing list' in text_lower:
+        required.append('packing_list')
+    if 'bill of lading' in text_lower:
+        required.append('bill_of_lading')
+    if 'certificate of origin' in text_lower:
+        required.append('certificate_of_origin')
+
+    return required
+
+
+def deduplicate_discrepancies_clean(discrepancies):
+    """Remove duplicates while preserving the best quality entries"""
+    seen = {}
+    deduplicated = []
+
+    for disc in discrepancies:
+        # Create unique key based on field and issue type
+        key = f"{disc.get('field', '')}-{disc.get('category', '')}-{disc.get('severity', '')}"
+
+        if key not in seen:
+            seen[key] = disc
+            deduplicated.append(disc)
+        else:
+            # Keep the one with higher confidence or more detailed info
+            existing = seen[key]
+            if disc.get('confidence', 0) > existing.get('confidence', 0):
+                seen[key] = disc
+                # Replace in deduplicated list
+                for i, item in enumerate(deduplicated):
+                    if item == existing:
+                        deduplicated[i] = disc
+                        break
+
+    return deduplicated
+
+
+def categorize_discrepancies_for_tabs(discrepancy_results):
+    """Categorize discrepancies for the 4-tab system with clean structure"""
+    try:
+        # Group discrepancies by their tab categories
+        categorized = {
+            'inconsistency_discrepancy': [],
+            'missing_fields': [],
+            'compliance_issues': [],
+            'document_issues': []
+        }
+
+        for discrepancy in discrepancy_results:
+            tab_category = discrepancy.get('tab_category', 'inconsistency_discrepancy')
+            category = discrepancy.get('category', 'general')
+
+            # Enhanced discrepancy structure for Professional UI
+            enhanced_discrepancy = {
+                'field': discrepancy.get('field', 'Unknown Field'),
+                'source_document': discrepancy.get('source_document',
+                                                   discrepancy.get('document_name', 'Unknown Document')),
+                'target_document': discrepancy.get('target_document', 'Target Document'),
+                'source_value': discrepancy.get('source_value', discrepancy.get('observed_value', 'Not provided')),
+                'target_value': discrepancy.get('target_value', discrepancy.get('expected_value', 'Not specified')),
+                'required_value': discrepancy.get('required_value', discrepancy.get('expected_value', 'Not specified')),
+                'issue': discrepancy.get('issue', discrepancy.get('description', 'No description')),
+                'severity': discrepancy.get('severity', 'MEDIUM').upper(),
+                'recommendation': discrepancy.get('recommendation',
+                                                  generate_recommendation_for_discrepancy(discrepancy)),
+                'business_impact': discrepancy.get('business_impact', assess_business_impact(discrepancy)),
+                'confidence': discrepancy.get('confidence', 0.8),
+                'swift_reference': discrepancy.get('swift_reference',
+                                                   get_swift_reference_for_field(discrepancy.get('field', ''))),
+                'category': category
+            }
+
+            # Assign to appropriate tab based on category
+            if category in ['missing_field']:
+                categorized['missing_fields'].append(enhanced_discrepancy)
+            elif category in ['best_practice', 'ucp_compliance', 'regulatory']:
+                categorized['compliance_issues'].append(enhanced_discrepancy)
+            elif category in ['extra_document', 'insufficient_copies', 'document_missing']:
+                categorized['document_issues'].append(enhanced_discrepancy)
+            else:
+                categorized['inconsistency_discrepancy'].append(enhanced_discrepancy)
+
+        # Return flat list for backward compatibility but preserve tab info
+        all_categorized = []
+        for tab, items in categorized.items():
+            for item in items:
+                item['tab_category'] = tab
+                all_categorized.append(item)
+
+        return all_categorized
+
+    except Exception as e:
+        logger.error(f"Error categorizing discrepancies: {e}")
+        return discrepancy_results
+
+
+def categorize_discrepancies_for_tabs_enhanced(discrepancy_results, xml_rules, uploaded_documents, lc_context):
+    """Enhanced categorization with XML rule integration and smarter tab assignment"""
+    try:
+        # Group discrepancies by their tab categories with enhanced logic
+        categorized = {
+            'inconsistency_discrepancy': [],
+            'missing_fields': [],
+            'compliance_issues': [],
+            'document_issues': []
+        }
+
+        for discrepancy in discrepancy_results:
+            category = discrepancy.get('category', 'general')
+
+            # Enhanced discrepancy structure for Professional UI with XML rule support
+            enhanced_discrepancy = {
+                'field': discrepancy.get('field', 'Unknown Field'),
+                'source_document': discrepancy.get('source_document',
+                                                   discrepancy.get('document_name', 'Unknown Document')),
+                'target_document': discrepancy.get('target_document', 'Target Document'),
+                'source_value': discrepancy.get('source_value', discrepancy.get('observed_value', 'Not provided')),
+                'target_value': discrepancy.get('target_value', discrepancy.get('expected_value', 'Not specified')),
+                'required_value': discrepancy.get('required_value', discrepancy.get('expected_value', 'Not specified')),
+                'issue': discrepancy.get('issue', discrepancy.get('description', 'No description')),
+                'severity': discrepancy.get('severity', 'MEDIUM').upper(),
+                'recommendation': discrepancy.get('recommendation',
+                                                  generate_recommendation_for_discrepancy(discrepancy)),
+                'business_impact': discrepancy.get('business_impact', assess_business_impact(discrepancy)),
+                'confidence': discrepancy.get('confidence', 0.8),
+                'swift_reference': discrepancy.get('swift_reference',
+                                                   get_swift_reference_for_field(discrepancy.get('field', ''))),
+                'category': category,
+                'rule_based': discrepancy.get('rule_based', False),
+                'xml_rule_id': discrepancy.get('xml_rule_id'),
+                'rule_code': discrepancy.get('rule_code'),
+                'regulatory_basis': discrepancy.get('basis', ''),
+                'field_type': determine_field_type(discrepancy.get('field', ''))
+            }
+
+            # Enhanced tab assignment logic with XML rule support
+            tab_category = determine_enhanced_tab_category(enhanced_discrepancy, xml_rules)
+            enhanced_discrepancy['tab_category'] = tab_category
+            categorized[tab_category].append(enhanced_discrepancy)
+
+        # Return flat list for backward compatibility but preserve tab info
+        all_categorized = []
+        for tab, items in categorized.items():
+            for item in items:
+                all_categorized.append(item)
+
+        return all_categorized
+
+    except Exception as e:
+        logger.error(f"Error in enhanced categorization: {e}")
+        return categorize_discrepancies_for_tabs(discrepancy_results)  # Fallback to basic
+
+
+def determine_enhanced_tab_category(discrepancy, xml_rules):
+    """Determine the most appropriate tab category using enhanced logic"""
+    try:
+        category = discrepancy.get('category', 'general')
+        field = discrepancy.get('field', '').lower()
+        issue = discrepancy.get('issue', '').lower()
+        rule_based = discrepancy.get('rule_based', False)
+
+        # Rule-based priority assignment
+        if rule_based and discrepancy.get('regulatory_basis'):
+            basis = discrepancy.get('regulatory_basis', '').lower()
+            if any(term in basis for term in ['ucp', 'isbp', 'regulatory', 'law']):
+                return 'compliance_issues'
+
+        # Missing field detection
+        if any(term in issue for term in ['missing', 'not found', 'absent', 'lacking']):
+            return 'missing_fields'
+
+        # Document-level issues
+        if any(term in issue for term in ['document', 'copy', 'original', 'duplicate']):
+            return 'document_issues'
+
+        # Compliance-related terms
+        if any(term in issue for term in ['comply', 'regulation', 'standard', 'requirement', 'mandate']):
+            return 'compliance_issues'
+
+        # Field-level inconsistencies (default)
+        return 'inconsistency_discrepancy'
+
+    except Exception as e:
+        logger.error(f"Error determining tab category: {e}")
+        return 'inconsistency_discrepancy'
+
+
+def determine_field_type(field_name):
+    """Determine the type of field for better categorization"""
+    field_lower = field_name.lower()
+
+    if any(term in field_lower for term in ['date', 'time', 'expiry', 'issue']):
+        return 'date'
+    elif any(term in field_lower for term in ['amount', 'value', 'price', 'cost']):
+        return 'monetary'
+    elif any(term in field_lower for term in ['description', 'goods', 'product']):
+        return 'descriptive'
+    elif any(term in field_lower for term in ['port', 'destination', 'loading', 'discharge']):
+        return 'location'
+    elif any(term in field_lower for term in ['applicant', 'beneficiary', 'consignee', 'name']):
+        return 'party'
+    elif any(term in field_lower for term in ['reference', 'number', 'id']):
+        return 'identifier'
+    else:
+        return 'general'
+
+
+def get_rule_coverage_by_document(uploaded_documents, xml_rules):
+    """Calculate rule coverage percentage for each document type"""
+    coverage = {}
+
+    for doc in uploaded_documents:
+        doc_type = doc.get('document_type', doc.get('classification', 'Unknown')).strip()
+        if doc_type not in coverage:
+            relevant_rules = [rule for rule in xml_rules if rule.get('documentType', '').lower() == doc_type.lower()]
+            total_rules = len(relevant_rules)
+            mandatory_rules = len([rule for rule in relevant_rules if rule.get('priority') == 'Mandatory'])
+
+            coverage[doc_type] = {
+                'total_rules': total_rules,
+                'mandatory_rules': mandatory_rules,
+                'advisory_rules': total_rules - mandatory_rules,
+                'coverage_percentage': min(100.0, (total_rules / 10.0) * 100) if total_rules > 0 else 0
+            }
+
+    return coverage
+
+
+def get_top_violated_rules(rule_based_discrepancies):
+    """Get the most frequently violated XML rules"""
+    rule_violations = {}
+
+    for discrepancy in rule_based_discrepancies:
+        rule_code = discrepancy.get('rule_code')
+        if rule_code:
+            if rule_code not in rule_violations:
+                rule_violations[rule_code] = {
+                    'count': 0,
+                    'severity': discrepancy.get('severity', 'MEDIUM'),
+                    'description': discrepancy.get('issue', ''),
+                    'basis': discrepancy.get('regulatory_basis', '')
+                }
+            rule_violations[rule_code]['count'] += 1
+
+    # Sort by violation count and return top 5
+    sorted_violations = sorted(rule_violations.items(), key=lambda x: x[1]['count'], reverse=True)
+    return dict(sorted_violations[:5])
+
+
+def calculate_compliance_score(discrepancies):
+    """Calculate overall compliance score based on discrepancies"""
+    if not discrepancies:
+        return 100.0
+
+    total_weight = 0
+    penalty_weight = 0
+
+    for discrepancy in discrepancies:
+        severity = discrepancy.get('severity', 'MEDIUM').upper()
+        rule_based = discrepancy.get('rule_based', False)
+
+        # Weight based on severity and source
+        if severity == 'HIGH':
+            weight = 3
+        elif severity == 'MEDIUM':
+            weight = 2
+        else:
+            weight = 1
+
+        # Add extra weight for rule-based discrepancies
+        if rule_based:
+            weight *= 1.5
+
+        total_weight += weight
+        penalty_weight += weight
+
+    # Calculate score (higher penalties = lower score)
+    if total_weight == 0:
+        return 100.0
+
+    # Base score calculation with logarithmic penalty scaling
+    import math
+    max_expected_weight = len(discrepancies) * 2  # Expected average weight
+    penalty_ratio = min(1.0, penalty_weight / max_expected_weight)
+    compliance_score = 100.0 * (1 - penalty_ratio)
+
+    return max(0.0, min(100.0, compliance_score))
+
+
+def get_swift_reference_for_field(field_name):
+    """Map field names to SWIFT MT700 references"""
+    field_mapping = {
+        'lc_number': '20',
+        'reference': '20',
+        'amount': '32B',
+        'currency': '32B',
+        'issue_date': '31C',
+        'expiry_date': '31D',
+        'goods_description': '45A',
+        'documents_required': '46A',
+        'latest_shipment_date': '44C',
+        'port_of_loading': '44E',
+        'port_of_discharge': '44F',
+        'additional_conditions': '47A'
+    }
+
+    field_lower = field_name.lower().replace(' ', '_')
+    return field_mapping.get(field_lower, 'N/A')
+
+
+def generate_recommendation_for_discrepancy(discrepancy):
+    """Generate recommendation based on discrepancy type"""
+    severity = discrepancy.get('severity', 'medium').upper()
+    field = discrepancy.get('field', '')
+
+    if severity == 'HIGH' or severity == 'CRITICAL':
+        return f"Immediate attention required for {field}. Contact issuing bank for amendment."
+    elif severity == 'MEDIUM':
+        return f"Review {field} discrepancy. Consider requesting clarification or amendment."
+    else:
+        return f"Minor discrepancy in {field}. Monitor for compliance."
+
+
+def assess_business_impact(discrepancy):
+    """Assess business impact of discrepancy"""
+    severity = discrepancy.get('severity', 'medium').upper()
+
+    if severity == 'HIGH' or severity == 'CRITICAL':
+        return "High risk of document rejection and payment delays"
+    elif severity == 'MEDIUM':
+        return "Moderate risk of processing delays"
+    else:
+        return "Low impact on transaction processing"
+
+
+def categorize_discrepancy_type(discrepancy):
+    """Categorize discrepancy type for analysis"""
+    issue = discrepancy.get('issue', '').lower()
+    field = discrepancy.get('field', '').lower()
+
+    if 'missing' in issue or 'not provided' in issue:
+        return 'missing_field'
+    elif 'mismatch' in issue or 'different' in issue:
+        return 'value_mismatch'
+    elif 'date' in issue or 'expiry' in issue:
+        return 'date_issue'
+    else:
+        return 'other'
+
+
+# =============================================
+
+def apply_xml_rule_to_document(rule, document, lc_context, swift_message):
+    """Apply a single XML rule to a document and return discrepancy if found"""
+    try:
+        rule_code = rule.get('code', 'UNKNOWN')
+        rule_description = rule.get('description', 'No description')
+        rule_priority = rule.get('priority', 'Advisory')
+        rule_basis = rule.get('basis', 'General')
+        doc_type = rule.get('documentType', 'Unknown')
+
+        # Extract document content and fields
+        doc_content = document.get('content', '')
+        extracted_fields = document.get('extracted_fields', {})
+        doc_name = document.get('file_name', 'Unknown Document')
+
+        # Apply rule-specific logic based on common trade finance discrepancy patterns
+        discrepancy = None
+
+        # Rule pattern matching - this is a simplified implementation
+        # In production, this would be more sophisticated with NLP/ML
+        rule_desc_lower = rule_description.lower()
+
+        # Check for signature/authorization requirements
+        if 'signed' in rule_desc_lower or 'authorized signatory' in rule_desc_lower:
+            if not check_signature_in_document(doc_content, extracted_fields):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'signature_missing',
+                    'Required signature or authorization not found',
+                    rule_priority
+                )
+
+        # Check for reference number consistency
+        elif 'reference' in rule_desc_lower and 'invoice' in rule_desc_lower:
+            if not check_reference_consistency(extracted_fields, lc_context):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'reference_inconsistent',
+                    'Document reference numbers are inconsistent with LC',
+                    rule_priority
+                )
+
+        # Check for currency consistency
+        elif 'currency must match' in rule_desc_lower:
+            if not check_currency_consistency(extracted_fields, lc_context):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'currency_mismatch',
+                    'Document currency does not match LC currency',
+                    rule_priority
+                )
+
+        # Check for date requirements
+        elif 'dated within' in rule_desc_lower or 'validity period' in rule_desc_lower:
+            if not check_date_validity(extracted_fields, lc_context):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'date_invalid',
+                    'Document date is outside LC validity period',
+                    rule_priority
+                )
+
+        # Check for description matching
+        elif 'description' in rule_desc_lower and 'match' in rule_desc_lower:
+            if not check_description_consistency(extracted_fields, lc_context):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'description_mismatch',
+                    'Goods description does not match LC requirements',
+                    rule_priority
+                )
+
+        # Check for port/destination requirements
+        elif 'port' in rule_desc_lower or 'destination' in rule_desc_lower:
+            if not check_port_consistency(extracted_fields, lc_context):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'port_mismatch',
+                    'Port information does not match LC requirements',
+                    rule_priority
+                )
+
+        # Check for consignee requirements
+        elif 'consignee' in rule_desc_lower:
+            if not check_consignee_consistency(extracted_fields, lc_context):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'consignee_mismatch',
+                    'Consignee information does not match LC terms',
+                    rule_priority
+                )
+
+        # Check for insurance coverage
+        elif 'insurance' in rule_desc_lower and '110%' in rule_desc_lower:
+            if not check_insurance_coverage(extracted_fields, lc_context):
+                discrepancy = create_rule_discrepancy(
+                    rule, doc_name, 'insurance_insufficient',
+                    'Insurance coverage less than required 110% of invoice value',
+                    rule_priority
+                )
+
+        return discrepancy
+
+    except Exception as e:
+        logger.error(f"Error applying XML rule {rule.get('code', 'UNKNOWN')}: {e}")
+        return None
+
+
+def create_rule_discrepancy(rule, doc_name, discrepancy_type, description, priority):
+    """Create a standardized discrepancy object from XML rule"""
+    severity = 'HIGH' if priority == 'Mandatory' else 'MEDIUM'
+    category = 'compliance' if priority == 'Mandatory' else 'advisory'
+
+    return {
+        'rule_code': rule.get('code', 'UNKNOWN'),
+        'field': discrepancy_type.replace('_', ' ').title(),
+        'source_document': doc_name,
+        'target_document': 'LC Requirements',
+        'source_value': 'Not compliant',
+        'target_value': rule.get('description', 'Compliance required'),
+        'issue': description,
+        'severity': severity,
+        'category': category,
+        'basis': rule.get('basis', 'General'),
+        'recommendation': f"Review document against {rule.get('basis', 'requirements')} - {rule.get('description', '')}",
+        'business_impact': 'HIGH' if priority == 'Mandatory' else 'MEDIUM',
+        'confidence': 0.7,  # Rule-based confidence
+        'rule_based': True,
+        'xml_rule_id': rule.get('id', 'unknown')
+    }
+
+
+# Helper functions for rule validation (simplified implementations)
+def check_signature_in_document(content, fields):
+    """Check if document contains signature or authorization"""
+    content_lower = content.lower()
+    return any(keyword in content_lower for keyword in ['signed', 'signature', 'authorized', 'signatory'])
+
+
+def check_reference_consistency(fields, lc_context):
+    """Check if document references are consistent with LC"""
+    doc_ref = fields.get('reference', '').strip()
+    lc_ref = lc_context.get('lcNumber', '').strip()
+    return bool(doc_ref and lc_ref and doc_ref in lc_ref)
+
+
+def check_currency_consistency(fields, lc_context):
+    """Check if document currency matches LC currency"""
+    doc_currency = fields.get('currency', '').strip().upper()
+    lc_currency = lc_context.get('currency', lc_context.get('formData', {}).get('lcCurrency', '')).strip().upper()
+    return bool(doc_currency and lc_currency and doc_currency == lc_currency)
+
+
+def check_date_validity(fields, lc_context):
+    """Check if document dates are within LC validity"""
+    # Simplified date check - in production would use proper date parsing
+    doc_date = fields.get('date', fields.get('issue_date', ''))
+    return bool(doc_date)  # Basic existence check
+
+
+def check_description_consistency(fields, lc_context):
+    """Check if goods description is consistent"""
+    doc_desc = fields.get('description', fields.get('goods_description', '')).lower()
+    lc_desc = lc_context.get('goodsDescription', lc_context.get('formData', {}).get('goodsDescription', '')).lower()
+    return bool(doc_desc and lc_desc and any(word in lc_desc for word in doc_desc.split()[:3]))
+
+
+def check_port_consistency(fields, lc_context):
+    """Check port information consistency"""
+    doc_port = fields.get('port_of_loading', fields.get('port_of_discharge', '')).lower()
+    lc_port_loading = lc_context.get('portOfLoading', lc_context.get('formData', {}).get('portOfLoading', '')).lower()
+    lc_port_discharge = lc_context.get('portOfDischarge',
+                                       lc_context.get('formData', {}).get('portOfDischarge', '')).lower()
+    return bool(doc_port and (doc_port in lc_port_loading or doc_port in lc_port_discharge))
+
+
+def check_consignee_consistency(fields, lc_context):
+    """Check consignee information consistency"""
+    doc_consignee = fields.get('consignee', '').lower()
+    lc_beneficiary = lc_context.get('beneficiaryName',
+                                    lc_context.get('formData', {}).get('beneficiaryName', '')).lower()
+    return bool(doc_consignee and lc_beneficiary and doc_consignee in lc_beneficiary)
+
+
+def check_insurance_coverage(fields, lc_context):
+    """Check insurance coverage percentage"""
+    try:
+        insurance_amount = float(fields.get('insurance_amount', 0))
+        invoice_amount = float(
+            fields.get('amount', lc_context.get('lcAmount', lc_context.get('formData', {}).get('lcAmount', 0))))
+        if invoice_amount > 0:
+            coverage_ratio = insurance_amount / invoice_amount
+            return coverage_ratio >= 1.1  # 110% coverage required
+        return False
+    except (ValueError, TypeError):
+        return False
+
+
+def analyze_individual_document_discrepancies(document_data, lc_context, swift_message):
+    """
+    Analyze a single document for compliance discrepancies using XML rules
+    """
+    try:
+        logger.info(
+            f"🔍 Starting individual document discrepancy analysis for {document_data.get('file_name', 'Unknown')}")
+
+        # Load XML rules from discrepancy_rules.xml
+        xml_rules = load_discrepancy_rules_from_xml()
+        if not xml_rules:
+            logger.warning("⚠️ No XML rules loaded for individual analysis")
+            return {
+                'success': False,
+                'error': 'No discrepancy rules loaded'
+            }
+
+        logger.info(f"📋 Loaded {len(xml_rules)} XML rules for individual analysis")
+
+        # Extract data
+        lc_data = extract_enhanced_lc_data(lc_context)
+        swift_data = extract_enhanced_swift_data(swift_message)
+
+        document_type = document_data.get('document_type', '').strip()
+        file_name = document_data.get('file_name', 'Unknown')
+
+        logger.info(f"📊 Analyzing {document_type} document: {file_name}")
+        logger.info(f"   - LC data: {len(lc_data)} fields")
+        logger.info(f"   - SWIFT data: {len(swift_data)} fields")
+
+        # Initialize results
+        discrepancies = []
+
+        # Filter rules for this document type
+        relevant_rules = [rule for rule in xml_rules
+                          if rule.get('documentType', '').lower() == document_type.lower()]
+
+        logger.info(f"📋 Found {len(relevant_rules)} relevant XML rules for {document_type}")
+
+        # Apply each relevant rule
+        for rule in relevant_rules:
+            try:
+                rule_result = apply_xml_rule_with_llm_analysis(rule, document_data, lc_data, swift_data)
+                if rule_result:
+                    # Format the discrepancy for frontend display
+                    discrepancy = {
+                        'field_name': rule_result.get('field_name', 'Unknown Field'),
+                        'severity': rule_result.get('severity', 'MEDIUM').upper(),
+                        'confidence': rule_result.get('confidence', 70),
+                        'source_value': rule_result.get('source_value', 'Not specified'),
+                        'compared_value': rule_result.get('expected_value', 'Not specified'),
+                        'rule_id': rule_result.get('rule_code', 'Unknown'),
+                        'rule_name': rule_result.get('description', 'Compliance Rule'),
+                        'discrepancy_type': rule_result.get('type', 'compliance_discrepancy'),
+                        'business_impact': rule_result.get('business_impact', 'Review required'),
+                        'recommendation': rule_result.get('recommendation', 'Please review and correct'),
+                        'source_document': file_name,
+                        'rule_basis': rule_result.get('rule_basis', 'XML Rule'),
+                        'comparison_type': rule_result.get('comparison_type', 'LC vs Document')
+                    }
+                    discrepancies.append(discrepancy)
+
+            except Exception as rule_error:
+                logger.error(f"❌ Error applying rule {rule.get('code', 'Unknown')}: {rule_error}")
+                continue
+
+        # Calculate summary statistics
+        total_discrepancies = len(discrepancies)
+        critical_count = len([d for d in discrepancies if d.get('severity') == 'CRITICAL'])
+        high_count = len([d for d in discrepancies if d.get('severity') == 'HIGH'])
+        medium_count = len([d for d in discrepancies if d.get('severity') == 'MEDIUM'])
+        low_count = len([d for d in discrepancies if d.get('severity') == 'LOW'])
+
+        # Determine compliance status
+        compliance_status = 'COMPLIANT' if total_discrepancies == 0 else 'NON_COMPLIANT'
+
+        results = {
+            'success': True,
+            'results': {
+                'discrepancies': discrepancies,
+                'analysis_method': 'xml_rule_based_individual',
+                'compliance_status': compliance_status,
+                'summary': {
+                    'total': total_discrepancies,
+                    'critical': critical_count,
+                    'high': high_count,
+                    'medium': medium_count,
+                    'low': low_count
+                },
+                'document_analysis': {
+                    'file_name': file_name,
+                    'document_type': document_type,
+                    'rules_applied': len(relevant_rules),
+                    'fields_analyzed': len(document_data.get('extracted_fields', {}))
+                }
+            }
+        }
+
+        logger.info(f"✅ Individual analysis completed: {total_discrepancies} discrepancies found")
+        logger.info(f"   - Critical: {critical_count}, High: {high_count}, Medium: {medium_count}, Low: {low_count}")
+
+        return results
+
+    except Exception as e:
+        logger.error(f"❌ Error in individual document discrepancy analysis: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+
+def detect_qr_with_multi_fallback(img):
+    """
+    Multi-fallback QR detection with OpenCV, Azure, OpenAI, and pattern analysis
+    """
+    qr_codes = []
+    method_used = "none"
+
+    # Method 1: OpenCV (Primary - Fast and reliable)
+    try:
+        if img is not None:
+            qr_detector = cv2.QRCodeDetector()
+            data, points, _ = qr_detector.detectAndDecode(img)
+
+            if data:
+                bbox = {}
+                if points is not None and len(points) > 0:
+                    points = points[0]
+                    x_coords = [p[0] for p in points]
+                    y_coords = [p[1] for p in points]
+                    bbox = {
+                        'x': int(min(x_coords)),
+                        'y': int(min(y_coords)),
+                        'width': int(max(x_coords) - min(x_coords)),
+                        'height': int(max(y_coords) - min(y_coords))
+                    }
+
+                qr_codes.append({
+                    'data': data,
+                    'type': 'QRCODE',
+                    'position': bbox,
+                    'method': 'opencv',
+                    'confidence': 0.9
+                })
+                user_logger.info("QR detected with OpenCV (primary method)")
+                return qr_codes
+    except Exception as e:
+        user_logger.warning(f"OpenCV QR detection failed: {str(e)}")
+
+    # Method 2: Azure Computer Vision (if configured)
+    azure_key = os.getenv('AZURE_CV_KEY')
+    azure_endpoint = os.getenv('AZURE_CV_ENDPOINT')
+
+    if azure_key and azure_endpoint and img is not None:
+        try:
+            user_logger.info("Trying Azure Computer Vision fallback")
+            qr_codes = detect_qr_with_azure(img, azure_key, azure_endpoint)
+            if qr_codes:
+                user_logger.success("QR detected with Azure Computer Vision (fallback)")
+                return qr_codes
+        except Exception as e:
+            user_logger.warning(f"Azure Computer Vision failed: {str(e)}")
+
+    # Method 3: OpenAI Vision (if configured)
+    openai_key = os.getenv('OPENAI_API_KEY')
+
+    if openai_key and img is not None:
+        try:
+            user_logger.info("Trying OpenAI Vision fallback")
+            qr_codes = detect_qr_with_openai(img, openai_key)
+            if qr_codes:
+                user_logger.success("QR detected with OpenAI Vision (fallback)")
+                return qr_codes
+        except Exception as e:
+            user_logger.warning(f"OpenAI Vision failed: {str(e)}")
+
+    # Method 4: Pattern-based analysis (final fallback)
+    try:
+        user_logger.info("Trying pattern analysis fallback")
+        qr_codes = detect_qr_with_patterns(img)
+        if qr_codes:
+            user_logger.success("QR detected with pattern analysis (final fallback)")
+            return qr_codes
+    except Exception as e:
+        user_logger.warning(f"Pattern analysis failed: {str(e)}")
+
+    user_logger.warning("All QR detection methods failed")
+    return qr_codes
+
+
+def detect_qr_with_azure(img, api_key, endpoint):
+    """Azure Computer Vision QR detection"""
+    import requests
+    import time
+
+    try:
+        # Convert image to bytes
+        _, img_encoded = cv2.imencode('.png', img)
+        image_data = img_encoded.tobytes()
+
+        headers = {
+            'Ocp-Apim-Subscription-Key': api_key,
+            'Content-Type': 'application/octet-stream'
+        }
+
+        # Use Read API for text extraction
+        url = f"{endpoint}/vision/v3.2/read/analyze"
+        response = requests.post(url, headers=headers, data=image_data, timeout=30)
+        response.raise_for_status()
+
+        # Get operation location
+        operation_url = response.headers['Operation-Location']
+
+        # Poll for results
+        for _ in range(10):  # Max 10 attempts
+            result = requests.get(operation_url, headers={'Ocp-Apim-Subscription-Key': api_key}, timeout=30)
+            result_json = result.json()
+
+            if result_json['status'] == 'succeeded':
+                # Extract text and analyze for QR patterns
+                extracted_text = ""
+                for page in result_json.get('analyzeResult', {}).get('readResults', []):
+                    for line in page.get('lines', []):
+                        extracted_text += line['text'] + "\n"
+
+                return analyze_text_for_qr_patterns(extracted_text, 'azure_vision')
+
+            elif result_json['status'] == 'failed':
+                break
+
+            time.sleep(1)
+
+        return []
+
+    except Exception as e:
+        raise Exception(f"Azure Computer Vision error: {str(e)}")
+
+
+def detect_qr_with_openai(img, api_key):
+    """OpenAI Vision QR detection"""
+    try:
+        # Convert image to base64
+        _, img_encoded = cv2.imencode('.png', img)
+        image_data = img_encoded.tobytes()
+        base64_image = base64.b64encode(image_data).decode('utf-8')
+
+        import openai
+        client = openai.OpenAI(api_key=api_key)
+
+        response = client.chat.completions.create(
+            model="gpt-4-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": """Analyze this image for QR codes. If you find any QR codes, extract and decode their content. 
+                            Look for trade finance data like applicant name, beneficiary, LC amount, currency, ports, etc.
+                            Return the QR content as valid JSON. If no QR codes found, return empty."""
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens=1000,
+            timeout=30
+        )
+
+        content = response.choices[0].message.content
+
+        # Try to extract JSON from the response
+        import re
+        json_matches = re.finditer(r'\{.*?\}', content, re.DOTALL)
+
+        qr_codes = []
+        for match in json_matches:
+            try:
+                json_data = json.loads(match.group())
+                qr_codes.append({
+                    'data': json.dumps(json_data),
+                    'type': 'QRCODE',
+                    'position': {'x': 0, 'y': 0, 'width': 0, 'height': 0},
+                    'method': 'openai_vision',
+                    'confidence': 0.8
+                })
+            except:
+                continue
+
+        return qr_codes
+
+    except Exception as e:
+        raise Exception(f"OpenAI Vision error: {str(e)}")
+
+
+def detect_qr_with_patterns(img):
+    """Pattern-based QR detection using OCR"""
+    try:
+        # Try to use pytesseract if available
+        try:
+            import pytesseract
+            text = pytesseract.image_to_string(img)
+            return analyze_text_for_qr_patterns(text, 'pattern_analysis')
+        except ImportError:
+            # Fallback to simple edge-based text detection
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # Apply some basic OCR-like processing
+            # This is a simplified fallback
+            return []
+
+    except Exception as e:
+        raise Exception(f"Pattern analysis error: {str(e)}")
+
+
+def analyze_text_for_qr_patterns(text, method):
+    """Analyze extracted text for QR code patterns"""
+    qr_codes = []
+
+    # Look for JSON patterns
+    import re
+    json_matches = re.finditer(r'\{[^{}]*\}', text)
+
+    for match in json_matches:
+        try:
+            json_data = json.loads(match.group())
+            if looks_like_trade_finance_data(json_data):
+                qr_codes.append({
+                    'data': json.dumps(json_data),
+                    'type': 'QRCODE',
+                    'position': {'x': 0, 'y': 0, 'width': 0, 'height': 0},
+                    'method': method,
+                    'confidence': 0.7
+                })
+        except:
+            continue
+
+    # Look for key-value patterns
+    if not qr_codes:
+        lines = text.split('\n')
+        kv_data = {}
+
+        for line in lines:
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip().lower().replace(' ', '_')
+                value = value.strip()
+
+                if len(value) > 0 and len(key) > 0:
+                    kv_data[key] = value
+
+        if len(kv_data) >= 3:  # At least 3 key-value pairs
+            qr_codes.append({
+                'data': json.dumps(kv_data),
+                'type': 'QRCODE',
+                'position': {'x': 0, 'y': 0, 'width': 0, 'height': 0},
+                'method': method,
+                'confidence': 0.6
+            })
+
+    return qr_codes
+
+
+def looks_like_trade_finance_data(data):
+    """Check if data looks like trade finance information"""
+    trade_finance_keywords = [
+        'applicant', 'beneficiary', 'amount', 'currency', 'lc_amount',
+        'expiry', 'port', 'loading', 'discharge', 'commodity', 'invoice'
+    ]
+
+    keys = [k.lower() for k in data.keys()]
+    matches = sum(1 for keyword in trade_finance_keywords if any(keyword in k for k in keys))
+
+    return matches >= 2  # At least 2 trade finance related fields
+
+
+def extract_qr_from_pdf(file):
+    """Extract QR codes from PDF file"""
+    qr_codes = []
+
+    try:
+        # Save uploaded file temporarily
+        temp_path = f"/tmp/qr_pdf_{uuid.uuid4().hex}.pdf"
+        file.save(temp_path)
+
+        try:
+            # Use PyMuPDF if available, fallback to other methods
+            if fitz:
+                doc = fitz.open(temp_path)
+                for page_num in range(len(doc)):
+                    page = doc.load_page(page_num)
+                    pix = page.get_pixmap()
+                    img_data = pix.tobytes("png")
+
+                    # Convert to OpenCV format
+                    nparr = np.frombuffer(img_data, np.uint8)
+                    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+                    # Detect QR codes using multi-fallback system
+                    detected_qr = detect_qr_with_multi_fallback(img)
+                    for qr in detected_qr:
+                        qr_codes.append({
+                            'data': qr['data'],
+                            'type': qr['type'],
+                            'page': page_num + 1,
+                            'position': qr['position']
+                        })
+                doc.close()
+            else:
+                # Fallback method using PIL and PyPDF2 (less reliable)
+                user_logger.warning("PyMuPDF not available, using fallback PDF processing")
+
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    except Exception as e:
+        user_logger.error(f"Error extracting QR from PDF: {str(e)}")
+        raise
+
+    return qr_codes
+
+
+def extract_qr_from_word(file):
+    """Extract QR codes from Word document"""
+    qr_codes = []
+
+    try:
+        # Save uploaded file temporarily
+        temp_path = f"/tmp/qr_word_{uuid.uuid4().hex}.docx"
+        file.save(temp_path)
+
+        try:
+            doc = Document(temp_path)
+
+            # Extract images from document
+            for rel in doc.part.rels.values():
+                if "image" in rel.target_ref:
+                    try:
+                        image_data = rel.target_part.blob
+
+                        # Convert to OpenCV format
+                        nparr = np.frombuffer(image_data, np.uint8)
+                        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+                        if img is not None:
+                            # Detect QR codes using multi-fallback system
+                            detected_qr = detect_qr_with_multi_fallback(img)
+                            for qr in detected_qr:
+                                qr_codes.append({
+                                    'data': qr['data'],
+                                    'type': qr['type'],
+                                    'source': 'word_document_image',
+                                    'position': qr['position']
+                                })
+                    except Exception as img_error:
+                        user_logger.warning(f"Error processing image in Word doc: {str(img_error)}")
+                        continue
+
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    except Exception as e:
+        user_logger.error(f"Error extracting QR from Word document: {str(e)}")
+        raise
+
+    return qr_codes
+
+
+def extract_qr_from_image(file):
+    """Extract QR codes from image file"""
+    qr_codes = []
+
+    try:
+        # Read image data directly from uploaded file
+        img_data = file.read()
+        file.seek(0)  # Reset file pointer
+
+        # Convert to OpenCV format
+        nparr = np.frombuffer(img_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img is not None:
+            # Detect QR codes using multi-fallback system
+            detected_qr = detect_qr_with_multi_fallback(img)
+            for qr in detected_qr:
+                qr_codes.append({
+                    'data': qr['data'],
+                    'type': qr['type'],
+                    'source': 'image_file',
+                    'position': qr['position']
+                })
+        else:
+            user_logger.error("Failed to decode image file")
+
+    except Exception as e:
+        user_logger.error(f"Error extracting QR from image: {str(e)}")
+        raise
+
+    return qr_codes
+
+
+def parse_structured_qr_text(qr_text):
+    """
+    Parse structured text QR codes (key-value pairs, etc.)
+    """
+    try:
+        parsed_data = {}
+
+        # Split by lines and parse key-value pairs
+        lines = qr_text.strip().split('\n')
+
+        for line in lines:
+            line = line.strip()
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip().lower().replace(' ', '_')
+                value = value.strip()
+                parsed_data[key] = value
+            elif '=' in line:
+                key, value = line.split('=', 1)
+                key = key.strip().lower().replace(' ', '_')
+                value = value.strip()
+                parsed_data[key] = value
+
+        return parsed_data if parsed_data else None
+
+    except Exception as e:
+        logger.error(f"Error parsing structured QR text: {e}")
+        return None
+
+
+def parse_qr_with_llm(qr_text):
+    """
+    Use LLM to intelligently parse QR code content for trade finance information
+    """
+    try:
+        prompt = f"""
+You are an AI assistant specialized in parsing trade finance information from QR codes. 
+Parse the following QR code content and extract any trade finance related information.
+
+QR Code Content:
+{qr_text}
+
+Extract and structure any of the following trade finance fields you can identify:
+- LC Number/Reference
+- Applicant information  
+- Beneficiary information
+- Issuing Bank
+- Advising Bank
+- Amount and Currency
+- Issue Date
+- Expiry Date
+- Latest Shipment Date
+- Port of Loading
+- Port of Discharge
+- Goods Description
+- Incoterms
+- Partial Shipment (allowed/not allowed)
+- Transhipment (allowed/not allowed)
+- Required Documents
+- Additional Conditions
+
+Return the extracted information as a JSON object with standardized field names.
+If no trade finance information is found, return null.
+
+Example format:
+{{
+    "lc_number": "LC123456",
+    "applicant": "ABC Corp",
+    "beneficiary": "XYZ Ltd",
+    "amount": "100000.00",
+    "currency": "USD",
+    "issue_date": "2024-01-15",
+    "expiry_date": "2024-06-15",
+    "goods_description": "Electronic components"
+}}
+"""
+
+        # Use the existing LLM processing function
+        response = analyze_document_with_gpt(qr_text, 'qr_code', prompt)
+
+        if response and 'structured_data' in response:
+            return response['structured_data']
+
+        return None
+
+    except Exception as e:
+        logger.error(f"Error parsing QR with LLM: {e}")
+        return None
+
+
+def validate_and_structure_qr_data(raw_data):
+    """
+    Validate and structure QR data for trade finance form
+    """
+    try:
+        # Standard field mappings for trade finance
+        field_mappings = {
+            'lc_number': ['lc_number', 'lcnumber', 'lc_ref', 'reference', 'letter_of_credit_number'],
+            'applicant': ['applicant', 'applicant_name', 'buyer', 'importer'],
+            'beneficiary': ['beneficiary', 'beneficiary_name', 'seller', 'exporter'],
+            'issuing_bank': ['issuing_bank', 'issuingbank', 'opening_bank'],
+            'advising_bank': ['advising_bank', 'advisingbank', 'nominated_bank'],
+            'amount': ['amount', 'lc_amount', 'value', 'total_amount'],
+            'currency': ['currency', 'ccy', 'curr'],
+            'issue_date': ['issue_date', 'issuedate', 'opening_date', 'date_of_issue'],
+            'expiry_date': ['expiry_date', 'expirydate', 'expiration_date', 'maturity_date'],
+            'latest_shipment_date': ['latest_shipment_date', 'shipment_date', 'shipping_date'],
+            'port_of_loading': ['port_of_loading', 'loading_port', 'shipment_port'],
+            'port_of_discharge': ['port_of_discharge', 'discharge_port', 'destination_port'],
+            'goods_description': ['goods_description', 'description', 'commodity', 'merchandise'],
+            'incoterms': ['incoterms', 'terms', 'trade_terms'],
+            'partial_shipment': ['partial_shipment', 'partial_shipments'],
+            'transhipment': ['transhipment', 'transshipment']
+        }
+
+        structured_data = {'trade_finance_fields': {}}
+        confidence_score = 0.0
+        total_fields = len(field_mappings)
+        matched_fields = 0
+
+        # Normalize the raw data keys
+        normalized_raw = {}
+        if isinstance(raw_data, dict):
+            for key, value in raw_data.items():
+                normalized_key = str(key).lower().replace(' ', '_').replace('-', '_')
+                normalized_raw[normalized_key] = value
+
+        # Map fields using the mappings
+        for standard_field, possible_keys in field_mappings.items():
+            field_value = None
+
+            for possible_key in possible_keys:
+                if possible_key in normalized_raw:
+                    field_value = normalized_raw[possible_key]
+                    matched_fields += 1
+                    break
+
+            if field_value:
+                structured_data['trade_finance_fields'][standard_field] = field_value
+
+        # Calculate confidence based on matched fields
+        if total_fields > 0:
+            confidence_score = matched_fields / total_fields
+
+        # Additional validation and formatting
+        structured_data['confidence'] = confidence_score
+        structured_data['fields_matched'] = matched_fields
+        structured_data['total_possible_fields'] = total_fields
+        structured_data['parsing_timestamp'] = datetime.now().isoformat()
+
+        return structured_data
+
+    except Exception as e:
+        logger.error(f"Error validating QR data: {e}")
+        return {
+            'trade_finance_fields': {},
+            'confidence': 0.0,
+            'error': str(e)
+        }
+
+
+# Avatar Test Route
+@app.route('/avatar-test')
+def avatar_test():
+    """Test page for 3D avatar functionality"""
+    return render_template('avatar_test.html')

@@ -2926,6 +2926,413 @@ def handle_ai_check(data, history):
         return {"error": str(e)}, 500
 
 
+def handle_guarantee_vetting_check(data, history):
+    """
+    Clone of handle_ai_check specifically for guarantee vetting using:
+    - blacklist_vetting_rules.json
+    - guarantee_vetting_config_with_rules.yaml
+    """
+    if "fields" not in data or not isinstance(data["fields"], list):
+        return {"error": "Invalid input. 'fields' must be a list."}, 400
+
+    try:
+        import yaml
+        import os
+
+        # Prepare fields data
+        fields = {
+            field["label"]: {
+                "value": field["value"],
+                "description": field.get("description", "")
+            }
+            for field in data["fields"]
+        }
+
+        # Extract the complete guarantee text for frontend display
+        complete_guarantee_text = ""
+        for field in data["fields"]:
+            if field["label"] == "guarantee_wording":
+                complete_guarantee_text = field["value"]
+                break
+
+        # Clean HTML tags if present but preserve line breaks
+        import re
+        if complete_guarantee_text:
+            # Replace HTML line breaks with newlines
+            complete_guarantee_text = re.sub(r'<br\s*/?>', '\n', complete_guarantee_text, flags=re.IGNORECASE)
+            complete_guarantee_text = re.sub(r'</p><p>', '\n\n', complete_guarantee_text, flags=re.IGNORECASE)
+            complete_guarantee_text = re.sub(r'</h[1-6]>', '\n\n', complete_guarantee_text, flags=re.IGNORECASE)
+            # Remove other HTML tags but keep the content
+            complete_guarantee_text = re.sub(r'<[^>]+>', ' ', complete_guarantee_text)
+            # Clean up multiple spaces and line breaks
+            complete_guarantee_text = re.sub(r'\s+', ' ', complete_guarantee_text).strip()
+            complete_guarantee_text = re.sub(r'\n\s*\n', '\n\n', complete_guarantee_text)
+
+        original_text = " ".join(
+            [f"{k}: {v['value']} ({v.get('description', '')})" for k, v in fields.items()]
+        )
+
+        # Load guarantee vetting configuration
+        config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'guarantee_vetting_config_with_rules.yaml')
+        blacklist_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'blacklist_vetting_rules.json')
+        whitelist_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'whitelist_vetting_rules.json')
+
+        # Load YAML config
+        guarantee_config = {}
+        if os.path.exists(config_path):
+            with open(config_path, 'r', encoding='utf-8') as f:
+                guarantee_config = yaml.safe_load(f)
+
+        # Load blacklist rules
+        blacklist_rules = {}
+        if os.path.exists(blacklist_path):
+            with open(blacklist_path, 'r', encoding='utf-8') as f:
+                blacklist_rules = json.load(f)
+
+        # Load whitelist rules
+        whitelist_rules = {}
+        if os.path.exists(whitelist_path):
+            with open(whitelist_path, 'r', encoding='utf-8') as f:
+                whitelist_rules = json.load(f)
+
+        # Get context-aware prior suggestions for prompt
+        prior_suggestions = get_prior_suggestions_from_context(history)
+
+        # Build specialized guarantee vetting prompt
+        prompt = build_guarantee_vetting_prompt(fields, guarantee_config, blacklist_rules, whitelist_rules,
+                                                prior_suggestions)
+
+        # LLM Call using OpenAI
+        import openai
+        response = openai.ChatCompletion.create(
+            engine=deployment_name,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+        )
+
+        reply = response.choices[0].message["content"]
+
+        # DEBUG PRINTS
+        print("\n🔍 Raw GPT reply (Guarantee Vetting):")
+        print(reply)
+
+        # Extract JSON from markdown-wrapped response
+        reply_clean = reply.strip()
+
+        # Look for JSON block within the response
+        json_start = reply_clean.find('```json')
+        if json_start != -1:
+            json_start += 7  # Skip past '```json'
+            json_end = reply_clean.find('```', json_start)
+            if json_end != -1:
+                reply_clean = reply_clean[json_start:json_end].strip()
+
+        # If no markdown blocks found, look for JSON object directly
+        elif '{' in reply_clean:
+            # Find the start and end of the JSON object
+            start_idx = reply_clean.find('{')
+            # Find the matching closing brace by counting braces
+            brace_count = 0
+            end_idx = start_idx
+            for i, char in enumerate(reply_clean[start_idx:], start_idx):
+                if char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        end_idx = i + 1
+                        break
+
+            if end_idx > start_idx:
+                reply_clean = reply_clean[start_idx:end_idx].strip()
+
+        print("\n📦 Cleaned JSON (Guarantee Vetting):")
+        print(reply_clean)
+
+        try:
+            parsed = json.loads(reply_clean)
+        except json.JSONDecodeError as je:
+            print(f"❌ JSON decoding error: {je}")
+            print(f"❌ Failed to parse JSON from reply: {reply_clean[:500]}...")
+            return {"error": "Invalid JSON returned from GPT", "raw_reply": reply}, 500
+
+        # Validate structure and ensure compliance with expected format
+        if "fields" in parsed:
+            for label, field_data in parsed["fields"].items():
+                if not field_data.get("compliance") and "suggestion" not in field_data:
+                    field_data["suggestion"] = "No suggestion provided."
+
+        # Return response in exact same format as /AICheck endpoint for compatibility
+        response = {
+            "applicable_articles": parsed.get("applicable_articles", []),
+            "applicable_framework": parsed.get("applicable_framework", "URDG758"),
+            "entities": parsed.get("entities", {}),
+            "fields": parsed.get("fields", {}),
+            "rule_type": parsed.get("rule_type", "Guarantee"),
+            "summary": parsed.get("summary", ""),
+            "complete_guarantee_text": complete_guarantee_text
+        }
+
+        # Add whitelist and blacklist analysis directly to main response
+        vetting_analysis = parsed.get("vetting_analysis", {})
+        if "whitelist_compliance" in vetting_analysis:
+            response["whitelist_compliance"] = vetting_analysis["whitelist_compliance"]
+
+        if "blacklist_screening" in vetting_analysis:
+            response["blacklist_screening"] = vetting_analysis["blacklist_screening"]
+
+        # Add other vetting-specific analysis as additional field if present
+        if vetting_analysis:
+            response["vetting_analysis"] = vetting_analysis
+
+        return response, 200
+
+    except Exception as e:
+        print(f"❌ Guarantee Vetting Check Error: {e}")
+        return {"error": str(e)}, 500
+
+
+def build_guarantee_vetting_prompt(fields, guarantee_config, blacklist_rules, whitelist_rules, prior_suggestions=None):
+    """
+    Build specialized prompt for guarantee vetting using configuration files
+    """
+    field_entries = [{"field": label, **data} for label, data in fields.items()]
+
+    # Extract system and custom prompts from config
+    system_prompt = guarantee_config.get('guarantee_vetting_config', {}).get('system_prompt', '')
+    custom_prompt = guarantee_config.get('guarantee_vetting_config', {}).get('custom_prompt', '')
+
+    # Format blacklist rules
+    blacklist_text = json.dumps(blacklist_rules, indent=2)
+
+    # Format whitelist rules
+    whitelist_text = json.dumps(whitelist_rules, indent=2)
+
+    # Format prior suggestions
+    def summarize_prior_suggestions(prior_suggestions):
+        if not prior_suggestions:
+            return "None (this is the initial compliance review)."
+        summary = []
+        for field, issues in prior_suggestions.items():
+            summary.append(
+                f"- Field: {field}\n"
+                f"    - Suggestion: {issues.get('suggestion', '')}\n"
+            )
+        return "\n".join(summary)
+
+    prior_suggestions_text = summarize_prior_suggestions(prior_suggestions)
+
+    prompt = f"""
+{system_prompt}
+
+{custom_prompt}
+
+---
+## 🔁 Previous Review History:
+The following compliance issues and suggestions were already fixed in prior rounds:
+{prior_suggestions_text}
+
+---
+## 📥 Input Document Fields:
+{json.dumps(field_entries, indent=2)}
+
+## ✅ Whitelist Rules for Compliance Verification:
+{whitelist_text}
+
+## 🛡️ Blacklist Rules for Screening:
+{blacklist_text}
+
+---
+## CRITICAL INSTRUCTIONS FOR ONEROUS CLAUSES DETECTION:
+
+Focus specifically on identifying ONEROUS CLAUSES and problematic language in the guarantee text. Pay particular attention to:
+
+1. **Automatic Extension Clauses**: Look for clauses that automatically extend the guarantee without proper notice mechanisms
+2. **Irrevocable Undertakings**: Identify overly broad or absolute language like "irrevocably undertake"
+3. **Demand Conditions**: Check for overly restrictive or complicated demand requirements
+4. **Jurisdiction Issues**: Identify problematic governing law or jurisdiction clauses
+5. **Expiry Complications**: Look for unclear or problematic expiry conditions
+6. **Liability Limitations**: Check for inadequate liability caps or unusual liability terms
+
+MANDATORY FIELD BREAKDOWN:
+You MUST analyze the guarantee document using these specific field categories in the "fields" section:
+
+1. "automatic_extension_clause" - Analyze any automatic extension provisions
+2. "demand_conditions" - Evaluate demand requirements and conditions  
+3. "expiry_conditions" - Review expiry dates and termination clauses
+4. "irrevocable_undertaking" - Examine irrevocable language and commitments
+5. "jurisdiction_clause" - Assess governing law and jurisdiction provisions
+6. "liability_limitations" - Review liability caps and limitation clauses
+
+NEVER consolidate these into a single "guarantee_wording" field. Always provide separate analysis for each category.
+
+For each field analyzed, you MUST:
+- Identify specific problematic phrases in "highlight_spans"
+- Provide improved wording in "highlight_suggestions" 
+- Give the complete rewritten field in "suggestion"
+
+---
+## 📤 Required Output Format:
+
+You MUST return a JSON response in this EXACT structure (matching the /AICheck endpoint format with whitelist/blacklist analysis):
+
+{{
+  "applicable_articles": [
+    {{
+      "article": "URDG758 Article X",
+      "description": "Brief explanation of the rule",
+      "type": "scope|expiry|demand|liability"
+    }}
+  ],
+  "applicable_framework": "URDG758",
+  "entities": {{
+    "applicant_name": "<extracted value>",
+    "beneficiary_name": "<extracted value>", 
+    "guarantor_name": "<extracted value>",
+    "guarantee_amount": "<extracted value>",
+    "expiry_date": "<extracted value>",
+    "purpose": "<extracted value>",
+    "wording": "<summary or 'Full text provided'>"
+  }},
+  "fields": {{
+    "automatic_extension_clause": {{
+      "compliance": true|false,
+      "highlight_spans": ["<problematic_text>"],
+      "highlight_suggestions": {{"<problematic_text>": "<improved_text>"}},
+      "reason": "<explanation>",
+      "severity": "low|medium|high",
+      "suggestion": "<complete rewritten clause>",
+      "value": "<original clause text>"
+    }},
+    "demand_conditions": {{
+      "compliance": true|false,
+      "highlight_spans": ["<problematic_text>"],
+      "highlight_suggestions": {{"<problematic_text>": "<improved_text>"}},
+      "reason": "<explanation>",
+      "severity": "low|medium|high", 
+      "suggestion": "<complete rewritten conditions>",
+      "value": "<original conditions text>"
+    }},
+    "expiry_conditions": {{
+      "compliance": true|false,
+      "highlight_spans": ["<problematic_text>"],
+      "highlight_suggestions": {{"<problematic_text>": "<improved_text>"}},
+      "reason": "<explanation>",
+      "severity": "low|medium|high",
+      "suggestion": "<complete rewritten expiry>",
+      "value": "<original expiry text>"
+    }},
+    "irrevocable_undertaking": {{
+      "compliance": true|false,
+      "highlight_spans": ["<problematic_text>"],
+      "highlight_suggestions": {{"<problematic_text>": "<improved_text>"}},
+      "reason": "<explanation>",
+      "severity": "low|medium|high",
+      "suggestion": "<complete rewritten undertaking>",
+      "value": "<original undertaking text>"
+    }},
+    "jurisdiction_clause": {{
+      "compliance": true|false,
+      "highlight_spans": ["<problematic_text>"],
+      "highlight_suggestions": {{"<problematic_text>": "<improved_text>"}},
+      "reason": "<explanation>",
+      "severity": "low|medium|high",
+      "suggestion": "<complete rewritten jurisdiction>",
+      "value": "<original jurisdiction text>"
+    }},
+    "liability_limitations": {{
+      "compliance": true|false,
+      "highlight_spans": ["<onerous_phrase1>", "<onerous_phrase2>"],
+      "highlight_suggestions": {{
+        "<onerous_phrase1>": "<compliant_version>",
+        "<onerous_phrase2>": "<compliant_version>"
+      }},
+      "reason": "<explanation referencing specific rules and why these clauses are onerous>",
+      "severity": "low|medium|high",
+      "suggestion": "<COMPLETE REWRITTEN FIELD WITH ALL IMPROVEMENTS>",
+      "value": "<original field text>"
+    }}
+  }},
+  "rule_type": "Guarantee",
+  "summary": "<Summary focusing on onerous clauses found and compliance status>",
+  "whitelist_compliance": {{
+    "compliant_rules": ["WL001", "WL002"],
+    "non_compliant_rules": ["WL003"],
+    "compliance_percentage": 67,
+    "details": {{
+      "WL001": {{ "status": "PASS", "description": "Approved guarantee issuing bank" }},
+      "WL002": {{ "status": "PASS", "description": "Standard guarantee amount range" }},
+      "WL003": {{ "status": "FAIL", "description": "Validity period exceeds 5 years" }}
+    }}
+  }},
+  "blacklist_screening": {{
+    "violations_found": ["BL001", "BL003"],
+    "critical_flags": ["BL001"],
+    "requires_escalation": true,
+    "details": {{
+      "BL001": {{ "status": "VIOLATION", "description": "Bank on sanctions list", "severity": "CRITICAL" }},
+      "BL003": {{ "status": "VIOLATION", "description": "Excessive guarantee amount", "severity": "HIGH" }}
+    }}
+  }},
+  "vetting_analysis": {{
+    "overall_assessment": {{
+      "recommendation": "APPROVE|CONDITIONAL_APPROVE|REJECT",
+      "risk_level": "LOW|MEDIUM|HIGH|CRITICAL",
+      "confidence_score": 0.95
+    }},
+    "whitelist_compliance": {{
+      "compliant_rules": ["WL001", "WL002"],
+      "non_compliant_rules": [],
+      "compliance_percentage": 100
+    }},
+    "blacklist_screening": {{
+      "violations_found": ["BL001", "BL003"],
+      "critical_flags": [],
+      "requires_escalation": false
+    }},
+    "detailed_findings": {{
+      "onerous_clauses": ["<list of onerous clauses found>"],
+      "strengths": ["<positive aspects>"],
+      "concerns": ["<areas of concern>"],
+      "missing_information": ["<required info not found>"]
+    }},
+    "recommendations": [
+      "<specific actionable recommendations>"
+    ],
+    "next_actions": [
+      "<required follow-up actions>"
+    ]
+  }}
+}}
+
+## CRITICAL REQUIREMENTS:
+1. **ONEROUS CLAUSES FOCUS**: Identify all onerous, unfavorable, or problematic clauses
+2. **EXACT FORMAT**: Match the /AICheck response structure exactly for compatibility
+3. **HIGHLIGHT_SPANS**: Include specific problematic phrases found in the text
+4. **HIGHLIGHT_SUGGESTIONS**: Provide improved wording for each problematic phrase
+5. **COMPLETE SUGGESTIONS**: Provide full rewritten field text in "suggestion"
+6. **WHITELIST ANALYSIS**: Systematically check against all whitelist rules (WL001-WL005) and report compliance status
+7. **BLACKLIST SCREENING**: Screen against all blacklist rules (BL001-BL006) and flag violations
+8. **DETAILED RULE ANALYSIS**: For each rule, provide status, description, and severity level
+9. **RULE REFERENCES**: Reference specific URDG 758 articles and vetting rules
+10. **ESCALATION FLAGS**: Identify critical violations that require immediate escalation
+
+**WHITELIST COMPLIANCE REQUIREMENTS**:
+- Check each WL rule and mark as PASS/FAIL
+- Calculate overall compliance percentage
+- Provide detailed descriptions for non-compliant rules
+
+**BLACKLIST SCREENING REQUIREMENTS**:
+- Identify all violations from BL rules
+- Mark critical flags that need escalation
+- Provide severity levels (LOW/MEDIUM/HIGH/CRITICAL)
+
+Focus on making the guarantee more balanced and less onerous while maintaining URDG 758 compliance.
+"""
+
+    return prompt.strip()
+
+
 def group_ocr_data_by_page(text_data):
     pages = defaultdict(list)
     for entry in text_data:

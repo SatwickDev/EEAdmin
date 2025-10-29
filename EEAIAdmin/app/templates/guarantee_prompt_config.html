@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Guarantee Prompt Configuration - Finstack</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #4f46e5;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-success {
+      background: #059669;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #047857;
+    }
+
+    .btn-warning {
+      background: #d97706;
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background: #b45309;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .config-section {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #374151;
+    }
+
+    .form-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Inter', monospace;
+      line-height: 1.5;
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+    }
+
+    .success-message {
+      background: #d1fae5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-message {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .action-buttons {
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      padding: 16px 24px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .preset-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .preset-btn {
+      padding: 6px 12px;
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .character-count {
+      font-size: 12px;
+      color: #6b7280;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .status-saved {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-modified {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .full-width-section {
+      grid-column: 1 / -1;
+    }
+
+    /* Preview Section Styles */
+    .preview-result {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      position: relative;
+    }
+
+    .preview-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    .preview-placeholder i {
+      font-size: 48px;
+      margin-bottom: 12px;
+      color: #d1d5db;
+    }
+
+    .preview-content {
+      padding: 16px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .preview-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: #6b7280;
+    }
+
+    .preview-loading .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #e5e7eb;
+      border-top: 2px solid #4f46e5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 12px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .preview-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .preview-error {
+      background: #fef2f2;
+      color: #991b1b;
+      padding: 16px;
+      border-radius: 6px;
+      border-left: 4px solid #ef4444;
+    }
+
+    .preview-success {
+      background: #f0fdf4;
+      color: #166534;
+      padding: 16px;
+      border-radius: 6px;
+      border-left: 4px solid #22c55e;
+    }
+
+    .text-muted {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .btn-info {
+      background: #0ea5e9;
+      color: white;
+    }
+
+    .btn-info:hover {
+      background: #0284c7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>⚙️ Guarantee Prompt Configuration</h1>
+        <p>Configure AI prompts for guarantee analysis and recommendations</p>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <a href="/guarantee_vetting_maintenance" class="btn btn-secondary">
+          <i class="mdi mdi-arrow-left"></i>
+          Back to Vetting
+        </a>
+        <button class="btn btn-warning" onclick="resetToDefaults()">
+          <i class="mdi mdi-restore"></i>
+          Reset to Defaults
+        </button>
+      </div>
+    </div>
+
+    <!-- Global Messages -->
+    <div id="successMessage" class="success-message">
+      <i class="mdi mdi-check-circle"></i>
+      Configuration saved successfully!
+    </div>
+    <div id="errorMessage" class="error-message">
+      <i class="mdi mdi-alert-circle"></i>
+      <span id="errorText">Error saving configuration</span>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading">
+      <i class="mdi mdi-loading mdi-spin" style="font-size: 32px;"></i>
+      <p>Loading configuration...</p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content" style="display: none;">
+      
+      <!-- System Prompt Section -->
+      <div class="config-section">
+        <div class="section-header">
+          <h3 class="section-title">
+            <i class="mdi mdi-cog" style="color: #4f46e5;"></i>
+            System Prompt
+          </h3>
+          <span id="systemPromptStatus" class="status-indicator status-saved">
+            <i class="mdi mdi-check"></i>
+            Saved
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Core System Instructions</label>
+            <div class="preset-buttons">
+              <button class="preset-btn" onclick="loadSystemPreset('standard')">Standard</button>
+              <button class="preset-btn" onclick="loadSystemPreset('detailed')">Detailed</button>
+              <button class="preset-btn" onclick="loadSystemPreset('concise')">Concise</button>
+            </div>
+            <textarea id="systemPrompt" class="form-textarea" placeholder="Enter the core system prompt that defines how the AI should analyze guarantees..."
+              onchange="markAsModified('systemPrompt')" style="min-height: 200px;"></textarea>
+            <div class="character-count">
+              <span id="systemPromptCount">0</span> characters
+            </div>
+            <div class="help-text">
+              This prompt defines the AI's role, expertise, and general approach to guarantee analysis.
+            </div>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-success" onclick="saveSystemPrompt()">
+            <i class="mdi mdi-content-save"></i>
+            <span id="saveSystemBtn">Save System Prompt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Prompt Section -->
+      <div class="config-section">
+        <div class="section-header">
+          <h3 class="section-title">
+            <i class="mdi mdi-pencil-box" style="color: #059669;"></i>
+            Custom Prompt
+          </h3>
+          <span id="customPromptStatus" class="status-indicator status-saved">
+            <i class="mdi mdi-check"></i>
+            Saved
+          </span>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Custom Analysis Instructions</label>
+            <div class="preset-buttons">
+              <button class="preset-btn" onclick="loadCustomPreset('banking')">Banking Focus</button>
+              <button class="preset-btn" onclick="loadCustomPreset('legal')">Legal Focus</button>
+              <button class="preset-btn" onclick="loadCustomPreset('risk')">Risk Focus</button>
+            </div>
+            <textarea id="customPrompt" class="form-textarea" placeholder="Enter custom instructions specific to your institution's requirements..."
+              onchange="markAsModified('customPrompt')" style="min-height: 200px;"></textarea>
+            <div class="character-count">
+              <span id="customPromptCount">0</span> characters
+            </div>
+            <div class="help-text">
+              Add specific instructions for your institution's guarantee analysis requirements.
+            </div>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-success" onclick="saveCustomPrompt()">
+            <i class="mdi mdi-content-save"></i>
+            <span id="saveCustomBtn">Save Custom Prompt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-time AI Preview Section -->
+      <div class="config-section full-width-section">
+        <div class="section-header">
+          <h3 class="section-title">
+            <i class="mdi mdi-eye-outline" style="color: #059669;"></i>
+            Real-time AI Preview
+          </h3>
+          <span id="previewStatus" class="status-indicator status-info">
+            <i class="mdi mdi-information"></i>
+            Preview Mode
+          </span>
+        </div>
+        <div class="section-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px;">
+            <div class="form-group">
+              <label class="form-label">Sample Document Text</label>
+              <textarea id="sampleDocumentText" class="form-textarea" placeholder="Enter sample guarantee document text for testing..."
+                style="min-height: 200px; font-family: 'Courier New', monospace; font-size: 13px;" oninput="triggerPreview()"></textarea>
+              <div class="help-text">
+                <i class="mdi mdi-information-outline"></i>
+                Enter sample guarantee document text to see how the AI will analyze it with current prompts.
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">AI Analysis Result</label>
+              <div id="previewResult" class="preview-result">
+                <div class="preview-placeholder">
+                  <i class="mdi mdi-robot-outline"></i>
+                  <p>Enter sample text to see AI analysis preview</p>
+                  <p class="text-muted">The result will update in real-time as you modify the prompts</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Preview Controls -->
+          <div class="preview-controls">
+            <button class="btn btn-primary" onclick="generatePreview()" id="previewBtn">
+              <i class="mdi mdi-play"></i>
+              Generate Preview
+            </button>
+            <button class="btn btn-secondary" onclick="clearPreview()">
+              <i class="mdi mdi-eraser"></i>
+              Clear Preview
+            </button>
+            <button class="btn btn-info" onclick="loadSampleDocument()">
+              <i class="mdi mdi-file-document-outline"></i>
+              Load Sample Document
+            </button>
+          </div>
+          
+          <!-- Preview Settings -->
+          <div class="preview-settings" style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <h4 style="margin-bottom: 12px; color: #374151; font-size: 14px; font-weight: 600;">Preview Settings</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <div class="form-group" style="margin: 0;">
+                <label class="form-label" style="font-size: 12px;">Analysis Mode</label>
+                <select id="analysisMode" class="form-control" style="font-size: 13px;" onchange="updatePreview()">
+                  <option value="basic">Basic Analysis</option>
+                  <option value="detailed">Detailed Analysis</option>
+                  <option value="compliance">Compliance Check</option>
+                  <option value="risk_assessment">Risk Assessment</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin: 0;">
+                <label class="form-label" style="font-size: 12px;">Include Rules</label>
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                  <label style="display: flex; align-items: center; font-size: 12px;">
+                    <input type="checkbox" id="includeWhitelist" checked onchange="updatePreview()" style="margin-right: 4px;">
+                    Whitelist
+                  </label>
+                  <label style="display: flex; align-items: center; font-size: 12px;">
+                    <input type="checkbox" id="includeBlacklist" checked onchange="updatePreview()" style="margin-right: 4px;">
+                    Blacklist
+                  </label>
+                </div>
+              </div>
+              <div class="form-group" style="margin: 0;">
+                <label class="form-label" style="font-size: 12px;">Auto-refresh</label>
+                <label style="display: flex; align-items: center; font-size: 12px; margin-top: 4px;">
+                  <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()" style="margin-right: 4px;">
+                  Update on prompt change
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentConfig = {};
+    let isLoading = false;
+
+    // Load configuration on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadConfiguration();
+      loadVettingRules();
+    });
+
+    async function loadConfiguration() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/guarantee_prompt_config');
+        const data = await response.json();
+        
+        if (data.success) {
+          currentConfig = data.config || {};
+          populateForm();
+          updateCharacterCounts();
+        } else {
+          showError('Failed to load configuration: ' + data.message);
+        }
+      } catch (error) {
+        showError('Error loading configuration: ' + error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function populateForm() {
+      // System prompt
+      document.getElementById('systemPrompt').value = currentConfig.system_prompt || '';
+      
+      // Custom prompt  
+      document.getElementById('customPrompt').value = currentConfig.custom_prompt || '';
+      
+      // Analysis prompts
+      document.getElementById('analysisPrompts').value = 
+        JSON.stringify(currentConfig.analysis_prompts || {}, null, 2);
+      
+      // Response templates
+      document.getElementById('responseTemplates').value = 
+        JSON.stringify(currentConfig.response_templates || {}, null, 2);
+      
+      // Settings
+      document.getElementById('aiSettings').value = 
+        JSON.stringify(currentConfig.settings || {}, null, 2);
+
+      // Reset all status indicators
+      resetStatusIndicators();
+    }
+
+    function updateCharacterCounts() {
+      const systemPrompt = document.getElementById('systemPrompt').value;
+      const customPrompt = document.getElementById('customPrompt').value;
+      
+      document.getElementById('systemPromptCount').textContent = systemPrompt.length;
+      document.getElementById('customPromptCount').textContent = customPrompt.length;
+    }
+
+    // Character count updates
+    document.getElementById('systemPrompt').addEventListener('input', updateCharacterCounts);
+    document.getElementById('customPrompt').addEventListener('input', updateCharacterCounts);
+
+    function markAsModified(section) {
+      let statusId;
+      switch(section) {
+        case 'systemPrompt':
+          statusId = 'systemPromptStatus';
+          break;
+        case 'customPrompt':
+          statusId = 'customPromptStatus';
+          break;
+        case 'templates':
+          statusId = 'templatesStatus';
+          break;
+        case 'settings':
+          statusId = 'settingsStatus';
+          break;
+      }
+      
+      const statusEl = document.getElementById(statusId);
+      statusEl.className = 'status-indicator status-modified';
+      statusEl.innerHTML = '<i class="mdi mdi-pencil"></i> Modified';
+      
+      updateCharacterCounts();
+    }
+
+    function resetStatusIndicators() {
+      const indicators = ['systemPromptStatus', 'customPromptStatus', 'templatesStatus', 'settingsStatus'];
+      indicators.forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'status-indicator status-saved';
+        el.innerHTML = '<i class="mdi mdi-check"></i> Saved';
+      });
+    }
+
+    async function loadVettingRules() {
+      try {
+        const response = await fetch('/api/vetting_rules');
+        const data = await response.json();
+        
+        if (data.success) {
+          console.log('Vetting rules loaded:', data.data);
+          console.log(`Loaded ${data.count.whitelist} whitelist rules and ${data.count.blacklist} blacklist rules`);
+          
+          // Store rules globally for use in preview
+          window.vettingRules = data.data;
+          
+          // Update rule counts in UI if elements exist
+          const whitelistCount = document.querySelector('.whitelist-count');
+          const blacklistCount = document.querySelector('.blacklist-count');
+          
+          if (whitelistCount) {
+            whitelistCount.textContent = data.count.whitelist;
+          }
+          if (blacklistCount) {
+            blacklistCount.textContent = data.count.blacklist;
+          }
+          
+          // Show success message
+          showMessage('Vetting rules loaded successfully', 'success');
+        } else {
+          console.error('Failed to load vetting rules:', data.message);
+          showMessage('Failed to load vetting rules: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error loading vetting rules:', error);
+        showMessage('Error loading vetting rules', 'error');
+      }
+    }
+
+    async function saveSystemPrompt() {
+      const systemPrompt = document.getElementById('systemPrompt').value;
+      await savePartialConfig({ system_prompt: systemPrompt }, 'systemPromptStatus', 'saveSystemBtn');
+    }
+
+    async function saveCustomPrompt() {
+      const customPrompt = document.getElementById('customPrompt').value;
+      await savePartialConfig({ custom_prompt: customPrompt }, 'customPromptStatus', 'saveCustomBtn');
+    }
+
+    async function saveTemplates() {
+      try {
+        const analysisPrompts = JSON.parse(document.getElementById('analysisPrompts').value || '{}');
+        const responseTemplates = JSON.parse(document.getElementById('responseTemplates').value || '{}');
+        
+        await savePartialConfig({ 
+          analysis_prompts: analysisPrompts,
+          response_templates: responseTemplates 
+        }, 'templatesStatus', 'saveTemplatesBtn');
+      } catch (error) {
+        showError('Invalid JSON format in templates');
+      }
+    }
+
+    async function saveSettings() {
+      try {
+        const settings = JSON.parse(document.getElementById('aiSettings').value || '{}');
+        await savePartialConfig({ settings: settings }, 'settingsStatus', 'saveSettingsBtn');
+      } catch (error) {
+        showError('Invalid JSON format in settings');
+      }
+    }
+
+    async function savePartialConfig(configUpdate, statusId, buttonId) {
+      if (isLoading) return;
+
+      try {
+        const buttonEl = document.getElementById(buttonId);
+        const originalText = buttonEl.innerHTML;
+        buttonEl.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Saving...';
+        buttonEl.disabled = true;
+
+        // Merge with current config
+        const updatedConfig = { ...currentConfig, ...configUpdate };
+
+        const response = await fetch('/api/guarantee_prompt_config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedConfig)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          currentConfig = { ...currentConfig, ...configUpdate };
+          
+          const statusEl = document.getElementById(statusId);
+          statusEl.className = 'status-indicator status-saved';
+          statusEl.innerHTML = '<i class="mdi mdi-check"></i> Saved';
+          
+          showSuccess('Configuration saved successfully!');
+        } else {
+          showError('Failed to save configuration: ' + result.message);
+        }
+      } catch (error) {
+        showError('Error saving configuration: ' + error.message);
+      } finally {
+        const buttonEl = document.getElementById(buttonId);
+        buttonEl.innerHTML = buttonEl.dataset.originalText || 'Save';
+        buttonEl.disabled = false;
+      }
+    }
+
+    async function saveAllConfiguration() {
+      if (isLoading) return;
+
+      try {
+        setLoading(true);
+
+        const systemPrompt = document.getElementById('systemPrompt').value;
+        const customPrompt = document.getElementById('customPrompt').value;
+        
+        let analysisPrompts, responseTemplates, settings;
+        
+        try {
+          analysisPrompts = JSON.parse(document.getElementById('analysisPrompts').value || '{}');
+          responseTemplates = JSON.parse(document.getElementById('responseTemplates').value || '{}');
+          settings = JSON.parse(document.getElementById('aiSettings').value || '{}');
+        } catch (error) {
+          showError('Invalid JSON format in one or more sections');
+          return;
+        }
+
+        const fullConfig = {
+          system_prompt: systemPrompt,
+          custom_prompt: customPrompt,
+          analysis_prompts: analysisPrompts,
+          response_templates: responseTemplates,
+          settings: settings
+        };
+
+        const response = await fetch('/api/guarantee_prompt_config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fullConfig)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          currentConfig = fullConfig;
+          resetStatusIndicators();
+          showSuccess('All configuration saved successfully!');
+        } else {
+          showError('Failed to save configuration: ' + result.message);
+        }
+      } catch (error) {
+        showError('Error saving configuration: ' + error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function resetToDefaults() {
+      if (!confirm('Are you sure you want to reset all prompts to default values? This cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/guarantee_prompt_config/reset', {
+          method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          loadConfiguration();
+          showSuccess('Configuration reset to defaults successfully!');
+        } else {
+          showError('Failed to reset configuration: ' + result.message);
+        }
+      } catch (error) {
+        showError('Error resetting configuration: ' + error.message);
+      }
+    }
+
+    // Preset functions
+    function loadSystemPreset(preset) {
+      const presets = {
+        standard: `You are an expert guarantee analyst with deep knowledge of URDG 758, banking practices, and international trade finance. Analyze guarantee documents for compliance, risk factors, and operational considerations.
+
+Focus on:
+- Independence principle compliance
+- URDG 758 adherence
+- Operational risk assessment
+- Beneficiary compliance requirements`,
+
+        detailed: `You are a senior guarantee analyst with expertise in:
+- URDG 758 (Uniform Rules for Demand Guarantees)
+- International Standard Banking Practices (ISBP)
+- ICC Banking Commission guidance
+- Local regulatory requirements
+
+Your role is to provide comprehensive analysis covering:
+1. Independence principle verification
+2. Demand condition assessment
+3. Expiry and claim procedures
+4. Beneficiary compliance requirements
+5. Operational risk evaluation
+6. Documentary compliance review
+
+Maintain a professional, analytical approach while ensuring all recommendations align with international best practices.`,
+
+        concise: `Expert guarantee analyst. Analyze documents for URDG 758 compliance, independence principle adherence, and operational risks. Provide clear, actionable recommendations.`
+      };
+      
+      document.getElementById('systemPrompt').value = presets[preset] || '';
+      markAsModified('systemPrompt');
+    }
+
+    function loadCustomPreset(preset) {
+      const presets = {
+        banking: `Institution-specific considerations:
+- Internal credit policies and procedures
+- Relationship banking requirements
+- Customer risk rating implications
+- Operational workflow integration
+- Compliance with internal guidelines`,
+
+        legal: `Legal and regulatory focus:
+- Local jurisdiction requirements
+- Cross-border legal implications
+- Dispute resolution mechanisms
+- Documentation enforceability
+- Regulatory compliance verification`,
+
+        risk: `Risk management emphasis:
+- Country risk assessment
+- Counterparty risk evaluation
+- Operational risk mitigation
+- Reputational risk considerations
+- Portfolio concentration limits`
+      };
+      
+      document.getElementById('customPrompt').value = presets[preset] || '';
+      markAsModified('customPrompt');
+    }
+
+    function setLoading(loading) {
+      isLoading = loading;
+      document.getElementById('loadingState').style.display = loading ? 'block' : 'none';
+      document.getElementById('mainContent').style.display = loading ? 'none' : 'grid';
+    }
+
+    function showSuccess(message) {
+      const el = document.getElementById('successMessage');
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    function showError(message) {
+      document.getElementById('errorText').textContent = message;
+      const el = document.getElementById('errorMessage');
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // ===== REAL-TIME PREVIEW FUNCTIONS =====
+    let previewTimeout;
+    let isAutoRefresh = false;
+
+    async function generatePreview() {
+      const systemPrompt = document.getElementById('systemPrompt').value;
+      const customPrompt = document.getElementById('customPrompt').value;
+      const sampleText = document.getElementById('sampleDocumentText').value;
+      const analysisMode = document.getElementById('analysisMode').value;
+      const includeWhitelist = document.getElementById('includeWhitelist').checked;
+      const includeBlacklist = document.getElementById('includeBlacklist').checked;
+
+      if (!sampleText.trim()) {
+        showPreviewError('Please enter sample document text to generate preview');
+        return;
+      }
+
+      showPreviewLoading();
+
+      try {
+        const response = await fetch('/api/guarantee_prompt_preview', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            system_prompt: systemPrompt,
+            custom_prompt: customPrompt,
+            sample_text: sampleText,
+            analysis_mode: analysisMode,
+            include_whitelist: includeWhitelist,
+            include_blacklist: includeBlacklist
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showPreviewResult(result.analysis);
+        } else {
+          showPreviewError('Preview generation failed: ' + (result.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Preview generation error:', error);
+        showPreviewError('Error generating preview: ' + error.message);
+      }
+    }
+
+    function showPreviewLoading() {
+      const previewDiv = document.getElementById('previewResult');
+      previewDiv.innerHTML = `
+        <div class="preview-loading">
+          <div class="spinner"></div>
+          <span>Generating AI analysis preview...</span>
+        </div>
+      `;
+    }
+
+    function showPreviewResult(analysis) {
+      const previewDiv = document.getElementById('previewResult');
+      
+      let formattedResult;
+      if (typeof analysis === 'object') {
+        formattedResult = JSON.stringify(analysis, null, 2);
+      } else {
+        formattedResult = analysis;
+      }
+
+      previewDiv.innerHTML = `
+        <div class="preview-success">
+          <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <i class="mdi mdi-check-circle" style="margin-right: 8px;"></i>
+            <strong>AI Analysis Generated Successfully</strong>
+          </div>
+          <div style="font-size: 12px; margin-bottom: 12px; color: #166534;">
+            Generated at ${new Date().toLocaleTimeString()}
+          </div>
+        </div>
+        <div class="preview-content">${formattedResult}</div>
+      `;
+    }
+
+    function showPreviewError(message) {
+      const previewDiv = document.getElementById('previewResult');
+      previewDiv.innerHTML = `
+        <div class="preview-error">
+          <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <i class="mdi mdi-alert-circle" style="margin-right: 8px;"></i>
+            <strong>Preview Generation Failed</strong>
+          </div>
+          <div>${message}</div>
+        </div>
+      `;
+    }
+
+    function clearPreview() {
+      const previewDiv = document.getElementById('previewResult');
+      previewDiv.innerHTML = `
+        <div class="preview-placeholder">
+          <i class="mdi mdi-robot-outline"></i>
+          <p>Enter sample text to see AI analysis preview</p>
+          <p class="text-muted">The result will update in real-time as you modify the prompts</p>
+        </div>
+      `;
+      document.getElementById('sampleDocumentText').value = '';
+    }
+
+    function loadSampleDocument() {
+      const sampleTexts = [
+        `GUARANTEE NO: GT-2024-001234
+GUARANTOR: ABC International Bank
+PRINCIPAL: XYZ Trading Company
+BENEFICIARY: Global Import Corp
+AMOUNT: USD 500,000.00
+EXPIRY DATE: 31 December 2024
+
+We hereby issue this irrevocable guarantee in favor of the beneficiary for the amount stated above in connection with Contract No. CTR-2024-567890.
+
+This guarantee is subject to the Uniform Rules for Demand Guarantees (URDG 758) published by the International Chamber of Commerce.
+
+Claims under this guarantee must be accompanied by:
+1. Your written demand for payment
+2. Your statement that the principal has failed to fulfill their obligations under the underlying contract
+
+This guarantee shall expire on the date specified above or upon return of the original guarantee to us, whichever occurs first.`,
+
+        `BANK GUARANTEE
+Reference: BG/2024/789012
+Date: 15 October 2024
+
+TO: MINISTRY OF INFRASTRUCTURE
+RE: Performance Guarantee for Highway Construction Project ABC-2024
+
+At the request of CONSTRUCTION COMPANY LTD, we hereby establish this irrevocable guarantee in your favor for an amount not exceeding EUR 2,500,000.00 (Two Million Five Hundred Thousand Euros).
+
+This guarantee is issued to secure the proper performance of the construction contract dated 01 September 2024.
+
+We undertake to pay you, upon your first written demand accompanied by your statement that the contractor has failed to perform in accordance with the contract terms.
+
+This guarantee shall remain valid until 31 March 2025 and shall be automatically reduced by the amount of any payments made hereunder.`,
+
+        `STANDBY LETTER OF CREDIT NO: SBLC-2024-445566
+ISSUER: Global Trade Bank
+APPLICANT: International Traders Inc
+BENEFICIARY: Export Finance Corporation
+AMOUNT: USD 1,000,000.00
+ISSUE DATE: 20 October 2024
+EXPIRY DATE: 20 April 2025
+
+We hereby establish this irrevocable standby letter of credit in your favor.
+
+We undertake to honor your sight draft(s) for any amount not exceeding the aggregate amount of this credit upon presentation of:
+1. Your draft at sight drawn on us
+2. Your signed statement reading: "The applicant has failed to perform their payment obligations under Purchase Order PO-2024-998877"
+
+This standby letter of credit is subject to ISP98 (International Standby Practices).`
+      ];
+      
+      const randomSample = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+      document.getElementById('sampleDocumentText').value = randomSample;
+      
+      if (isAutoRefresh) {
+        triggerPreview();
+      }
+    }
+
+    function triggerPreview() {
+      if (!isAutoRefresh) return;
+      
+      clearTimeout(previewTimeout);
+      previewTimeout = setTimeout(generatePreview, 2000); // 2 second delay
+    }
+
+    function updatePreview() {
+      if (isAutoRefresh) {
+        triggerPreview();
+      }
+    }
+
+    function toggleAutoRefresh() {
+      isAutoRefresh = document.getElementById('autoRefresh').checked;
+      if (isAutoRefresh) {
+        // Add event listeners to prompt textareas
+        document.getElementById('systemPrompt').addEventListener('input', triggerPreview);
+        document.getElementById('customPrompt').addEventListener('input', triggerPreview);
+        showSuccess('Auto-refresh enabled - preview will update when prompts change');
+      } else {
+        // Remove event listeners
+        document.getElementById('systemPrompt').removeEventListener('input', triggerPreview);
+        document.getElementById('customPrompt').removeEventListener('input', triggerPreview);
+        showSuccess('Auto-refresh disabled');
+      }
+    }
+
+    // Initialize preview section
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load sample document by default
+      loadSampleDocument();
+    });
+  </script>
+</body>
+</html>

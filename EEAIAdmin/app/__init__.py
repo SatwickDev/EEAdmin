@@ -47,6 +47,13 @@ def create_app():
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
+    # Document upload configuration
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+
+    # Create upload directory if it doesn't exist
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
     # Enable CORS with restricted origins
     # Temporarily disabled due to recursion error
     # CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
@@ -90,8 +97,18 @@ def create_app():
     # Import and register routes
     try:
         from app.routes import setup_routes
+        from app.document_routes import document_bp
+        from app.database_routes import database_bp
         setup_auth_routes(app)
         setup_routes(app)
+
+        # Register document verification blueprint
+        app.register_blueprint(document_bp)
+        logger.info("Document verification blueprint registered successfully.")
+
+        # Register database connection management blueprint
+        app.register_blueprint(database_bp)
+        logger.info("Database connection management blueprint registered successfully.")
     except Exception as e:
         logger.error(f"Failed to setup routes: {e}")
         raise

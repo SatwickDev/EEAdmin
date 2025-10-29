@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Document Capture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: transparent;
+            padding: 20px;
+        }
+
+        /* Upload Area Styling */
+        .upload-container {
+            width: 100%;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fafbfc 0%, #f3f4f6 100%);
+            border: 3px dashed #e5e7eb;
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-color: #667eea;
+            transform: scale(1.01);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+        }
+
+        .upload-area.dragging {
+            background: linear-gradient(135deg, #e9ecff 0%, #e0e6ff 100%);
+            border-color: #667eea;
+            border-width: 3px;
+            border-style: solid;
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .upload-content {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+            padding: 40px;
+        }
+
+        .upload-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: float 4s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .upload-icon i {
+            font-size: 50px;
+            color: white;
+        }
+
+        .upload-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtitle {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        .file-types {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .file-type-badge {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .file-type-badge:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .file-type-badge i {
+            font-size: 18px;
+        }
+
+        .browse-button {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .browse-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Processing State */
+        .processing-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .processing-spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .processing-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .processing-status {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .processing-steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: #e5e7eb;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .step-item.completed .step-number {
+            background: #10b981;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .step-label {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Results State */
+        .results-container {
+            padding: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .confidence-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .confidence-high {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .confidence-medium {
+            background: #fed7aa;
+            color: #ea580c;
+        }
+
+        .confidence-low {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .field-item {
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .field-value {
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Upload State -->
+        <div v-if="!processing && !results" class="upload-container">
+            <div 
+                class="upload-area"
+                :class="{ dragging: isDragging }"
+                @click="$refs.fileInput.click()"
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="handleDrop"
+            >
+                <div class="upload-content">
+                    <div class="upload-icon">
+                        <i class="mdi mdi-cloud-upload"></i>
+                    </div>
+                    <h2 class="upload-title">Drop your document here</h2>
+                    <p class="upload-subtitle">or click to browse from your computer</p>
+                    
+                    <div class="file-types">
+                        <div class="file-type-badge">
+                            <i class="mdi mdi-file-pdf-box"></i>
+                            <span>PDF</span>
+                        </div>
+                        <div class="file-type-badge">
+                            <i class="mdi mdi-file-image"></i>
+                            <span>Images</span>
+                        </div>
+                        <div class="file-type-badge">
+                            <i class="mdi mdi-file-word"></i>
+                            <span>Word</span>
+                        </div>
+                        <div class="file-type-badge">
+                            <i class="mdi mdi-file-excel"></i>
+                            <span>Excel</span>
+                        </div>
+                    </div>
+                    
+                    <button class="browse-button">
+                        <i class="mdi mdi-folder-open"></i> Browse Files
+                    </button>
+                </div>
+                <input 
+                    ref="fileInput"
+                    type="file" 
+                    style="display: none;"
+                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.tiff,.xlsx,.xls"
+                    multiple
+                    @change="handleFileSelect"
+                >
+            </div>
+        </div>
+
+        <!-- Processing State -->
+        <div v-if="processing" class="processing-container">
+            <div class="processing-spinner"></div>
+            <h2 class="processing-title">Processing your document</h2>
+            <p class="processing-status" v-text="processingStatus"></p>
+            
+            <div class="processing-steps">
+                <div 
+                    v-for="(step, index) in steps" 
+                    :key="index"
+                    class="step-item"
+                    :class="{ 
+                        active: currentStep === index,
+                        completed: currentStep > index 
+                    }"
+                >
+                    <div class="step-number">
+                        <i v-if="currentStep > index" class="mdi mdi-check"></i>
+                        <span v-else v-text="index + 1"></span>
+                    </div>
+                    <span class="step-label" v-text="step"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results State -->
+        <div v-if="results" class="results-container">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="result-title">
+                        <i class="mdi mdi-file-check"></i>
+                        Document Analysis Complete
+                    </div>
+                    <div 
+                        class="confidence-badge"
+                        :class="{
+                            'confidence-high': avgConfidence >= 90,
+                            'confidence-medium': avgConfidence >= 70 && avgConfidence < 90,
+                            'confidence-low': avgConfidence < 70
+                        }"
+                    >
+                        <span v-text="avgConfidence"></span>% Confidence
+                    </div>
+                </div>
+
+                <div v-if="results[0]">
+                    <p style="margin-bottom: 15px; color: #64748b;">
+                        Document Type: <strong style="color: #1e293b;" v-text="results[0].documentType"></strong>
+                    </p>
+                    
+                    <div class="fields-grid">
+                        <div 
+                            v-for="(value, key) in results[0].extractedFields" 
+                            :key="key"
+                            class="field-item"
+                        >
+                            <div class="field-label" v-text="formatFieldName(key)"></div>
+                            <div class="field-value" v-text="getFieldValue(value)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" @click="reset">
+                        <i class="mdi mdi-refresh"></i> Upload Another
+                    </button>
+                    <button class="btn btn-primary" @click="applyToForm">
+                        <i class="mdi mdi-check"></i> Apply to Form
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    isDragging: false,
+                    processing: false,
+                    processingStatus: '',
+                    currentStep: 0,
+                    steps: ['Uploading', 'Extracting', 'Analyzing', 'Finalizing'],
+                    results: null,
+                    formType: null
+                }
+            },
+            computed: {
+                avgConfidence() {
+                    if (!this.results || this.results.length === 0) return 0;
+                    const sum = this.results.reduce((acc, r) => acc + r.confidence, 0);
+                    return Math.round(sum / this.results.length);
+                }
+            },
+            methods: {
+                handleFileSelect(event) {
+                    const files = Array.from(event.target.files);
+                    if (files.length > 0) {
+                        this.processFiles(files);
+                    }
+                },
+                handleDrop(event) {
+                    this.isDragging = false;
+                    const files = Array.from(event.dataTransfer.files);
+                    if (files.length > 0) {
+                        this.processFiles(files);
+                    }
+                },
+                async processFiles(files) {
+                    this.processing = true;
+                    this.currentStep = 0;
+
+                    // Animate through steps
+                    for (let i = 0; i < this.steps.length; i++) {
+                        this.currentStep = i;
+                        this.processingStatus = this.steps[i] + '...';
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+
+                    // Prepare form data
+                    const formData = new FormData();
+                    files.forEach(file => {
+                        formData.append('files', file);
+                    });
+
+                    try {
+                        const response = await fetch('/api/document/classify', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success) {
+                                this.results = data.results.map(result => ({
+                                    fileName: result.file_name,
+                                    documentType: result.document_type,
+                                    confidence: Math.round(result.confidence * 100),
+                                    extractedFields: result.extracted_fields || result.analysis_result?.combined_fields || {}
+                                }));
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error processing files:', error);
+                        alert('Error processing document. Please try again.');
+                        this.reset();
+                    }
+
+                    this.processing = false;
+                },
+                formatFieldName(fieldName) {
+                    return fieldName
+                        .split('_')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                },
+                getFieldValue(value) {
+                    if (typeof value === 'object' && value !== null) {
+                        return value.value || value.text || JSON.stringify(value);
+                    }
+                    return value || '-';
+                },
+                reset() {
+                    this.results = null;
+                    this.processing = false;
+                    this.currentStep = 0;
+                    this.$refs.fileInput.value = '';
+                },
+                applyToForm() {
+                    if (this.results && this.results.length > 0) {
+                        // Send message to parent window
+                        window.parent.postMessage({
+                            type: 'classification_complete',
+                            data: this.results[0].extractedFields
+                        }, '*');
+                    }
+                }
+            },
+            mounted() {
+                // Get form type from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                this.formType = urlParams.get('form') || 'trade_finance_lc';
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -279,6 +279,20 @@ const app = createApp({
         window.location.href = '/analytics';
       }, 1000);
     },
+    navigateToDBConfig() {
+      if (!this.checkAuthenticationStatus()) return;
+      this.showNotification('Opening Database Query Configuration...', 'info');
+      setTimeout(() => {
+        window.location.href = '/database_configuration';
+      }, 1000);
+    },
+    navigateToAdminConfig() {
+      if (!this.checkAuthenticationStatus()) return;
+      this.showNotification('Opening Admin Configuration...', 'info');
+      setTimeout(() => {
+        window.location.href = '/document_entity_maintenance';
+      }, 1000);
+    },
     navigateToAPI() {
       if (!this.checkAuthenticationStatus()) return;
       this.showNotification('Accessing API Management...', 'info');

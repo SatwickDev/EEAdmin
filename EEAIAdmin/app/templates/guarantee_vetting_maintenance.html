@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Guarantee Vetting Rules Maintenance - Finstack</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      min-height: 100vh;
+      padding: 24px;
+      color: #334155;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 32px 40px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #64748b 0%, #475569 50%, #334155 100%);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 32px;
+    }
+
+    .header-text h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .header-text p {
+      color: #64748b;
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 600px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .main-content {
+      background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .table-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .table-title::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+      border-radius: 2px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.025em;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #475569 0%, #334155 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(71, 85, 105, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(71, 85, 105, 0.35);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #475569 0%, #334155 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(100, 116, 139, 0.35);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(100, 116, 139, 0.25);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #475569 0%, #334155 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(100, 116, 139, 0.35);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    .btn-accent:hover {
+      background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    .rules-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .rules-table th {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      padding: 20px 24px;
+      text-align: left;
+      font-weight: 700;
+      color: #475569;
+      border-bottom: 2px solid #cbd5e1;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      position: relative;
+    }
+
+    .rules-table th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    .rules-table th:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    .rules-table td {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+      font-size: 14px;
+      color: #334155;
+      background: #ffffff;
+      transition: all 0.2s ease;
+    }
+
+    .rules-table td.actions-cell {
+      position: sticky;
+      right: 0;
+      background: #ffffff;
+      z-index: 5;
+      border-left: 1px solid #e2e8f0;
+      box-shadow: -4px 0 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .rules-table tr:hover td {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      transform: scale(1.001);
+    }
+
+    .rules-table tr:hover td.actions-cell {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .hidden-column {
+      display: none;
+    }
+
+    .show-detailed .hidden-column {
+      display: table-cell;
+    }
+
+    .table-container {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      pointer-events: none;
+    }
+
+    .badge-high {
+      background: linear-gradient(135deg, rgba(71, 85, 105, 0.15) 0%, rgba(51, 65, 85, 0.1) 100%);
+      color: #475569;
+      border-color: rgba(71, 85, 105, 0.3);
+    }
+
+    .badge-medium {
+      background: linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.1) 100%);
+      color: #64748b;
+      border-color: rgba(100, 116, 139, 0.3);
+    }
+
+    .badge-low {
+      background: linear-gradient(135deg, rgba(148, 163, 184, 0.15) 0%, rgba(100, 116, 139, 0.1) 100%);
+      color: #94a3b8;
+      border-color: rgba(148, 163, 184, 0.3);
+    }
+
+    .badge-independence {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%);
+      color: #2563eb;
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-custom {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%);
+      color: #7c3aed;
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .badge-isdgp {
+      background: linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.1) 100%);
+      color: #64748b;
+      border-color: rgba(100, 116, 139, 0.3);
+    }
+
+    .badge-blacklist {
+      background: linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.1) 100%);
+      color: #64748b;
+      border-color: rgba(100, 116, 139, 0.3);
+    }
+
+    .badge-whitelist {
+      background: linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.1) 100%);
+      color: #64748b;
+      border-color: rgba(100, 116, 139, 0.3);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stats-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .stats-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .stats-label {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .text-truncate {
+      max-width: 150px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+
+    .text-truncate:hover {
+      background: #f3f4f6;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .text-truncate-long {
+      max-width: 250px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+
+    .text-truncate-long:hover {
+      background: #f3f4f6;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .expandable-cell {
+      position: relative;
+    }
+
+    .expand-btn {
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 2px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    .expand-btn:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .full-content {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      max-width: 400px;
+      font-size: 13px;
+      line-height: 1.4;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+    }
+
+    .full-content.show {
+      display: block;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      max-width: 800px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+      color: #1f2937;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #4b5563;
+      box-shadow: 0 0 0 3px rgba(75, 85, 99, 0.1);
+    }
+
+    .form-control.textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-modal:hover {
+      color: #374151;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+    }
+
+    .loading .mdi {
+      font-size: 32px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+
+    .empty-state .mdi {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: #d1d5db;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      background: rgba(248, 250, 252, 0.8);
+      border: 1px solid #e2e8f0;
+    }
+
+    .back-link:hover {
+      color: #334155;
+      background: #ffffff;
+      transform: translateX(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .search-filters {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 16px;
+      align-items: end;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #ffffff;
+      transition: all 0.2s ease;
+      color: #334155;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #475569;
+      box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <a href="/document_entity_maintenance" class="back-link">
+      <i class="mdi mdi-arrow-left"></i>
+      Back to Document Entity Maintenance
+    </a>
+    
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1>Guarantee Vetting Rules</h1>
+          <p>Comprehensive management of URDG compliance rules for guarantee vetting processes. Monitor whitelist and blacklist detection patterns with advanced analytics.</p>
+        </div>
+        <div class="header-actions">
+          <a href="/blacklist_rules_management" class="btn btn-danger btn-sm">
+            <i class="mdi mdi-close-circle"></i>
+            Blacklist Rules
+          </a>
+          <a href="/whitelist_rules_management" class="btn btn-success btn-sm">
+            <i class="mdi mdi-check-circle"></i>
+            Whitelist Rules
+          </a>
+          <a href="/guarantee_prompt_config" class="btn btn-accent btn-sm">
+            <i class="mdi mdi-cog"></i>
+            Prompt Config
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stats-card">
+        <div class="stats-number" id="totalRulesCount">0</div>
+        <div class="stats-label">Total Rules</div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-number" id="blacklistRulesCount">0</div>
+        <div class="stats-label">Blacklist Rules</div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-number" id="whitelistRulesCount">0</div>
+        <div class="stats-label">Whitelist Rules</div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-number" id="highSeverityCount">0</div>
+        <div class="stats-label">High Severity</div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-filters">
+      <div class="search-grid">
+        <div class="form-group">
+          <label for="searchInput">Search Rules</label>
+          <input type="text" id="searchInput" class="form-control" placeholder="Search by name, reference, or description...">
+        </div>
+        <div class="form-group">
+          <label for="typeFilter">Rule Type</label>
+          <select id="typeFilter" class="form-control">
+            <option value="">All Types</option>
+            <option value="blacklist">Blacklist</option>
+            <option value="whitelist">Whitelist</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="severityFilter">Severity</label>
+          <select id="severityFilter" class="form-control">
+            <option value="">All Severities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-secondary" onclick="clearFilters()">
+            <i class="mdi mdi-filter-remove"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="table-header">
+        <h2 class="table-title">Guarantee Vetting Rules</h2>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary" onclick="openAIAssistant()" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); border: none;">
+            <i class="mdi mdi-eye"></i>
+            AI Rule Preview
+          </button>
+          <button class="btn btn-secondary" onclick="openAddModal()" style="background: #64748b; border: none;">
+            <i class="mdi mdi-plus"></i>
+            Manual Entry
+          </button>
+        </div>
+      </div>
+
+      <div id="alertContainer"></div>
+
+      <div id="loadingContainer" class="loading">
+        <i class="mdi mdi-loading"></i>
+        <p>Loading guarantee vetting rules...</p>
+      </div>
+
+      <div id="rulesContainer" style="display: none;">
+        <div class="table-container">
+          <div style="overflow-x: auto;">
+            <table class="rules-table">
+              <thead>
+                <tr>
+                  <th style="width: 140px;">
+                    <i class="mdi mdi-identifier" style="margin-right: 8px;"></i>
+                    Rule Reference
+                  </th>
+                  <th style="width: 250px;">
+                    <i class="mdi mdi-text" style="margin-right: 8px;"></i>
+                    Rule Name
+                  </th>
+                  <th style="width: 120px;">
+                    <i class="mdi mdi-tag" style="margin-right: 8px;"></i>
+                    Type
+                  </th>
+                  <th style="width: 100px;">
+                    <i class="mdi mdi-alert" style="margin-right: 8px;"></i>
+                    Severity
+                  </th>
+                  <th style="width: 120px;">
+                    <i class="mdi mdi-folder" style="margin-right: 8px;"></i>
+                    Category
+                  </th>
+                  <th style="width: 140px; position: sticky; right: 0; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); z-index: 10;">
+                    <i class="mdi mdi-cog" style="margin-right: 8px;"></i>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="rulesTableBody">
+                <!-- Rules will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Toggle button for detailed view -->
+        <div style="padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+          <button id="toggleDetailsBtn" class="btn btn-secondary" onclick="toggleDetailedView()">
+            <i class="mdi mdi-eye"></i>
+            Show Detailed View
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Testing Section -->
+      <div id="aiTestingSection" style="margin-top: 32px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <i class="mdi mdi-test-tube" style="color: white; font-size: 24px;"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; color: #374151; font-weight: 700;">AI Vetting Analysis Tester</h3>
+            <p style="margin: 4px 0 0 0; color: #6b7280;">Test how your vetting rules perform against real guarantee text with AI-powered analysis</p>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="testGuaranteeText" style="color: #374151; font-weight: 600; margin-bottom: 8px; display: block;">
+            <i class="mdi mdi-file-document-outline" style="margin-right: 8px; color: #6366f1;"></i>
+            Sample Guarantee Text
+          </label>
+          <textarea id="testGuaranteeText" class="form-control" rows="6" 
+                    placeholder="Paste guarantee text here to test against your vetting rules...
+
+Example:
+'We hereby issue our irrevocable guarantee in favor of ABC Company for USD 1,000,000. This guarantee is valid until 31st December 2025. The beneficiary country is located in Central Africa. Payment will be made upon your written demand without reference to the underlying contract...'"
+                    style="font-family: 'Inter', monospace; font-size: 14px; line-height: 1.5;"></textarea>
+          <small style="color: #6b7280; margin-top: 8px; display: block;">
+            <i class="mdi mdi-information-outline" style="margin-right: 4px;"></i>
+            The AI will analyze this text against all your active vetting rules and provide explanations for any matches found.
+          </small>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-success" onclick="analyzeGuaranteeText()" id="analyzeBtn" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); border: none;">
+            <i class="mdi mdi-play"></i>
+            Analyze with AI
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="clearTestArea()" style="background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">
+            <i class="mdi mdi-close"></i>
+            Clear
+          </button>
+          <button type="button" class="btn btn-outline" onclick="loadSampleText()" style="border: 1px solid #6366f1; color: #6366f1; background: transparent;">
+            <i class="mdi mdi-text-box-outline"></i>
+            Load Sample
+          </button>
+        </div>
+
+        <!-- Analysis Results Section -->
+        <div id="analysisResults" style="display: none; margin-top: 24px; padding: 20px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px;">
+          <h4 style="color: #374151; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-chart-line" style="color: #64748b;"></i>
+            Analysis Results
+          </h4>
+          <div id="analysisContent">
+            <!-- Analysis results will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <i class="mdi mdi-shield-alert-outline"></i>
+        <h3>No Guarantee Vetting Rules Found</h3>
+        <p>Start by adding your first guarantee vetting rule with AI assistance or manual entry.</p>
+        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+          <button class="btn btn-primary" onclick="openAIAssistant()" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border: none;">
+            <i class="mdi mdi-robot"></i>
+            Create with AI Assistant
+          </button>
+          <button class="btn btn-secondary" onclick="openAddModal()" style="background: #64748b; border: none;">
+            <i class="mdi mdi-plus"></i>
+            Manual Entry
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Rule Modal -->
+  <div id="ruleModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Add New Rule</h3>
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="ruleForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="ruleRef">Rule Reference <span style="color: #64748b;">*</span></label>
+              <input type="text" id="ruleRef" name="rule_ref" class="form-control" required 
+                     placeholder="e.g., Art 5 (Independence)">
+            </div>
+            <div class="form-group">
+              <label for="ruleType">Rule Type <span style="color: #64748b;">*</span></label>
+              <select id="ruleType" name="rule_type" class="form-control" required>
+                <option value="">Select Rule Type</option>
+                <option value="blacklist">Blacklist - Flag problematic conditions</option>
+                <option value="whitelist">Whitelist - Identify approved patterns</option>
+              </select>
+              <small style="color: #6b7280;">Blacklist rules flag onerous conditions; Whitelist rules identify compliant patterns.</small>
+            </div>
+            <div class="form-group">
+              <label for="severity">Severity <span style="color: #64748b;">*</span></label>
+              <select id="severity" name="severity" class="form-control" required>
+                <option value="">Select Severity</option>
+                <option value="High">High - Critical compliance issue</option>
+                <option value="Medium">Medium - Significant concern</option>
+                <option value="Low">Low - Minor issue</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ruleName">Rule Name <span style="color: #64748b;">*</span></label>
+            <input type="text" id="ruleName" name="rule_name" class="form-control" required
+                   placeholder="Brief description of the rule">
+          </div>
+
+          <div class="form-group">
+            <label for="detectionHint">Detection Hint <span style="color: #64748b;">*</span></label>
+            <textarea id="detectionHint" name="detection_hint" class="form-control textarea" required
+                      placeholder="Describe phrases or patterns that indicate this issue..."></textarea>
+            <small style="color: #6b7280;">Provide specific text patterns or phrases that would trigger this rule.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="whyOnerous">Why Onerous or Non-URDG <span style="color: #64748b;">*</span></label>
+            <textarea id="whyOnerous" name="why_onerous_or_no_urdg" class="form-control textarea" required
+                      placeholder="Explain why this condition is problematic..."></textarea>
+            <small style="color: #6b7280;">Explain the legal or practical issues with this condition.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="suggestedWording">Suggested Wording <span style="color: #64748b;">*</span></label>
+            <textarea id="suggestedWording" name="suggested_wording" class="form-control textarea" required
+                      placeholder="Provide recommended alternative wording..."></textarea>
+            <small style="color: #6b7280;">Provide URDG-compliant alternative wording or actions to take.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="basics">Basics Category <span style="color: #64748b;">*</span></label>
+            <select id="basics" name="basics" class="form-control" required>
+              <option value="">Select Category</option>
+              <option value="independence">Independence - Guarantee independence principles</option>
+              <option value="custom">Custom - Institution-specific practices</option>
+              <option value="isdgp">ISDGP - International Standard Demand Guarantee Practice</option>
+            </select>
+          </div>
+
+          <!-- AI Assistant Section - Rule Preview -->
+          <div class="form-group" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #64748b 0%, #475569 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                <i class="mdi mdi-robot" style="color: white; font-size: 20px;"></i>
+              </div>
+              <div style="flex: 1;">
+                <h4 style="margin: 0; color: #374151; font-weight: 600;">AI Assistant - Rule Preview</h4>
+                <p style="margin: 0; color: #64748b; font-size: 14px;">See how your rule would work in practice with realistic examples</p>
+              </div>
+              <button type="button" class="btn btn-outline" onclick="openAIAssistant()" style="border: 1px solid #64748b; color: #64748b; background: transparent;">
+                <i class="mdi mdi-open-in-new"></i> Test Rule Preview
+              </button>
+            </div>
+            
+            <div style="background: #f8fafc; border-left: 4px solid #64748b; padding: 16px; border-radius: 6px;">
+              <h6 style="margin: 0 0 8px 0; color: #374151; font-weight: 600;">
+                <i class="mdi mdi-lightbulb-outline" style="color: #64748b; margin-right: 4px;"></i>
+                How it works:
+              </h6>
+              <p style="margin: 0; color: #64748b; line-height: 1.6; font-size: 14px;">
+                After configuring your rule above, use AI Assistant to see realistic examples. 
+                For instance, if your rule is <strong>"Beneficiary country not in Central Africa"</strong>, 
+                AI will show: <em>"The transaction is flagged because the beneficiary's country, Morocco, 
+                is not part of the approved Central Africa list. Based on past data, similar cases have been marked as 'Medium Risk'. 
+                Recommended next step: Verify the beneficiary's registration country."</em>
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveRule()">
+          <span id="saveButtonText">Save Rule</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Assistant Overlay Modal -->
+  <div id="aiAssistantOverlay" class="modal" style="z-index: 10000;">
+    <div class="modal-content" style="max-width: 800px; margin: 5% auto;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; border-radius: 16px 16px 0 0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+            <i class="mdi mdi-eye" style="color: white; font-size: 18px;"></i>
+          </div>
+          <h3 class="modal-title" style="margin: 0;">AI Rule Preview - See How Rules Work</h3>
+        </div>
+        <button class="close-modal" onclick="closeAIAssistant()" style="color: white; background: rgba(255,255,255,0.2); border: none; border-radius: 6px; width: 32px; height: 32px; font-size: 18px;">&times;</button>
+      </div>
+      
+      <div class="modal-body" style="padding: 32px;">
+        <!-- AI Rule Preview Input -->
+        <div style="margin-bottom: 24px;">
+          <label style="color: #374151; font-weight: 600; margin-bottom: 12px; display: block;">
+            <i class="mdi mdi-eye" style="margin-right: 8px; color: #64748b;"></i>
+            Enter a rule and sample input to see how it would work in practice
+          </label>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div>
+              <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Rule Description</label>
+              <input type="text" id="previewRuleDescription" placeholder="e.g., Beneficiary country not in Central Africa" 
+                     style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Rule Type</label>
+              <select id="previewRuleType" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                <option value="">Select type...</option>
+                <option value="blacklist">Blacklist (Problematic)</option>
+                <option value="whitelist">Whitelist (Approved)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Sample Input Field -->
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+              <i class="mdi mdi-file-document-edit-outline" style="margin-right: 4px; color: #64748b;"></i>
+              Sample Input Example (Optional)
+            </label>
+            <textarea id="previewSampleInput" placeholder="Enter a sample transaction or scenario to test your rule against...
+
+Example for country rule:
+- Beneficiary: ABC Trading Company
+- Country: Morocco
+- Amount: USD 2,500,000
+- Transaction Type: Export Finance Guarantee
+
+Example for amount rule:
+- Guarantee Amount: USD 7,000,000
+- Currency: USD
+- Purpose: Trade Finance" 
+                      style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; min-height: 120px; resize: vertical; font-family: inherit; line-height: 1.5;"></textarea>
+            <div style="margin-top: 8px; font-size: 13px; color: #6b7280;">
+              <i class="mdi mdi-information" style="margin-right: 4px;"></i>
+              Provide a realistic transaction example to see exactly how your rule would evaluate it
+            </div>
+          </div>
+
+          <button type="button" onclick="generateRulePreview()" id="generatePreviewBtn" 
+                  style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-play"></i>
+            Generate Preview Example
+          </button>
+        </div>
+
+        <!-- Preview Results Section -->
+        <div id="previewResults" style="display: none;">
+          <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
+            <h4 style="color: #374151; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <i class="mdi mdi-eye" style="color: #64748b;"></i>
+              Rule Preview Example
+            </h4>
+            <div id="previewContent">
+              <!-- Preview content will appear here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Example Rules Showcase -->
+        <div style="margin-top: 24px; padding: 20px; background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%); border-radius: 12px; border: 1px solid #e5e7eb;">
+          <h4 style="color: #374151; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="mdi mdi-lightbulb-outline" style="color: #64748b;"></i>
+            Try These Example Rules
+          </h4>
+          <div style="display: grid; gap: 12px;">
+            <div onclick="loadExampleRule('Beneficiary country not in Central Africa', 'blacklist', 'Beneficiary: Moroccan Trading Ltd\\nCountry: Morocco\\nAmount: USD 3,200,000\\nTransaction Type: Export Finance Guarantee\\nPurpose: Equipment financing for mining operations')" 
+                 style="padding: 12px 16px; background: white; border: 1px solid #d1d5db; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+              <div style="font-weight: 500; color: #374151;">Beneficiary country not in Central Africa</div>
+              <div style="font-size: 13px; color: #6b7280;">Blacklist Rule</div>
+            </div>
+            <div onclick="loadExampleRule('Guarantee amount exceeds USD 5 million', 'blacklist', 'Guarantee Amount: USD 7,500,000\\nCurrency: USD\\nBeneficiary: Global Infrastructure Corp\\nCountry: Nigeria\\nTransaction Type: Performance Guarantee\\nProject: Highway construction project')"
+                 style="padding: 12px 16px; background: white; border: 1px solid #d1d5db; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+              <div style="font-weight: 500; color: #374151;">Guarantee amount exceeds USD 5 million</div>
+              <div style="font-size: 13px; color: #6b7280;">Blacklist Rule</div>
+            </div>
+            <div onclick="loadExampleRule('Beneficiary is OECD member bank', 'whitelist', 'Beneficiary: Deutsche Bank AG\\nCountry: Germany\\nAmount: USD 2,800,000\\nTransaction Type: Letter of Credit\\nPurpose: Trade finance for automotive parts import\\nOECD Member: Yes')"
+                 style="padding: 12px 16px; background: white; border: 1px solid #d1d5db; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+              <div style="font-weight: 500; color: #374151;">Beneficiary is OECD member bank</div>
+              <div style="font-size: 13px; color: #6b7280;">Whitelist Rule</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="padding: 24px 32px; background: #f9fafb; border-radius: 0 0 16px 16px;">
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button onclick="closeAIAssistant()" style="background: #64748b; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;">
+            <i class="mdi mdi-close"></i>
+            Close Preview
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRules = [];
+    let editingRuleId = null;
+
+    // Load rules on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadRules();
+    });
+
+    async function loadRules() {
+      try {
+        showLoading(true);
+        
+        const response = await fetch('/api/guarantee_vetting_rules');
+        const data = await response.json();
+
+        if (data.success) {
+          currentRules = data.rules;
+          updateStatistics();
+          renderRules();
+          initializeEnhancements();
+        } else {
+          showAlert('Error loading rules: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error loading rules:', error);
+        showAlert('Error loading rules: ' + error.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function updateStatistics() {
+      const totalRules = currentRules.length;
+      const blacklistRules = currentRules.filter(rule => rule.rule_type === 'blacklist').length;
+      const whitelistRules = currentRules.filter(rule => rule.rule_type === 'whitelist').length;
+      const highSeverityRules = currentRules.filter(rule => rule.severity === 'High').length;
+
+      document.getElementById('totalRulesCount').textContent = totalRules;
+      document.getElementById('blacklistRulesCount').textContent = blacklistRules;
+      document.getElementById('whitelistRulesCount').textContent = whitelistRules;
+      document.getElementById('highSeverityCount').textContent = highSeverityRules;
+    }
+
+    function initializeEnhancements() {
+      // Initialize search functionality
+      const searchInput = document.getElementById('searchInput');
+      const typeFilter = document.getElementById('typeFilter');
+      const severityFilter = document.getElementById('severityFilter');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', filterRules);
+      }
+      if (typeFilter) {
+        typeFilter.addEventListener('change', filterRules);
+      }
+      if (severityFilter) {
+        severityFilter.addEventListener('change', filterRules);
+      }
+    }
+
+    let filteredRules = [];
+
+    function filterRules() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const typeFilter = document.getElementById('typeFilter').value;
+      const severityFilter = document.getElementById('severityFilter').value;
+
+      filteredRules = currentRules.filter(rule => {
+        const matchesSearch = !searchTerm || 
+          rule.rule_name.toLowerCase().includes(searchTerm) ||
+          rule.rule_ref.toLowerCase().includes(searchTerm) ||
+          (rule.detection_hint && rule.detection_hint.toLowerCase().includes(searchTerm));
+
+        const matchesType = !typeFilter || rule.rule_type === typeFilter;
+        const matchesSeverity = !severityFilter || rule.severity === severityFilter;
+
+        return matchesSearch && matchesType && matchesSeverity;
+      });
+
+      renderFilteredRules();
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('typeFilter').value = '';
+      document.getElementById('severityFilter').value = '';
+      filteredRules = [];
+      renderRules();
+    }
+
+    function renderFilteredRules() {
+      const tbody = document.getElementById('rulesTableBody');
+      const rulesToRender = filteredRules.length > 0 ? filteredRules : currentRules;
+      
+      if (filteredRules.length === 0 && (
+        document.getElementById('searchInput').value ||
+        document.getElementById('typeFilter').value ||
+        document.getElementById('severityFilter').value
+      )) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+              <i class="mdi mdi-filter-remove" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
+              No rules match your current filters. Try adjusting your search criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = rulesToRender.map(rule => generateRuleRow(rule)).join('');
+    }
+
+    function generateRuleRow(rule) {
+      return `
+        <tr>
+          <td>
+            <div style="font-weight: 700; color: #1e293b; font-size: 15px;">
+              ${escapeHtml(rule.rule_ref)}
+            </div>
+          </td>
+          <td>
+            <div class="text-truncate" title="${escapeHtml(rule.rule_name)}" style="font-weight: 500;">
+              ${escapeHtml(rule.rule_name)}
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-${rule.rule_type || 'blacklist'}">
+              <i class="mdi mdi-${rule.rule_type === 'whitelist' ? 'check-circle' : 'close-circle'}"></i>
+              ${rule.rule_type || 'blacklist'}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-${rule.severity.toLowerCase()}">
+              <i class="mdi mdi-alert${rule.severity === 'High' ? '' : rule.severity === 'Medium' ? '-outline' : '-circle'}"></i>
+              ${rule.severity}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-${rule.basics || 'custom'}">
+              <i class="mdi mdi-${rule.basics === 'independence' ? 'shield-check' : rule.basics === 'isdgp' ? 'book-open' : 'cog'}"></i>
+              ${rule.basics || 'custom'}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-sm btn-secondary" onclick="editRule('${rule.id}')" title="Edit Rule">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="deleteRule('${rule.id}')" title="Delete Rule">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    let isDetailedView = false;
+
+    function renderRules() {
+      const tbody = document.getElementById('rulesTableBody');
+      const rulesContainer = document.getElementById('rulesContainer');
+      const emptyState = document.getElementById('emptyState');
+
+      if (currentRules.length === 0) {
+        rulesContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      rulesContainer.style.display = 'block';
+      emptyState.style.display = 'none';
+
+      tbody.innerHTML = currentRules.map(rule => generateRuleRow(rule)).join('');
+    }
+
+    function toggleDetailedView() {
+      isDetailedView = !isDetailedView;
+      updateTableView();
+    }
+
+    function updateTableView() {
+      const table = document.querySelector('.rules-table');
+      const toggleBtn = document.getElementById('toggleDetailsBtn');
+      
+      if (isDetailedView) {
+        table.classList.add('show-detailed');
+        toggleBtn.innerHTML = '<i class="mdi mdi-eye-off"></i> Hide Detailed Columns';
+        
+        // Update table headers for detailed view
+        const thead = table.querySelector('thead tr');
+        thead.innerHTML = `
+          <th style="width: 120px;">Rule Ref</th>
+          <th style="width: 160px;">Rule Name</th>
+          <th style="width: 100px;">Rule Type</th>
+          <th style="width: 200px;" class="hidden-column">Detection Hint</th>
+          <th style="width: 200px;" class="hidden-column">Why Onerous/Non-URDG</th>
+          <th style="width: 200px;" class="hidden-column">Suggested Wording</th>
+          <th style="width: 80px;">Severity</th>
+          <th style="width: 80px;">Basics</th>
+          <th style="width: 120px; position: sticky; right: 0; background: #f9fafb; z-index: 10;">Actions</th>
+        `;
+      } else {
+        table.classList.remove('show-detailed');
+        toggleBtn.innerHTML = '<i class="mdi mdi-eye"></i> Show Detailed Columns';
+        
+        // Update table headers for simple view
+        const thead = table.querySelector('thead tr');
+        thead.innerHTML = `
+          <th style="width: 120px;">Rule Ref</th>
+          <th style="width: 200px;">Rule Name</th>
+          <th style="width: 80px;">Severity</th>
+          <th style="width: 80px;">Basics</th>
+          <th style="width: 120px; position: sticky; right: 0; background: #f9fafb; z-index: 10;">Actions</th>
+        `;
+      }
+    }
+
+    function showLoading(show) {
+      document.getElementById('loadingContainer').style.display = show ? 'block' : 'none';
+    }
+
+    function showAlert(message, type = 'success') {
+      const alertContainer = document.getElementById('alertContainer');
+      alertContainer.innerHTML = `
+        <div class="alert alert-${type} show">
+          ${escapeHtml(message)}
+        </div>
+      `;
+
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        const alert = alertContainer.querySelector('.alert');
+        if (alert) {
+          alert.classList.remove('show');
+          setTimeout(() => {
+            alertContainer.innerHTML = '';
+          }, 300);
+        }
+      }, 5000);
+    }
+
+    function openAddModal() {
+      editingRuleId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Rule';
+      document.getElementById('saveButtonText').textContent = 'Save Rule';
+      document.getElementById('ruleForm').reset();
+      document.getElementById('ruleModal').classList.add('show');
+    }
+
+    function editRule(ruleId) {
+      const rule = currentRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      editingRuleId = ruleId;
+      document.getElementById('modalTitle').textContent = 'Edit Rule';
+      document.getElementById('saveButtonText').textContent = 'Update Rule';
+
+      // Populate form
+      document.getElementById('ruleRef').value = rule.rule_ref;
+      document.getElementById('ruleName').value = rule.rule_name;
+      document.getElementById('ruleType').value = rule.rule_type || 'blacklist';
+      document.getElementById('detectionHint').value = rule.detection_hint;
+      document.getElementById('whyOnerous').value = rule.why_onerous_or_no_urdg;
+      document.getElementById('suggestedWording').value = rule.suggested_wording;
+      document.getElementById('severity').value = rule.severity;
+      document.getElementById('basics').value = rule.basics;
+
+      document.getElementById('ruleModal').classList.add('show');
+    }
+
+    async function saveRule() {
+      const form = document.getElementById('ruleForm');
+      const formData = new FormData(form);
+
+      // Validate required fields
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const ruleData = {};
+      for (let [key, value] of formData.entries()) {
+        ruleData[key] = value;
+      }
+
+      try {
+        document.getElementById('saveButtonText').textContent = 'Saving...';
+
+        let response;
+        if (editingRuleId) {
+          // Update existing rule
+          response = await fetch(`/api/guarantee_vetting_rules/${editingRuleId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(ruleData)
+          });
+        } else {
+          // Create new rule
+          response = await fetch('/api/guarantee_vetting_rules', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(ruleData)
+          });
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          showAlert(editingRuleId ? 'Rule updated successfully!' : 'Rule created successfully!');
+          closeModal();
+          loadRules();
+        } else {
+          showAlert('Error saving rule: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error saving rule:', error);
+        showAlert('Error saving rule: ' + error.message, 'error');
+      } finally {
+        document.getElementById('saveButtonText').textContent = editingRuleId ? 'Update Rule' : 'Save Rule';
+      }
+    }
+
+    async function deleteRule(ruleId) {
+      const rule = currentRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      if (!confirm(`Are you sure you want to delete the rule "${rule.rule_name}"?\n\nThis action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/guarantee_vetting_rules/${ruleId}`, {
+          method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showAlert('Rule deleted successfully!');
+          loadRules();
+        } else {
+          showAlert('Error deleting rule: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting rule:', error);
+        showAlert('Error deleting rule: ' + error.message, 'error');
+      }
+    }
+
+    function toggleExpand(button, contentId) {
+      const content = document.getElementById(contentId);
+      const isVisible = content.classList.contains('show');
+      
+      // Hide all other expanded content
+      document.querySelectorAll('.full-content.show').forEach(el => {
+        el.classList.remove('show');
+      });
+      
+      if (!isVisible) {
+        content.classList.add('show');
+      }
+    }
+
+    function viewRule(ruleId) {
+      const rule = currentRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      // Create a detailed view modal
+      const modal = document.createElement('div');
+      modal.className = 'modal show';
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width: 900px;">
+          <div class="modal-header">
+            <h3 class="modal-title">Rule Details: ${escapeHtml(rule.rule_ref)}</h3>
+            <button class="close-modal" onclick="this.closest('.modal').remove()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="display: grid; gap: 20px;">
+              <div class="form-group">
+                <label><strong>Rule Reference:</strong></label>
+                <div style="padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">
+                  ${escapeHtml(rule.rule_ref)}
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label><strong>Rule Name:</strong></label>
+                <div style="padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">
+                  ${escapeHtml(rule.rule_name)}
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label><strong>Detection Hint:</strong></label>
+                <div style="padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; line-height: 1.5;">
+                  ${escapeHtml(rule.detection_hint)}
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label><strong>Why Onerous or Non-URDG:</strong></label>
+                <div style="padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; line-height: 1.5;">
+                  ${escapeHtml(rule.why_onerous_or_no_urdg)}
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label><strong>Suggested Wording:</strong></label>
+                <div style="padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; line-height: 1.5;">
+                  ${escapeHtml(rule.suggested_wording)}
+                </div>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                  <label><strong>Severity:</strong></label>
+                  <div style="padding: 10px;">
+                    <span class="badge badge-${rule.severity.toLowerCase()}">${rule.severity}</span>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label><strong>Basics Category:</strong></label>
+                  <div style="padding: 10px;">
+                    <span class="badge badge-${rule.basics}">${rule.basics}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Close</button>
+            <button type="button" class="btn btn-primary" onclick="this.closest('.modal').remove(); editRule(${rule.id});">Edit Rule</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Close modal when clicking outside
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('ruleModal').classList.remove('show');
+      editingRuleId = null;
+    }
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) {
+        return '';
+      }
+      
+      // Handle objects by converting to JSON string
+      if (typeof text === 'object') {
+        try {
+          text = JSON.stringify(text, null, 2);
+        } catch (e) {
+          text = String(text);
+        }
+      } else {
+        text = String(text);
+      }
+      
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Helper function to safely extract text from API response
+    function formatPreviewText(value) {
+      if (!value) return '';
+      
+      if (typeof value === 'string') {
+        return value;
+      }
+      
+      if (typeof value === 'object') {
+        // If it's an object, try to extract meaningful text
+        if (value.text) return value.text;
+        if (value.description) return value.description;
+        if (value.content) return value.content;
+        
+        // If it's an array, join the items
+        if (Array.isArray(value)) {
+          return value.join('; ');
+        }
+        
+        // Otherwise, convert to readable format
+        try {
+          return JSON.stringify(value, null, 2);
+        } catch (e) {
+          return String(value);
+        }
+      }
+      
+      return String(value);
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('ruleModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+        // Also close any expanded content
+        document.querySelectorAll('.full-content.show').forEach(el => {
+          el.classList.remove('show');
+        });
+      }
+    });
+
+    // Close expanded content when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.expandable-cell')) {
+        document.querySelectorAll('.full-content.show').forEach(el => {
+          el.classList.remove('show');
+        });
+      }
+    });
+
+    // Add search functionality
+    function addSearchFunctionality() {
+      try {
+        // Check if search already exists
+        if (document.querySelector('.table-header input')) return;
+        
+        const tableHeader = document.querySelector('.table-header');
+        if (!tableHeader) return; // Exit safely if no table header
+        
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = '🔍 Search rules...';
+        searchInput.className = 'form-control search-input';
+        searchInput.style.cssText = `
+          max-width: 300px;
+          margin-right: 12px;
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+          background: white;
+        `;
+        
+        searchInput.addEventListener('input', function(e) {
+          const searchTerm = e.target.value.toLowerCase();
+          filterRules(searchTerm);
+        });
+        
+        // Insert at the beginning of table header
+        const firstChild = tableHeader.firstChild;
+        if (firstChild) {
+          tableHeader.insertBefore(searchInput, firstChild);
+        } else {
+          tableHeader.appendChild(searchInput);
+        }
+      } catch (error) {
+        console.log('Search functionality could not be added:', error.message);
+      }
+    }
+
+    function filterRules(searchTerm) {
+      const rows = document.querySelectorAll('#rulesTableBody tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Initialize search when rules are loaded
+    function initializeEnhancements() {
+      if (document.querySelector('.table-header input')) return; // Already initialized
+      addSearchFunctionality();
+    }
+
+    // Helper function for HTML escaping
+    function escapeHtml(text) {
+      if (typeof text !== 'string') return text;
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Add AI vetting analysis function for testing guarantee text
+    async function analyzeGuaranteeText() {
+      const testText = document.getElementById('testGuaranteeText')?.value?.trim();
+      if (!testText) {
+        showAlert('Please enter guarantee text to analyze.', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/ai_analyze_vetting', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            guarantee_text: testText
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          displayVettingAnalysis(data.analysis);
+          showAlert('AI vetting analysis completed!', 'success');
+        } else {
+          showAlert('Error in AI vetting analysis: ' + data.message, 'error');
+        }
+
+      } catch (error) {
+        console.error('Error in vetting analysis:', error);
+        showAlert('Error in vetting analysis: ' + error.message, 'error');
+      }
+    }
+
+    function displayVettingAnalysis(analysis) {
+      const resultsSection = document.getElementById('analysisResults');
+      const analysisContent = document.getElementById('analysisContent');
+      
+      const statusColor = analysis.overall_status === 'APPROVED' ? '#10b981' : 
+                         analysis.overall_status === 'FLAGGED' ? '#ef4444' : '#f59e0b';
+      const statusIcon = analysis.overall_status === 'APPROVED' ? 'check-circle' : 
+                        analysis.overall_status === 'FLAGGED' ? 'alert-circle' : 'help-circle';
+      
+      analysisContent.innerHTML = `
+        <div style="display: grid; gap: 20px;">
+          <!-- Status Header -->
+          <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: white; border-radius: 12px; border-left: 4px solid ${statusColor};">
+            <i class="mdi mdi-${statusIcon}" style="color: ${statusColor}; font-size: 32px;"></i>
+            <div>
+              <div style="font-size: 20px; font-weight: 700; color: ${statusColor};">${analysis.overall_status}</div>
+              <div style="color: #6b7280; margin-top: 4px;">
+                AI Confidence: ${analysis.confidence_score}% 
+                <span style="margin-left: 12px;">📊 Rules Analyzed: ${analysis.rules_analyzed?.whitelist_count || 0} whitelist, ${analysis.rules_analyzed?.blacklist_count || 0} blacklist</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div style="background: white; padding: 16px; border-radius: 12px;">
+            <h5 style="color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <i class="mdi mdi-text-box-outline" style="color: #6366f1;"></i>
+              Analysis Summary
+            </h5>
+            <div style="color: #6b7280; line-height: 1.6;">${analysis.summary}</div>
+          </div>
+
+          <!-- Triggered Rules -->
+          ${analysis.triggered_rules?.length ? `
+            <div style="background: white; padding: 16px; border-radius: 12px;">
+              <h5 style="color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="mdi mdi-shield-alert" style="color: #ef4444;"></i>
+                Triggered Rules (${analysis.triggered_rules.length})
+              </h5>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                ${analysis.triggered_rules.map(ruleId => `
+                  <span style="background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500;">
+                    ${ruleId}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Recommendations -->
+          ${analysis.recommendations?.length ? `
+            <div style="background: white; padding: 16px; border-radius: 12px;">
+              <h5 style="color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="mdi mdi-lightbulb-outline" style="color: #f59e0b;"></i>
+                Recommendations
+              </h5>
+              <ul style="margin: 0; padding-left: 20px; color: #6b7280; line-height: 1.6;">
+                ${analysis.recommendations.map(rec => `<li style="margin-bottom: 8px;">${rec}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          <!-- Key Findings -->
+          ${analysis.key_findings?.length ? `
+            <div style="background: white; padding: 16px; border-radius: 12px;">
+              <h5 style="color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="mdi mdi-magnify" style="color: #10b981;"></i>
+                Key Findings
+              </h5>
+              <ul style="margin: 0; padding-left: 20px; color: #6b7280; line-height: 1.6;">
+                ${analysis.key_findings.map(finding => `<li style="margin-bottom: 8px;">${finding}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          <!-- Whitelist Matches -->
+          ${analysis.whitelist_matches?.length ? `
+            <div style="background: white; padding: 16px; border-radius: 12px; border-left: 4px solid #10b981;">
+              <h5 style="color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="mdi mdi-shield-check" style="color: #10b981;"></i>
+                Whitelist Matches (${analysis.whitelist_matches.length})
+              </h5>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                ${analysis.whitelist_matches.map(ruleId => `
+                  <span style="background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500;">
+                    ✓ ${ruleId}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Blacklist Matches -->
+          ${analysis.blacklist_matches?.length ? `
+            <div style="background: white; padding: 16px; border-radius: 12px; border-left: 4px solid #ef4444;">
+              <h5 style="color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="mdi mdi-shield-remove" style="color: #ef4444;"></i>
+                Blacklist Matches (${analysis.blacklist_matches.length})
+              </h5>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                ${analysis.blacklist_matches.map(ruleId => `
+                  <span style="background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500;">
+                    ⚠ ${ruleId}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      
+      resultsSection.style.display = 'block';
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Enhanced analyzeGuaranteeText function
+    async function analyzeGuaranteeText() {
+      const testText = document.getElementById('testGuaranteeText')?.value?.trim();
+      if (!testText) {
+        showAlert('Please enter guarantee text to analyze.', 'error');
+        return;
+      }
+
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      const originalText = analyzeBtn.innerHTML;
+      
+      try {
+        // Show loading state
+        analyzeBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Analyzing...';
+        analyzeBtn.disabled = true;
+
+        const response = await fetch('/api/ai_analyze_vetting', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            guarantee_text: testText
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          displayVettingAnalysis(data.analysis);
+          showAlert('AI vetting analysis completed!', 'success');
+        } else {
+          showAlert('Error in AI vetting analysis: ' + data.message, 'error');
+        }
+
+      } catch (error) {
+        console.error('Error in vetting analysis:', error);
+        showAlert('Error in vetting analysis: ' + error.message, 'error');
+      } finally {
+        analyzeBtn.innerHTML = originalText;
+        analyzeBtn.disabled = false;
+      }
+    }
+
+    function clearTestArea() {
+      document.getElementById('testGuaranteeText').value = '';
+      document.getElementById('analysisResults').style.display = 'none';
+      showAlert('Test area cleared.', 'info');
+    }
+
+    function loadSampleText() {
+      const sampleTexts = [
+        `We hereby issue our irrevocable guarantee No. LG/2024/001 in favor of ABC Construction Ltd for the amount of USD 2,500,000.
+
+This guarantee is issued in connection with Contract No. CON/2024/455 for the construction of Central Hospital Building project.
+
+TERMS AND CONDITIONS:
+- Validity: This guarantee shall expire on 31st December 2025
+- Beneficiary Country: Located in Central Africa region
+- Governing Law: This guarantee shall be governed by the laws of [Issuing Country]
+- Claims: Payment shall be made against your written demand stating that ABC Construction Ltd has failed to fulfill their contractual obligations
+
+We undertake to pay the above amount without reference to the underlying contract upon receipt of your compliant claim.`,
+
+        `STANDBY LETTER OF CREDIT NO. SLC/2024/789
+ISSUING BANK: First National Bank of Commerce
+DATE: October 18, 2024
+AMOUNT: EUR 1,000,000.00
+
+IN FAVOR OF: XYZ Trading Corporation
+BENEFICIARY COUNTRY: High-risk jurisdiction as per FATF guidelines
+
+We hereby establish our irrevocable Letter of Credit for the above amount available against your draft at sight accompanied by the following documents:
+
+1. Your signed statement claiming that the applicant has defaulted on payment obligations
+2. Copy of underlying commercial agreement
+
+This credit expires on December 15, 2024 and is subject to UCP 600.
+
+SPECIAL CONDITIONS: This guarantee requires board approval due to exceeding standard authority limits of USD 50,000,000.`,
+
+        `GUARANTEE CERTIFICATE GC/2024/333
+ISSUED BY: Regional Development Bank
+AMOUNT: USD 750,000
+VALIDITY: Until 30th June 2025
+
+We guarantee payment to DEF Engineering Services for performance of infrastructure development contract.
+
+ISSUING BANK RATING: Below investment grade (B+ rating by international rating agency)
+
+This guarantee becomes effective upon countersignature by beneficiary and shall remain in force until expiry date mentioned above.
+
+Payment will be made within 5 business days of receipt of written demand without need for justification or reference to underlying agreement.`
+      ];
+
+      const randomSample = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+      document.getElementById('testGuaranteeText').value = randomSample;
+      showAlert('Sample guarantee text loaded. Click "Analyze with AI" to test!', 'success');
+    }
+
+    // Utility function for alerts
+    function showAlert(message, type = 'info') {
+      // Create alert element
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      // Set background color based on type
+      const colors = {
+        success: '#10b981',
+        error: '#ef4444', 
+        warning: '#f59e0b',
+        info: '#3b82f6'
+      };
+      alert.style.backgroundColor = colors[type] || colors.info;
+      
+      alert.textContent = message;
+      document.body.appendChild(alert);
+      
+      // Remove after 5 seconds
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+
+    // Add CSS for alert animation
+    if (!document.querySelector('#alert-styles')) {
+      const style = document.createElement('style');
+      style.id = 'alert-styles';
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // ============================================================================
+    // AI RULE PREVIEW FUNCTIONS
+    // ============================================================================
+
+    function openAIAssistant() {
+      document.getElementById('aiAssistantOverlay').classList.add('show');
+      
+      // Auto-populate with current form data
+      const ruleName = document.getElementById('ruleName').value.trim();
+      if (ruleName) {
+        document.getElementById('previewRuleDescription').value = ruleName;
+      }
+      
+      // Reset results
+      document.getElementById('previewResults').style.display = 'none';
+      
+      // Auto-generate preview if we have rule name
+      if (ruleName) {
+        setTimeout(() => generateRulePreview(), 500);
+      }
+    }
+
+    function closeAIAssistant() {
+      document.getElementById('aiAssistantOverlay').classList.remove('show');
+    }
+
+    function loadExampleRule(description, type, sampleInput = '') {
+      document.getElementById('previewRuleDescription').value = description;
+      document.getElementById('previewRuleType').value = type;
+      document.getElementById('previewSampleInput').value = sampleInput;
+      generateRulePreview();
+    }
+
+    async function generateRulePreview() {
+      // Get values from the main form fields
+      const ruleName = document.getElementById('ruleName').value.trim();
+      const detectionHint = document.getElementById('detectionHint').value.trim();
+      const whyOnerous = document.getElementById('whyOnerous').value.trim();
+      const basics = document.getElementById('basics').value;
+      
+      // Also check if user entered custom description in preview modal
+      const customDescription = document.getElementById('previewRuleDescription').value.trim();
+      const ruleType = document.getElementById('previewRuleType').value || 'blacklist'; // Default to blacklist
+      const sampleInput = document.getElementById('previewSampleInput').value.trim();
+      
+      // Use custom description if provided, otherwise use rule name
+      const description = customDescription || ruleName;
+      
+      if (!description) {
+        showAlert('Please enter a rule name in the form above or provide a custom description in the preview fields.', 'error');
+        return;
+      }
+
+      const generateBtn = document.getElementById('generatePreviewBtn');
+      const originalText = generateBtn.innerHTML;
+      
+      try {
+        // Show loading state
+        generateBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Generating Preview...';
+        generateBtn.disabled = true;
+
+        const response = await fetch('/api/ai_rule_preview', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            rule_description: description,
+            rule_type: ruleType,
+            sample_scenario: detectionHint || whyOnerous || '',
+            sample_input: sampleInput
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          displayRulePreview(data.preview, ruleType, description);
+        } else {
+          showAlert('Failed to generate preview: ' + data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error generating preview:', error);
+        showAlert('Error generating preview: ' + error.message, 'error');
+      } finally {
+        // Reset button
+        generateBtn.innerHTML = originalText;
+        generateBtn.disabled = false;
+      }
+    }
+
+    function displayRulePreview(preview, ruleType, description) {
+      const resultsDiv = document.getElementById('previewResults');
+      const contentDiv = document.getElementById('previewContent');
+      const sampleInput = document.getElementById('previewSampleInput').value.trim();
+      
+      const typeColor = ruleType === 'blacklist' ? '#64748b' : '#64748b';
+      const typeIcon = ruleType === 'blacklist' ? 'mdi-shield-alert' : 'mdi-check-circle';
+      const typeText = ruleType === 'blacklist' ? 'Blacklist Rule' : 'Whitelist Rule';
+      
+      contentDiv.innerHTML = `
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <i class="${typeIcon}" style="color: ${typeColor}; font-size: 20px;"></i>
+            <h5 style="margin: 0; color: #374151; font-weight: 600;">${typeText}: ${escapeHtml(description)}</h5>
+          </div>
+          ${sampleInput ? `
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-top: 12px;">
+              <h6 style="margin: 0 0 8px 0; color: #64748b; font-weight: 600; font-size: 13px;">
+                <i class="mdi mdi-file-document-edit-outline" style="margin-right: 4px;"></i>
+                Sample Input Used:
+              </h6>
+              <pre style="margin: 0; color: #475569; font-size: 13px; white-space: pre-wrap; font-family: inherit;">${escapeHtml(sampleInput)}</pre>
+            </div>
+          ` : ''}
+        </div>
+        
+        <div style="background: #f8fafc; border-left: 4px solid ${typeColor}; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+          <h6 style="margin: 0 0 8px 0; color: #374151; font-weight: 600;">How This Rule Works:</h6>
+          <p style="margin: 0; color: #475569; line-height: 1.6; font-size: 15px;">
+            ${escapeHtml(formatPreviewText(preview.explanation || preview.example_result || preview.description || 'Rule explanation not available'))}
+          </p>
+        </div>
+        
+        ${preview.example_scenarios && preview.example_scenarios.length > 0 ? `
+          <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+            <h6 style="margin: 0 0 12px 0; color: #374151; font-weight: 600;">Example Scenarios:</h6>
+            ${preview.example_scenarios.map(scenario => `
+              <div style="background: #f8fafc; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid ${typeColor};">
+                <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.5;">
+                  ${escapeHtml(scenario)}
+                </p>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        
+        ${preview.detection_criteria || preview.approval_criteria || preview.criteria ? `
+          <div style="background: #fffbeb; border: 1px solid #fed7aa; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+            <h6 style="margin: 0 0 8px 0; color: #f59e0b; font-weight: 600;">Key Criteria:</h6>
+            <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.5;">
+              ${escapeHtml(formatPreviewText(preview.detection_criteria || preview.approval_criteria || preview.criteria))}
+            </p>
+          </div>
+        ` : ''}
+        
+        ${preview.recommended_action || preview.compliance_benefits || preview.action ? `
+          <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px;">
+            <h6 style="margin: 0 0 8px 0; color: #0369a1; font-weight: 600;">Recommended Action:</h6>
+            <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.5;">
+              ${escapeHtml(formatPreviewText(preview.recommended_action || preview.compliance_benefits || preview.action))}
+            </p>
+          </div>
+        ` : ''}
+        
+        <!-- Fallback: Show all available data if standard fields are missing -->
+        ${!preview.explanation && !preview.example_result && !preview.description && 
+          !preview.detection_criteria && !preview.approval_criteria && !preview.criteria &&
+          !preview.recommended_action && !preview.compliance_benefits && !preview.action ? `
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+            <h6 style="margin: 0 0 8px 0; color: #374151; font-weight: 600;">Debug - Raw Response:</h6>
+            <pre style="margin: 0; color: #64748b; font-size: 13px; white-space: pre-wrap; font-family: 'Courier New', monospace; background: white; padding: 12px; border-radius: 4px; overflow-x: auto;">${escapeHtml(JSON.stringify(preview, null, 2))}</pre>
+          </div>
+        ` : ''}
+      `;
+      
+      resultsDiv.style.display = 'block';
+    }
+
+    // Add AI Assistant button to the inline AI section
+    function enhanceInlineAISection() {
+      const inlineAISection = document.querySelector('#ruleModal .form-group:has(#aiDescription)');
+      if (inlineAISection) {
+        const overlayBtn = document.createElement('button');
+        overlayBtn.type = 'button';
+        overlayBtn.className = 'btn btn-outline';
+        overlayBtn.style.cssText = 'border: 1px solid #8b5cf6; color: #8b5cf6; background: transparent; margin-left: 8px;';
+        overlayBtn.innerHTML = '<i class="mdi mdi-open-in-new"></i> Open AI Assistant';
+        overlayBtn.onclick = openAIAssistant;
+        
+        const buttonContainer = inlineAISection.querySelector('div[style*="display: flex"]');
+        if (buttonContainer) {
+          buttonContainer.appendChild(overlayBtn);
+        }
+      }
+    }
+
+    // Initialize AI Assistant enhancements when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(enhanceInlineAISection, 1000); // Wait for DOM to be fully ready
+    });
+
+    // Add CSS for AI Assistant overlay
+    if (!document.querySelector('#ai-overlay-styles')) {
+      const aiStyle = document.createElement('style');
+      aiStyle.id = 'ai-overlay-styles';
+      aiStyle.textContent = `
+        .rule-type-card:hover {
+          border-color: #6366f1 !important;
+          background: #f8fafc !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        #aiOverlayGenerateBtn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        #applyAIOverlayBtn:not(:disabled):hover {
+          background: #059669 !important;
+          transform: translateY(-1px);
+        }
+      `;
+      document.head.appendChild(aiStyle);
+    }
+  </script>
+</body>
+</html>

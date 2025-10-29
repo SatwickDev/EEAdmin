@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,21 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6366f1;
-            --secondary-color: #8b5cf6;
-            --accent-color: #06b6d4;
-            --success-color: #10b981;
+            --primary-color: #064e3b;
+            --success-color: #059669;
             --success-light: #ecfdf5;
             --success-border: #a7f3d0;
-            --bg-color: #f8f9fa;
-            --text-color: #2d3748;
+            --accent-color: #475569;
+            --bg-color: #f8fafc;
+            --text-color: #334155;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --surface: #ffffff;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-            --focus-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         * {
@@ -34,34 +30,18 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
             color: var(--text-color);
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTE2djJIMjR2LTJoMTJ6Ii8+PC9nPjwvZz48L3N2Zz4=');
-            pointer-events: none;
-            opacity: 0.5;
-            z-index: 0;
         }
 
         .success-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+            background: var(--surface);
+            border-radius: 20px;
             box-shadow: var(--shadow-lg);
             padding: 40px;
             max-width: 600px;
@@ -69,8 +49,6 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(229, 231, 235, 0.8);
-            z-index: 1;
         }
 
         .success-container::before {
@@ -80,19 +58,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color), var(--primary-color));
-            background-size: 200% 100%;
-            animation: gradientShift 3s linear infinite;
-        }
-
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 0%;
-            }
-
-            100% {
-                background-position: 200% 0%;
-            }
+            background: linear-gradient(90deg, var(--success-color) 0%, var(--primary-color) 100%);
         }
 
         .success-icon {
@@ -116,10 +82,7 @@
         .success-title {
             font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, #1e293b, #475569);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--primary-color);
             margin-bottom: 12px;
         }
 
@@ -131,13 +94,12 @@
         }
 
         .transaction-details {
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--bg-color);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 12px;
             padding: 24px;
             margin-bottom: 32px;
             text-align: left;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         }
 
         .detail-row {
@@ -183,28 +145,23 @@
         .btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
             font-size: 14px;
-            position: relative;
-            overflow: hidden;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            background: linear-gradient(135deg, #8b9cb5 0%, #6b7f9e 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            border: 1px solid rgba(139, 156, 181, 0.2);
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary::before {
@@ -214,8 +171,15 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #7a8fa8 0%, #5d7191 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139, 156, 181, 0.25);
+            border-color: rgba(139, 156, 181, 0.3);
         }
 
         .btn-primary:hover::before {
@@ -223,14 +187,14 @@
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
+            background: var(--surface);
+            color: var(--accent-color);
+            border: 2px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: var(--primary-color);
-            color: white;
+            border-color: var(--accent-color);
+            background: var(--bg-color);
         }
 
         .btn-outline {
@@ -240,9 +204,8 @@
         }
 
         .btn-outline:hover {
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-            background: rgba(99, 102, 241, 0.05);
+            color: var(--accent-color);
+            border-color: var(--accent-color);
         }
 
         @keyframes successBounce {
@@ -250,15 +213,12 @@
                 transform: scale(0.3);
                 opacity: 0;
             }
-
             50% {
                 transform: scale(1.05);
             }
-
             70% {
                 transform: scale(0.9);
             }
-
             100% {
                 transform: scale(1);
                 opacity: 1;
@@ -287,71 +247,63 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(30, 41, 59, 0.4));
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.6);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            backdrop-filter: blur(3px);
         }
 
         .modal-content {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(24px) saturate(1.5);
-            border-radius: 24px;
-            width: 94%;
-            max-width: 960px;
-            max-height: 92vh;
+            background: var(--surface);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
             overflow: hidden;
-            box-shadow: 0 24px 48px rgba(99, 102, 241, 0.15), 0 12px 24px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(229, 231, 235, 0.3);
+            box-shadow: var(--shadow-lg);
             position: relative;
         }
 
         .modal-header {
-            padding: 28px 36px;
-            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(24px);
+            background: var(--bg-color);
         }
 
         .modal-title {
             font-size: 20px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #1e293b, #475569);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 600;
+            color: var(--text-color);
         }
 
         .modal-close {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(229, 231, 235, 0.5);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            color: #64748b;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
             cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 20px;
         }
 
         .modal-close:hover {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+            background: var(--border-color);
+            color: var(--text-color);
         }
 
         .modal-body {
-            padding: 28px;
-            max-height: 66vh;
+            padding: 24px;
+            max-height: 60vh;
             overflow-y: auto;
         }
 
@@ -359,13 +311,12 @@
             background: #1e293b;
             color: #e2e8f0;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
             line-height: 1.4;
             white-space: pre-wrap;
             overflow-x: auto;
-            border: 1px solid #334155;
         }
 
         .loading-spinner {
@@ -376,14 +327,13 @@
 
         .loading-spinner i {
             font-size: 24px;
-            color: var(--primary-color);
+            color: var(--success-color);
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .error-message {
@@ -391,19 +341,18 @@
             border: 1px solid #fecaca;
             color: #dc2626;
             padding: 16px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin-top: 16px;
             display: none;
         }
 
         /* Enhanced SWIFT Modal Styles */
         .swift-info {
-            background: rgba(248, 250, 252, 0.9);
-            border-radius: 16px;
+            background: var(--bg-color);
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         .swift-info p {
@@ -426,18 +375,17 @@
 
         .view-toggle-group {
             display: flex;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 12px;
+            background: var(--bg-color);
+            border-radius: 8px;
             padding: 4px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
         .view-toggle-btn {
             background: transparent;
             border: none;
             padding: 10px 20px;
-            border-radius: 10px;
+            border-radius: 6px;
             font-weight: 500;
             font-size: 13px;
             cursor: pointer;
@@ -456,14 +404,14 @@
 
         .view-toggle-btn:hover:not(.active) {
             color: var(--text-color);
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.5);
         }
 
         /* Formatted SWIFT Display */
         .swift-formatted-display {
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 20px;
             font-family: 'Inter', sans-serif;
             line-height: 1.6;
@@ -475,9 +423,8 @@
             margin-bottom: 16px;
             padding: 12px;
             background: white;
-            border-radius: 10px;
-            border-left: 3px solid var(--primary-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid #8b9cb5;
         }
 
         .swift-field-header {
@@ -491,10 +438,10 @@
         }
 
         .swift-field-tag {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: #8b9cb5;
             color: white;
             padding: 2px 6px;
-            border-radius: 6px;
+            border-radius: 4px;
             font-size: 10px;
             font-weight: 600;
         }
@@ -529,7 +476,7 @@
             color: white;
             border: 1px solid rgba(148, 163, 184, 0.2);
             padding: 10px 18px;
-            border-radius: 10px;
+            border-radius: 6px;
             font-weight: 500;
             font-size: 13px;
             transition: all 0.3s ease;
@@ -545,11 +492,11 @@
         }
 
         .btn-primary-muted {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            background: linear-gradient(135deg, #8b9cb5 0%, #6b7f9e 100%);
             color: white;
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(139, 156, 181, 0.2);
             padding: 10px 18px;
-            border-radius: 10px;
+            border-radius: 6px;
             font-weight: 500;
             font-size: 13px;
             transition: all 0.3s ease;
@@ -559,21 +506,21 @@
         }
 
         .btn-primary-muted:hover {
+            background: linear-gradient(135deg, #7a8fa8 0%, #5d7191 100%);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(139, 156, 181, 0.2);
         }
     </style>
 </head>
-
 <body>
     <div class="success-container">
         <div class="success-icon">
             <i class="fas fa-check"></i>
         </div>
-
+        
         <h1 class="success-title">LC Submitted Successfully!</h1>
         <p class="success-message">
-            Your Letter of Credit has been submitted and is now being processed.
+            Your Letter of Credit has been submitted and is now being processed. 
             You will receive notifications on the status updates.
         </p>
 
@@ -641,8 +588,7 @@
                     </div>
                     <div class="swift-view-controls">
                         <div class="view-toggle-group">
-                            <button type="button" id="formatViewBtn" class="view-toggle-btn active"
-                                onclick="switchToFormattedView()">
+                            <button type="button" id="formatViewBtn" class="view-toggle-btn active" onclick="switchToFormattedView()">
                                 <i class="fas fa-eye"></i> User Friendly
                             </button>
                             <button type="button" id="rawViewBtn" class="view-toggle-btn" onclick="switchToRawView()">
@@ -679,7 +625,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const lcNumber = urlParams.get('lcNumber') || document.getElementById('lcNumber').textContent;
         const transactionId = urlParams.get('transactionId') || document.getElementById('transactionId').textContent;
-
+        
         // Set current time
         document.getElementById('submissionTime').textContent = new Date().toLocaleString();
 
@@ -697,7 +643,7 @@
             const loading = document.getElementById('loadingSpinner');
             const content = document.getElementById('swiftContent');
             const errorDiv = document.getElementById('errorMessage');
-
+            
             modal.style.display = 'flex';
             loading.style.display = 'block';
             content.style.display = 'none'; // Ensure it starts hidden
@@ -711,8 +657,8 @@
                 amount: '100000.00',
                 currency: 'USD',
                 issueDate: new Date().toISOString().split('T')[0],
-                expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                latestShipmentDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                expiryDate: new Date(Date.now() + 90*24*60*60*1000).toISOString().split('T')[0],
+                latestShipmentDate: new Date(Date.now() + 60*24*60*60*1000).toISOString().split('T')[0],
                 lcType: 'irrevocable',
                 goodsDescription: 'Trade goods as per contract',
                 partialShipment: 'allowed',
@@ -726,62 +672,62 @@
                 },
                 body: JSON.stringify(previewData)
             })
-                .then(response => response.json())
-                .then(data => {
-                    loading.style.display = 'none';
-                    if (data.success) {
-                        console.log('SWIFT message received:', data.swift_message); // Debug log
-
-                        // Show content first to make elements accessible
-                        content.style.display = 'block';
-
-                        // Use requestAnimationFrame to ensure DOM is updated
-                        requestAnimationFrame(() => {
-                            // Update the modal content with null checks
-                            const modalLcNumberEl = document.getElementById('modalLcNumber');
-                            const swiftRawContentEl = document.getElementById('swiftRawContent');
-                            const swiftFormattedContentEl = document.getElementById('swiftFormattedContent');
-
-                            if (modalLcNumberEl) {
-                                modalLcNumberEl.textContent = lcNumber;
-                            }
-
-                            if (swiftRawContentEl) {
-                                swiftRawContentEl.textContent = data.swift_message;
-                                console.log('Raw content set:', swiftRawContentEl.textContent.substring(0, 100) + '...'); // Debug log
-                            }
-
-                            if (swiftFormattedContentEl) {
-                                // Format the SWIFT message for user-friendly display
-                                const formattedContent = formatSwiftMessage(data.swift_message);
-                                console.log('Formatted content:', formattedContent.substring(0, 200) + '...'); // Debug log
-                                swiftFormattedContentEl.innerHTML = formattedContent;
-                            }
-
-                            // Default to formatted view (no switching needed)
-                            console.log('SWIFT content loaded successfully, formatted view is default');
-
-                            // Debug: Check if elements exist now
-                            console.log('Debug - Elements check:', {
-                                formatBtn: !!document.getElementById('formatViewBtn'),
-                                rawBtn: !!document.getElementById('rawViewBtn'),
-                                formattedView: !!document.getElementById('formattedView'),
-                                rawView: !!document.getElementById('rawView'),
-                                swiftContent: !!document.getElementById('swiftContent'),
-                                contentVisible: document.getElementById('swiftContent').style.display
-                            });
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                if (data.success) {
+                    console.log('SWIFT message received:', data.swift_message); // Debug log
+                    
+                    // Show content first to make elements accessible
+                    content.style.display = 'block';
+                    
+                    // Use requestAnimationFrame to ensure DOM is updated
+                    requestAnimationFrame(() => {
+                        // Update the modal content with null checks
+                        const modalLcNumberEl = document.getElementById('modalLcNumber');
+                        const swiftRawContentEl = document.getElementById('swiftRawContent');
+                        const swiftFormattedContentEl = document.getElementById('swiftFormattedContent');
+                        
+                        if (modalLcNumberEl) {
+                            modalLcNumberEl.textContent = lcNumber;
+                        }
+                        
+                        if (swiftRawContentEl) {
+                            swiftRawContentEl.textContent = data.swift_message;
+                            console.log('Raw content set:', swiftRawContentEl.textContent.substring(0, 100) + '...'); // Debug log
+                        }
+                        
+                        if (swiftFormattedContentEl) {
+                            // Format the SWIFT message for user-friendly display
+                            const formattedContent = formatSwiftMessage(data.swift_message);
+                            console.log('Formatted content:', formattedContent.substring(0, 200) + '...'); // Debug log
+                            swiftFormattedContentEl.innerHTML = formattedContent;
+                        }
+                        
+                        // Default to formatted view (no switching needed)
+                        console.log('SWIFT content loaded successfully, formatted view is default');
+                        
+                        // Debug: Check if elements exist now
+                        console.log('Debug - Elements check:', {
+                            formatBtn: !!document.getElementById('formatViewBtn'),
+                            rawBtn: !!document.getElementById('rawViewBtn'),
+                            formattedView: !!document.getElementById('formattedView'),
+                            rawView: !!document.getElementById('rawView'),
+                            swiftContent: !!document.getElementById('swiftContent'),
+                            contentVisible: document.getElementById('swiftContent').style.display
                         });
-                    } else {
-                        errorDiv.textContent = data.message || 'Failed to generate SWIFT preview';
-                        errorDiv.style.display = 'block';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    loading.style.display = 'none';
-                    errorDiv.textContent = 'Error generating SWIFT preview. Please try again.';
+                    });
+                } else {
+                    errorDiv.textContent = data.message || 'Failed to generate SWIFT preview';
                     errorDiv.style.display = 'block';
-                });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loading.style.display = 'none';
+                errorDiv.textContent = 'Error generating SWIFT preview. Please try again.';
+                errorDiv.style.display = 'block';
+            });
         }
 
         function closeSwiftModal() {
@@ -847,14 +793,14 @@
             if (!swiftMessage) return '<div class="swift-field"><div class="swift-field-content">No SWIFT message available</div></div>';
 
             console.log('Formatting SWIFT message:', swiftMessage.substring(0, 200)); // Debug log
-
+            
             let formattedContent = '';
             let currentField = null;
             let currentValue = '';
 
             // Split message into lines and process
             const lines = swiftMessage.split('\n');
-
+            
             for (let line of lines) {
                 line = line.trim();
                 if (!line) continue;
@@ -880,7 +826,7 @@
                             </div>
                         `;
                     }
-
+                    
                     // Start new field
                     currentField = fieldMatch[1];
                     currentValue = fieldMatch[2] || '';
@@ -952,7 +898,7 @@
         // Copy SWIFT message to clipboard
         async function copySwiftMessage() {
             const swiftContent = document.getElementById('swiftRawContent');
-
+            
             if (swiftContent && swiftContent.textContent) {
                 try {
                     await navigator.clipboard.writeText(swiftContent.textContent);
@@ -989,7 +935,7 @@
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-
+                
                 // Show success message
                 const btn = document.querySelector('.btn-primary-muted');
                 if (btn) {
@@ -1005,14 +951,14 @@
         }
 
         // Close modal on background click
-        document.getElementById('swiftModal').addEventListener('click', function (e) {
+        document.getElementById('swiftModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeSwiftModal();
             }
         });
 
         // Close modal on escape key
-        document.addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeSwiftModal();
             }
@@ -1021,15 +967,15 @@
         // Navigate to Document Register with SWIFT context
         function goToDocumentRegister() {
             console.log('Navigating to Document Register with SWIFT context');
-
+            
             // Get SWIFT message from the modal if it's been generated
             const swiftRawContent = document.getElementById('swiftRawContent');
             let swiftMessage = '';
-
+            
             if (swiftRawContent && swiftRawContent.textContent) {
                 swiftMessage = swiftRawContent.textContent;
             }
-
+            
             // Prepare LC context data
             const lcContext = {
                 lcNumber: lcNumber,
@@ -1039,14 +985,14 @@
                 submissionTime: new Date().toISOString(),
                 status: 'submitted'
             };
-
+            
             // Store LC context in session storage for document register
             sessionStorage.setItem('lcContext', JSON.stringify(lcContext));
-
+            
             // Generate SWIFT message if not already available and then navigate
             if (!swiftMessage) {
                 console.log('Generating SWIFT message for document register...');
-
+                
                 const previewData = formData || {
                     lcNumber: lcNumber,
                     applicant: 'Sample Applicant Company',
@@ -1054,8 +1000,8 @@
                     amount: '100000.00',
                     currency: 'USD',
                     issueDate: new Date().toISOString().split('T')[0],
-                    expiryDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    latestShipmentDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    expiryDate: new Date(Date.now() + 90*24*60*60*1000).toISOString().split('T')[0],
+                    latestShipmentDate: new Date(Date.now() + 60*24*60*60*1000).toISOString().split('T')[0],
                     lcType: 'irrevocable',
                     goodsDescription: 'Trade goods as per contract',
                     partialShipment: 'allowed',
@@ -1069,20 +1015,20 @@
                     },
                     body: JSON.stringify(previewData)
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            lcContext.swiftMessage = data.swift_message;
-                            sessionStorage.setItem('lcContext', JSON.stringify(lcContext));
-                        }
-                        // Navigate regardless of SWIFT generation success
-                        window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
-                    })
-                    .catch(error => {
-                        console.error('Error generating SWIFT message:', error);
-                        // Navigate anyway, document register can handle missing SWIFT
-                        window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        lcContext.swiftMessage = data.swift_message;
+                        sessionStorage.setItem('lcContext', JSON.stringify(lcContext));
+                    }
+                    // Navigate regardless of SWIFT generation success
+                    window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
+                })
+                .catch(error => {
+                    console.error('Error generating SWIFT message:', error);
+                    // Navigate anyway, document register can handle missing SWIFT
+                    window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
+                });
             } else {
                 // SWIFT message is already available, navigate directly
                 window.location.href = '/document_register?source=lc_success&lcNumber=' + encodeURIComponent(lcNumber);
@@ -1090,5 +1036,4 @@
         }
     </script>
 </body>
-
 </html>

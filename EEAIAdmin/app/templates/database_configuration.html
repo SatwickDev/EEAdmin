@@ -1,0 +1,3789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Database Configuration - Finstack Trade Finance</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+      min-height: 100vh;
+      padding: 0;
+      padding-top: 120px !important;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header-title i {
+      font-size: 2.5rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+    }
+
+    .header-subtitle {
+      margin-top: 0.5rem;
+      opacity: 0.9;
+      font-size: 0.875rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 0.625rem 1.25rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-info {
+      background: #3b82f6;
+      color: white;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: #f9fafb;
+      border-bottom: 2px solid #e5e7eb;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 1rem 2rem;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-weight: 600;
+      color: #6b7280;
+      transition: all 0.2s;
+      border-bottom: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      background: white;
+    }
+
+    .tab-content {
+      padding: 2rem;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #f3f4f6;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      resize: vertical;
+    }
+
+    /* Module Cards */
+    .module-card {
+      border-left: 4px solid #667eea;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .module-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .module-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .module-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+
+    .module-description {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+
+    .module-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .data-table th {
+      background: #f9fafb;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .data-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .data-table tr:hover {
+      background: #f9fafb;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-primary {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-info {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    /* Code Block */
+    .code-block {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.875rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    .code-block pre {
+      margin: 0;
+    }
+
+    /* Alert */
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: start;
+      gap: 0.75rem;
+    }
+
+    .alert-info {
+      background: #dbeafe;
+      color: #1e40af;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+      border-left: 4px solid #10b981;
+    }
+
+    .alert-warning {
+      background: #fef3c7;
+      color: #92400e;
+      border-left: 4px solid #f59e0b;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      color: #6b7280;
+    }
+
+    .spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-right: 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Query Builder */
+    .filter-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 2fr auto;
+      gap: 0.75rem;
+      align-items: end;
+      margin-bottom: 0.75rem;
+    }
+
+    .query-results {
+      max-height: 400px;
+      overflow: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+
+      .header-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
+
+    .gap-3 {
+      gap: 0.75rem;
+    }
+
+    .mb-4 {
+      margin-bottom: 1rem;
+    }
+
+    .text-sm {
+      font-size: 0.875rem;
+    }
+
+    .font-mono {
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+
+    /* Floating Header Styles - Glass/Frosted White Theme */
+    .floating-header {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(226, 232, 240, 0.6);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+      animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .floating-header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-container {
+      position: relative;
+    }
+
+    .modern-logo {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: logoFloat 4s ease-in-out infinite;
+    }
+
+    .modern-logo:hover {
+      transform: scale(1.05) rotate(2deg);
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    @keyframes logoFloat {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-2px);
+      }
+    }
+
+    .status-pulse {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 12px;
+      height: 12px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      animation: pulse-animation 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse-animation {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+      }
+    }
+
+    .brand-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand-title {
+      font-size: 24px !important;
+      font-weight: 800 !important;
+      margin: 0 !important;
+      background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    .brand-subtitle {
+      font-size: 13px !important;
+      color: rgba(100, 116, 139, 0.8) !important;
+      margin: 0 !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.3px;
+    }
+
+    .nav-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(248, 250, 252, 0.5);
+      border: 1px solid rgba(226, 232, 240, 0.6);
+      border-radius: 16px;
+      padding: 4px;
+    }
+
+    .nav-pill {
+      display: flex !important;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: rgba(100, 116, 139, 0.8) !important;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-pill:hover {
+      background: rgba(248, 250, 252, 0.8);
+      color: rgba(30, 41, 59, 0.9) !important;
+      transform: translateY(-1px);
+    }
+
+    .nav-pill.active {
+      background: white !important;
+      color: #1e293b !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .nav-pill i {
+      font-size: 18px;
+    }
+
+    .header-actions-floating {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-indicator-modern {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #059669;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse-animation 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .action-button {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 10px 18px !important;
+      border-radius: 12px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border: none !important;
+      cursor: pointer !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      text-decoration: none !important;
+    }
+
+    .action-button.secondary {
+      background: white !important;
+      color: #374151 !important;
+      border: 1px solid rgba(229, 231, 235, 0.8) !important;
+    }
+
+    .action-button.secondary:hover {
+      background: rgba(249, 250, 251, 1) !important;
+      color: #1f2937 !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .action-button.primary {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .action-button.primary:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+    }
+
+    .action-button i {
+      font-size: 18px;
+    }
+
+    /* Responsive floating header */
+    @media (max-width: 1200px) {
+      .nav-pills {
+        gap: 4px;
+      }
+      
+      .nav-pill {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+      
+      .nav-pill span {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .floating-header {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+      }
+
+      .floating-header-content {
+        padding: 12px 20px;
+      }
+
+      .brand-subtitle {
+        display: none !important;
+      }
+
+      .header-actions-floating {
+        gap: 8px;
+      }
+
+      .action-button span {
+        display: none !important;
+      }
+
+      .action-button {
+        padding: 8px 12px !important;
+      }
+
+      body {
+        padding-top: 100px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .status-indicator-modern {
+        display: none;
+      }
+      
+      .brand-title {
+        font-size: 20px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating Header -->
+<div class="floating-header">
+  <div class="floating-header-content">
+    <div class="brand-section">
+      <div class="logo-container">
+        <div class="modern-logo">
+          <svg width="28" height="28" viewBox="0 0 48 48">
+            <defs>
+              <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color: #6366f1;"></stop>
+                <stop offset="50%" style="stop-color: #8b5cf6;"></stop>
+                <stop offset="100%" style="stop-color: #06b6d4;"></stop>
+              </linearGradient>
+            </defs>
+            <g fill="url(#logoGradient)">
+              <rect x="8" y="8" width="8" height="32" rx="3"></rect>
+              <rect x="8" y="8" width="24" height="8" rx="3"></rect>
+              <rect x="8" y="20" width="20" height="8" rx="3"></rect>
+            </g>
+            <g fill="url(#logoGradient)" opacity="0.6">
+              <rect x="20" y="32" width="20" height="2" rx="1"></rect>
+              <rect x="20" y="36" width="20" height="2" rx="1"></rect>
+            </g>
+          </svg>
+          <div class="status-pulse"></div>
+        </div>
+      </div>
+      <div class="brand-info">
+        <h1 class="brand-title">Finstack</h1>
+        <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+      </div>
+    </div>
+
+    <nav class="nav-pills">
+      <a href="/" class="nav-pill">
+        <i class="mdi mdi-view-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/analytics" class="nav-pill">
+        <i class="mdi mdi-chart-line"></i>
+        <span>Analytics</span>
+      </a>
+      <a href="/ai-chat-pro" class="nav-pill">
+        <i class="mdi mdi-robot"></i>
+        <span>Finance AI Agents</span>
+      </a>
+      <a href="/database_configuration" class="nav-pill active">
+        <i class="mdi mdi-database-cog"></i>
+        <span>Database Config</span>
+      </a>
+    </nav>
+
+    <div class="header-actions-floating">
+      <div class="status-indicator-modern">
+        <div class="pulse-dot"></div>
+        <span>Online</span>
+      </div>
+      <button class="action-button secondary" onclick="window.location.href='/profile'">
+        <i class="mdi mdi-account-circle"></i>
+        <span>Profile</span>
+      </button>
+      <button class="action-button primary" onclick="window.location.href='/logout'">
+        <i class="mdi mdi-logout"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="container">
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-title">
+        <i class="mdi mdi-database-cog"></i>
+        <div>
+          <h1>Database Query Configuration</h1>
+          <div class="header-subtitle">Module/Table Mapping, Query Recipes & RBAC - Trade Finance Edition</div>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" @click="validateConfig">
+        <i class="mdi mdi-check-circle-outline"></i> Validate
+      </button>
+      <button class="btn btn-primary" @click="saveConfig">
+        <i class="mdi mdi-content-save"></i> Save Configuration
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" :class="{active: activeTab === 'overview'}" @click="activeTab = 'overview'">
+      <i class="mdi mdi-view-dashboard"></i> Overview
+    </button>
+    <button class="tab" :class="{active: activeTab === 'modules'}" @click="activeTab = 'modules'">
+      <i class="mdi mdi-cube-outline"></i> Modules
+    </button>
+    <button class="tab" :class="{active: activeTab === 'tables'}" @click="activeTab = 'tables'">
+      <i class="mdi mdi-table"></i> Tables
+    </button>
+    <button class="tab" :class="{active: activeTab === 'aiQueryBuilder'}" @click="activeTab = 'aiQueryBuilder'">
+      <i class="mdi mdi-robot"></i> AI Query Builder & Recipes
+    </button>
+    <button class="tab" :class="{active: activeTab === 'query'}" @click="activeTab = 'query'">
+      <i class="mdi mdi-database-search"></i> Query Tester
+    </button>
+    <button class="tab" :class="{active: activeTab === 'connections'}" @click="activeTab = 'connections'">
+      <i class="mdi mdi-connection"></i> Database Connections
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    
+    <!-- Overview Tab -->
+    <div class="tab-panel" :class="{active: activeTab === 'overview'}">
+      <div class="alert alert-info">
+        <i class="mdi mdi-information"></i>
+        <div>
+          <strong>Database Query Configuration System</strong><br>
+          This tool allows you to configure secure, parameterized database queries for trade finance operations.
+          Define modules, map tables, create query recipes with RBAC enforcement, and test queries safely.
+        </div>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="card-title">
+            <i class="mdi mdi-cube-outline"></i> Modules
+          </div>
+          <div style="font-size: 2rem; font-weight: 700; color: #667eea; margin: 1rem 0;" v-text="modulesCount">
+          </div>
+          <div class="text-sm" style="color: #6b7280;">Trade finance modules configured</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="mdi mdi-table"></i> Tables
+          </div>
+          <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin: 1rem 0;" v-text="tablesCount">
+          </div>
+          <div class="text-sm" style="color: #6b7280;">Database tables mapped</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="mdi mdi-book-open-variant"></i> Recipes
+          </div>
+          <div style="font-size: 2rem; font-weight: 700; color: #f59e0b; margin: 1rem 0;" v-text="recipesCount">
+          </div>
+          <div class="text-sm" style="color: #6b7280;">Query recipes available</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-cog"></i> Query Settings
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div>
+            <strong>Max Limit:</strong> <span v-text="maxLimitText"></span> rows
+          </div>
+          <div>
+            <strong>Default Limit:</strong> <span v-text="defaultLimitText"></span> rows
+          </div>
+          <div>
+            <strong>Statement Timeout:</strong> <span v-text="timeoutText"></span> seconds
+          </div>
+          <div>
+            <strong>Tenant Filter Required:</strong> <span v-text="tenantFilterText"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" v-if="dbConfig.metadata">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-information-outline"></i> Metadata
+          </div>
+        </div>
+        <div>
+          <p><strong>Version:</strong> [[ dbConfig.version ]]</p>
+          <p><strong>Last Updated:</strong> [[ formatDate(dbConfig.metadata.lastUpdated) ]]</p>
+          <p><strong>Description:</strong> [[ dbConfig.metadata.description ]]</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modules Tab -->
+    <div class="tab-panel" :class="{active: activeTab === 'modules'}">
+      <div class="card-header">
+        <div class="alert alert-info" style="flex: 1; margin-right: 1rem; margin-bottom: 0;">
+          <i class="mdi mdi-information"></i>
+          <div>
+            <strong>Modules</strong> represent business domains (e.g., Letters of Credit, Guarantees).
+            Each module contains intents (user query types) that map to query recipes.
+          </div>
+        </div>
+        <button class="btn btn-success" @click="createModule">
+          <i class="mdi mdi-plus"></i> Create Module
+        </button>
+      </div>
+
+      <div v-if="loading" class="loading">
+        <div class="spinner"></div> Loading modules...
+      </div>
+
+      <div v-else class="grid grid-2">
+        <div v-for="(module, moduleId) in dbConfig.modules" :key="moduleId" class="card module-card">
+          <div class="module-icon">
+            <i :class="module.icon || 'mdi-cube-outline'" class="mdi"></i>
+          </div>
+          <div class="module-name">[[ module.name ]]</div>
+          <div class="module-description">[[ module.description ]]</div>
+          <div class="module-meta">
+            <span><i class="mdi mdi-table"></i> <span v-text="getArrayLength(module.entry_tables)"></span> tables</span>
+            <span><i class="mdi mdi-lightbulb-outline"></i> <span v-text="getObjectKeysLength(module.intents)"></span> intents</span>
+          </div>
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-info" style="flex: 1;" @click="viewModuleDetails(moduleId)">
+              <i class="mdi mdi-eye"></i> View
+            </button>
+            <button class="btn btn-primary" @click="editModule(moduleId)">
+              <i class="mdi mdi-pencil"></i> Edit
+            </button>
+            <button class="btn btn-danger" @click="deleteModule(moduleId)">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables Tab -->
+    <div class="tab-panel" :class="{active: activeTab === 'tables'}">
+      <div class="card-header">
+        <div class="alert alert-info" style="flex: 1; margin-right: 1rem; margin-bottom: 0;">
+          <i class="mdi mdi-information"></i>
+          <div>
+            <strong>Tables</strong> define the database schema with columns, types, foreign keys, and RBAC rules.
+            Only columns listed here can be used in queries.
+          </div>
+        </div>
+        <button class="btn btn-success" @click="createTable">
+          <i class="mdi mdi-plus"></i> Create Table
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Search Tables</label>
+        <input type="text" class="form-input" v-model="tableSearch" placeholder="Search by table name or description...">
+      </div>
+
+      <div v-if="loading" class="loading">
+        <div class="spinner"></div> Loading tables...
+      </div>
+
+      <div v-else>
+        <div v-for="(table, tableId) in filteredTables" :key="tableId" class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="mdi mdi-table"></i> [[ table.name ]] <span class="badge badge-primary">[[ tableId ]]</span>
+            </div>
+          </div>
+          <div class="mb-4">
+            <strong>Description:</strong> [[ table.description ]]<br>
+            <strong>Primary Key:</strong> <code>[[ table.pk ]]</code>
+          </div>
+
+          <h4 style="margin-bottom: 0.75rem; font-weight: 600;">Columns (<span v-text="getArrayLength(table.columns)"></span>)</h4>
+          <div class="query-results">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Column</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="col in table.columns" :key="col.name">
+                  <td><code>[[ col.name ]]</code></td>
+                  <td><span class="badge badge-info">[[ col.type ]]</span></td>
+                  <td>[[ col.description ]]</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-if="table.rbac" style="margin-top: 1rem;">
+            <h4 style="margin-bottom: 0.75rem; font-weight: 600;">RBAC Rules</h4>
+            <div class="flex gap-3">
+              <div>
+                <strong>Read Roles:</strong>
+                <span v-for="role in table.rbac.read_roles" :key="role" class="badge badge-success" style="margin-left: 0.25rem;">
+                  [[ role ]]
+                </span>
+              </div>
+              <div>
+                <strong>Write Roles:</strong>
+                <span v-for="role in table.rbac.write_roles" :key="role" class="badge badge-warning" style="margin-left: 0.25rem;">
+                  [[ role ]]
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <button class="btn btn-primary" @click="editTable(tableId)">
+              <i class="mdi mdi-pencil"></i> Edit
+            </button>
+            <button class="btn btn-danger" @click="deleteTable(tableId)">
+              <i class="mdi mdi-delete"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Query Builder & Recipes Tab -->
+    <div class="tab-panel" :class="{active: activeTab === 'aiQueryBuilder'}">
+      <div class="card-header" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+        <div style="flex: 1;">
+          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 12px;">
+            <i class="mdi mdi-robot" style="font-size: 32px;"></i>
+            AI Query Builder & Recipes
+          </h2>
+          <p style="opacity: 0.95; margin: 0;">Generate SQL queries from natural language using AI, then save as reusable recipes</p>
+        </div>
+      </div>
+
+      <!-- AI Query Generation Section -->
+      <div class="card" style="margin-bottom: 1.5rem; border: 2px solid #e5e7eb;">
+        <div class="card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+          <div class="card-title" style="color: #1e293b;">
+            <i class="mdi mdi-robot-outline"></i> 🤖 AI-Powered Query Generation
+          </div>
+        </div>
+        
+        <div style="padding: 1.5rem;">
+          <!-- Natural Language Input -->
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+              <i class="mdi mdi-comment-text"></i> Describe your query in plain English
+            </label>
+            <textarea 
+              class="form-textarea" 
+              v-model="aiQuery.prompt" 
+              rows="4" 
+              placeholder="Example: Show me all letters of credit from customers in Singapore with amount greater than $100,000 created in last 30 days..."
+              style="font-size: 14px; border: 2px solid #e5e7eb; border-radius: 8px;">
+            </textarea>
+          </div>
+
+          <!-- Module Selection -->
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: #374151;">
+              <i class="mdi mdi-cube-outline"></i> Select Module Context
+            </label>
+            <select class="form-input" v-model="aiQuery.module" style="border: 2px solid #e5e7eb; border-radius: 8px;">
+              <option value="">-- Select Module --</option>
+              <option v-for="(module, moduleId) in dbConfig.modules" :key="moduleId" :value="moduleId">
+                [[ module.name ]]
+              </option>
+            </select>
+          </div>
+
+          <!-- Generate Button -->
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button 
+              class="btn btn-primary" 
+              @click="generateQueryWithAI"
+              :disabled="!aiQuery.prompt || !aiQuery.module || aiQuery.loading"
+              style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); flex: 1;">
+              <i class="mdi" :class="aiQuery.loading ? 'mdi-loading mdi-spin' : 'mdi-creation'"></i>
+              [[ aiQuery.loading ? 'Generating...' : 'Generate SQL Query with AI' ]]
+            </button>
+            <button 
+              class="btn btn-secondary" 
+              @click="clearAIQuery"
+              style="padding: 0 2rem;">
+              <i class="mdi mdi-close"></i> Clear
+            </button>
+          </div>
+
+          <!-- AI Generated Result -->
+          <div v-if="aiQuery.result" style="margin-top: 1.5rem; padding: 1.5rem; background: #f8fafc; border: 2px solid #e5e7eb; border-radius: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h4 style="margin: 0; color: #1e293b; font-weight: 600;">
+                <i class="mdi mdi-code-tags"></i> Generated Query Recipe
+              </h4>
+              <button 
+                class="btn btn-success" 
+                @click="saveAIQueryAsRecipe"
+                style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <i class="mdi mdi-pencil-box-outline"></i> Open in Recipe Editor
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; color: #374151;">Recipe Name</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                v-model="aiQuery.result.name" 
+                placeholder="e.g., High Value Singapore LC Report"
+                style="border: 2px solid #e5e7eb; border-radius: 8px;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; color: #374151;">Description</label>
+              <textarea 
+                class="form-textarea" 
+                v-model="aiQuery.result.description" 
+                rows="2"
+                style="border: 2px solid #e5e7eb; border-radius: 8px;">
+              </textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; color: #374151;">Base Table</label>
+              <input 
+                type="text" 
+                class="form-input" 
+                v-model="aiQuery.result.base" 
+                placeholder="e.g., lc.letters_of_credit"
+                style="border: 2px solid #e5e7eb; border-radius: 8px;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; color: #374151;">Select Columns (JSON Array)</label>
+              <textarea 
+                class="form-textarea" 
+                v-model="aiQuery.result.selectJSON" 
+                rows="3"
+                placeholder='["lc.lc_number", "lc.customer_name", "lc.amount"]'
+                style="font-family: monospace; border: 2px solid #e5e7eb; border-radius: 8px;">
+              </textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; color: #374151;">Joins (JSON Array)</label>
+              <textarea 
+                class="form-textarea" 
+                v-model="aiQuery.result.joinsJSON" 
+                rows="4"
+                placeholder='[{"type": "LEFT", "alias": "cust", "table": "customers", "from": "lc.customer_id", "to": "customers.id"}]'
+                style="font-family: monospace; border: 2px solid #e5e7eb; border-radius: 8px;">
+              </textarea>
+              <small style="color: #6b7280;">
+                <i class="mdi mdi-information"></i> Auto-detected joins based on your query (e.g., "with customer details")
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; color: #374151;">
+                WHERE Conditions (JSON Array)
+                <span style="background: #10b981; color: white; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">NEW</span>
+              </label>
+              <textarea 
+                class="form-textarea" 
+                v-model="aiQuery.result.whereJSON" 
+                rows="3"
+                placeholder='[{"field": "lc.status", "op": "eq", "value": "active"}]'
+                style="font-family: monospace; border: 2px solid #e5e7eb; border-radius: 8px;">
+              </textarea>
+              <small style="color: #6b7280;">
+                <i class="mdi mdi-lightbulb"></i> Default filters always applied (e.g., "expired" → expiry_date < NOW())
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 600; color: #374151;">Allowed Filters (JSON Array)</label>
+              <textarea 
+                class="form-textarea" 
+                v-model="aiQuery.result.filtersJSON" 
+                rows="5"
+                placeholder='[{"field": "lc.amount", "type": "number", "ops": ["gt", "lt", "eq"], "required": false}]'
+                style="font-family: monospace; border: 2px solid #e5e7eb; border-radius: 8px;">
+              </textarea>
+              <small style="color: #6b7280;">
+                <i class="mdi mdi-filter"></i> Dynamic filters users can apply when running the query
+              </small>
+            </div>
+
+            <div style="padding: 1rem; background: white; border: 2px dashed #6366f1; border-radius: 8px; margin-top: 1rem;">
+              <p style="margin: 0 0 0.5rem 0; color: #6366f1; font-weight: 600;">
+                <i class="mdi mdi-information"></i> AI Explanation:
+              </p>
+              <p style="margin: 0; color: #64748b; font-size: 14px; line-height: 1.6;">[[ aiQuery.result.explanation || 'This query recipe was generated based on your natural language description.' ]]</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Saved Recipes Section -->
+      <div class="card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); margin-bottom: 1rem;">
+        <div class="alert alert-info" style="flex: 1; margin-right: 1rem; margin-bottom: 0; border: 2px solid #e5e7eb;">
+          <i class="mdi mdi-information"></i>
+          <div>
+            <strong>Query Recipes</strong> are pre-defined, safe query templates.
+            They specify which tables to join, which columns to select, and which filters are allowed.
+          </div>
+        </div>
+        <button class="btn btn-success" @click="createRecipe">
+          <i class="mdi mdi-plus"></i> Create Recipe Manually
+        </button>
+      </div>
+
+      <div v-if="loading" class="loading">
+        <div class="spinner"></div> Loading recipes...
+      </div>
+
+      <div v-else>
+        <div v-for="(recipe, recipeId) in dbConfig.recipes" :key="recipeId" class="card" style="border: 2px solid #e5e7eb;">
+          <div class="card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);">
+            <div class="card-title" style="color: #1e293b;">
+              <i class="mdi mdi-book-open-variant"></i> [[ recipe.name ]]
+              <span class="badge badge-primary">[[ recipeId ]]</span>
+            </div>
+            <button class="btn btn-info" @click="testRecipe(recipeId)" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+              <i class="mdi mdi-play"></i> Test Query
+            </button>
+          </div>
+
+          <div style="padding: 1.5rem;">
+            <div class="mb-4">
+              <p><strong>Description:</strong> [[ recipe.description ]]</p>
+              <p><strong>Module:</strong> <span class="badge badge-info">[[ recipe.module ]]</span></p>
+              <p><strong>Base Table:</strong> <code>[[ recipe.base ]]</code></p>
+              <p><strong>Default Limit:</strong> [[ recipe.default_limit ]] rows</p>
+            </div>
+
+            <h4 style="margin-bottom: 0.75rem; font-weight: 600; color: #374151;">Joins (<span v-text="getArrayLength(recipe.joins)"></span>)</h4>
+            <div v-for="(join, idx) in recipe.joins" :key="idx" style="margin-bottom: 0.5rem; padding: 0.75rem; background: white; border: 1px solid #e5e7eb; border-radius: 8px;">
+              <code style="color: #6366f1;"><span v-text="join.type || 'INNER'"></span> JOIN <span v-text="getJoinTableName(join.to)"></span> AS [[ join.alias ]]</code><br>
+              <small style="color: #64748b;">ON [[ join.from ]] = [[ join.to ]]</small>
+            </div>
+
+            <h4 style="margin-top: 1rem; margin-bottom: 0.75rem; font-weight: 600; color: #374151;">Select Columns</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+              <span v-for="col in recipe.select" :key="col" class="badge badge-primary">[[ col ]]</span>
+            </div>
+
+            <h4 style="margin-top: 1rem; margin-bottom: 0.75rem; font-weight: 600; color: #374151;">Allowed Filters (<span v-text="getArrayLength(recipe.allowed_filters)"></span>)</h4>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Type</th>
+                  <th>Operations</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="filter in recipe.allowed_filters" :key="filter.field">
+                  <td><code>[[ filter.field ]]</code></td>
+                  <td><span class="badge badge-info">[[ filter.type ]]</span></td>
+                  <td>
+                    <span v-for="op in filter.ops" :key="op" class="badge badge-primary" style="margin-right: 0.25rem;">
+                      [[ op ]]
+                    </span>
+                  </td>
+                  <td>
+                    <span v-if="filter.required" class="badge badge-warning">Required</span>
+                    <span v-else style="color: #9ca3af;">Optional</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button class="btn btn-primary" @click="editRecipe(recipeId)">
+                <i class="mdi mdi-pencil"></i> Edit
+              </button>
+              <button class="btn btn-danger" @click="deleteRecipe(recipeId)">
+                <i class="mdi mdi-delete"></i> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Query Builder Tab (Renamed to Query Tester) -->
+    <div class="tab-panel" :class="{active: activeTab === 'query'}">
+      <div class="alert alert-info">
+        <i class="mdi mdi-information"></i>
+        <div>
+          <strong>Query Builder</strong> - Test natural language queries or build queries manually using recipes.
+          All queries are validated and parameterized before execution.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-message-text-outline"></i> Natural Language Query
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Enter your question</label>
+          <textarea 
+            class="form-textarea" 
+            v-model="nlQuery"
+            placeholder="Example: Show pending LCs for Emirates Steel this quarter"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Module (Optional)</label>
+          <select class="form-select" v-model="queryModule">
+            <option value="">Auto-detect</option>
+            <option v-for="(module, moduleId) in dbConfig.modules" :key="moduleId" :value="moduleId">
+              [[ module.name ]]
+            </option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" @click="classifyQuery" :disabled="!nlQuery">
+          <i class="mdi mdi-magic-staff"></i> Classify & Generate Query
+        </button>
+      </div>
+
+      <!-- Query Plan Display -->
+      <div v-if="queryPlan" class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-map"></i> Query Plan
+          </div>
+        </div>
+
+        <div class="grid grid-2 mb-4">
+          <div>
+            <strong>Module:</strong> <span class="badge badge-primary">[[ queryPlan.module ]]</span>
+          </div>
+          <div>
+            <strong>Intent:</strong> <span class="badge badge-info">[[ queryPlan.intent ]]</span>
+          </div>
+          <div>
+            <strong>Recipe:</strong> <code>[[ queryPlan.recipe_name ]]</code>
+          </div>
+          <div>
+            <strong>Limit:</strong> [[ queryPlan.limit ]] rows
+          </div>
+        </div>
+
+        <h4 style="margin-bottom: 0.75rem; font-weight: 600;">Extracted Filters</h4>
+        <div v-if="queryPlan.filters && queryPlan.filters.length > 0">
+          <div v-for="(filter, idx) in queryPlan.filters" :key="idx" style="margin-bottom: 0.5rem; padding: 0.75rem; background: #f9fafb; border-radius: 6px;">
+            <code>[[ filter.field ]] [[ filter.op ]] [[ JSON.stringify(filter.value) ]]</code>
+          </div>
+        </div>
+        <div v-else style="color: #9ca3af; font-style: italic;">
+          No filters extracted (will use defaults from recipe)
+        </div>
+
+        <button class="btn btn-success" @click="executeQuery" style="margin-top: 1rem;">
+          <i class="mdi mdi-play"></i> Execute Query
+        </button>
+      </div>
+
+      <!-- Manual Query Builder -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-hammer-wrench"></i> Manual Query Builder
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Select Recipe</label>
+          <select class="form-select" v-model="selectedRecipe">
+            <option value="">-- Select Recipe --</option>
+            <option v-for="(recipe, recipeId) in dbConfig.recipes" :key="recipeId" :value="recipeId">
+              [[ recipe.name ]] ([[ recipeId ]])
+            </option>
+          </select>
+        </div>
+
+        <div v-if="selectedRecipe && dbConfig.recipes[selectedRecipe]">
+          <h4 style="margin-bottom: 0.75rem; font-weight: 600;">Add Filters</h4>
+          
+          <div v-for="(filter, idx) in manualFilters" :key="idx" class="filter-row">
+            <div class="form-group">
+              <select class="form-select" v-model="filter.field">
+                <option value="">-- Select Field --</option>
+                <option v-for="af in dbConfig.recipes[selectedRecipe].allowed_filters" :key="af.field" :value="af.field">
+                  [[ af.field ]] ([[ af.type ]])
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <select class="form-select" v-model="filter.op">
+                <option value="">-- Op --</option>
+                <option v-for="op in getOperationsForField(filter.field)" :key="op" :value="op">
+                  [[ op ]]
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <input type="text" class="form-input" v-model="filter.value" placeholder="Value">
+            </div>
+
+            <button class="btn btn-danger" @click="removeFilter(idx)">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </div>
+
+          <button class="btn btn-secondary" @click="addFilter">
+            <i class="mdi mdi-plus"></i> Add Filter
+          </button>
+
+          <button class="btn btn-success" @click="generateManualQuery" style="margin-left: 1rem;">
+            <i class="mdi mdi-code-braces"></i> Generate SQL
+          </button>
+        </div>
+      </div>
+
+      <!-- LLM-Powered SQL Generator -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-robot"></i> AI SQL Generator (Beta)
+          </div>
+        </div>
+
+        <div class="alert alert-warning" style="margin-bottom: 1rem;">
+          <i class="mdi mdi-information"></i>
+          <div>
+            <strong>AI-Powered SQL Generation</strong> - Uses OpenAI GPT-4 or Anthropic Claude to generate SQL from natural language.
+            Requires API key configuration.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Natural Language Query</label>
+          <textarea 
+            class="form-textarea" 
+            v-model="llmQuery"
+            placeholder="Example: Show me all active letters of credit with amount greater than 100000 USD, issued in the last 30 days, ordered by issue date"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">AI Provider</label>
+          <select class="form-select" v-model="llmProvider">
+            <option value="openai">OpenAI (GPT-4)</option>
+            <option value="anthropic">Anthropic (Claude 3.5 Sonnet)</option>
+          </select>
+          <small style="color: #6b7280; display: block; margin-top: 0.25rem;">
+            Configure API keys in environment variables: OPENAI_API_KEY or ANTHROPIC_API_KEY
+          </small>
+        </div>
+
+        <div class="form-group" v-if="showSchemaContext">
+          <label class="form-label">Schema Context (Optional)</label>
+          <textarea 
+            class="form-textarea" 
+            v-model="schemaContext"
+            placeholder="Provide additional schema information if needed..."
+            rows="4"
+          ></textarea>
+          <small style="color: #6b7280; display: block; margin-top: 0.25rem;">
+            Leave empty to auto-load from configuration
+          </small>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button class="btn btn-primary" @click="generateSQLWithLLM" :disabled="!llmQuery || llmGenerating">
+            <i class="mdi mdi-magic-staff"></i> 
+            <span v-if="!llmGenerating">Generate SQL with AI</span>
+            <span v-else>Generating...</span>
+          </button>
+
+          <button class="btn btn-secondary" @click="showSchemaContext = !showSchemaContext">
+            <i class="mdi mdi-cog"></i> 
+            <span v-if="!showSchemaContext">Show Advanced</span>
+            <span v-else>Hide Advanced</span>
+          </button>
+
+          <button class="btn btn-secondary" @click="clearLLMForm">
+            <i class="mdi mdi-refresh"></i> Clear
+          </button>
+        </div>
+
+        <!-- LLM Generation Status -->
+        <div v-if="llmStatus" class="alert" :class="{
+          'alert-success': llmStatus.type === 'success',
+          'alert-error': llmStatus.type === 'error',
+          'alert-info': llmStatus.type === 'info'
+        }" style="margin-top: 1rem;">
+          <i class="mdi" :class="{
+            'mdi-check-circle': llmStatus.type === 'success',
+            'mdi-alert-circle': llmStatus.type === 'error',
+            'mdi-information': llmStatus.type === 'info'
+          }"></i>
+          <div>
+            <strong v-if="llmStatus.type === 'success'">Success!</strong>
+            <strong v-if="llmStatus.type === 'error'">Error</strong>
+            <strong v-if="llmStatus.type === 'info'">Info</strong>
+            <p>[[ llmStatus.message ]]</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generated SQL Display -->
+      <div v-if="generatedSQL" class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-code-braces"></i> Generated SQL
+          </div>
+          <button class="btn btn-secondary" @click="copySQL">
+            <i class="mdi mdi-content-copy"></i> Copy
+          </button>
+        </div>
+
+        <div class="code-block">
+          <pre>[[ generatedSQL ]]</pre>
+        </div>
+
+        <h4 style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: 600;">Parameters</h4>
+        <div class="code-block">
+          <pre>[[ JSON.stringify(sqlParameters, null, 2) ]]</pre>
+        </div>
+
+        <button class="btn btn-success" @click="executeQuery">
+          <i class="mdi mdi-play"></i> Execute Query
+        </button>
+      </div>
+
+      <!-- Query Results -->
+      <div v-if="queryResults" class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-table-eye"></i> Query Results
+          </div>
+          <div>
+            <span class="badge badge-success">[[ queryResults.row_count ]] rows</span>
+            <span class="badge badge-info" style="margin-left: 0.5rem;">[[ queryResults.execution_time_ms ]]ms</span>
+          </div>
+        </div>
+
+        <div class="query-results">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th v-for="(val, key) in queryResults.results[0]" :key="key">[[ key ]]</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, idx) in queryResults.results" :key="idx">
+                <td v-for="(val, key) in row" :key="key">[[ val ]]</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Connections Tab -->
+    <div class="tab-panel" :class="{active: activeTab === 'connections'}">
+      <div class="alert alert-info">
+        <i class="mdi mdi-information"></i>
+        <div>
+          <strong>Database Connection Management</strong> - Configure and manage connections to multiple database types (MongoDB, PostgreSQL, Oracle, MSSQL, MySQL, SQLite).
+          Test connections, set defaults, and switch between databases seamlessly.
+        </div>
+      </div>
+
+      <!-- Connection Statistics -->
+      <div class="grid grid-3">
+        <div class="card">
+          <div class="card-title">
+            <i class="mdi mdi-database"></i> Total Connections
+          </div>
+          <div style="font-size: 2rem; font-weight: 700; color: #667eea; margin: 1rem 0;" v-text="connections.length">
+          </div>
+          <div class="text-sm" style="color: #6b7280;">Configured database connections</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="mdi mdi-check-circle"></i> Active
+          </div>
+          <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin: 1rem 0;" v-text="activeConnectionsCount">
+          </div>
+          <div class="text-sm" style="color: #6b7280;">Currently connected databases</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="mdi mdi-star"></i> Default
+          </div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b; margin: 1rem 0;" v-text="defaultConnectionName">
+          </div>
+          <div class="text-sm" style="color: #6b7280;">Default database for queries</div>
+        </div>
+      </div>
+
+      <!-- Connections List -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-connection"></i> Database Connections
+          </div>
+          <button class="btn btn-success" @click="showAddConnectionModal">
+            <i class="mdi mdi-plus"></i> Add Connection
+          </button>
+        </div>
+
+        <div v-if="loadingConnections" class="loading">
+          <div class="spinner"></div> Loading connections...
+        </div>
+
+        <div v-else>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Host / Server</th>
+                <th>Database</th>
+                <th>Status</th>
+                <th>Default</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="conn in connections" :key="conn.name">
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="mdi" :class="getDatabaseIcon(conn.type)"></i>
+                    <strong>[[ conn.name ]]</strong>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-primary">[[ conn.type.toUpperCase() ]]</span>
+                </td>
+                <td>
+                  <code v-if="conn.config && conn.config.host">[[ conn.config.host ]]:[[ conn.config.port || 'default' ]]</code>
+                  <code v-else-if="conn.config && conn.config.connection_string">connection string</code>
+                  <code v-else-if="conn.config && conn.config.database_file">[[ conn.config.database_file ]]</code>
+                  <span v-else style="color: #9ca3af;">-</span>
+                </td>
+                <td>
+                  <code v-if="conn.config && conn.config.database">[[ conn.config.database ]]</code>
+                  <span v-else style="color: #9ca3af;">-</span>
+                </td>
+                <td>
+                  <span v-if="conn.status === 'active'" class="badge badge-success">
+                    <i class="mdi mdi-check-circle"></i> Active
+                  </span>
+                  <span v-else-if="conn.status === 'inactive'" class="badge" style="background: #fee2e2; color: #991b1b;">
+                    <i class="mdi mdi-close-circle"></i> Inactive
+                  </span>
+                  <span v-else class="badge" style="background: #f3f4f6; color: #6b7280;">
+                    <i class="mdi mdi-help-circle"></i> Unknown
+                  </span>
+                </td>
+                <td>
+                  <span v-if="conn.is_default" class="badge badge-warning">
+                    <i class="mdi mdi-star"></i> Default
+                  </span>
+                  <button v-else class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" @click="setDefaultConnection(conn.name)">
+                    Set Default
+                  </button>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-info" style="padding: 0.375rem 0.75rem;" @click="testConnection(conn.name)" :disabled="testingConnection === conn.name">
+                      <i class="mdi" :class="testingConnection === conn.name ? 'mdi-loading mdi-spin' : 'mdi-test-tube'"></i>
+                      <span v-if="testingConnection === conn.name">Testing...</span>
+                      <span v-else>Test</span>
+                    </button>
+                    <button class="btn btn-secondary" style="padding: 0.375rem 0.75rem;" @click="viewConnection(conn)">
+                      <i class="mdi mdi-eye"></i> View
+                    </button>
+                    <button class="btn btn-danger" style="padding: 0.375rem 0.75rem;" @click="deleteConnection(conn.name)" :disabled="conn.is_default">
+                      <i class="mdi mdi-delete"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div v-if="connections.length === 0" style="text-align: center; padding: 3rem; color: #9ca3af;">
+            <i class="mdi mdi-database-off" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+            <p>No database connections configured</p>
+            <button class="btn btn-primary" @click="showAddConnectionModal" style="margin-top: 1rem;">
+              <i class="mdi mdi-plus"></i> Add Your First Connection
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection Test Results -->
+      <div v-if="connectionTestResult" class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="mdi mdi-test-tube"></i> Test Result: [[ connectionTestResult.connection_name ]]
+          </div>
+          <button class="btn-close" @click="connectionTestResult = null">&times;</button>
+        </div>
+
+        <div :class="connectionTestResult.success ? 'alert alert-success' : 'alert alert-error'">
+          <i :class="connectionTestResult.success ? 'mdi mdi-check-circle' : 'mdi mdi-alert-circle'"></i>
+          <div>
+            <strong v-if="connectionTestResult.success">✅ Connection Successful!</strong>
+            <strong v-else>❌ Connection Failed</strong>
+            <p>[[ connectionTestResult.message ]]</p>
+            <p v-if="connectionTestResult.timestamp" style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">
+              Tested at: [[ new Date(connectionTestResult.timestamp).toLocaleString() ]]
+            </p>
+            <div v-if="connectionTestResult.details" style="margin-top: 0.5rem;">
+              <strong>Details:</strong>
+              <ul style="margin-top: 0.25rem;">
+                <li v-for="(value, key) in connectionTestResult.details" :key="key">
+                  <strong>[[ key ]]:</strong> [[ value ]]
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Alerts -->
+  <div v-if="alert.show" :class="'alert alert-' + alert.type" style="position: fixed; top: 2rem; right: 2rem; max-width: 400px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+    <i :class="'mdi ' + (alert.type === 'success' ? 'mdi-check-circle' : alert.type === 'error' ? 'mdi-alert-circle' : 'mdi-information')"></i>
+    <div>
+      <strong>[[ alert.title ]]</strong><br>
+      [[ alert.message ]]
+    </div>
+  </div>
+
+  <!-- CRUD Modals -->
+  <!-- Module Modal -->
+  <div v-if="showModuleModal" class="modal-overlay" @click.self="closeModuleModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>[[ editingModule ? 'Edit Module' : 'Create Module' ]]</h3>
+        <button class="btn-close" @click="closeModuleModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Module ID</label>
+          <input type="text" class="form-input" v-model="moduleForm.id" :disabled="editingModule" placeholder="e.g., letter_of_credit">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" v-model="moduleForm.name" placeholder="e.g., Letters of Credit">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" v-model="moduleForm.description" rows="3" placeholder="Module description"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon (MDI class)</label>
+          <input type="text" class="form-input" v-model="moduleForm.icon" placeholder="e.g., mdi-file-document-outline">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" @click="closeModuleModal">Cancel</button>
+        <button class="btn btn-primary" @click="saveModule">Save Module</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Modal -->
+  <div v-if="showTableModal" class="modal-overlay" @click.self="closeTableModal">
+    <div class="modal-dialog" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3>[[ editingTable ? 'Edit Table' : 'Create Table' ]]</h3>
+        <button class="btn-close" @click="closeTableModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Basic Information -->
+        <div class="form-group">
+          <label class="form-label">Table ID *</label>
+          <input type="text" class="form-input" v-model="tableForm.id" :disabled="editingTable" placeholder="e.g., lc_master">
+          <small style="color: #6b7280;">Database table name (immutable after creation)</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-input" v-model="tableForm.name" placeholder="e.g., LC Master">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" v-model="tableForm.description" rows="2" placeholder="Table description"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Primary Key *</label>
+          <input type="text" class="form-input" v-model="tableForm.pk" placeholder="e.g., lc_id">
+        </div>
+
+        <!-- Link to Modules -->
+        <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+          <label class="form-label">
+            <i class="mdi mdi-link"></i> Link to Modules
+          </label>
+          <small style="color: #6b7280; display: block; margin-bottom: 0.5rem;">
+            Select which modules can use this table
+          </small>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem;">
+            <label v-for="(module, moduleId) in dbConfig.modules" :key="moduleId" 
+                   style="display: flex; align-items: center; padding: 0.5rem; background: #f9fafb; border-radius: 6px; cursor: pointer;">
+              <input type="checkbox" :value="moduleId" v-model="tableForm.linkedModules" style="margin-right: 0.5rem;">
+              <span>[[ module.name ]]</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Columns Management -->
+        <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <label class="form-label" style="margin-bottom: 0;">
+              <i class="mdi mdi-table-column"></i> Columns
+            </label>
+            <button type="button" class="btn btn-success" @click="addColumn" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+              <i class="mdi mdi-plus"></i> Add Column
+            </button>
+          </div>
+          
+          <div v-if="tableForm.columns.length === 0" style="text-align: center; padding: 2rem; background: #f9fafb; border-radius: 8px; color: #6b7280;">
+            <i class="mdi mdi-table-column-plus-after" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+            No columns defined. Click "Add Column" to start.
+          </div>
+
+          <div v-else style="max-height: 300px; overflow-y: auto;">
+            <div v-for="(column, index) in tableForm.columns" :key="index" 
+                 style="background: #f9fafb; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid #e5e7eb;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 0.75rem; align-items: start;">
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Column Name *</label>
+                  <input type="text" class="form-input" v-model="column.name" placeholder="e.g., lc_id" style="font-size: 0.875rem;">
+                </div>
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Type *</label>
+                  <select class="form-select" v-model="column.type" style="font-size: 0.875rem;">
+                    <option value="">Select type</option>
+                    <option value="integer">Integer</option>
+                    <option value="string">String</option>
+                    <option value="decimal">Decimal</option>
+                    <option value="date">Date</option>
+                    <option value="datetime">DateTime</option>
+                    <option value="boolean">Boolean</option>
+                    <option value="text">Text</option>
+                    <option value="json">JSON</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Description</label>
+                  <input type="text" class="form-input" v-model="column.description" placeholder="Column description" style="font-size: 0.875rem;">
+                </div>
+                <div style="padding-top: 1.25rem;">
+                  <button type="button" class="btn btn-danger" @click="removeColumn(index)" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+                    <i class="mdi mdi-delete"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" @click="closeTableModal">Cancel</button>
+        <button class="btn btn-primary" @click="saveTable">
+          <i class="mdi mdi-content-save"></i> Save Table
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipe Modal -->
+  <div v-if="showRecipeModal" class="modal-overlay" @click.self="closeRecipeModal">
+    <div class="modal-dialog" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3>[[ editingRecipe ? 'Edit Recipe' : 'Create Recipe' ]]</h3>
+        <button class="btn-close" @click="closeRecipeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Basic Information -->
+        <div class="form-group">
+          <label class="form-label">Recipe ID *</label>
+          <input type="text" class="form-input" v-model="recipeForm.id" :disabled="editingRecipe" placeholder="e.g., lc_pending_issuance">
+          <small style="color: #6b7280;">Unique identifier (immutable after creation)</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-input" v-model="recipeForm.name" placeholder="e.g., Pending LCs">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" v-model="recipeForm.description" rows="2" placeholder="Recipe description"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Base Table *</label>
+          <select class="form-select" v-model="recipeForm.base" @change="onBaseTableChange">
+            <option value="">Select base table</option>
+            <option v-for="(table, tableId) in dbConfig.tables" :key="tableId" :value="tableId">
+              [[ table.name ]] ([[ tableId ]])
+            </option>
+          </select>
+        </div>
+
+        <!-- SELECT Columns -->
+        <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+          <label class="form-label">
+            <i class="mdi mdi-table-column"></i> SELECT Columns *
+          </label>
+          <small style="color: #6b7280; display: block; margin-bottom: 0.75rem;">
+            Choose which columns to include in query results
+          </small>
+          
+          <div v-if="!recipeForm.base" style="text-align: center; padding: 1.5rem; background: #fef3c7; border-radius: 8px; color: #92400e;">
+            ⚠️ Select a base table first to choose columns
+          </div>
+
+          <div v-else style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+            <div style="margin-bottom: 0.75rem;">
+              <label style="display: flex; align-items: center; cursor: pointer; font-weight: 600;">
+                <input type="checkbox" @change="toggleSelectAll" :checked="isAllColumnsSelected" style="margin-right: 0.5rem;">
+                Select All Columns
+              </label>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem; max-height: 200px; overflow-y: auto; padding: 0.5rem;">
+              <label v-for="column in getBaseTableColumns()" :key="column.name" 
+                     style="display: flex; align-items: center; padding: 0.5rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb;">
+                <input type="checkbox" :value="recipeForm.base + '.' + column.name" v-model="recipeForm.select" style="margin-right: 0.5rem;">
+                <div>
+                  <strong>[[ column.name ]]</strong>
+                  <small style="display: block; color: #6b7280;">[[ column.type ]]</small>
+                </div>
+              </label>
+            </div>
+
+            <div v-if="recipeForm.joins.length > 0" style="margin-top: 1rem;">
+              <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Columns from Joined Tables:</h4>
+              <div v-for="join in recipeForm.joins" :key="join.alias">
+                <div style="font-weight: 600; margin-top: 0.75rem; margin-bottom: 0.5rem; color: #667eea;">
+                  [[ getTableName(join.table) ]] (alias: [[ join.alias ]])
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem;">
+                  <label v-for="column in getJoinedTableColumns(join.table)" :key="column.name" 
+                         style="display: flex; align-items: center; padding: 0.5rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb;">
+                    <input type="checkbox" :value="join.alias + '.' + column.name" v-model="recipeForm.select" style="margin-right: 0.5rem;">
+                    <div>
+                      <strong>[[ column.name ]]</strong>
+                      <small style="display: block; color: #6b7280;">[[ column.type ]]</small>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- JOINs -->
+        <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <label class="form-label" style="margin-bottom: 0;">
+              <i class="mdi mdi-link-variant"></i> JOINs
+            </label>
+            <button type="button" class="btn btn-success" @click="addJoin" :disabled="!recipeForm.base" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+              <i class="mdi mdi-plus"></i> Add JOIN
+            </button>
+          </div>
+
+          <div v-if="recipeForm.joins.length === 0" style="text-align: center; padding: 1.5rem; background: #f9fafb; border-radius: 8px; color: #6b7280;">
+            <i class="mdi mdi-link-variant-off" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+            No joins defined. Click "Add JOIN" to join other tables.
+          </div>
+
+          <div v-else>
+            <div v-for="(join, index) in recipeForm.joins" :key="index" 
+                 style="background: #f9fafb; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid #e5e7eb;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Join Type</label>
+                  <select class="form-select" v-model="join.type" style="font-size: 0.875rem;">
+                    <option value="INNER">INNER JOIN</option>
+                    <option value="LEFT">LEFT JOIN</option>
+                    <option value="RIGHT">RIGHT JOIN</option>
+                    <option value="FULL">FULL JOIN</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Table *</label>
+                  <select class="form-select" v-model="join.table" style="font-size: 0.875rem;">
+                    <option value="">Select table</option>
+                    <option v-for="(table, tableId) in dbConfig.tables" :key="tableId" :value="tableId">
+                      [[ table.name ]] ([[ tableId ]])
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Alias *</label>
+                  <input type="text" class="form-input" v-model="join.alias" placeholder="e.g., t1" style="font-size: 0.875rem;">
+                </div>
+                <div style="padding-top: 1.25rem;">
+                  <button type="button" class="btn btn-danger" @click="removeJoin(index)" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+                    <i class="mdi mdi-delete"></i>
+                  </button>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">From (Base Table Column)</label>
+                  <input type="text" class="form-input" v-model="join.from" placeholder="e.g., t0.applicant_id" style="font-size: 0.875rem;">
+                </div>
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">To (Joined Table Column)</label>
+                  <input type="text" class="form-input" v-model="join.to" placeholder="e.g., t1.id" style="font-size: 0.875rem;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WHERE Clauses -->
+        <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <label class="form-label" style="margin-bottom: 0;">
+              <i class="mdi mdi-filter"></i> WHERE Conditions
+            </label>
+            <button type="button" class="btn btn-success" @click="addWhere" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+              <i class="mdi mdi-plus"></i> Add WHERE
+            </button>
+          </div>
+          <small style="color: #6b7280; display: block; margin-bottom: 0.75rem;">
+            Static WHERE conditions applied to all queries
+          </small>
+
+          <div v-if="recipeForm.where.length === 0" style="text-align: center; padding: 1.5rem; background: #f9fafb; border-radius: 8px; color: #6b7280;">
+            No WHERE conditions. Add conditions to filter results.
+          </div>
+
+          <div v-else>
+            <div v-for="(condition, index) in recipeForm.where" :key="index" 
+                 style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
+              <input type="text" class="form-input" v-model="recipeForm.where[index]" 
+                     placeholder="e.g., t0.status = 'pending'" style="flex: 1; font-size: 0.875rem;">
+              <button type="button" class="btn btn-danger" @click="removeWhere(index)" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Allowed Filters (User-Facing) -->
+        <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <label class="form-label" style="margin-bottom: 0;">
+              <i class="mdi mdi-tune"></i> Allowed Filters (User-Facing)
+            </label>
+            <button type="button" class="btn btn-success" @click="addAllowedFilter" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+              <i class="mdi mdi-plus"></i> Add Filter
+            </button>
+          </div>
+          <small style="color: #6b7280; display: block; margin-bottom: 0.75rem;">
+            Filters that users can apply when using this recipe
+          </small>
+
+          <div v-if="recipeForm.allowed_filters.length === 0" style="text-align: center; padding: 1.5rem; background: #f9fafb; border-radius: 8px; color: #6b7280;">
+            No allowed filters. Add filters users can apply.
+          </div>
+
+          <div v-else>
+            <div v-for="(filter, index) in recipeForm.allowed_filters" :key="index" 
+                 style="background: #f9fafb; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid #e5e7eb;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 0.75rem;">
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Field *</label>
+                  <input type="text" class="form-input" v-model="filter.field" placeholder="e.g., applicant_name" style="font-size: 0.875rem;">
+                </div>
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Type *</label>
+                  <select class="form-select" v-model="filter.type" style="font-size: 0.875rem;">
+                    <option value="">Select type</option>
+                    <option value="string">String</option>
+                    <option value="integer">Integer</option>
+                    <option value="decimal">Decimal</option>
+                    <option value="date">Date</option>
+                    <option value="boolean">Boolean</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.75rem; font-weight: 600; color: #6b7280; display: block; margin-bottom: 0.25rem;">Operations *</label>
+                  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="eq" v-model="filter.ops" style="margin-right: 0.25rem;"> =
+                    </label>
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="ne" v-model="filter.ops" style="margin-right: 0.25rem;"> ≠
+                    </label>
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="like" v-model="filter.ops" style="margin-right: 0.25rem;"> LIKE
+                    </label>
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="gt" v-model="filter.ops" style="margin-right: 0.25rem;"> &gt;
+                    </label>
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="lt" v-model="filter.ops" style="margin-right: 0.25rem;"> &lt;
+                    </label>
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="gte" v-model="filter.ops" style="margin-right: 0.25rem;"> ≥
+                    </label>
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="lte" v-model="filter.ops" style="margin-right: 0.25rem;"> ≤
+                    </label>
+                    <label style="display: inline-flex; align-items: center; font-size: 0.875rem;">
+                      <input type="checkbox" value="in" v-model="filter.ops" style="margin-right: 0.25rem;"> IN
+                    </label>
+                  </div>
+                </div>
+                <div style="padding-top: 1.25rem;">
+                  <button type="button" class="btn btn-danger" @click="removeAllowedFilter(index)" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+                    <i class="mdi mdi-delete"></i>
+                  </button>
+                </div>
+              </div>
+              <div style="margin-top: 0.5rem;">
+                <label style="display: flex; align-items: center; font-size: 0.875rem;">
+                  <input type="checkbox" v-model="filter.required" style="margin-right: 0.5rem;">
+                  Required filter (user must provide this filter)
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Default Limit -->
+        <div class="form-group" style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+          <label class="form-label">Default Limit</label>
+          <input type="number" class="form-input" v-model.number="recipeForm.default_limit" placeholder="100" min="1" max="1000">
+          <small style="color: #6b7280;">Default number of rows to return (1-1000)</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" @click="closeRecipeModal">Cancel</button>
+        <button class="btn btn-primary" @click="saveRecipe">
+          <i class="mdi mdi-content-save"></i> Save Recipe
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connection Modal -->
+  <div v-if="showConnectionModal" class="modal-overlay" @click.self="closeConnectionModal">
+    <div class="modal-dialog" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 v-if="viewingConnection">
+          <i class="mdi mdi-eye"></i> View Connection: [[ viewingConnection.name ]]
+        </h3>
+        <h3 v-else>
+          <i class="mdi mdi-plus"></i> Add Database Connection
+        </h3>
+        <button class="btn-close" @click="closeConnectionModal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- View Mode -->
+        <div v-if="viewingConnection">
+          <div class="form-group">
+            <label class="form-label">Connection Name</label>
+            <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px; font-weight: 600;">
+              [[ viewingConnection.name ]]
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Database Type</label>
+            <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px;">
+              <span class="badge badge-primary">
+                <i class="mdi" :class="getDatabaseIcon(viewingConnection.type)"></i>
+                [[ viewingConnection.type.toUpperCase() ]]
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group" v-if="viewingConnection.description">
+            <label class="form-label">Description</label>
+            <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px;">
+              [[ viewingConnection.description ]]
+            </div>
+          </div>
+
+          <div class="form-group" v-if="viewingConnection.config && viewingConnection.config.connection_string">
+            <label class="form-label">Connection String</label>
+            <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px; font-family: monospace; word-break: break-all;">
+              [[ viewingConnection.config.connection_string.replace(/\/\/.*:.*@/, '//***:***@') ]]
+            </div>
+          </div>
+
+          <div class="grid grid-2" v-else-if="viewingConnection.config">
+            <div class="form-group" v-if="viewingConnection.config.host">
+              <label class="form-label">Host</label>
+              <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px;">
+                <code>[[ viewingConnection.config.host ]]</code>
+              </div>
+            </div>
+
+            <div class="form-group" v-if="viewingConnection.config.port">
+              <label class="form-label">Port</label>
+              <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px;">
+                <code>[[ viewingConnection.config.port ]]</code>
+              </div>
+            </div>
+
+            <div class="form-group" v-if="viewingConnection.config.database">
+              <label class="form-label">Database</label>
+              <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px;">
+                <code>[[ viewingConnection.config.database ]]</code>
+              </div>
+            </div>
+
+            <div class="form-group" v-if="viewingConnection.config.username">
+              <label class="form-label">Username</label>
+              <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px;">
+                <code>[[ viewingConnection.config.username ]]</code>
+              </div>
+            </div>
+
+            <div class="form-group" v-if="viewingConnection.config.database_file">
+              <label class="form-label">Database File</label>
+              <div style="padding: 0.625rem 0.875rem; background: #f9fafb; border-radius: 8px;">
+                <code>[[ viewingConnection.config.database_file ]]</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <div>
+              <span v-if="viewingConnection.status === 'active'" class="badge badge-success">
+                <i class="mdi mdi-check-circle"></i> Active
+              </span>
+              <span v-else class="badge" style="background: #fee2e2; color: #991b1b;">
+                <i class="mdi mdi-close-circle"></i> Inactive
+              </span>
+              
+              <span v-if="viewingConnection.is_default" class="badge badge-warning" style="margin-left: 0.5rem;">
+                <i class="mdi mdi-star"></i> Default
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Mode -->
+        <div v-else>
+          <div class="form-group">
+            <label class="form-label">Connection Name *</label>
+            <input type="text" class="form-input" v-model="connectionForm.name" placeholder="e.g., mongodb_production">
+            <small style="color: #6b7280;">Unique identifier for this connection</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Database Type *</label>
+            <select class="form-select" v-model="connectionForm.type" @change="connectionForm.config.port = getDefaultPortForType(connectionForm.type)">
+              <option value="mongodb">MongoDB (NoSQL)</option>
+              <option value="postgresql">PostgreSQL</option>
+              <option value="oracle">Oracle Database</option>
+              <option value="mssql">Microsoft SQL Server</option>
+              <option value="mysql">MySQL</option>
+              <option value="sqlite">SQLite</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" v-model="connectionForm.description" rows="2" placeholder="Optional description"></textarea>
+          </div>
+
+          <div style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+            <h4 style="margin-bottom: 1rem; font-weight: 600;">Connection Configuration</h4>
+
+            <!-- Connection String (MongoDB/PostgreSQL) -->
+            <div class="form-group" v-if="connectionForm.type === 'mongodb' || connectionForm.type === 'postgresql'">
+              <label class="form-label">Connection String (Optional)</label>
+              <input type="text" class="form-input" v-model="connectionForm.config.connection_string" 
+                     :placeholder="connectionForm.type === 'mongodb' ? 'mongodb://username:password@host:port/database' : 'postgresql://username:password@host:port/database'">
+              <small style="color: #6b7280;">Leave empty to use individual fields below</small>
+            </div>
+
+            <!-- SQLite File -->
+            <div v-if="connectionForm.type === 'sqlite'" class="form-group">
+              <label class="form-label">Database File Path *</label>
+              <input type="text" class="form-input" v-model="connectionForm.config.database_file" placeholder="/path/to/database.db">
+            </div>
+
+            <!-- Individual Connection Fields (for non-SQLite) -->
+            <div v-if="connectionForm.type !== 'sqlite'" class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label">Host *</label>
+                <input type="text" class="form-input" v-model="connectionForm.config.host" placeholder="localhost">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Port</label>
+                <input type="number" class="form-input" v-model.number="connectionForm.config.port" :placeholder="getDefaultPortForType(connectionForm.type)">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Database *</label>
+                <input type="text" class="form-input" v-model="connectionForm.config.database" placeholder="database_name">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-input" v-model="connectionForm.config.username" placeholder="db_user">
+              </div>
+
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" v-model="connectionForm.config.password" placeholder="••••••••">
+                <small style="color: #6b7280;">Password is encrypted before storage</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" @click="closeConnectionModal">
+          <i class="mdi mdi-close"></i> Close
+        </button>
+        <button v-if="!viewingConnection" class="btn btn-primary" @click="saveConnection">
+          <i class="mdi mdi-content-save"></i> Add Connection
+        </button>
+        <button v-if="viewingConnection" class="btn btn-info" @click="testConnection(viewingConnection.name)">
+          <i class="mdi mdi-test-tube"></i> Test Connection
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-dialog {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+</style>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  delimiters: ['[[', ']]'],
+  data() {
+    return {
+      activeTab: 'overview',
+      loading: false,
+      dbConfig: {},
+      tableSearch: '',
+      nlQuery: '',
+      queryModule: '',
+      queryPlan: null,
+      queryRecipe: null,
+      selectedRecipe: '',
+      manualFilters: [],
+      generatedSQL: '',
+      sqlParameters: {},
+      queryResults: null,
+      // LLM SQL Generator
+      llmQuery: '',
+      llmProvider: 'openai',
+      schemaContext: '',
+      showSchemaContext: false,
+      llmGenerating: false,
+      llmStatus: null,
+      // AI Query Builder
+      aiQuery: {
+        prompt: '',
+        module: '',
+        loading: false,
+        result: null
+      },
+      alert: {
+        show: false,
+        type: 'info',
+        title: '',
+        message: ''
+      },
+      // CRUD modal states
+      showModuleModal: false,
+      showTableModal: false,
+      showRecipeModal: false,
+      editingModule: null,
+      editingTable: null,
+      editingRecipe: null,
+      moduleForm: {
+        id: '',
+        name: '',
+        description: '',
+        icon: 'mdi-cube-outline'
+      },
+      tableForm: {
+        id: '',
+        name: '',
+        description: '',
+        pk: '',
+        linkedModules: [],
+        columns: []
+      },
+      recipeForm: {
+        id: '',
+        name: '',
+        description: '',
+        base: '',
+        select: [],
+        joins: [],
+        where: [],
+        allowed_filters: [],
+        default_limit: 100
+      },
+      // Database Connections
+      connections: [],
+      loadingConnections: false,
+      testingConnection: null,
+      connectionTestResult: null,
+      showConnectionModal: false,
+      viewingConnection: null,
+      connectionForm: {
+        name: '',
+        type: 'mongodb',
+        description: '',
+        config: {
+          host: 'localhost',
+          port: null,
+          database: '',
+          username: '',
+          password: '',
+          connection_string: ''
+        }
+      }
+    };
+  },
+  computed: {
+    modulesCount() {
+      return this.dbConfig.modules ? Object.keys(this.dbConfig.modules).length : 0;
+    },
+    tablesCount() {
+      return this.dbConfig.tables ? Object.keys(this.dbConfig.tables).length : 0;
+    },
+    recipesCount() {
+      return this.dbConfig.recipes ? Object.keys(this.dbConfig.recipes).length : 0;
+    },
+    maxLimitText() {
+      return this.dbConfig.query_settings && this.dbConfig.query_settings.max_limit 
+        ? this.dbConfig.query_settings.max_limit 
+        : 'N/A';
+    },
+    defaultLimitText() {
+      return this.dbConfig.query_settings && this.dbConfig.query_settings.default_limit 
+        ? this.dbConfig.query_settings.default_limit 
+        : 'N/A';
+    },
+    timeoutText() {
+      return this.dbConfig.query_settings && this.dbConfig.query_settings.statement_timeout_seconds 
+        ? this.dbConfig.query_settings.statement_timeout_seconds 
+        : 'N/A';
+    },
+    tenantFilterText() {
+      return this.dbConfig.query_settings && this.dbConfig.query_settings.require_tenant_filter 
+        ? 'Yes' 
+        : 'No';
+    },
+    activeConnectionsCount() {
+      return this.connections.filter(c => c.status === 'active').length;
+    },
+    defaultConnectionName() {
+      const defaultConn = this.connections.find(c => c.is_default);
+      return defaultConn ? defaultConn.name : 'None';
+    },
+    filteredTables() {
+      if (!this.dbConfig.tables) return {};
+      if (!this.tableSearch) return this.dbConfig.tables;
+
+      const search = this.tableSearch.toLowerCase();
+      const filtered = {};
+      
+      for (const [tableId, table] of Object.entries(this.dbConfig.tables)) {
+        if (
+          tableId.toLowerCase().includes(search) ||
+          table.name?.toLowerCase().includes(search) ||
+          table.description?.toLowerCase().includes(search)
+        ) {
+          filtered[tableId] = table;
+        }
+      }
+      
+      return filtered;
+    },
+    isAllColumnsSelected() {
+      if (!this.recipeForm.base) return false;
+      
+      const baseColumns = this.getBaseTableColumns();
+      const baseTablePrefix = this.recipeForm.base + '.';
+      
+      // Check if all base columns are selected
+      for (const col of baseColumns) {
+        if (!this.recipeForm.select.includes(baseTablePrefix + col.name)) {
+          return false;
+        }
+      }
+      
+      // Check if all joined table columns are selected
+      for (const join of this.recipeForm.joins) {
+        const joinColumns = this.getJoinedTableColumns(join.table);
+        for (const col of joinColumns) {
+          if (!this.recipeForm.select.includes(join.alias + '.' + col.name)) {
+            return false;
+          }
+        }
+      }
+      
+      return true;
+    }
+  },
+  methods: {
+    getArrayLength(arr) {
+      return arr && arr.length ? arr.length : 0;
+    },
+    getObjectKeysLength(obj) {
+      return obj ? Object.keys(obj).length : 0;
+    },
+    getJoinTableName(joinTo) {
+      return joinTo ? joinTo.split('.')[0] : '';
+    },
+    async loadConfig() {
+      this.loading = true;
+      try {
+        const response = await fetch('/api/database-config');
+        const data = await response.json();
+        
+        if (data.success) {
+          this.dbConfig = data.config;
+          this.showAlert('success', 'Loaded', 'Configuration loaded successfully');
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to load configuration: ' + error.message);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async saveConfig() {
+      try {
+        const response = await fetch('/api/database-config/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: this.dbConfig })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          this.showAlert('success', 'Saved', 'Configuration saved successfully');
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to save configuration: ' + error.message);
+      }
+    },
+
+    async validateConfig() {
+      try {
+        const response = await fetch('/api/database-config/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: this.dbConfig })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          if (data.valid) {
+            this.showAlert('success', 'Valid', 'Configuration is valid!');
+          } else {
+            const errors = data.errors.join(', ');
+            this.showAlert('error', 'Invalid', `Validation errors: ${errors}`);
+          }
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to validate configuration: ' + error.message);
+      }
+    },
+
+    async classifyQuery() {
+      try {
+        const response = await fetch('/api/database-query/classify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: this.nlQuery,
+            module: this.queryModule || undefined
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          this.queryPlan = data.plan;
+          this.queryRecipe = data.recipe;
+          
+          // Generate SQL automatically
+          await this.generateQueryFromPlan();
+          
+          this.showAlert('success', 'Classified', `Detected: ${data.plan.module} → ${data.plan.intent}`);
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to classify query: ' + error.message);
+      }
+    },
+
+    async generateQueryFromPlan() {
+      if (!this.queryPlan) return;
+
+      try {
+        const response = await fetch('/api/database-query/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipe_name: this.queryPlan.recipe_name,
+            filters: this.queryPlan.filters,
+            tenant_id: 1,
+            user_role: 'ops_analyst',
+            limit: this.queryPlan.limit
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          this.generatedSQL = data.sql;
+          this.sqlParameters = data.parameters;
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to generate query: ' + error.message);
+      }
+    },
+
+    async generateManualQuery() {
+      if (!this.selectedRecipe) {
+        this.showAlert('warning', 'Warning', 'Please select a recipe first');
+        return;
+      }
+
+      // Filter out empty filters
+      const validFilters = this.manualFilters.filter(f => f.field && f.op && f.value);
+
+      try {
+        const response = await fetch('/api/database-query/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipe_name: this.selectedRecipe,
+            filters: validFilters,
+            tenant_id: 1,
+            user_role: 'ops_analyst'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          this.generatedSQL = data.sql;
+          this.sqlParameters = data.parameters;
+          this.showAlert('success', 'Generated', 'SQL query generated successfully');
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to generate query: ' + error.message);
+      }
+    },
+
+    async executeQuery() {
+      if (!this.generatedSQL) {
+        this.showAlert('warning', 'Warning', 'No query to execute. Generate a query first.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/database-query/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sql: this.generatedSQL,
+            parameters: this.sqlParameters
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          this.queryResults = data;
+          this.showAlert('success', 'Executed', `Query executed: ${data.row_count} rows returned`);
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to execute query: ' + error.message);
+      }
+    },
+
+    addFilter() {
+      this.manualFilters.push({ field: '', op: '', value: '' });
+    },
+
+    removeFilter(idx) {
+      this.manualFilters.splice(idx, 1);
+    },
+
+    getOperationsForField(fieldName) {
+      if (!this.selectedRecipe || !fieldName) return [];
+      
+      const recipe = this.dbConfig.recipes[this.selectedRecipe];
+      if (!recipe) return [];
+      
+      const filter = recipe.allowed_filters?.find(f => f.field === fieldName);
+      return filter?.ops || [];
+    },
+
+    copySQL() {
+      navigator.clipboard.writeText(this.generatedSQL);
+      this.showAlert('success', 'Copied', 'SQL copied to clipboard');
+    },
+
+    // ========== LLM SQL GENERATION METHODS ==========
+    async generateSQLWithLLM() {
+      if (!this.llmQuery) {
+        this.showAlert('warning', 'Warning', 'Please enter a query');
+        return;
+      }
+
+      this.llmGenerating = true;
+      this.llmStatus = {
+        type: 'info',
+        message: `Generating SQL with ${this.llmProvider === 'openai' ? 'OpenAI GPT-4' : 'Anthropic Claude'}...`
+      };
+
+      try {
+        const response = await fetch('/api/database-query/generate-with-llm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: this.llmQuery,
+            provider: this.llmProvider,
+            schema_context: this.schemaContext || undefined
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Set the generated SQL in the main display area
+          this.generatedSQL = data.sql;
+          this.sqlParameters = {};  // LLM-generated queries might use parameterized format
+          
+          this.llmStatus = {
+            type: 'success',
+            message: `SQL generated successfully using ${data.provider.toUpperCase()}! Check the "Generated SQL" section below.`
+          };
+
+          // Scroll to generated SQL section
+          setTimeout(() => {
+            const sqlSection = document.querySelector('.code-block');
+            if (sqlSection) {
+              sqlSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+
+          this.showAlert('success', 'Success', data.explanation);
+        } else {
+          this.llmStatus = {
+            type: 'error',
+            message: data.error
+          };
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.llmStatus = {
+          type: 'error',
+          message: 'Network error: ' + error.message
+        };
+        this.showAlert('error', 'Error', 'Failed to generate SQL: ' + error.message);
+      } finally {
+        this.llmGenerating = false;
+      }
+    },
+
+    clearLLMForm() {
+      this.llmQuery = '';
+      this.schemaContext = '';
+      this.showSchemaContext = false;
+      this.llmStatus = null;
+    },
+
+    testRecipe(recipeId) {
+      this.selectedRecipe = recipeId;
+      this.manualFilters = [];
+      this.activeTab = 'query';
+    },
+
+    viewModuleDetails(moduleId) {
+      alert(`Module: ${moduleId}\nDetails would be shown in a modal or detail view.`);
+    },
+
+    formatDate(dateStr) {
+      if (!dateStr) return 'N/A';
+      return new Date(dateStr).toLocaleString();
+    },
+
+    showAlert(type, title, message) {
+      this.alert = { show: true, type, title, message };
+      setTimeout(() => {
+        this.alert.show = false;
+      }, 5000);
+    },
+
+    // ========== MODULE CRUD METHODS ==========
+    createModule() {
+      this.editingModule = null;
+      this.moduleForm = {
+        id: '',
+        name: '',
+        description: '',
+        icon: 'mdi-cube-outline'
+      };
+      this.showModuleModal = true;
+    },
+
+    editModule(moduleId) {
+      this.editingModule = moduleId;
+      const module = this.dbConfig.modules[moduleId];
+      this.moduleForm = {
+        id: moduleId,
+        name: module.name || '',
+        description: module.description || '',
+        icon: module.icon || 'mdi-cube-outline'
+      };
+      this.showModuleModal = true;
+    },
+
+    async saveModule() {
+      try {
+        if (!this.moduleForm.id || !this.moduleForm.name) {
+          this.showAlert('error', 'Validation Error', 'Module ID and Name are required');
+          return;
+        }
+
+        const url = this.editingModule 
+          ? `/api/database-config/modules/${this.editingModule}`
+          : '/api/database-config/modules';
+        
+        const method = this.editingModule ? 'PUT' : 'POST';
+
+        const moduleData = {
+          name: this.moduleForm.name,
+          description: this.moduleForm.description,
+          icon: this.moduleForm.icon,
+          entry_tables: [],
+          intents: {}
+        };
+
+        const response = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: this.moduleForm.id,
+            data: moduleData
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          this.showAlert('success', 'Success', result.message);
+          this.closeModuleModal();
+          await this.loadConfig();
+        } else {
+          this.showAlert('error', 'Error', result.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', error.message);
+      }
+    },
+
+    async deleteModule(moduleId) {
+      if (!confirm(`Are you sure you want to delete module "${moduleId}"?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/database-config/modules/${moduleId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          this.showAlert('success', 'Success', result.message);
+          await this.loadConfig();
+        } else {
+          this.showAlert('error', 'Error', result.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', error.message);
+      }
+    },
+
+    closeModuleModal() {
+      this.showModuleModal = false;
+      this.editingModule = null;
+    },
+
+    // ========== TABLE CRUD METHODS ==========
+    createTable() {
+      this.editingTable = null;
+      this.tableForm = {
+        id: '',
+        name: '',
+        description: '',
+        pk: '',
+        linkedModules: [],
+        columns: []
+      };
+      this.showTableModal = true;
+    },
+
+    editTable(tableId) {
+      this.editingTable = tableId;
+      const table = this.dbConfig.tables[tableId];
+      
+      // Find which modules link to this table
+      const linkedModules = [];
+      for (const [moduleId, module] of Object.entries(this.dbConfig.modules || {})) {
+        if (module.entry_tables && module.entry_tables.includes(tableId)) {
+          linkedModules.push(moduleId);
+        }
+      }
+      
+      this.tableForm = {
+        id: tableId,
+        name: table.name || '',
+        description: table.description || '',
+        pk: table.pk || '',
+        linkedModules: linkedModules,
+        columns: table.columns ? JSON.parse(JSON.stringify(table.columns)) : []
+      };
+      this.showTableModal = true;
+    },
+
+    addColumn() {
+      this.tableForm.columns.push({
+        name: '',
+        type: '',
+        description: ''
+      });
+    },
+
+    removeColumn(index) {
+      this.tableForm.columns.splice(index, 1);
+    },
+
+    async saveTable() {
+      try {
+        // Validation
+        if (!this.tableForm.id || !this.tableForm.name || !this.tableForm.pk) {
+          this.showAlert('error', 'Validation Error', 'Table ID, Name, and Primary Key are required');
+          return;
+        }
+
+        // Validate columns
+        for (let i = 0; i < this.tableForm.columns.length; i++) {
+          const col = this.tableForm.columns[i];
+          if (!col.name || !col.type) {
+            this.showAlert('error', 'Validation Error', `Column ${i + 1}: Name and Type are required`);
+            return;
+          }
+        }
+
+        const url = this.editingTable 
+          ? `/api/database-config/tables/${this.editingTable}`
+          : '/api/database-config/tables';
+        
+        const method = this.editingTable ? 'PUT' : 'POST';
+
+        const tableData = {
+          name: this.tableForm.name,
+          description: this.tableForm.description,
+          pk: this.tableForm.pk,
+          columns: this.tableForm.columns,
+          fk: [],
+          rbac: {
+            read_roles: ['ops_analyst', 'ops_manager', 'trade_ops'],
+            write_roles: ['trade_ops', 'ops_manager'],
+            masked_columns: []
+          }
+        };
+
+        // Save table first
+        const response = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: this.tableForm.id,
+            data: tableData
+          })
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          this.showAlert('error', 'Error', result.error);
+          return;
+        }
+
+        // Update module links
+        await this.updateModuleTableLinks(this.tableForm.id, this.tableForm.linkedModules);
+
+        this.showAlert('success', 'Success', 'Table saved successfully with module links');
+        this.closeTableModal();
+        await this.loadConfig();
+        
+      } catch (error) {
+        this.showAlert('error', 'Error', error.message);
+      }
+    },
+
+    async updateModuleTableLinks(tableId, linkedModuleIds) {
+      // Update each module's entry_tables to include or exclude this table
+      for (const [moduleId, module] of Object.entries(this.dbConfig.modules || {})) {
+        const shouldInclude = linkedModuleIds.includes(moduleId);
+        const currentlyIncludes = module.entry_tables && module.entry_tables.includes(tableId);
+
+        if (shouldInclude && !currentlyIncludes) {
+          // Add table to module
+          if (!module.entry_tables) {
+            module.entry_tables = [];
+          }
+          module.entry_tables.push(tableId);
+          await this.updateModuleEntryTables(moduleId, module.entry_tables);
+        } else if (!shouldInclude && currentlyIncludes) {
+          // Remove table from module
+          module.entry_tables = module.entry_tables.filter(t => t !== tableId);
+          await this.updateModuleEntryTables(moduleId, module.entry_tables);
+        }
+      }
+    },
+
+    async updateModuleEntryTables(moduleId, entryTables) {
+      try {
+        const module = this.dbConfig.modules[moduleId];
+        const moduleData = {
+          ...module,
+          entry_tables: entryTables
+        };
+
+        await fetch(`/api/database-config/modules/${moduleId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: moduleData })
+        });
+      } catch (error) {
+        console.error(`Error updating module ${moduleId}:`, error);
+      }
+    },
+
+    async deleteTable(tableId) {
+      if (!confirm(`Are you sure you want to delete table "${tableId}"?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/database-config/tables/${tableId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          this.showAlert('success', 'Success', result.message);
+          await this.loadConfig();
+        } else {
+          this.showAlert('error', 'Error', result.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', error.message);
+      }
+    },
+
+    closeTableModal() {
+      this.showTableModal = false;
+      this.editingTable = null;
+    },
+
+    // ========== RECIPE CRUD METHODS ==========
+    createRecipe() {
+      this.editingRecipe = null;
+      this.recipeForm = {
+        id: '',
+        name: '',
+        description: '',
+        base: '',
+        select: [],
+        joins: [],
+        where: [],
+        allowed_filters: [],
+        default_limit: 100
+      };
+      this.showRecipeModal = true;
+    },
+
+    editRecipe(recipeId) {
+      this.editingRecipe = recipeId;
+      const recipe = this.dbConfig.recipes[recipeId];
+      this.recipeForm = {
+        id: recipeId,
+        name: recipe.name || '',
+        description: recipe.description || '',
+        base: recipe.base || '',
+        select: recipe.select ? [...recipe.select] : [],
+        joins: recipe.joins ? JSON.parse(JSON.stringify(recipe.joins)) : [],
+        where: recipe.where ? [...recipe.where] : [],
+        allowed_filters: recipe.allowed_filters ? JSON.parse(JSON.stringify(recipe.allowed_filters)) : [],
+        default_limit: recipe.default_limit || 100
+      };
+      // Initialize ops array for filters if needed
+      this.recipeForm.allowed_filters.forEach(filter => {
+        if (!filter.ops) {
+          filter.ops = [];
+        }
+      });
+      this.showRecipeModal = true;
+    },
+
+    async saveRecipe() {
+      try {
+        if (!this.recipeForm.id || !this.recipeForm.name || !this.recipeForm.base) {
+          this.showAlert('error', 'Validation Error', 'Recipe ID, Name, and Base Table are required');
+          return;
+        }
+
+        if (this.recipeForm.select.length === 0) {
+          this.showAlert('error', 'Validation Error', 'At least one SELECT column is required');
+          return;
+        }
+
+        // Validate joins
+        for (const join of this.recipeForm.joins) {
+          if (!join.table || !join.alias) {
+            this.showAlert('error', 'Validation Error', 'All joins must have a table and alias');
+            return;
+          }
+        }
+
+        // Validate allowed filters
+        for (const filter of this.recipeForm.allowed_filters) {
+          if (!filter.field || !filter.type || !filter.ops || filter.ops.length === 0) {
+            this.showAlert('error', 'Validation Error', 'All allowed filters must have field, type, and at least one operation');
+            return;
+          }
+        }
+
+        const url = this.editingRecipe 
+          ? `/api/database-config/recipes/${this.editingRecipe}`
+          : '/api/database-config/recipes';
+        
+        const method = this.editingRecipe ? 'PUT' : 'POST';
+
+        const recipeData = {
+          name: this.recipeForm.name,
+          description: this.recipeForm.description,
+          base: this.recipeForm.base,
+          select: this.recipeForm.select,
+          joins: this.recipeForm.joins,
+          where: this.recipeForm.where,
+          allowed_filters: this.recipeForm.allowed_filters,
+          default_limit: this.recipeForm.default_limit
+        };
+
+        const response = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: this.recipeForm.id,
+            data: recipeData
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          this.showAlert('success', 'Success', result.message);
+          this.closeRecipeModal();
+          await this.loadConfig();
+        } else {
+          this.showAlert('error', 'Error', result.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', error.message);
+      }
+    },
+
+    async deleteRecipe(recipeId) {
+      if (!confirm(`Are you sure you want to delete recipe "${recipeId}"?`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/database-config/recipes/${recipeId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          this.showAlert('success', 'Success', result.message);
+          await this.loadConfig();
+        } else {
+          this.showAlert('error', 'Error', result.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', error.message);
+      }
+    },
+
+    closeRecipeModal() {
+      this.showRecipeModal = false;
+      this.editingRecipe = null;
+    },
+
+    // ========== RECIPE HELPER METHODS ==========
+    onBaseTableChange() {
+      // Clear select columns and joins when base table changes
+      this.recipeForm.select = [];
+      this.recipeForm.joins = [];
+    },
+
+    getBaseTableColumns() {
+      if (!this.recipeForm.base || !this.dbConfig.tables[this.recipeForm.base]) {
+        return [];
+      }
+      return this.dbConfig.tables[this.recipeForm.base].columns || [];
+    },
+
+    getJoinedTableColumns(tableId) {
+      if (!tableId || !this.dbConfig.tables[tableId]) {
+        return [];
+      }
+      return this.dbConfig.tables[tableId].columns || [];
+    },
+
+    getTableName(tableId) {
+      if (!tableId || !this.dbConfig.tables[tableId]) {
+        return tableId;
+      }
+      return this.dbConfig.tables[tableId].name || tableId;
+    },
+
+    toggleSelectAll(event) {
+      if (event.target.checked) {
+        // Select all base table columns
+        const baseColumns = this.getBaseTableColumns();
+        const baseTablePrefix = this.recipeForm.base + '.';
+        const allColumns = baseColumns.map(col => baseTablePrefix + col.name);
+        
+        // Add joined table columns
+        this.recipeForm.joins.forEach(join => {
+          const joinColumns = this.getJoinedTableColumns(join.table);
+          joinColumns.forEach(col => {
+            allColumns.push(join.alias + '.' + col.name);
+          });
+        });
+        
+        this.recipeForm.select = allColumns;
+      } else {
+        this.recipeForm.select = [];
+      }
+    },
+
+    addJoin() {
+      this.recipeForm.joins.push({
+        type: 'INNER',
+        table: '',
+        alias: '',
+        from: '',
+        to: ''
+      });
+    },
+
+    removeJoin(index) {
+      // Remove columns from select that belong to this join
+      const join = this.recipeForm.joins[index];
+      if (join.alias) {
+        this.recipeForm.select = this.recipeForm.select.filter(
+          col => !col.startsWith(join.alias + '.')
+        );
+      }
+      this.recipeForm.joins.splice(index, 1);
+    },
+
+    addWhere() {
+      this.recipeForm.where.push('');
+    },
+
+    removeWhere(index) {
+      this.recipeForm.where.splice(index, 1);
+    },
+
+    addAllowedFilter() {
+      this.recipeForm.allowed_filters.push({
+        field: '',
+        type: '',
+        ops: [],
+        required: false
+      });
+    },
+
+    removeAllowedFilter(index) {
+      this.recipeForm.allowed_filters.splice(index, 1);
+    },
+
+    // AI Query Builder Methods
+    async generateQueryWithAI() {
+      if (!this.aiQuery.prompt || !this.aiQuery.module) {
+        this.showAlert('error', 'Missing Input', 'Please provide both a query description and select a module');
+        return;
+      }
+
+      this.aiQuery.loading = true;
+      
+      try {
+        // Get schema context for the selected module
+        const module = this.dbConfig.modules[this.aiQuery.module];
+        const moduleTables = Object.entries(this.dbConfig.tables || {})
+          .filter(([tableId, table]) => table.linkedModules && table.linkedModules.includes(this.aiQuery.module))
+          .map(([tableId, table]) => ({
+            id: tableId,
+            name: table.name,
+            columns: table.columns || []
+          }));
+
+        // Call AI endpoint to generate query recipe
+        const response = await fetch('/api/database-config/generate-query-ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: this.aiQuery.prompt,
+            module: this.aiQuery.module,
+            moduleName: module.name,
+            tables: moduleTables
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Parse the AI response and populate the result
+          this.aiQuery.result = {
+            name: data.recipe.name || 'AI Generated Query',
+            description: data.recipe.description || this.aiQuery.prompt,
+            base: data.recipe.base || '',
+            selectJSON: JSON.stringify(data.recipe.select || [], null, 2),
+            joinsJSON: JSON.stringify(data.recipe.joins || [], null, 2),
+            whereJSON: JSON.stringify(data.recipe.where || [], null, 2),
+            filtersJSON: JSON.stringify(data.recipe.allowed_filters || [], null, 2),
+            module: this.aiQuery.module,
+            default_limit: data.recipe.default_limit || 100,
+            explanation: data.explanation || ''
+          };
+
+          this.showAlert('success', 'Generated!', 'AI has generated a query recipe based on your description');
+        } else {
+          this.showAlert('error', 'Generation Failed', data.error || 'Failed to generate query with AI');
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to generate query: ' + error.message);
+      } finally {
+        this.aiQuery.loading = false;
+      }
+    },
+
+    clearAIQuery() {
+      this.aiQuery = {
+        prompt: '',
+        module: '',
+        loading: false,
+        result: null
+      };
+    },
+
+    async saveAIQueryAsRecipe() {
+      if (!this.aiQuery.result) {
+        this.showAlert('error', 'No Query', 'No AI-generated query to save');
+        return;
+      }
+
+      try {
+        // Parse JSON strings
+        const select = JSON.parse(this.aiQuery.result.selectJSON || '[]');
+        const joins = JSON.parse(this.aiQuery.result.joinsJSON || '[]');
+        const where = JSON.parse(this.aiQuery.result.whereJSON || '[]');
+        const allowed_filters = JSON.parse(this.aiQuery.result.filtersJSON || '[]');
+
+        // Generate recipe ID from name
+        const recipeId = this.aiQuery.result.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+        // Open recipe modal with pre-filled data
+        this.recipeForm = {
+          id: recipeId,
+          name: this.aiQuery.result.name,
+          description: this.aiQuery.result.description,
+          module: this.aiQuery.result.module,
+          base: this.aiQuery.result.base,
+          select: select,
+          joins: joins,
+          where: where,
+          allowed_filters: allowed_filters,
+          default_limit: this.aiQuery.result.default_limit || 100
+        };
+
+        // Reset editing state and show modal
+        this.editingRecipe = null;
+        this.showRecipeModal = true;
+
+        this.showAlert('success', 'Recipe Ready!', 'Review and edit the recipe, then click Save to add it to your recipes');
+        
+      } catch (error) {
+        this.showAlert('error', 'Parse Error', 'Failed to parse recipe fields: ' + error.message);
+      }
+    },
+
+    // ====== Database Connection Methods ======
+    async loadConnections() {
+      this.loadingConnections = true;
+      try {
+        const response = await fetch('/api/database/connections');
+        const data = await response.json();
+        
+        if (data.success) {
+          this.connections = data.connections;
+        } else {
+          this.showAlert('error', 'Error', 'Failed to load connections: ' + data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to load connections: ' + error.message);
+      } finally {
+        this.loadingConnections = false;
+      }
+    },
+
+    async testConnection(connectionName) {
+      this.testingConnection = connectionName;
+      this.connectionTestResult = null;
+      
+      try {
+        const response = await fetch(`/api/database/connections/${connectionName}/test`, {
+          method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          this.connectionTestResult = {
+            connection_name: connectionName,
+            success: data.test_result.success,
+            message: data.test_result.message,
+            timestamp: data.test_result.timestamp,
+            details: data.test_result.details || null
+          };
+          
+          if (data.test_result.success) {
+            this.showAlert('success', 'Connection Test', `✅ ${connectionName} connected successfully!`);
+          } else {
+            this.showAlert('error', 'Connection Test', `❌ ${connectionName} connection failed: ${data.test_result.message}`);
+          }
+          
+          // Reload connections to update status
+          await this.loadConnections();
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to test connection: ' + error.message);
+      } finally {
+        this.testingConnection = null;
+      }
+    },
+
+    async setDefaultConnection(connectionName) {
+      try {
+        const response = await fetch(`/api/database/connections/${connectionName}/default`, {
+          method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          this.showAlert('success', 'Default Set', `${connectionName} is now the default connection`);
+          await this.loadConnections();
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to set default: ' + error.message);
+      }
+    },
+
+    async deleteConnection(connectionName) {
+      if (!confirm(`Are you sure you want to delete the connection "${connectionName}"?`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/database/connections/${connectionName}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          this.showAlert('success', 'Deleted', `Connection "${connectionName}" deleted successfully`);
+          await this.loadConnections();
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to delete connection: ' + error.message);
+      }
+    },
+
+    viewConnection(connection) {
+      this.viewingConnection = connection;
+      this.showConnectionModal = true;
+    },
+
+    showAddConnectionModal() {
+      this.viewingConnection = null;
+      this.connectionForm = {
+        name: '',
+        type: 'mongodb',
+        description: '',
+        config: {
+          host: 'localhost',
+          port: null,
+          database: '',
+          username: '',
+          password: '',
+          connection_string: ''
+        }
+      };
+      this.showConnectionModal = true;
+    },
+
+    closeConnectionModal() {
+      this.showConnectionModal = false;
+      this.viewingConnection = null;
+    },
+
+    async saveConnection() {
+      try {
+        const response = await fetch('/api/database/connections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.connectionForm)
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          this.showAlert('success', 'Added', `Connection "${this.connectionForm.name}" added successfully`);
+          this.closeConnectionModal();
+          await this.loadConnections();
+        } else {
+          this.showAlert('error', 'Error', data.error);
+        }
+      } catch (error) {
+        this.showAlert('error', 'Error', 'Failed to add connection: ' + error.message);
+      }
+    },
+
+    getDatabaseIcon(type) {
+      const icons = {
+        'mongodb': 'mdi-leaf',
+        'postgresql': 'mdi-elephant',
+        'oracle': 'mdi-database',
+        'mssql': 'mdi-microsoft',
+        'mysql': 'mdi-dolphin',
+        'sqlite': 'mdi-database-outline'
+      };
+      return icons[type] || 'mdi-database';
+    },
+
+    getDefaultPortForType(type) {
+      const ports = {
+        'mongodb': 27017,
+        'postgresql': 5432,
+        'oracle': 1521,
+        'mssql': 1433,
+        'mysql': 3306,
+        'sqlite': null
+      };
+      return ports[type] || null;
+    }
+  },
+  mounted() {
+    this.loadConfig();
+    this.loadConnections();
+  }
+}).mount('#app');
+</script>
+
+</body>
+</html>
+

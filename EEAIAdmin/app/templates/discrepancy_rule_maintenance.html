@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Discrepancy Rule Maintenance - Finstack</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .rules-container {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .filters {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .filter-select {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+      min-width: 150px;
+    }
+
+    .rules-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .rules-table th {
+      background: #f9fafb;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+      font-size: 13px;
+    }
+
+    .rules-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #1f2937;
+      font-size: 13px;
+    }
+
+    .rules-table tr:hover {
+      background: #f9fafb;
+    }
+
+    .document-row {
+      cursor: pointer;
+      background: #f9fafb;
+      font-weight: 600;
+    }
+
+    .document-row:hover {
+      background: #f3f4f6;
+    }
+
+    .document-row td {
+      border-bottom: 2px solid #d1d5db;
+    }
+
+    .expand-icon {
+      transition: transform 0.2s;
+      display: inline-block;
+      margin-right: 8px;
+      color: #6b7280;
+    }
+
+    .expand-icon.expanded {
+      transform: rotate(90deg);
+      color: #1f2937;
+    }
+
+    .rule-rows {
+      display: none;
+    }
+
+    .rule-rows.show {
+      display: table-row;
+    }
+
+    .rule-row td {
+      padding-left: 40px;
+      background: #ffffff;
+    }
+
+    .rule-count {
+      display: inline-block;
+      background: #e5e7eb;
+      color: #374151;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-mandatory {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .badge-optional {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+
+    .badge-conditional {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: #4b5563;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #374151;
+    }
+
+    .btn-success {
+      background: #059669;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #047857;
+    }
+
+    .btn-warning {
+      background: #d97706;
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background: #b45309;
+    }
+
+    .btn-icon {
+      padding: 6px;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      width: 600px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .close-btn:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 4px;
+    }
+
+    .import-area {
+      background: #f9fafb;
+      border: 2px dashed #d1d5db;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .import-area.dragover {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    .import-text {
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .rule-description {
+      max-width: 300px;
+      word-wrap: break-word;
+    }
+
+    .rule-code {
+      font-family: 'Monaco', 'Menlo', monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #1f2937;
+    }
+
+    .basis-cell {
+      max-width: 150px;
+      word-wrap: break-word;
+    }
+
+    @media (max-width: 768px) {
+      .filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .form-row {
+        flex-direction: column;
+      }
+      
+      .modal-content {
+        width: 95vw;
+        margin: 20px;
+      }
+      
+      .header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+      }
+      
+      .controls {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Discrepancy Rule Maintenance</h1>
+        <p>Manage discrepancy detection rules for different document types</p>
+      </div>
+      <div class="controls">
+        <button class="btn btn-warning" onclick="showImportModal()">
+          <i class="mdi mdi-import"></i>
+          Import Rules
+        </button>
+        <button class="btn btn-success" onclick="showAddModal()">
+          <i class="mdi mdi-plus"></i>
+          Add New Rule
+        </button>
+        <button class="btn btn-secondary" onclick="exportRules()">
+          <i class="mdi mdi-export"></i>
+          Export XML
+        </button>
+      </div>
+    </div>
+
+    <div class="rules-container">
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalRules">0</div>
+          <div class="stat-label">Total Rules</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="mandatoryRules">0</div>
+          <div class="stat-label">Mandatory Rules</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="optionalRules">0</div>
+          <div class="stat-label">Optional Rules</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="documentTypes">0</div>
+          <div class="stat-label">Document Types</div>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>Document Type</label>
+          <select class="filter-select" id="documentFilter" onchange="filterRules()">
+            <option value="">All Document Types</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Priority</label>
+          <select class="filter-select" id="priorityFilter" onchange="filterRules()">
+            <option value="">All Priorities</option>
+            <option value="Mandatory">Mandatory</option>
+            <option value="Optional">Optional</option>
+            <option value="Conditional">Conditional</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Basis</label>
+          <select class="filter-select" id="basisFilter" onchange="filterRules()">
+            <option value="">All Basis Types</option>
+            <option value="UCP 600">UCP 600</option>
+            <option value="ISBP">ISBP</option>
+            <option value="Bank Practice">Bank Practice</option>
+            <option value="Customs">Customs</option>
+            <option value="Shipping Terms">Shipping Terms</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Search</label>
+          <input type="text" class="filter-select" id="searchFilter" placeholder="Search rules..." onkeyup="filterRules()">
+        </div>
+      </div>
+
+      <table class="rules-table" id="rulesTable">
+        <thead>
+          <tr>
+            <th style="width: 40px;"></th>
+            <th style="width: 120px;">Rule Code</th>
+            <th>Document Type</th>
+            <th>Rule Description</th>
+            <th style="width: 120px;">Basis</th>
+            <th style="width: 100px;">Priority</th>
+            <th style="width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rulesTableBody">
+          <!-- Rules will be populated here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Rule Modal -->
+  <div class="modal" id="ruleModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Add New Rule</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <form id="ruleForm" onsubmit="saveRule(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Rule Code *</label>
+            <input type="text" class="form-input" id="ruleCode" placeholder="R-0001" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Document Type *</label>
+            <select class="form-select" id="documentType" required>
+              <option value="">Select Document Type</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rule Description *</label>
+          <textarea class="form-textarea" id="ruleDescription" placeholder="Enter detailed rule description..." required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Basis *</label>
+            <select class="form-select" id="ruleBasis" required>
+              <option value="">Select Basis</option>
+              <option value="UCP 600 Art. 18">UCP 600 Art. 18</option>
+              <option value="UCP 600 Art. 20">UCP 600 Art. 20</option>
+              <option value="ISBP 821">ISBP 821</option>
+              <option value="ISBP 821 A1">ISBP 821 A1</option>
+              <option value="Bank Practice">Bank Practice</option>
+              <option value="Customs / LC">Customs / LC</option>
+              <option value="Shipping Terms">Shipping Terms</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority *</label>
+            <select class="form-select" id="rulePriority" required>
+              <option value="">Select Priority</option>
+              <option value="Mandatory">Mandatory</option>
+              <option value="Optional">Optional</option>
+              <option value="Conditional">Conditional</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="mdi mdi-content-save"></i>
+            Save Rule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Import Rules Modal -->
+  <div class="modal" id="importModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Import Discrepancy Rules</h3>
+        <button class="close-btn" onclick="closeImportModal()">&times;</button>
+      </div>
+      <div class="import-area" id="importArea" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">
+          <i class="mdi mdi-cloud-upload"></i>
+        </div>
+        <div class="import-text">
+          <strong>Click to upload</strong> or drag and drop your rules file
+        </div>
+        <div style="font-size: 12px; color: #9ca3af;">
+          Supports: .txt, .xml, .json files
+        </div>
+        <input type="file" id="fileInput" class="file-input" accept=".txt,.xml,.json" onchange="handleFileSelect(event)">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="processImport()" id="importBtn" disabled>
+          <i class="mdi mdi-import"></i>
+          Import Rules
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRules = [];
+    let documentCategories = [];
+    let editingRuleId = null;
+    let importData = null;
+
+    // Initialize the application
+    async function init() {
+      await loadDocumentCategories();
+      await loadRules();
+      updateStats();
+      setupEventListeners();
+    }
+
+    // Load document categories
+    async function loadDocumentCategories() {
+      try {
+        const response = await fetch('/api/document-categories');
+        const data = await response.json();
+        documentCategories = data.categories || [];
+        
+        // Populate document type dropdowns
+        const documentSelect = document.getElementById('documentType');
+        const documentFilter = document.getElementById('documentFilter');
+        
+        documentSelect.innerHTML = '<option value="">Select Document Type</option>';
+        documentFilter.innerHTML = '<option value="">All Document Types</option>';
+        
+        documentCategories.forEach(category => {
+          const option1 = new Option(category.name, category.name);
+          const option2 = new Option(category.name, category.name);
+          documentSelect.appendChild(option1);
+          documentFilter.appendChild(option2);
+        });
+      } catch (error) {
+        console.error('Error loading document categories:', error);
+      }
+    }
+
+    // Load discrepancy rules
+    async function loadRules() {
+      try {
+        const response = await fetch('/api/discrepancy-rules');
+        const data = await response.json();
+        currentRules = data.rules || [];
+        renderRules();
+        updateStats();
+      } catch (error) {
+        console.error('Error loading rules:', error);
+        currentRules = [];
+        renderRules();
+      }
+    }
+
+    // Render rules in the table
+    function renderRules() {
+      const tbody = document.getElementById('rulesTableBody');
+      if (!currentRules.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">No rules found. Add your first rule to get started.</td></tr>';
+        return;
+      }
+
+      // Group rules by document type
+      const groupedRules = currentRules.reduce((groups, rule) => {
+        const docType = rule.documentType || 'Unknown';
+        if (!groups[docType]) {
+          groups[docType] = [];
+        }
+        groups[docType].push(rule);
+        return groups;
+      }, {});
+
+      let html = '';
+      Object.entries(groupedRules).forEach(([docType, rules]) => {
+        const docTypeId = docType.replace(/\s+/g, '_');
+        
+        // Document type header row
+        html += `
+          <tr class="document-row" onclick="toggleDocumentRules('${docTypeId}')">
+            <td>
+              <i class="mdi mdi-chevron-right expand-icon" id="icon-${docTypeId}"></i>
+            </td>
+            <td colspan="2">
+              <strong>${docType}</strong>
+              <span class="rule-count">${rules.length}</span>
+            </td>
+            <td colspan="4"></td>
+          </tr>
+        `;
+
+        // Rule rows
+        rules.forEach(rule => {
+          html += `
+            <tr class="rule-rows" id="rules-${docTypeId}">
+              <td></td>
+              <td><span class="rule-code">${rule.code}</span></td>
+              <td>${rule.documentType}</td>
+              <td class="rule-description">${rule.description}</td>
+              <td class="basis-cell">${rule.basis}</td>
+              <td><span class="badge badge-${rule.priority.toLowerCase()}">${rule.priority}</span></td>
+              <td class="actions-cell">
+                <button class="btn btn-secondary btn-icon" onclick="editRule('${rule.id}')" title="Edit">
+                  <i class="mdi mdi-pencil"></i>
+                </button>
+                <button class="btn btn-secondary btn-icon" onclick="deleteRule('${rule.id}')" title="Delete">
+                  <i class="mdi mdi-delete"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    // Toggle document rules visibility
+    function toggleDocumentRules(docTypeId) {
+      const icon = document.getElementById(`icon-${docTypeId}`);
+      const rules = document.querySelectorAll(`#rules-${docTypeId}`);
+      
+      const isExpanded = icon.classList.contains('expanded');
+      
+      if (isExpanded) {
+        icon.classList.remove('expanded');
+        rules.forEach(rule => rule.classList.remove('show'));
+      } else {
+        icon.classList.add('expanded');
+        rules.forEach(rule => rule.classList.add('show'));
+      }
+    }
+
+    // Filter rules based on selected criteria
+    function filterRules() {
+      const documentFilter = document.getElementById('documentFilter').value;
+      const priorityFilter = document.getElementById('priorityFilter').value;
+      const basisFilter = document.getElementById('basisFilter').value;
+      const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+      let filteredRules = currentRules.filter(rule => {
+        const matchesDocument = !documentFilter || rule.documentType === documentFilter;
+        const matchesPriority = !priorityFilter || rule.priority === priorityFilter;
+        const matchesBasis = !basisFilter || rule.basis.includes(basisFilter);
+        const matchesSearch = !searchFilter || 
+          rule.code.toLowerCase().includes(searchFilter) ||
+          rule.description.toLowerCase().includes(searchFilter) ||
+          rule.documentType.toLowerCase().includes(searchFilter);
+
+        return matchesDocument && matchesPriority && matchesBasis && matchesSearch;
+      });
+
+      // Temporarily replace currentRules for rendering
+      const originalRules = currentRules;
+      currentRules = filteredRules;
+      renderRules();
+      currentRules = originalRules;
+    }
+
+    // Update statistics
+    function updateStats() {
+      const totalRules = currentRules.length;
+      const mandatoryRules = currentRules.filter(rule => rule.priority === 'Mandatory').length;
+      const optionalRules = currentRules.filter(rule => rule.priority === 'Optional').length;
+      const documentTypes = new Set(currentRules.map(rule => rule.documentType)).size;
+
+      document.getElementById('totalRules').textContent = totalRules;
+      document.getElementById('mandatoryRules').textContent = mandatoryRules;
+      document.getElementById('optionalRules').textContent = optionalRules;
+      document.getElementById('documentTypes').textContent = documentTypes;
+    }
+
+    // Show add rule modal
+    function showAddModal() {
+      editingRuleId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Rule';
+      document.getElementById('ruleForm').reset();
+      
+      // Generate next rule code
+      const maxCode = currentRules.reduce((max, rule) => {
+        const match = rule.code.match(/R-(\d+)/);
+        if (match) {
+          const num = parseInt(match[1]);
+          return num > max ? num : max;
+        }
+        return max;
+      }, 0);
+      
+      document.getElementById('ruleCode').value = `R-${String(maxCode + 1).padStart(4, '0')}`;
+      document.getElementById('ruleModal').classList.add('show');
+    }
+
+    // Edit existing rule
+    function editRule(ruleId) {
+      const rule = currentRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      editingRuleId = ruleId;
+      document.getElementById('modalTitle').textContent = 'Edit Rule';
+      
+      document.getElementById('ruleCode').value = rule.code;
+      document.getElementById('documentType').value = rule.documentType;
+      document.getElementById('ruleDescription').value = rule.description;
+      document.getElementById('ruleBasis').value = rule.basis;
+      document.getElementById('rulePriority').value = rule.priority;
+      
+      document.getElementById('ruleModal').classList.add('show');
+    }
+
+    // Save rule (add or edit)
+    async function saveRule(event) {
+      event.preventDefault();
+      
+      const ruleData = {
+        code: document.getElementById('ruleCode').value,
+        documentType: document.getElementById('documentType').value,
+        description: document.getElementById('ruleDescription').value,
+        basis: document.getElementById('ruleBasis').value,
+        priority: document.getElementById('rulePriority').value
+      };
+
+      try {
+        const url = editingRuleId ? `/api/discrepancy-rules/${editingRuleId}` : '/api/discrepancy-rules';
+        const method = editingRuleId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(ruleData)
+        });
+
+        if (response.ok) {
+          closeModal();
+          await loadRules();
+          showNotification(editingRuleId ? 'Rule updated successfully!' : 'Rule added successfully!', 'success');
+        } else {
+          throw new Error('Failed to save rule');
+        }
+      } catch (error) {
+        console.error('Error saving rule:', error);
+        showNotification('Error saving rule. Please try again.', 'error');
+      }
+    }
+
+    // Delete rule
+    async function deleteRule(ruleId) {
+      if (!confirm('Are you sure you want to delete this rule?')) return;
+
+      try {
+        const response = await fetch(`/api/discrepancy-rules/${ruleId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          await loadRules();
+          showNotification('Rule deleted successfully!', 'success');
+        } else {
+          throw new Error('Failed to delete rule');
+        }
+      } catch (error) {
+        console.error('Error deleting rule:', error);
+        showNotification('Error deleting rule. Please try again.', 'error');
+      }
+    }
+
+    // Show import modal
+    function showImportModal() {
+      document.getElementById('importModal').classList.add('show');
+    }
+
+    // Close modals
+    function closeModal() {
+      document.getElementById('ruleModal').classList.remove('show');
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('show');
+      document.getElementById('importBtn').disabled = true;
+      importData = null;
+    }
+
+    // Handle file selection for import
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        importData = {
+          filename: file.name,
+          content: e.target.result,
+          type: file.name.split('.').pop().toLowerCase()
+        };
+        document.getElementById('importBtn').disabled = false;
+      };
+      reader.readAsText(file);
+    }
+
+    // Process import
+    async function processImport() {
+      if (!importData) return;
+
+      try {
+        const response = await fetch('/api/discrepancy-rules/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(importData)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          closeImportModal();
+          await loadRules();
+          showNotification(`Successfully imported ${result.imported} rules!`, 'success');
+        } else {
+          throw new Error('Failed to import rules');
+        }
+      } catch (error) {
+        console.error('Error importing rules:', error);
+        showNotification('Error importing rules. Please check file format.', 'error');
+      }
+    }
+
+    // Export rules to XML
+    async function exportRules() {
+      try {
+        const response = await fetch('/api/discrepancy-rules/export');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'discrepancy_rules.xml';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showNotification('Rules exported successfully!', 'success');
+      } catch (error) {
+        console.error('Error exporting rules:', error);
+        showNotification('Error exporting rules. Please try again.', 'error');
+      }
+    }
+
+    // Show notification
+    function showNotification(message, type) {
+      // Simple notification - you can enhance this with a proper notification system
+      alert(message);
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Drag and drop for import
+      const importArea = document.getElementById('importArea');
+      
+      importArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        importArea.classList.add('dragover');
+      });
+      
+      importArea.addEventListener('dragleave', () => {
+        importArea.classList.remove('dragover');
+      });
+      
+      importArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        importArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          const event = { target: { files: files } };
+          handleFileSelect(event);
+        }
+      });
+
+      // Close modals when clicking outside
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+          e.target.classList.remove('show');
+        }
+      });
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Test</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/avatar-3d-voice.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            color: #334155;
+        }
+        
+        #avatar3dContainer {
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #4f46e5;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .debug-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .debug-info h3 {
+            margin-top: 0;
+            color: #334155;
+        }
+        
+        .debug-info pre {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎭 3D Avatar Test Page</h1>
+    
+    <div id="avatar3dContainer"></div>
+    
+    <div class="controls">
+        <button class="btn btn-success" onclick="testListening()">
+            <i class="fas fa-microphone"></i> Test Listening
+        </button>
+        <button class="btn btn-primary" onclick="testSpeaking()">
+            <i class="fas fa-volume-up"></i> Test Speaking
+        </button>
+        <button class="btn btn-primary" onclick="testBlink()">
+            <i class="fas fa-eye"></i> Test Blink
+        </button>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Debug Information</h3>
+        <pre id="debugOutput">Initializing...</pre>
+    </div>
+    
+    <script src="/static/js/avatar-3d-voice.js"></script>
+    <script>
+        let avatar3D = null;
+        let debugLog = [];
+        
+        function log(message) {
+            debugLog.push(`${new Date().toLocaleTimeString()}: ${message}`);
+            document.getElementById('debugOutput').textContent = debugLog.join('\n');
+            console.log(message);
+        }
+        
+        // Initialize avatar
+        window.addEventListener('DOMContentLoaded', function() {
+            log('🎭 Starting avatar initialization...');
+            
+            const container = document.getElementById('avatar3dContainer');
+            log('📦 Container found: ' + !!container);
+            
+            if (!container) {
+                log('❌ Container not found!');
+                return;
+            }
+            
+            log('🏗️ Avatar3DVoice class available: ' + (typeof Avatar3DVoice !== 'undefined'));
+            
+            if (typeof Avatar3DVoice === 'undefined') {
+                log('❌ Avatar3DVoice class not loaded!');
+                return;
+            }
+            
+            try {
+                const imagePath = '/static/images/chatgpt_avator.png';
+                log('🖼️ Image path: ' + imagePath);
+                
+                // Test image loading
+                const testImg = new Image();
+                testImg.onload = function() {
+                    log('✅ Image loaded! Size: ' + this.width + 'x' + this.height);
+                };
+                testImg.onerror = function() {
+                    log('❌ Image failed to load!');
+                };
+                testImg.src = imagePath;
+                
+                // Create avatar
+                avatar3D = new Avatar3DVoice(container, imagePath);
+                log('✅ Avatar instance created!');
+                
+                // Check if HTML was created
+                setTimeout(() => {
+                    const avatarImg = container.querySelector('.avatar-base-layer');
+                    log('🔍 Avatar img element: ' + !!avatarImg);
+                    if (avatarImg) {
+                        log('✅ Image src: ' + avatarImg.src);
+                    }
+                    
+                    const avatarContainer = container.querySelector('.avatar-3d-container');
+                    log('🔍 Avatar container: ' + !!avatarContainer);
+                    
+                    log('✅ Avatar initialized successfully!');
+                }, 500);
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+                log('Stack: ' + error.stack);
+            }
+        });
+        
+        function testListening() {
+            if (avatar3D) {
+                avatar3D.startListening();
+                log('🎤 Listening mode activated');
+                setTimeout(() => {
+                    avatar3D.stopListening();
+                    log('🎤 Listening mode deactivated');
+                }, 3000);
+            }
+        }
+        
+        function testSpeaking() {
+            if (avatar3D) {
+                avatar3D.startSpeaking();
+                log('🗣️ Speaking mode activated');
+                setTimeout(() => {
+                    avatar3D.stopSpeaking();
+                    log('🗣️ Speaking mode deactivated');
+                }, 3000);
+            }
+        }
+        
+        function testBlink() {
+            if (avatar3D) {
+                avatar3D.performBlink();
+                log('👁️ Manual blink triggered');
+            }
+        }
+    </script>
+</body>
+</html>
