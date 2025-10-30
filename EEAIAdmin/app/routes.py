@@ -87,12 +87,21 @@ from pymongo import MongoClient, DESCENDING
 from bson import ObjectId
 from functools import wraps
 import zipfile
-import qrcode
 import cv2
 from docx import Document
 import tiktoken
 from xml.etree.ElementTree import Element, SubElement, tostring
 import time
+
+# Optional QR code support
+try:
+    import qrcode
+    QRCODE_AVAILABLE = True
+except ImportError:
+    print("⚠️  QR code generation not available: 'qrcode' module not installed")
+    print("   Install with: pip install qrcode[pil]")
+    QRCODE_AVAILABLE = False
+    qrcode = None
 
 # Placeholder imports for utility functions (replace with actual implementations)
 from app.utils.common import load_schema
@@ -3353,6 +3362,13 @@ Generate a query recipe for this request."""
         try:
             user_logger.api_request("/api/qr/generate", "Generating QR code from form data")
 
+            # Check if qrcode module is available
+            if not QRCODE_AVAILABLE:
+                return jsonify({
+                    'success': False,
+                    'message': 'QR code generation is not available. Please install the qrcode module: pip install qrcode[pil]'
+                }), 503
+
             data = request.get_json()
             if not data:
                 return jsonify({
@@ -3376,7 +3392,6 @@ Generate a query recipe for this request."""
             qr_size = qr_options.get('size', 400)
             qr_margin = qr_options.get('margin', 2)
 
-            import qrcode
             from io import BytesIO
             import base64
 
