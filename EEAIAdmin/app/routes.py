@@ -19325,201 +19325,198 @@ def _save_document_categories(data):
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
+    # ============================================================================
+    # CUSTOM FUNCTIONS ROUTES
+    # ============================================================================
 
+    @app.route('/custom_functions')
+    @timing_aspect
+    def custom_functions_page():
+        """Render custom functions management page"""
+        return render_template('custom_functions.html')
 
+    @app.route('/custom_function_builder')
+    @timing_aspect
+    def custom_function_builder():
+        """Render custom function builder/editor page"""
+        return render_template('custom_function_builder.html')
 
-# ============================================================================
-# CUSTOM FUNCTIONS ROUTES
-# ============================================================================
+    @app.route('/api/custom_functions', methods=['GET'])
+    @timing_aspect
+    def get_all_custom_functions():
+        """Get all custom functions"""
+        try:
+            functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
+            
+            if os.path.exists(functions_file):
+                with open(functions_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            else:
+                data = {'functions': []}
+                
+            functions = data.get('functions', [])
+            
+            # Optional filters
+            category = request.args.get('category')
+            active_only = request.args.get('active', 'false').lower() == 'true'
+            
+            if category:
+                functions = [f for f in functions if f.get('category') == category]
+            
+            if active_only:
+                functions = [f for f in functions if f.get('isActive', True)]
+            
+            return jsonify({'success': True, 'functions': functions}), 200
+        except Exception as e:
+            logger.error(f"Error getting custom functions: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/custom_functions')
-@timing_aspect
-def custom_functions_page():
-    """Render custom functions management page"""
-    return render_template('custom_functions.html')
+    @app.route('/api/custom_functions/<function_id>', methods=['GET'])
+    @timing_aspect
+    def get_custom_function(function_id):
+        """Get a single custom function by ID"""
+        try:
+            functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
+            
+            if os.path.exists(functions_file):
+                with open(functions_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    functions = data.get('functions', [])
+                    function = next((f for f in functions if f.get('id') == function_id), None)
+                    
+                    if function:
+                        return jsonify({'success': True, 'function': function}), 200
+                    else:
+                        return jsonify({'success': False, 'message': 'Function not found'}), 404
+            else:
+                return jsonify({'success': False, 'message': 'No functions found'}), 404
+                
+        except Exception as e:
+            logger.error(f"Error getting custom function {function_id}: {e}")
+            return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/custom_function_builder')
-@timing_aspect
-def custom_function_builder():
-    """Render custom function builder/editor page"""
-    return render_template('custom_function_builder.html')
-
-@app.route('/api/custom_functions', methods=['GET'])
-@timing_aspect
-def get_all_custom_functions():
-    """Get all custom functions"""
-    try:
-        functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
-
-        if os.path.exists(functions_file):
-            with open(functions_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+    def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
+        """
+        Search for text matches in OCR data with different matching strategies
+        
+        Args:
+            field_value: Text to search for
+            ocr_data: List of OCR entries with text and coordinates
+            search_mode: 'exact', 'fuzzy', or 'contains'
+        
+        Returns:
+            List of matches with coordinates, sorted by confidence
+        """
+        import re
+        from difflib import SequenceMatcher
+        
+        logger.info(f"SEARCH === STARTING OCR TEXT SEARCH ===")
+        logger.info(f"PARAMETERS: Search parameters:")
+        logger.info(f"   Field value: '{field_value}'")
+        logger.info(f"   Search mode: {search_mode}")
+        logger.info(f"   OCR entries to search: {len(ocr_data)}")
+        
+        matches = []
+        field_value_lower = field_value.lower().strip()
+        logger.info(f"Normalized field value: '{field_value_lower}'")
+        
+        # Track search statistics
+        exact_matches = 0
+        contains_matches = 0
+        partial_matches = 0
+        fuzzy_matches = 0
+        no_matches = 0
+        
+        logger.info(f"SEARCH Searching in {len(ocr_data)} OCR entries...")
+        
+        for i, ocr_entry in enumerate(ocr_data):
+            ocr_text = ocr_entry.get('text', '').strip()
+            if not ocr_text:
+                logger.debug(f"   Entry {i+1}: Skipping empty text")
+                continue
+                
+            ocr_text_lower = ocr_text.lower()
+            match_confidence = 0
+            match_type = 'none'
+            
+            logger.debug(f"   Entry {i+1}: Comparing '{field_value_lower}' with '{ocr_text_lower}'")
+            
+            # Exact match (highest priority)
+            if search_mode in ['exact', 'fuzzy', 'contains']:
+                if field_value_lower == ocr_text_lower:
+                    match_confidence = 100
+                    match_type = 'exact'
+                    exact_matches += 1
+                    logger.debug(f"      SUCCESS:EXACT MATCH! Confidence: 100%")
+                elif field_value_lower in ocr_text_lower:
+                    match_confidence = 90
+                    match_type = 'contains'
+                    contains_matches += 1
+                    logger.debug(f"      SUCCESS:CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
+                elif ocr_text_lower in field_value_lower:
+                    match_confidence = 85
+                    match_type = 'partial'
+                    partial_matches += 1
+                    logger.debug(f"      SUCCESS:PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
+            
+            # Fuzzy matching if enabled and no exact match
+            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
+                similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
+                logger.debug(f"      🔀 Fuzzy similarity: {similarity:.3f}")
+                if similarity >= 0.8:  # High similarity threshold
+                    fuzzy_confidence = similarity * 80
+                    if fuzzy_confidence > match_confidence:
+                        match_confidence = fuzzy_confidence
+                        match_type = 'fuzzy'
+                        fuzzy_matches += 1
+                        logger.debug(f"      SUCCESS:FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
+            
+            if match_confidence < 80:
+                no_matches += 1
+                logger.debug(f"      ERROR: No sufficient match (confidence: {match_confidence:.1f}%)")
+            
+            # Only include high-confidence matches
+            if match_confidence >= 80:
+                match_data = {
+                    'ocr_index': i,
+                    'matched_text': ocr_text,
+                    'field_value': field_value,
+                    'match_confidence': round(match_confidence, 1),
+                    'match_type': match_type,
+                    'bounding_box': ocr_entry.get('bounding_box', []),
+                    'bounding_page': ocr_entry.get('bounding_page', 1),
+                    'ocr_confidence': ocr_entry.get('confidence', 0)
+                }
+                matches.append(match_data)
+                
+                logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
+                logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
+        
+        # Sort by match confidence (highest first)
+        matches.sort(key=lambda x: x['match_confidence'], reverse=True)
+        
+        # Log search summary
+        logger.info(f"ANALYTICS: === SEARCH SUMMARY ===")
+        logger.info(f"   Exact matches: {exact_matches}")
+        logger.info(f"   Contains matches: {contains_matches}")
+        logger.info(f"   Partial matches: {partial_matches}")
+        logger.info(f"   Fuzzy matches: {fuzzy_matches}")
+        logger.info(f"   No matches: {no_matches}")
+        logger.info(f"   Total qualifying matches: {len(matches)}")
+        
+        if matches:
+            best_match = matches[0]
+            logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
+            logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
         else:
-            data = {'functions': []}
-
-        functions = data.get('functions', [])
-
-        # Optional filters
-        category = request.args.get('category')
-        active_only = request.args.get('active', 'false').lower() == 'true'
-
-        if category:
-            functions = [f for f in functions if f.get('category') == category]
-
-        if active_only:
-            functions = [f for f in functions if f.get('isActive', True)]
-
-        return jsonify({'success': True, 'functions': functions}), 200
-    except Exception as e:
-        logger.error(f"Error getting custom functions: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-@app.route('/api/custom_functions/<function_id>', methods=['GET'])
-@timing_aspect
-def get_custom_function(function_id):
-    """Get a single custom function by ID"""
-    try:
-        functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
-
-        if os.path.exists(functions_file):
-            with open(functions_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                functions = data.get('functions', [])
-                function = next((f for f in functions if f.get('id') == function_id), None)
-
-                if function:
-                    return jsonify({'success': True, 'function': function}), 200
-                else:
-                    return jsonify({'success': False, 'message': 'Function not found'}), 404
-        else:
-            return jsonify({'success': False, 'message': 'No functions found'}), 404
-
-    except Exception as e:
-        logger.error(f"Error getting custom function {function_id}: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
-    """
-    Search for text matches in OCR data with different matching strategies
-
-    Args:
-        field_value: Text to search for
-        ocr_data: List of OCR entries with text and coordinates
-        search_mode: 'exact', 'fuzzy', or 'contains'
-
-    Returns:
-        List of matches with coordinates, sorted by confidence
-    """
-    import re
-    from difflib import SequenceMatcher
-
-    logger.info(f"SEARCH === STARTING OCR TEXT SEARCH ===")
-    logger.info(f"PARAMETERS: Search parameters:")
-    logger.info(f"   Field value: '{field_value}'")
-    logger.info(f"   Search mode: {search_mode}")
-    logger.info(f"   OCR entries to search: {len(ocr_data)}")
-
-    matches = []
-    field_value_lower = field_value.lower().strip()
-    logger.info(f"Normalized field value: '{field_value_lower}'")
-
-    # Track search statistics
-    exact_matches = 0
-    contains_matches = 0
-    partial_matches = 0
-    fuzzy_matches = 0
-    no_matches = 0
-
-    logger.info(f"SEARCH Searching in {len(ocr_data)} OCR entries...")
-
-    for i, ocr_entry in enumerate(ocr_data):
-        ocr_text = ocr_entry.get('text', '').strip()
-        if not ocr_text:
-            logger.debug(f"   Entry {i+1}: Skipping empty text")
-            continue
-
-        ocr_text_lower = ocr_text.lower()
-        match_confidence = 0
-        match_type = 'none'
-
-        logger.debug(f"   Entry {i+1}: Comparing '{field_value_lower}' with '{ocr_text_lower}'")
-
-        # Exact match (highest priority)
-        if search_mode in ['exact', 'fuzzy', 'contains']:
-            if field_value_lower == ocr_text_lower:
-                match_confidence = 100
-                match_type = 'exact'
-                exact_matches += 1
-                logger.debug(f"      SUCCESS:EXACT MATCH! Confidence: 100%")
-            elif field_value_lower in ocr_text_lower:
-                match_confidence = 90
-                match_type = 'contains'
-                contains_matches += 1
-                logger.debug(f"      SUCCESS:CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
-            elif ocr_text_lower in field_value_lower:
-                match_confidence = 85
-                match_type = 'partial'
-                partial_matches += 1
-                logger.debug(f"      SUCCESS:PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
-
-        # Fuzzy matching if enabled and no exact match
-        if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
-            similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
-            logger.debug(f"      🔀 Fuzzy similarity: {similarity:.3f}")
-            if similarity >= 0.8:  # High similarity threshold
-                fuzzy_confidence = similarity * 80
-                if fuzzy_confidence > match_confidence:
-                    match_confidence = fuzzy_confidence
-                    match_type = 'fuzzy'
-                    fuzzy_matches += 1
-                    logger.debug(f"      SUCCESS:FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
-
-        if match_confidence < 80:
-            no_matches += 1
-            logger.debug(f"      ERROR: No sufficient match (confidence: {match_confidence:.1f}%)")
-
-        # Only include high-confidence matches
-        if match_confidence >= 80:
-            match_data = {
-                'ocr_index': i,
-                'matched_text': ocr_text,
-                'field_value': field_value,
-                'match_confidence': round(match_confidence, 1),
-                'match_type': match_type,
-                'bounding_box': ocr_entry.get('bounding_box', []),
-                'bounding_page': ocr_entry.get('bounding_page', 1),
-                'ocr_confidence': ocr_entry.get('confidence', 0)
-            }
-            matches.append(match_data)
-
-            logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
-            logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
-
-    # Sort by match confidence (highest first)
-    matches.sort(key=lambda x: x['match_confidence'], reverse=True)
-
-    # Log search summary
-    logger.info(f"ANALYTICS: === SEARCH SUMMARY ===")
-    logger.info(f"   Exact matches: {exact_matches}")
-    logger.info(f"   Contains matches: {contains_matches}")
-    logger.info(f"   Partial matches: {partial_matches}")
-    logger.info(f"   Fuzzy matches: {fuzzy_matches}")
-    logger.info(f"   No matches: {no_matches}")
-    logger.info(f"   Total qualifying matches: {len(matches)}")
-
-    if matches:
-        best_match = matches[0]
-        logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
-        logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
-    else:
-        logger.warning(f"ERROR: NO QUALIFYING MATCHES FOUND for '{field_value}'")
-        logger.info(f"IDEA: Search suggestions:")
-        logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
-        logger.info(f"   - Check if the field value exactly matches the document text")
-        logger.info(f"   - Verify the document has been processed and OCR data is available")
-
-    logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
-    return matches
+            logger.warning(f"ERROR: NO QUALIFYING MATCHES FOUND for '{field_value}'")
+            logger.info(f"IDEA: Search suggestions:")
+            logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
+            logger.info(f"   - Check if the field value exactly matches the document text")
+            logger.info(f"   - Verify the document has been processed and OCR data is available")
+        
+        logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
+        return matches
     
 # new code added here    
 def generate_mt700_message(lc_data):

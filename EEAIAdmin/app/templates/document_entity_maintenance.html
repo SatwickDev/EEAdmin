@@ -3506,8 +3506,8 @@
             await loadCustomFunctions();
             await loadEntitiesTab();
             await loadDataCategoriesTab();
-            loadDataCategories();
-            loadDocumentCategories();
+            await loadDataCategories();
+            await loadDocumentCategories();
         }, 100);
     });
 
@@ -4679,7 +4679,7 @@
     function editDocumentCategory(categoryId) {
         {#alert('Edit Document Type: ' + categoryId + ' - Coming soon!');#}
         const Category = filteredDocumentTypes.find(c => c.id === categoryId);
-        console.log(filteredDocumentTypes)
+
         if (Category) {
             document.getElementById('DocumentmodalTitle').textContent = 'Edit';
             document.getElementById('categoryId').value = categoryId;
@@ -6014,25 +6014,12 @@
     });
 
     function entitycheck(value, aid = null) {
-        console.log(entities);
-        if (!value) return false;
-
-        // Normalize value name safely
-        const valueName = (
-            (typeof value === 'string' ? value : value.name) || ''
-        ).trim().toLowerCase();
-
-        if (!valueName) return false;
-
-        // Compare entities safely
-        return entities.some(item => {
-            const itemName = (item.name || '').trim().toLowerCase();
-            const sameName = itemName === valueName;
-            const differentId = aid ? item.id != aid : true;
-            return sameName && differentId;
-        });
+        if (aid) {
+            return entities.some((item, i) => item.name.toLowerCase() === value.name.toLowerCase() && item['id'] != aid);
+        } else {
+            return entities.some((item, i) => item.name.toLowerCase() === value.name.toLowerCase());
+        }
     }
-
 
     async function confirmEntityChange(newValue, currentValue = null) {
         let htmlText;
