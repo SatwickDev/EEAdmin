@@ -26,6 +26,11 @@
             box-sizing: border-box;
         }
 
+        /* Hide upload section initially when loaded in iframe from QR scanner */
+        body.qr-processing-mode .upload-section-container {
+            display: none !important;
+        }
+
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 25%, #e2e8f0 50%, #cbd5e0 75%, #a0aec0 100%);
@@ -1680,7 +1685,7 @@
                 </div>
 
                 <!-- Upload Section -->
-                <div v-if="!results" class="glass-card animate-slide-in" style="padding: 48px; margin-bottom: 32px;">
+                <div v-if="!results && !isQRProcessing" class="glass-card animate-slide-in upload-section-container" style="padding: 48px; margin-bottom: 32px;">
                     <div class="text-center mb-10">
                         <h2 class="text-3xl font-bold mb-3 text-gray-800">Ready to Get Started?</h2>
                         <p class="text-base text-gray-600 font-medium">Upload your documents and experience the power of AI classification</p>
@@ -1996,10 +2001,16 @@
                                 <p class="text-gray-600">Successfully analyzed {% raw %}{{ results.length }}{% endraw %} document{% raw %}{{ results.length > 1 ? 's' : '' }}{% endraw %}</p>
                             </div>
                             <div class="flex items-center gap-3">
-                            <button @click="viewAllCompliance()" class="compliance-btn text-sm px-4 py-4 group">
-                                                <i class="mdi mdi-shield-check-outline mr-1 group-hover:animate-pulse"></i>
-                                                Compliance Analysis
-                                            </button>
+                            <button 
+                                @click="viewAllCompliance()" 
+                                class="compliance-btn text-sm px-4 py-4 group"
+                                :disabled="!results.every(r => isComplianceReady(r))"
+                                :class="{'opacity-50 cursor-not-allowed': !results.every(r => isComplianceReady(r))}"
+                                :title="results.every(r => isComplianceReady(r)) ? 'View Compliance Analysis' : 'Compliance check in progress...'"
+                            >
+                                <i class="mdi mr-1" :class="results.every(r => isComplianceReady(r)) ? 'mdi-shield-check-outline group-hover:animate-pulse' : 'mdi-loading mdi-spin'"></i>
+                                {% raw %}{{ results.every(r => isComplianceReady(r)) ? 'Compliance Analysis' : 'Processing...' }}{% endraw %}
+                            </button>
                             <button @click="reset" class="btn-primary">
                                 <i class="mdi mdi-refresh"></i>
                                 Upload More
@@ -2027,9 +2038,15 @@
                                                 <i class="mdi mdi-eye mr-1 group-hover:animate-pulse"></i>
                                                 View Details
                                             </button>
-                                            <button @click="viewDiscrepancies(result, index)" class="compliance-btn text-sm px-4 py-2 group">
-                                                <i class="mdi mdi-shield-check-outline mr-1 group-hover:animate-pulse"></i>
-                                                Compliance Analysis
+                                            <button 
+                                                @click="viewDiscrepancies(result, index)" 
+                                                class="compliance-btn text-sm px-4 py-2 group"
+                                                :disabled="!isComplianceReady(result)"
+                                                :class="{'opacity-50 cursor-not-allowed': !isComplianceReady(result)}"
+                                                :title="isComplianceReady(result) ? 'View Compliance Analysis' : 'Compliance check in progress...'"
+                                            >
+                                                <i class="mdi mr-1" :class="isComplianceReady(result) ? 'mdi-shield-check-outline group-hover:animate-pulse' : 'mdi-loading mdi-spin'"></i>
+                                                {% raw %}{{ isComplianceReady(result) ? 'Compliance' : 'Processing...' }}{% endraw %}
                                             </button>
                                             <button @click="toggleInsights(index)" class="btn-secondary text-sm px-4 py-2 group">
                                                 <i :class="result.insightsExpanded ? 'mdi mdi-chevron-up' : 'mdi mdi-chart-line'" class="mr-1 group-hover:animate-bounce"></i>
@@ -3548,10 +3565,12 @@
                         'Analyzing Quality',
                         'Extracting Content',
                         'AI Classification',
-                        'Reading Entities',
-                        'Compliance Check'
+                        'Reading Entities'
                     ],
                     results: null,
+                    complianceStatus: {}, // Track compliance status per file hash
+                    compliancePolling: {}, // Track polling intervals
+                    isQRProcessing: false, // Flag to hide upload section for QR documents
                     showDetailsModal: false,
                     showDiscrepancyModal: false,
                     selectedFieldIndex: 0,
@@ -3887,15 +3906,15 @@
                 },
                 updateStepFromProgress(stage, message) {
                     // Map backend progress stages to Vue.js modal steps
+                    // Compliance check removed - runs silently in background
                     const stageToStepMap = {
                         'uploading': 0,           // Uploading Documents
                         'quality_analysis': 1,    // Analyzing Quality  
                         'ocr_extraction': 2,      // Extracting Content
                         'document_classification': 3, // AI Classification
                         'field_extraction': 4,    // Reading Entities
-                        'compliance_check': 5,    // Compliance Check (running)
-                        'finalizing': 5,          // Still compliance phase (running)
-                        'completed': 6            // Done (beyond steps array)
+                        'finalizing': 4,          // Still on extract (processing complete)
+                        'completed': 5            // Done (beyond steps array)
                     };
                     
                     console.log(`🔄 Overlay Vue modal mapping stage '${stage}' to step`, stageToStepMap[stage]);
@@ -4048,9 +4067,18 @@
                                             enhanced_mode: result.enhanced_mode || false,
                                             page_by_page_mode: result.page_by_page_mode || false,
                                             insightsExpanded: false, // Initialize insights expanded state
+                                            // Compliance tracking
+                                            compliance_hash: result.compliance_hash,
+                                            compliance_status: result.compliance_status || 'processing',
+                                            compliance_ready: false,
                                             // Keep raw data for debugging
                                             _rawResult: result
                                         };
+                                        
+                                        // Start polling for compliance status if hash provided
+                                        if (result.compliance_hash) {
+                                            this.startCompliancePolling(result.compliance_hash, idx);
+                                        }
                                     } else {
                                         // Legacy format processing (existing logic)
                                         let swiftData = null;
@@ -4240,6 +4268,13 @@
                 },
                 // This duplicate method is removed - see the proper one below
                 reset() {
+                    // Clear all compliance polling intervals
+                    Object.keys(this.compliancePolling).forEach(hash => {
+                        clearInterval(this.compliancePolling[hash]);
+                    });
+                    this.compliancePolling = {};
+                    this.complianceStatus = {};
+                    
                     this.selectedFiles = [];
                     this.results = null;
                     // Note: totalTime is now a computed property, no need to reset data property
@@ -4519,6 +4554,85 @@
                     this.showDiscrepancyModal = true;
                 },
 
+                // Compliance polling methods
+                startCompliancePolling(complianceHash, resultIndex) {
+                    console.log(`🔄 Starting compliance polling for ${complianceHash}`);
+                    
+                    // Poll immediately
+                    this.checkComplianceStatus(complianceHash, resultIndex);
+                    
+                    // Then poll every 2 seconds
+                    const interval = setInterval(() => {
+                        this.checkComplianceStatus(complianceHash, resultIndex);
+                    }, 2000);
+                    
+                    // Store interval for cleanup
+                    this.compliancePolling[complianceHash] = interval;
+                },
+                
+                async checkComplianceStatus(complianceHash, resultIndex) {
+                    try {
+                        const response = await fetch(`/api/document/compliance-status/${complianceHash}`);
+                        const data = await response.json();
+                        
+                        console.log(`📊 Compliance status response for ${complianceHash}:`, data);
+                        
+                        if (data.status === 'completed' && data.compliance_ready) {
+                            console.log(`✅ Compliance ready for ${complianceHash}`, data.result);
+                            
+                            // Update the result with compliance data - Simple assignment with reactivity
+                            if (this.results && this.results[resultIndex]) {
+                                // Direct assignment (Vue will detect these changes)
+                                this.results[resultIndex].compliance_ready = true;
+                                this.results[resultIndex].compliance_status = 'completed';
+                                
+                                // Update compliance data in the raw result
+                                if (!this.results[resultIndex]._rawResult) {
+                                    this.results[resultIndex]._rawResult = {};
+                                }
+                                if (!this.results[resultIndex]._rawResult.compliance) {
+                                    this.results[resultIndex]._rawResult.compliance = {};
+                                }
+                                this.results[resultIndex]._rawResult.compliance.unified = data.result;
+                                
+                                // Trigger reactivity by reassigning the array
+                                this.results = [...this.results];
+                                
+                                console.log(`✅ Updated result ${resultIndex} - compliance_ready:`, this.results[resultIndex].compliance_ready);
+                                console.log(`✅ Full result:`, this.results[resultIndex]);
+                            }
+                            
+                            // Stop polling
+                            if (this.compliancePolling[complianceHash]) {
+                                clearInterval(this.compliancePolling[complianceHash]);
+                                delete this.compliancePolling[complianceHash];
+                                console.log(`🛑 Stopped polling for ${complianceHash}`);
+                            }
+                        } else if (data.status === 'processing') {
+                            console.log(`⏳ Compliance still processing for ${complianceHash}`);
+                        } else if (data.status === 'error') {
+                            console.error(`❌ Compliance error for ${complianceHash}:`, data.error);
+                            
+                            // Update status to error
+                            if (this.results && this.results[resultIndex]) {
+                                this.results[resultIndex].compliance_status = 'error';
+                                this.results = [...this.results]; // Trigger reactivity
+                            }
+                            
+                            // Stop polling on error
+                            if (this.compliancePolling[complianceHash]) {
+                                clearInterval(this.compliancePolling[complianceHash]);
+                                delete this.compliancePolling[complianceHash];
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`❌ Error checking compliance status:`, error);
+                    }
+                },
+                
+                isComplianceReady(result) {
+                    return result && result.compliance_ready === true;
+                },
 
                 closeDiscrepancyModal() {
                     this.showDiscrepancyModal = false;
@@ -6201,6 +6315,56 @@ splitCurrencyAndAmount(combinedValue) {
             mounted() {
                 this.fetchCurrentUser();
                 this.fetchTradeDocuments();
+                
+                // Check if we're in an iframe and being called from QR scanner
+                if (window.parent !== window) {
+                    try {
+                        if (window.parent.qrDocumentForSmartCapture) {
+                            console.log('🔍 Detected QR scanner context - preemptively hiding upload section');
+                            this.isQRProcessing = true;
+                            document.body.classList.add('qr-processing-mode');
+                        }
+                    } catch (e) {
+                        // Cross-origin access might be blocked, that's okay
+                        console.log('Could not check parent for QR context:', e.message);
+                    }
+                }
+                
+                // Listen for postMessage from QR Scanner
+                window.addEventListener('message', (event) => {
+                    if (event.data && event.data.type === 'PROCESS_DOCUMENT') {
+                        console.log('📥 Received document from QR Scanner via postMessage');
+                        console.log('📄 Document:', event.data.fileName, event.data.mimeType);
+                        
+                        // Immediately hide upload section by setting QR processing flag AND body class
+                        this.isQRProcessing = true;
+                        this.processing = true;
+                        document.body.classList.add('qr-processing-mode');
+                        console.log('🔄 Upload section hidden via isQRProcessing flag and CSS class');
+                        
+                        // Convert base64 data URL back to File object
+                        fetch(event.data.fileData)
+                            .then(res => res.blob())
+                            .then(blob => {
+                                const file = new File([blob], event.data.fileName, { type: event.data.mimeType });
+                                console.log('✅ Converted to File object:', file.name, file.size);
+                                
+                                // Add to selectedFiles and start processing
+                                this.selectedFiles = [file];
+                                console.log('✅ File added to selectedFiles, triggering processing...');
+                                
+                                // Automatically start processing using the correct method name
+                                this.$nextTick(() => {
+                                    this.processFiles();
+                                });
+                            })
+                            .catch(error => {
+                                console.error('❌ Error converting base64 to File:', error);
+                                this.isQRProcessing = false; // Reset flag on error
+                                document.body.classList.remove('qr-processing-mode');
+                            });
+                    }
+                });
             }
         }).mount('#app');
 

@@ -255,7 +255,7 @@
     {
       "id": "29",
       "name": "Port of Loading",
-      "description": "Port where goods are loaded for shipment",
+      "description": "Port where goods are loaded for shipment - Extract ONLY the port name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port name is required (e.g., 'Shanghai' not 'Shanghai, China' or 'Port of Shanghai, Yangshan Port Area, China').",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -264,7 +264,7 @@
     {
       "id": "30",
       "name": "Port of Discharge",
-      "description": "Port where goods are unloaded",
+      "description": "Port where goods are unloaded - Extract ONLY the port name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port name is required (e.g., 'Rotterdam' not 'Rotterdam, Netherlands' or 'Port of Rotterdam, South Holland, Netherlands').",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -507,7 +507,7 @@
     {
       "id": "57",
       "name": "Goods Description",
-      "description": "Detailed description of the goods",
+      "description": "Detailed description of the goods - Extract the COMPLETE description. This field can span multiple lines and paragraphs. Include ALL text regardless of length. Each item may start on a new line or be separated by symbols (bullets, dashes, numbers). Capture EVERYTHING related to goods description including quantities, specifications, product codes, and any additional details. Do not truncate or summarize.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -723,7 +723,7 @@
     {
       "id": "81",
       "name": "Beneficiary Name",
-      "description": "Name of the LC beneficiary",
+      "description": "Name of the LC beneficiary - Extract ONLY the beneficiary's company/person name. Do NOT include address, street, city, country, postal code, phone, email, or any other contact details. Only the name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -732,7 +732,7 @@
     {
       "id": "82",
       "name": "Applicant Name",
-      "description": "Name of the LC applicant",
+      "description": "Name of the LC applicant - Extract ONLY the applicant's company/person name. Do NOT include address, street, city, country, postal code, phone, email, or any other contact details. Only the name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1146,7 +1146,7 @@
     {
       "id": "129",
       "name": "Description of Goods",
-      "description": "Detailed description of the goods being traded",
+      "description": "Detailed description of the goods being traded - Extract the COMPLETE description. This field can span multiple lines and paragraphs. Include ALL text regardless of length. Each item may start on a new line or be separated by symbols (bullets, dashes, numbers). Capture EVERYTHING related to goods description including quantities, specifications, product codes, and any additional details. Do not truncate or summarize.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -1209,7 +1209,7 @@
     {
       "id": "136",
       "name": "Consignee",
-      "description": "Consignee for commercial invoice",
+      "description": "Consignee - Extract ONLY the consignee's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1218,7 +1218,7 @@
     {
       "id": "137",
       "name": "Importer",
-      "description": "Importer for commercial invoice",
+      "description": "Importer for commercial invoice - Extract ONLY the importer's company/person name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1227,7 +1227,7 @@
     {
       "id": "138",
       "name": "Exporter",
-      "description": "Exporter for commercial invoice",
+      "description": "Exporter - Extract ONLY the exporter's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, or any contact details. Extract the pure company/person name only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1272,7 +1272,7 @@
     {
       "id": "143",
       "name": "Buyer",
-      "description": "Buyer",
+      "description": "Buyer - Extract ONLY the buyer's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1290,7 +1290,7 @@
     {
       "id": "145",
       "name": "Seller",
-      "description": "Seller",
+      "description": "Seller - Extract ONLY the seller's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1533,7 +1533,7 @@
     {
       "id": "172",
       "name": "Invoicee",
-      "description": "Invoicee",
+      "description": "Invoicee - Extract ONLY the invoicee's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, tax IDs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -2901,7 +2901,7 @@
     {
       "id": "324",
       "name": "Documentary credit amount",
-      "description": "Documentary credit amount",
+      "description": "Documentary credit amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3126,7 +3126,7 @@
     {
       "id": "349",
       "name": "Mode of Transport",
-      "description": "Mode of Transport",
+      "description": "Mode of Transport - Extract ONLY the transport mode value as clean, meaningful text. CRITICAL CLEANING RULES: Remove ALL special characters and symbols including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY the transport mode name (e.g., 'Sea', 'Air', 'Road', 'Rail', 'Multimodal') as clean text with letters, numbers, and spaces only. Do NOT include codes, descriptions, addresses, locations, vehicle details, or any additional information. Extract the pure transport mode value only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3666,7 +3666,7 @@
     {
       "id": "409",
       "name": "Permit/Certificate/Carnet issuer",
-      "description": "Permit/Certificate/Carnet issuer",
+      "description": "Permit/Certificate/Carnet issuer - Extract ONLY the issuing organization/authority name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include permit numbers, certificate numbers, addresses, locations, dates, codes, or any additional information. Extract the pure organization/authority name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3999,7 +3999,7 @@
     {
       "id": "446",
       "name": "Documentary Credit Applicant",
-      "description": "Documentary Credit Applicant",
+      "description": "Documentary Credit Applicant - Extract ONLY the applicant's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -4017,7 +4017,7 @@
     {
       "id": "448",
       "name": "Documentary Credit Beneficiary",
-      "description": "Documentary Credit Beneficiary",
+      "description": "Documentary Credit Beneficiary - Extract ONLY the beneficiary's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -4044,7 +4044,7 @@
     {
       "id": "451",
       "name": "Documentary Credit Drawee",
-      "description": "Documentary Credit Drawee",
+      "description": "Documentary Credit Drawee - Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -4215,7 +4215,7 @@
   {
     "id": "470",
     "name": "Documents Required",
-    "description": "Documents Required",
+    "description": "Documents Required - Extract the COMPLETE list of required documents exactly as stated. This field contains detailed document requirements and can be very lengthy spanning multiple lines and paragraphs. Capture EVERYTHING regardless of character count or number of lines. Include all document names, specifications, quantities (originals/copies), conditions, and special instructions. Do not truncate, summarize, or omit any portion.",
     "mappingFormField": "Tag 46A",
     "mappingFormDescription": "Documents Required",
     "dataCategoryId": "9",
@@ -4224,7 +4224,7 @@
   {
     "id": "471",
     "name": "Additional Conditions",
-    "description": "Additional Conditions",
+    "description": "Additional Conditions - Extract the COMPLETE text of all additional conditions and instructions. This field can be very lengthy spanning multiple lines and paragraphs. Include EVERYTHING regardless of character count. Do not truncate, summarize, or omit any portion of the conditions, special instructions, or requirements.",
     "mappingFormField": "Tag 47A",
     "mappingFormDescription": "Additional Conditions",
     "dataCategoryId": "9",
@@ -4260,7 +4260,7 @@
   {
     "id": "475",
     "name": "Period for Presentation",
-    "description": "Period for Presentation",
+    "description": "Period for Presentation - Extract ONLY the numeric value representing the number of days. Return just the number (e.g., '21' not '21 days', 'within 21 days', or 'twenty-one days'). If multiple numbers appear, extract the one representing the presentation period in days. Ignore any descriptive text.",
     "mappingFormField": "Tag 48",
     "mappingFormDescription": "Period for Presentation in Days",
     "dataCategoryId": "2",

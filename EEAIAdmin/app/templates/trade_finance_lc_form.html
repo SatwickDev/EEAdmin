@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <!-- jsQR library for QR code scanning from camera -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         :root {
             --primary-color: #6366f1;
@@ -596,6 +598,104 @@
             color: #64748b;
         }
 
+        /* QR Scanner Section - Premium Card (matching Smart Capture style) */
+        .qr-scanner-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qr-scanner-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #10b981, #059669, #047857);
+        }
+
+        .qr-scanner-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .qr-scanner-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #10b981;
+            font-size: 28px;
+        }
+
+        .qr-scanner-text h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .qr-scanner-text p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .btn-qr-scanner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 70%, #047857 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-qr-scanner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-qr-scanner:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-qr-scanner:hover::before {
+            left: 100%;
+        }
+
+        .btn-qr-scanner i {
+            font-size: 20px;
+        }
+
         /* Modal Overlay for Smart Capture - Matching index.html design */
         .smart-capture-modal {
             display: none;
@@ -787,6 +887,303 @@
             font-size: 14px;
             font-weight: 500;
         }
+
+        /* QR Scanner Modal Styles */
+        .qr-scanner-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(30, 41, 59, 0.4));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-scanner-modal.active {
+            display: flex;
+        }
+
+        .qr-scanner-modal-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+            backdrop-filter: blur(24px) saturate(1.5);
+            -webkit-backdrop-filter: blur(24px) saturate(1.5);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow:
+                0 24px 48px rgba(16, 185, 129, 0.15),
+                0 12px 24px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(229, 231, 235, 0.3);
+            animation: qrModalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        @keyframes qrModalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .qr-scanner-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .qr-scanner-header-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .qr-scanner-header-title i {
+            font-size: 28px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #10b981;
+        }
+
+        .qr-scanner-header-title h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e293b, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .qr-scanner-close {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .qr-scanner-close:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+            border-color: transparent;
+        }
+
+        .qr-scanner-content {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .qr-scanner-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .qr-option-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8));
+            border: 2px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 32px 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .qr-option-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+        }
+
+        .qr-option-btn i {
+            font-size: 48px;
+            color: #10b981;
+        }
+
+        .qr-option-btn span {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .qr-option-btn p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 0;
+        }
+
+        #qrFileInput {
+            display: none;
+        }
+
+        /* QR Document Preview Styles */
+        .qr-preview-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .qr-preview-header i {
+            font-size: 28px;
+            color: #10b981;
+        }
+
+        .qr-preview-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .qr-preview-info {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .qr-info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 8px;
+            border-left: 3px solid #10b981;
+        }
+
+        .qr-info-row i {
+            font-size: 18px;
+            color: #10b981;
+            margin-top: 2px;
+            min-width: 18px;
+        }
+
+        .qr-info-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .qr-info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .qr-info-value {
+            font-size: 14px;
+            color: #1e293b;
+            word-break: break-all;
+        }
+
+        .qr-preview-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: #f8fafc;
+            border: 2px dashed rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .qr-preview-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .qr-action-btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .qr-action-btn.primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .qr-action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .qr-action-btn.secondary {
+            background: white;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .qr-action-btn.secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        .qr-action-btn i {
+            font-size: 16px;
+        }
+
 
 
         /* Enhanced Chatbot Icon */
@@ -1109,6 +1506,23 @@
                         </button>
                     </div>
 
+                    <!-- QR Scanner Section -->
+                    <div class="qr-scanner-section">
+                        <div class="qr-scanner-info">
+                            <div class="qr-scanner-icon">
+                                <i class="mdi mdi-qrcode-scan"></i>
+                            </div>
+                            <div class="qr-scanner-text">
+                                <h3>QR Document Scanner</h3>
+                                <p>Scan or upload QR code to extract document information</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-qr-scanner" onclick="openQRScanner()">
+                            <i class="mdi mdi-qrcode-scan"></i>
+                            <span>Scan QR Code</span>
+                        </button>
+                    </div>
+
                     <div id="statusMessage" class="status-message"></div>
 
                     <form id="lcForm">
@@ -1364,6 +1778,81 @@
                     onload="hideSmartCaptureLoading()"></iframe>
             </div>
         </div>
+
+        <!-- QR Scanner Modal -->
+        <div id="qrScannerModal" class="qr-scanner-modal">
+            <div class="qr-scanner-modal-container">
+                <div class="qr-scanner-header">
+                    <div class="qr-scanner-header-title">
+                        <i class="mdi mdi-qrcode-scan"></i>
+                        <h3>QR Code Scanner</h3>
+                    </div>
+                    <button class="qr-scanner-close" onclick="closeQRScanner()" title="Close">
+                        <i class="mdi mdi-close"></i>
+                    </button>
+                </div>
+                <div class="qr-scanner-content">
+                    <!-- Initial Options -->
+                    <div id="qrScannerOptions" class="qr-scanner-options">
+                        <div class="qr-option-btn" onclick="openCamera()">
+                            <i class="mdi mdi-camera"></i>
+                            <span>Scan QR</span>
+                            <p>Use camera to scan QR code</p>
+                        </div>
+                        <div class="qr-option-btn" onclick="uploadQR()">
+                            <i class="mdi mdi-upload"></i>
+                            <span>Upload QR</span>
+                            <p>Upload QR code image</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Document Preview Section (Hidden initially) -->
+                    <div id="qrDocumentPreview" class="qr-document-preview" style="display: none;">
+                        <div class="qr-preview-header">
+                            <i class="mdi mdi-file-document"></i>
+                            <h4>Document Found</h4>
+                        </div>
+                        
+                        <div class="qr-preview-info">
+                            <div class="qr-info-row">
+                                <span class="qr-info-label">Original URL:</span>
+                                <span class="qr-info-value" id="qrOriginalUrl">-</span>
+                            </div>
+                            <div class="qr-info-row">
+                                <span class="qr-info-label">Document Name:</span>
+                                <span class="qr-info-value" id="qrDocumentName">-</span>
+                            </div>
+                            <div class="qr-info-row">
+                                <span class="qr-info-label">File Type:</span>
+                                <span class="qr-info-value" id="qrDocumentType">-</span>
+                            </div>
+                            <div class="qr-info-row">
+                                <span class="qr-info-label">File Size:</span>
+                                <span class="qr-info-value" id="qrDocumentSize">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="qr-preview-thumbnail" id="qrPreviewThumbnail">
+                            <!-- Document thumbnail will be inserted here -->
+                        </div>
+                        
+                        <div class="qr-preview-actions">
+                            <button class="qr-action-btn qr-btn-process" onclick="processQRDocument()">
+                                <i class="mdi mdi-check-circle"></i>
+                                Process Document
+                            </button>
+                            <button class="qr-action-btn qr-btn-cancel" onclick="cancelQRPreview()">
+                                <i class="mdi mdi-close-circle"></i>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden file input for QR upload -->
+        <input type="file" id="qrFileInput" accept="image/*" onchange="handleQRUpload(event)" />
 
         <!-- Enhanced Chatbot Icon -->
         <div class="chatbot-icon" onclick="openChatbot()">
@@ -2365,9 +2854,13 @@
                 modal.classList.remove('active');
                 modal.classList.remove('loading');
 
-                // Clear iframe source after animation
+                // Clear iframe source and restore default onload handler after animation
                 setTimeout(() => {
                     iframe.src = '';
+                    // Restore the default onload handler (calls hideSmartCaptureLoading)
+                    iframe.onload = function() {
+                        hideSmartCaptureLoading();
+                    };
                 }, 300);
 
                 // Restore body scroll
@@ -2375,6 +2868,11 @@
 
                 // Remove escape key handler
                 document.removeEventListener('keydown', handleSmartCaptureEscape);
+                
+                // Clean up QR scanner flags
+                window.qrDocumentForSmartCapture = null;
+                window.qrDocumentToProcess = null;
+                console.log('🧹 Cleaned up QR scanner flags and restored default iframe handler');
             }
 
             // Close modal when clicking outside
@@ -2383,6 +2881,1469 @@
                     closeSmartCapture();
                 }
             });
+
+            // ========================================
+            // QR SCANNER FUNCTIONS
+            // ========================================
+
+            // Open QR Scanner Modal
+            function openQRScanner() {
+                console.log('Opening QR Scanner modal...');
+                const modal = document.getElementById('qrScannerModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Add escape key handler
+                    document.addEventListener('keydown', handleQRScannerEscape);
+                } else {
+                    console.error('QR Scanner modal not found');
+                }
+            }
+
+            // Close QR Scanner Modal
+            function closeQRScanner() {
+                console.log('Closing QR Scanner modal...');
+                
+                // Stop camera if it's running
+                stopCameraScanning();
+                
+                const modal = document.getElementById('qrScannerModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    
+                    // Remove escape key handler
+                    document.removeEventListener('keydown', handleQRScannerEscape);
+                    
+                    // Reset modal content
+                    setTimeout(() => {
+                        resetQRModal();
+                    }, 300);
+                }
+            }
+
+            // Handle escape key for QR Scanner
+            function handleQRScannerEscape(e) {
+                if (e.key === 'Escape') {
+                    closeQRScanner();
+                }
+            }
+
+            // Close modal when clicking outside
+            const qrScannerModal = document.getElementById('qrScannerModal');
+            if (qrScannerModal) {
+                qrScannerModal.addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        closeQRScanner();
+                    }
+                });
+            }
+
+            // Upload QR - Trigger file input
+            function uploadQR() {
+                console.log('Upload QR clicked...');
+                const fileInput = document.getElementById('qrFileInput');
+                if (fileInput) {
+                    fileInput.click();
+                    // Don't close modal - we'll show preview after file selection
+                } else {
+                    console.error('QR file input not found');
+                    showMessage('Error: File upload not available', 'error');
+                }
+            }
+
+            // Open Camera for QR Scanning
+            function openCamera() {
+                console.log('🎥 Opening camera for QR scanning...');
+                
+                const qrContent = document.querySelector('.qr-scanner-content');
+                if (!qrContent) {
+                    console.error('QR scanner content not found');
+                    return;
+                }
+                
+                // Check if we're on HTTPS or localhost
+                const isSecureContext = window.isSecureContext || 
+                                       location.protocol === 'https:' || 
+                                       location.hostname === 'localhost' || 
+                                       location.hostname === '127.0.0.1' ||
+                                       location.hostname.startsWith('192.168.');
+                
+                if (!isSecureContext && !navigator.mediaDevices) {
+                    // Not secure and no camera API - show error
+                    qrContent.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px;">
+                            <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="mdi mdi-alert-circle" style="font-size: 48px; color: #dc2626;"></i>
+                            </div>
+                            <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">HTTPS Required</h3>
+                            <p style="font-size: 15px; color: #64748b; margin-bottom: 24px; line-height: 1.6;">
+                                Camera access requires a secure connection (HTTPS) for security reasons.<br>
+                                Please use the <strong>Upload QR</strong> option instead, or access this page via HTTPS.
+                            </p>
+                            <button type="button" class="btn btn-qr-scanner" onclick="resetQRModal()" style="margin: 0 auto;">
+                                <i class="mdi mdi-arrow-left"></i>
+                                <span>Back to Options</span>
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Show camera permission request interface
+                qrContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="width: 100px; height: 100px; margin: 0 auto 24px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse 2s ease-in-out infinite;">
+                            <i class="mdi mdi-camera" style="font-size: 56px; color: #10b981;"></i>
+                        </div>
+                        <h3 style="font-size: 22px; font-weight: 700; color: #1e293b; margin-bottom: 16px;">Camera Permission Required</h3>
+                        <p style="font-size: 15px; color: #64748b; margin-bottom: 32px; line-height: 1.6; max-width: 400px; margin-left: auto; margin-right: auto;">
+                            We need access to your camera to scan QR codes.<br>
+                            Click the button below and allow camera access when prompted by your browser.
+                        </p>
+                        <button type="button" onclick="requestCameraAccess()" style="padding: 14px 32px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s ease; margin-bottom: 16px;">
+                            <i class="mdi mdi-camera"></i>
+                            <span>Allow Camera Access</span>
+                        </button>
+                        <br>
+                        <button type="button" class="btn btn-qr-scanner" onclick="resetQRModal()" style="margin: 0 auto; background: white; color: #64748b; border: 2px solid #e2e8f0;">
+                            <i class="mdi mdi-arrow-left"></i>
+                            <span>Back to Options</span>
+                        </button>
+                    </div>
+                    <style>
+                        @keyframes pulse {
+                            0%, 100% { transform: scale(1); }
+                            50% { transform: scale(1.05); }
+                        }
+                    </style>
+                `;
+            }
+            
+            // Request camera access with user consent
+            async function requestCameraAccess() {
+                console.log('📸 User requested camera access...');
+                
+                const qrContent = document.querySelector('.qr-scanner-content');
+                if (!qrContent) return;
+                
+                // Show loading state
+                qrContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="width: 100px; height: 100px; margin: 0 auto 24px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="mdi mdi-loading mdi-spin" style="font-size: 56px; color: #10b981;"></i>
+                        </div>
+                        <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">Requesting Camera Access...</h3>
+                        <p style="font-size: 15px; color: #64748b;">Please allow camera access in your browser prompt</p>
+                    </div>
+                `;
+                
+                // Wait a moment for UI to update
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Show camera interface and start scanning
+                showCameraInterface();
+            }
+            
+            // Show camera interface after permission granted
+            function showCameraInterface() {
+                const qrContent = document.querySelector('.qr-scanner-content');
+                if (!qrContent) return;
+                
+                qrContent.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                            <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0;">
+                                <i class="mdi mdi-camera" style="color: #10b981;"></i>
+                                Scan QR Code with Camera
+                            </h3>
+                            <button type="button" onclick="stopCameraScanning()" style="padding: 8px 16px; border: 2px solid #e2e8f0; border-radius: 8px; background: white; color: #64748b; font-weight: 600; cursor: pointer;">
+                                <i class="mdi mdi-close"></i> Close Camera
+                            </button>
+                        </div>
+                        
+                        <div id="cameraContainer" style="position: relative; max-width: 100%; margin: 0 auto;">
+                            <video id="qrVideo" style="width: 100%; max-width: 640px; border-radius: 12px; background: #000;"></video>
+                            <canvas id="qrCanvas" style="display: none;"></canvas>
+                            <div id="qrOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border: 3px solid #10b981; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); pointer-events: none;"></div>
+                        </div>
+                        
+                        <div id="cameraStatus" style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; color: #059669; font-weight: 600;">
+                            <i class="mdi mdi-information"></i> Position QR code within the frame
+                        </div>
+                    </div>
+                `;
+                
+                // Start camera and QR scanning
+                startCameraScanning();
+            }
+
+            // Start camera scanning
+            let cameraStream = null;
+            let scanningInterval = null;
+            
+            async function startCameraScanning() {
+                const video = document.getElementById('qrVideo');
+                const canvas = document.getElementById('qrCanvas');
+                const statusDiv = document.getElementById('cameraStatus');
+                
+                if (!video || !canvas) {
+                    console.error('Video or canvas element not found');
+                    return;
+                }
+                
+                try {
+                    console.log('🎥 Requesting camera access...');
+                    statusDiv.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Requesting camera access...';
+                    
+                    const constraints = {
+                        video: {
+                            facingMode: 'environment', // Prefer back camera
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+                    
+                    // Try modern API first
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                        console.log('Using modern getUserMedia API');
+                        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    } 
+                    // Fallback to legacy getUserMedia with Promise wrapper
+                    else if (navigator.getUserMedia || navigator.webkitGetUserMedia || 
+                             navigator.mozGetUserMedia || navigator.msGetUserMedia) {
+                        console.log('Using legacy getUserMedia API');
+                        
+                        const getUserMedia = navigator.getUserMedia || 
+                                            navigator.webkitGetUserMedia || 
+                                            navigator.mozGetUserMedia || 
+                                            navigator.msGetUserMedia;
+                        
+                        cameraStream = await new Promise((resolve, reject) => {
+                            getUserMedia.call(navigator, constraints, resolve, reject);
+                        });
+                    } 
+                    // No camera API available
+                    else {
+                        throw new Error('Camera API not available in this browser. Please try the Upload QR option.');
+                    }
+                    
+                    console.log('✅ Camera access granted');
+                    
+                    video.srcObject = cameraStream;
+                    video.setAttribute('playsinline', true); // Required for iOS
+                    await video.play();
+                    
+                    console.log('✅ Video playing');
+                    statusDiv.innerHTML = '<i class="mdi mdi-information"></i> Position QR code within the frame';
+                    
+                    // Check if jsQR is loaded
+                    if (!window.jsQR) {
+                        console.error('❌ jsQR library not loaded');
+                        statusDiv.innerHTML = '<i class="mdi mdi-alert-circle"></i> QR scanner library not loaded. Please refresh the page.';
+                        statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+                        statusDiv.style.color = '#dc2626';
+                        return;
+                    }
+                    
+                    console.log('✅ jsQR library loaded');
+                    
+                    // Set up canvas for QR detection
+                    const canvasContext = canvas.getContext('2d');
+                    
+                    // Start scanning for QR codes
+                    console.log('🔍 Starting QR code scanning...');
+                    scanningInterval = setInterval(() => {
+                        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            
+                            const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+                            
+                            // Use jsQR library to decode
+                            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                                inversionAttempts: "dontInvert",
+                            });
+                            
+                            if (code && code.data) {
+                                console.log('✅ QR code detected:', code.data);
+                                statusDiv.innerHTML = '<i class="mdi mdi-check-circle"></i> QR Code detected! Processing...';
+                                statusDiv.style.background = 'rgba(16, 185, 129, 0.2)';
+                                
+                                // Stop scanning
+                                stopCameraScanning();
+                                
+                                // Process the QR code URL directly (camera gives us decoded URL, not image file)
+                                processQRCodeURL(code.data);
+                            }
+                        }
+                    }, 300); // Scan every 300ms
+                    
+                } catch (error) {
+                    console.error('❌ Camera access error:', error);
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+                    
+                    let errorMessage = 'Camera access denied or not available';
+                    
+                    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                        errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings.';
+                    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                        errorMessage = 'No camera found on this device.';
+                    } else if (error.name === 'NotSupportedError' || error.name === 'TypeError') {
+                        errorMessage = 'Camera not supported on HTTP. Please use HTTPS or try the Upload QR option.';
+                    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                        errorMessage = 'Camera is already in use by another application.';
+                    } else if (error.message) {
+                        errorMessage = error.message;
+                    }
+                    
+                    statusDiv.innerHTML = `<i class="mdi mdi-alert-circle"></i> ${errorMessage}`;
+                    statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
+                    statusDiv.style.color = '#dc2626';
+                    
+                    // Show back button
+                    setTimeout(() => {
+                        const qrContent = document.querySelector('.qr-scanner-content');
+                        if (qrContent) {
+                            const existingButton = qrContent.querySelector('.btn-qr-scanner');
+                            if (!existingButton) {
+                                qrContent.innerHTML += `
+                                    <button type="button" class="btn btn-qr-scanner" onclick="resetQRModal()" style="margin: 20px auto 0;">
+                                        <i class="mdi mdi-arrow-left"></i>
+                                        <span>Back to Options</span>
+                                    </button>
+                                `;
+                            }
+                        }
+                    }, 1000);
+                }
+            }
+
+            // Stop camera scanning
+            function stopCameraScanning() {
+                console.log('🛑 Stopping camera scanning...');
+                
+                // Stop video stream
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    cameraStream = null;
+                }
+                
+                // Clear scanning interval
+                if (scanningInterval) {
+                    clearInterval(scanningInterval);
+                    scanningInterval = null;
+                }
+                
+                // Reset modal
+                resetQRModal();
+            }
+
+            // Reset QR Modal to initial state
+            function resetQRModal() {
+                const qrContent = document.querySelector('.qr-scanner-content');
+                if (qrContent) {
+                    qrContent.innerHTML = `
+                        <div class="qr-scanner-options">
+                            <div class="qr-option-btn" onclick="openCamera()">
+                                <i class="mdi mdi-camera"></i>
+                                <span>Scan QR</span>
+                                <p>Use camera to scan QR code</p>
+                            </div>
+                            <div class="qr-option-btn" onclick="uploadQR()">
+                                <i class="mdi mdi-upload"></i>
+                                <span>Upload QR</span>
+                                <p>Upload QR code image</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Handle QR File Upload
+            async function handleQRUpload(event) {
+                console.log('=== QR File Upload Handler ===');
+                const file = event.target.files[0];
+                
+                if (!file) {
+                    console.log('No file selected');
+                    return;
+                }
+
+                console.log('File selected:', file.name, 'Type:', file.type, 'Size:', file.size);
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showMessage('Please upload an image file (PNG, JPG, etc.)', 'error');
+                    event.target.value = '';
+                    return;
+                }
+
+                // Store file for later processing
+                window.qrFileToProcess = file;
+
+                // Show file preview in modal
+                showQRFilePreview(file);
+            }
+
+            // Show QR File Preview with confirmation
+            function showQRFilePreview(file) {
+                const qrContent = document.querySelector('.qr-scanner-content');
+                if (!qrContent) return;
+
+                // Create image preview URL
+                const imageUrl = URL.createObjectURL(file);
+
+                // Format file size
+                const fileSize = formatFileSize(file.size);
+
+                qrContent.innerHTML = `
+                    <div style="text-align: center; padding: 16px;">
+                        <div style="margin-bottom: 14px;">
+                            <div style="width: 50px; height: 50px; margin: 0 auto 12px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="mdi mdi-check-circle" style="font-size: 30px; color: #10b981;"></i>
+                            </div>
+                            <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">File Selected</h3>
+                            <p style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Ready to process your QR code image</p>
+                        </div>
+
+                        <!-- Image Preview - Compact -->
+                        <div style="margin: 14px auto; max-width: 180px; border-radius: 10px; overflow: hidden; border: 2px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <img src="${imageUrl}" alt="QR Code Preview" style="width: 100%; height: auto; display: block;" />
+                        </div>
+
+                        <!-- File Info - Compact -->
+                        <div style="background: rgba(248, 250, 252, 0.8); border-radius: 10px; padding: 12px; margin: 14px 0; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <i class="mdi mdi-file-image" style="font-size: 16px; color: #10b981;"></i>
+                                <span style="font-weight: 600; color: #1e293b; font-size: 12px;">${file.name}</span>
+                            </div>
+                            <div style="display: flex; gap: 12px; font-size: 11px; color: #64748b; margin-left: 24px;">
+                                <span><i class="mdi mdi-file"></i> ${file.type}</span>
+                                <span><i class="mdi mdi-scale"></i> ${fileSize}</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 18px;">
+                            <button type="button" class="btn" onclick="cancelQRUpload()" style="padding: 10px 20px; border: 2px solid #e2e8f0; background: white; color: #64748b; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                                <i class="mdi mdi-close"></i>
+                                <span>Cancel</span>
+                            </button>
+                            <button type="button" class="btn btn-qr-scanner" onclick="processQRFile()" style="padding: 10px 24px; margin: 0;">
+                                <i class="mdi mdi-qrcode-scan"></i>
+                                <span>Process QR Code</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Format file size helper
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            // Cancel QR Upload
+            function cancelQRUpload() {
+                console.log('QR upload cancelled');
+                
+                // Clean up
+                const fileInput = document.getElementById('qrFileInput');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+                
+                // Clear stored file
+                window.qrFileToProcess = null;
+                
+                // Reset modal to initial state
+                resetQRModal();
+                
+                showMessage('Upload cancelled', 'info');
+            }
+
+            // Process QR Code URL (from camera scan) - Skip decode step, directly fetch document
+            async function processQRCodeURL(qrCodeURL) {
+                console.log('=== Processing QR Code URL from Camera ===');
+                console.log('📱 Decoded URL:', qrCodeURL);
+                
+                try {
+                    // Show QR scanning animation in modal
+                    const qrContent = document.querySelector('.qr-scanner-content');
+                    if (qrContent) {
+                        qrContent.innerHTML = `
+                            <div style="text-align: center; padding: 30px 20px;">
+                                <div style="position: relative; width: 200px; height: 200px; margin: 0 auto 30px;">
+                                    <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 16px; border: 3px solid #10b981;">
+                                        <i class="mdi mdi-qrcode" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; color: #10b981; opacity: 0.3;"></i>
+                                    </div>
+                                    <div style="position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #10b981, transparent); animation: qrScanLine 2s ease-in-out infinite; box-shadow: 0 0 10px #10b981;"></div>
+                                </div>
+                                <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">
+                                    <i class="mdi mdi-radar" style="color: #10b981; margin-right: 8px;"></i>
+                                    Processing QR Code...
+                                </h3>
+                                <p style="font-size: 14px; color: #64748b;" id="qrProcessingStatus">Fetching document from URL...</p>
+                            </div>
+                        `;
+                    }
+
+                    const statusElem = document.getElementById('qrProcessingStatus');
+
+                    // Fetch document directly from URL
+                    console.log('📥 Fetching document from URL:', qrCodeURL);
+                    if (statusElem) statusElem.textContent = 'Fetching document...';
+
+                    const docResponse = await fetch(qrCodeURL, {
+                        method: 'GET',
+                        mode: 'cors',
+                        credentials: 'omit',
+                        redirect: 'follow',
+                        headers: {
+                            'Accept': 'application/pdf,image/*,*/*',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                        }
+                    });
+
+                    if (!docResponse.ok) {
+                        throw new Error(`Failed to fetch document: ${docResponse.status} ${docResponse.statusText}`);
+                    }
+
+                    // Get document details
+                    const contentType = docResponse.headers.get('content-type') || 'application/pdf';
+                    const documentBlob = await docResponse.blob();
+                    
+                    // Extract filename
+                    let documentFileName = 'QR_Document.pdf';
+                    const contentDisposition = docResponse.headers.get('content-disposition');
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (filenameMatch && filenameMatch[1]) {
+                            documentFileName = filenameMatch[1].replace(/['"]/g, '');
+                        }
+                    }
+                    
+                    // Try to get filename from URL
+                    if (documentFileName === 'QR_Document.pdf') {
+                        try {
+                            const urlPath = new URL(qrCodeURL).pathname;
+                            const pathParts = urlPath.split('/');
+                            const lastPart = pathParts[pathParts.length - 1];
+                            if (lastPart && lastPart.includes('.')) {
+                                documentFileName = lastPart;
+                            }
+                        } catch (e) {
+                            // Use default name
+                        }
+                    }
+
+                    const documentMimeType = documentBlob.type || contentType;
+
+                    console.log('✅ Document fetched successfully:');
+                    console.log('   Filename:', documentFileName);
+                    console.log('   Size:', documentBlob.size, 'bytes');
+                    console.log('   MIME Type:', documentMimeType);
+
+                    // Show document preview
+                    showQRDocumentPreview(documentBlob, documentFileName, documentMimeType, qrCodeURL);
+
+                } catch (error) {
+                    console.error('❌ Error processing QR code URL:', error);
+                    showMessage('❌ ' + error.message, 'error');
+                    
+                    // Reset QR modal
+                    const qrModal = document.getElementById('qrScannerModal');
+                    if (qrModal && qrModal.classList.contains('active')) {
+                        setTimeout(() => resetQRModal(), 2000);
+                    }
+                }
+            }
+
+            // Process QR File - STEP 2: Same workflow as Smart Capture (WebSocket + AI Classification)
+            async function processQRFile() {
+                console.log('=== Processing QR File - Using SAME workflow as Smart Capture ===');
+                
+                const file = window.qrFileToProcess;
+                if (!file) {
+                    showMessage('No file to process', 'error');
+                    return;
+                }
+
+                try {
+                    // STEP 1: Show QR scanning animation in modal
+                    const qrContent = document.querySelector('.qr-scanner-content');
+                    if (qrContent) {
+                        qrContent.innerHTML = `
+                            <div style="text-align: center; padding: 30px 20px;">
+                                <!-- QR Code Scanning Animation -->
+                                <div style="position: relative; width: 200px; height: 200px; margin: 0 auto 30px;">
+                                    <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border-radius: 16px; border: 3px solid #10b981;">
+                                        <i class="mdi mdi-qrcode" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; color: #10b981; opacity: 0.3;"></i>
+                                    </div>
+                                    <div style="position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #10b981, transparent); animation: qrScanLine 2s ease-in-out infinite; box-shadow: 0 0 10px #10b981;"></div>
+                                    <div style="position: absolute; top: -3px; left: -3px; width: 40px; height: 40px; border-top: 4px solid #10b981; border-left: 4px solid #10b981; border-radius: 4px 0 0 0;"></div>
+                                    <div style="position: absolute; top: -3px; right: -3px; width: 40px; height: 40px; border-top: 4px solid #10b981; border-right: 4px solid #10b981; border-radius: 0 4px 0 0;"></div>
+                                    <div style="position: absolute; bottom: -3px; left: -3px; width: 40px; height: 40px; border-bottom: 4px solid #10b981; border-left: 4px solid #10b981; border-radius: 0 0 0 4px;"></div>
+                                    <div style="position: absolute; bottom: -3px; right: -3px; width: 40px; height: 40px; border-bottom: 4px solid #10b981; border-right: 4px solid #10b981; border-radius: 0 0 4px 0;"></div>
+                                </div>
+                                
+                                <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">
+                                    <i class="mdi mdi-radar" style="color: #10b981; margin-right: 8px; animation: pulse 1.5s ease-in-out infinite;"></i>
+                                    Scanning QR Code...
+                                </h3>
+                                <p style="font-size: 14px; color: #64748b;" id="qrProcessingStatus">Decoding QR code and extracting document</p>
+                                
+                                <div style="display: flex; gap: 8px; justify-content: center; margin-top: 20px;">
+                                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: dotPulse 1.5s ease-in-out infinite;"></div>
+                                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: dotPulse 1.5s ease-in-out 0.2s infinite;"></div>
+                                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: dotPulse 1.5s ease-in-out 0.4s infinite;"></div>
+                                </div>
+                                
+                                <style>
+                                    @keyframes qrScanLine {
+                                        0% { top: 0; }
+                                        50% { top: calc(100% - 3px); }
+                                        100% { top: 0; }
+                                    }
+                                    @keyframes pulse {
+                                        0%, 100% { opacity: 1; transform: scale(1); }
+                                        50% { opacity: 0.5; transform: scale(1.1); }
+                                    }
+                                    @keyframes dotPulse {
+                                        0%, 100% { opacity: 0.3; transform: scale(0.8); }
+                                        50% { opacity: 1; transform: scale(1.2); }
+                                    }
+                                </style>
+                            </div>
+                        `;
+                    }
+
+                    const statusElem = document.getElementById('qrProcessingStatus');
+
+                    // STEP 2: Decode QR code to get document URL
+                    const qrFormData = new FormData();
+                    qrFormData.append('file', file);
+                    qrFormData.append('repository_id', REPOSITORY_CONFIG.repository_id || 'trade_finance');
+
+                    console.log('📱 Step 1: Decoding QR code...');
+                    if (statusElem) statusElem.textContent = 'Decoding QR code...';
+
+                    const qrResponse = await fetch('/api/qr/process', {
+                        method: 'POST',
+                        body: qrFormData
+                    });
+
+                    if (!qrResponse.ok) {
+                        const errorData = await qrResponse.json().catch(() => ({ error: 'Failed to decode QR' }));
+                        throw new Error(errorData.error || errorData.message || 'QR decode failed');
+                    }
+
+                    const qrResult = await qrResponse.json();
+                    console.log('✅ QR decoded:', qrResult);
+
+                    if (!qrResult.document_url && !qrResult.document_file) {
+                        throw new Error('No document found in QR code');
+                    }
+
+                    // STEP 3: Fetch document from URL (with HTML parsing support)
+                    if (statusElem) statusElem.textContent = 'Fetching document from QR...';
+                    console.log('📥 Step 2: Fetching document from URL:', qrResult.document_url);
+
+                    let documentBlob;
+                    let documentFileName = 'QR_Document.pdf';
+                    let documentMimeType = 'application/pdf';
+
+                    if (qrResult.document_url) {
+                        // Fetch document from URL with redirect handling
+                        console.log('🌐 Fetching from URL:', qrResult.document_url);
+                        console.log('🔄 Following redirects automatically...');
+                        
+                        const docResponse = await fetch(qrResult.document_url, {
+                            method: 'GET',
+                            mode: 'cors',
+                            credentials: 'omit',
+                            redirect: 'follow',  // Explicitly follow redirects (this is default but we make it clear)
+                            headers: {
+                                'Accept': 'application/pdf,image/*,*/*',
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                            }
+                        });
+                        
+                        // Log redirect information
+                        const finalUrl = docResponse.url;  // This is the URL after all redirects
+                        if (finalUrl !== qrResult.document_url) {
+                            console.log('✅ Redirect detected!');
+                            console.log('   Original URL:', qrResult.document_url);
+                            console.log('   Final URL:', finalUrl);
+                            console.log('   Redirected:', docResponse.redirected);
+                        } else {
+                            console.log('ℹ️ No redirect - direct URL');
+                        }
+                        
+                        if (!docResponse.ok) {
+                            throw new Error(`Failed to fetch document: ${docResponse.status} ${docResponse.statusText}`);
+                        }
+                        
+                        // Get MIME type from response
+                        const contentType = docResponse.headers.get('content-type') || '';
+                        console.log('📋 Response Content-Type:', contentType);
+                        
+                        // Try to extract filename from final URL or Content-Disposition header
+                        let extractedFileName = 'QR_Document.pdf';
+                        
+                        // Method 1: Check Content-Disposition header
+                        const contentDisposition = docResponse.headers.get('content-disposition');
+                        if (contentDisposition) {
+                            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (filenameMatch && filenameMatch[1]) {
+                                extractedFileName = filenameMatch[1].replace(/['"]/g, '');
+                                console.log('📝 Filename from Content-Disposition:', extractedFileName);
+                            }
+                        }
+                        
+                        // Method 2: Extract from final URL path
+                        if (extractedFileName === 'QR_Document.pdf' && finalUrl) {
+                            try {
+                                const urlPath = new URL(finalUrl).pathname;
+                                const pathParts = urlPath.split('/');
+                                const lastPart = pathParts[pathParts.length - 1];
+                                if (lastPart && lastPart.includes('.')) {
+                                    extractedFileName = lastPart;
+                                    console.log('📝 Filename from URL path:', extractedFileName);
+                                }
+                            } catch (e) {
+                                console.log('⚠️ Could not parse final URL for filename');
+                            }
+                        }
+                        
+                        documentFileName = extractedFileName;
+                        
+                        // Get blob
+                        documentBlob = await docResponse.blob();
+                        documentMimeType = documentBlob.type || contentType || 'application/pdf';
+                        
+                        console.log('📄 Blob MIME type:', documentBlob.type);
+                        console.log('📄 Final MIME type:', documentMimeType);
+                        console.log('📦 Blob size:', documentBlob.size, 'bytes');
+                        console.log('📝 Final filename:', documentFileName);
+                        
+                        // ✨ OPTION 2: Parse HTML landing pages to extract real document URL
+                        if (documentMimeType.includes('text/html')) {
+                            console.warn('⚠️ Received HTML page instead of direct document');
+                            console.log('🔍 Attempting to parse HTML to find real document URL...');
+                            
+                            if (statusElem) statusElem.textContent = 'Parsing landing page...';
+                            
+                            try {
+                                let realDocUrl = null;
+                                
+                                // 🎯 SCAN.PAGE SPECIFIC HANDLER
+                                if (qrResult.document_url.includes('scan.page')) {
+                                    console.log('📱 Detected scan.page URL - using specialized handler');
+                                    
+                                    // scan.page URL pattern: https://scan.page/p/c3pTa0
+                                    // Real PDF URL pattern: https://scan.page/api/pages/c3pTa0/download
+                                    // or: https://scan.page/api/pages/c3pTa0/pdf
+                                    
+                                    const urlParts = qrResult.document_url.split('/');
+                                    const pageId = urlParts[urlParts.length - 1]; // Get 'c3pTa0'
+                                    
+                                    // Try multiple scan.page API endpoints
+                                    const scanPageEndpoints = [
+                                        `https://scan.page/api/pages/${pageId}/download`,
+                                        `https://scan.page/api/pages/${pageId}/pdf`,
+                                        `https://scan.page/api/scans/${pageId}/download`,
+                                        `https://api.scan.page/pages/${pageId}/download`
+                                    ];
+                                    
+                                    console.log('� Trying scan.page endpoints for page ID:', pageId);
+                                    
+                                    for (const endpoint of scanPageEndpoints) {
+                                        try {
+                                            console.log('  Trying:', endpoint);
+                                            const testResponse = await fetch(endpoint, {
+                                                method: 'HEAD',
+                                                mode: 'cors',
+                                                credentials: 'omit'
+                                            });
+                                            
+                                            if (testResponse.ok) {
+                                                const contentType = testResponse.headers.get('content-type');
+                                                if (contentType && contentType.includes('pdf')) {
+                                                    realDocUrl = endpoint;
+                                                    console.log('✅ Found scan.page PDF endpoint:', realDocUrl);
+                                                    break;
+                                                }
+                                            }
+                                        } catch (e) {
+                                            console.log('  ❌ Endpoint failed:', e.message);
+                                        }
+                                    }
+                                }
+                                
+                                // FALLBACK: Generic HTML parsing if scan.page handler didn't find URL
+                                if (!realDocUrl) {
+                                    console.log('🔍 Using generic HTML parsing...');
+                                    
+                                    // Convert blob to text
+                                    const htmlText = await documentBlob.text();
+                                    console.log('📄 HTML content length:', htmlText.length, 'characters');
+                                    
+                                    // Parse HTML
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(htmlText, 'text/html');
+                                    
+                                    // 1. Check for iframe with document
+                                    const iframe = doc.querySelector('iframe[src*=".pdf"], iframe[src*="/download"], iframe[src*="/file"], iframe[src*="/api/"]');
+                                    if (iframe && iframe.src) {
+                                        realDocUrl = iframe.src;
+                                        console.log('📍 Found document in iframe:', realDocUrl);
+                                    }
+                                    
+                                    // 2. Check for embed tag
+                                    if (!realDocUrl) {
+                                        const embed = doc.querySelector('embed[src*=".pdf"], embed[src*="/download"], embed[src*="/file"]');
+                                        if (embed && embed.src) {
+                                            realDocUrl = embed.src;
+                                            console.log('📍 Found document in embed:', realDocUrl);
+                                        }
+                                    }
+                                    
+                                    // 3. Check for object tag
+                                    if (!realDocUrl) {
+                                        const object = doc.querySelector('object[data*=".pdf"], object[data*="/download"], object[data*="/file"]');
+                                        if (object && object.data) {
+                                            realDocUrl = object.data;
+                                            console.log('📍 Found document in object:', realDocUrl);
+                                        }
+                                    }
+                                    
+                                    // 4. Check for download/view buttons
+                                    if (!realDocUrl) {
+                                        const buttons = doc.querySelectorAll('button, a');
+                                        for (const button of buttons) {
+                                            const text = button.textContent.toLowerCase();
+                                            if (text.includes('view pdf') || text.includes('download') || text.includes('view document')) {
+                                                const href = button.getAttribute('href') || button.getAttribute('data-url') || button.getAttribute('data-href');
+                                                if (href) {
+                                                    realDocUrl = href.startsWith('http') ? href : qrResult.document_url + href;
+                                                    console.log('📍 Found document URL in button:', realDocUrl);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // 5. Check for meta tags
+                                    if (!realDocUrl) {
+                                        const metaOgImage = doc.querySelector('meta[property="og:image"]');
+                                        if (metaOgImage && metaOgImage.content && metaOgImage.content.includes('.pdf')) {
+                                            realDocUrl = metaOgImage.content;
+                                            console.log('📍 Found document in og:image meta:', realDocUrl);
+                                        }
+                                    }
+                                    
+                                    // 6. Search all links
+                                    if (!realDocUrl) {
+                                        const allLinks = doc.querySelectorAll('a[href]');
+                                        for (const link of allLinks) {
+                                            if (link.href.includes('.pdf') || link.href.includes('/download') || link.href.includes('/api/')) {
+                                                realDocUrl = link.href;
+                                                console.log('📍 Found document URL in link:', realDocUrl);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (!realDocUrl) {
+                                    console.error('❌ Could not find document URL in HTML page');
+                                    throw new Error('Could not extract document URL from landing page. The page may not contain a direct document link or may require authentication.');
+                                }
+                                
+                                // Fetch the real document
+                                console.log('🌐 Fetching real document from:', realDocUrl);
+                                if (statusElem) statusElem.textContent = 'Fetching extracted document...';
+                                
+                                const realDocResponse = await fetch(realDocUrl, {
+                                    method: 'GET',
+                                    mode: 'cors',
+                                    credentials: 'omit',
+                                    headers: {
+                                        'Accept': 'application/pdf,image/*,*/*'
+                                    }
+                                });
+                                
+                                if (!realDocResponse.ok) {
+                                    throw new Error(`Failed to fetch real document: ${realDocResponse.status} ${realDocResponse.statusText}`);
+                                }
+                                
+                                // Get the real document blob
+                                documentBlob = await realDocResponse.blob();
+                                documentMimeType = documentBlob.type || realDocResponse.headers.get('content-type') || 'application/pdf';
+                                
+                                console.log('✅ Successfully fetched real document');
+                                console.log('📄 Real document MIME type:', documentMimeType);
+                                console.log('📦 Real document size:', documentBlob.size, 'bytes');
+                                
+                                // Verify it's not HTML again
+                                if (documentMimeType.includes('text/html')) {
+                                    throw new Error('Extracted URL also points to an HTML page. Cannot process this QR code.');
+                                }
+                                
+                            } catch (parseError) {
+                                console.error('❌ HTML parsing failed:', parseError);
+                                throw new Error(`Failed to parse landing page: ${parseError.message}`);
+                            }
+                        }
+                        
+                        // Final validation: Check if we still got text/plain
+                        if (documentMimeType.includes('text/plain')) {
+                            console.error('❌ Received plain text instead of document');
+                            throw new Error('QR code URL does not point to a valid document. Received plain text response.');
+                        }
+                        
+                        // Note: Filename already extracted from redirect handling above
+                        console.log('📝 Using filename from redirect:', documentFileName);
+                        
+                    } else if (qrResult.document_file) {
+                        // Base64 encoded document
+                        const byteCharacters = atob(qrResult.document_file);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        documentMimeType = qrResult.content_type || 'application/pdf';
+                        documentBlob = new Blob([new Uint8Array(byteNumbers)], { type: documentMimeType });
+                        documentFileName = qrResult.filename || 'QR_Document.pdf';
+                    }
+
+                    console.log('✅ Document fetched successfully:');
+                    console.log('   Filename:', documentFileName);
+                    console.log('   Size:', documentBlob.size, 'bytes');
+                    console.log('   MIME Type:', documentMimeType);
+
+                    // STEP 4: Show document preview and ask user for confirmation
+                    console.log('📋 Showing document preview to user...');
+                    
+                    // Store the document for later processing
+                    window.qrDocumentToProcess = {
+                        blob: documentBlob,
+                        fileName: documentFileName,
+                        mimeType: documentMimeType,
+                        originalUrl: qrResult.document_url,
+                        source: 'qr_scanner'
+                    };
+                    
+                    console.log('📦 Document stored for processing:');
+                    console.log('   Blob size:', documentBlob.size, 'bytes');
+                    console.log('   File name:', documentFileName);
+                    console.log('   MIME type:', documentMimeType);
+                    console.log('   Original URL:', qrResult.document_url);
+                    
+                    // Show document details in QR modal
+                    console.log('📋 Showing preview modal...');
+                    showQRDocumentPreview(documentBlob, documentFileName, documentMimeType, qrResult.document_url);
+                    console.log('✅ Preview should now be visible. Waiting for user to click "Process Document" button...');
+
+                } catch (error) {
+                    console.error('❌ Error in QR processing:', error);
+                    
+                    // Hide progress loader
+                    if (window.progressLoader) {
+                        window.progressLoader.hide();
+                    }
+                    
+                    // User-friendly error messages
+                    let errorMessage = 'Error processing QR code';
+                    if (error.message.includes('No QR code detected')) {
+                        errorMessage = 'No QR code found. Please upload a clear QR code image.';
+                    } else if (error.message.includes('fetch document')) {
+                        errorMessage = 'Could not access document from QR code URL.';
+                    } else if (error.message.includes('text data but no document')) {
+                        errorMessage = 'QR contains text only. Need a QR with document URL.';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                    
+                    showMessage('❌ ' + errorMessage, 'error');
+                    
+                    // Reset QR modal if still visible
+                    const qrModal = document.getElementById('qrScannerModal');
+                    if (qrModal && qrModal.classList.contains('active')) {
+                        setTimeout(() => resetQRModal(), 2000);
+                    }
+                }
+            }
+            
+            // Fallback function to process QR document directly if Smart Capture is unavailable
+            async function processQRDocumentDirectly(documentBlob, documentFileName, documentMimeType) {
+                console.log('🔄 Processing QR document directly via API...');
+                
+                try {
+                    // Check and initialize WebSocket if needed
+                    if (!window.aiWebSocket) {
+                        const chatbotFrame = document.getElementById('chatbotFrame');
+                        if (chatbotFrame && chatbotFrame.contentWindow && chatbotFrame.contentWindow.aiWebSocket) {
+                            window.aiWebSocket = chatbotFrame.contentWindow.aiWebSocket;
+                        }
+                    }
+                    
+                    // Check and initialize progress loader if needed
+                    if (!window.progressLoader) {
+                        const chatbotFrame = document.getElementById('chatbotFrame');
+                        if (chatbotFrame && chatbotFrame.contentWindow && chatbotFrame.contentWindow.progressLoader) {
+                            window.progressLoader = chatbotFrame.contentWindow.progressLoader;
+                        }
+                    }
+                    
+                    // Show progress loader
+                    if (window.progressLoader) {
+                        window.progressLoader.show();
+                    }
+
+                    // Get WebSocket client ID
+                    const clientId = window.aiWebSocket ? window.aiWebSocket.getClientId() : null;
+
+                    // Send to classification endpoint
+                    const classifyFormData = new FormData();
+                    const documentFile = new File([documentBlob], documentFileName, { type: documentMimeType });
+                    
+                    classifyFormData.append('files', documentFile);
+                    classifyFormData.append('checkCompliance', 'true');
+                    if (clientId) {
+                        classifyFormData.append('client_id', clientId);
+                    }
+                    classifyFormData.append('functionName', 'Register LC');
+                    classifyFormData.append('productName', 'Trade Finance');
+                    classifyFormData.append('repository_id', REPOSITORY_CONFIG.repository_id || 'trade_finance');
+                    classifyFormData.append('page_by_page', 'true');
+
+                    const classifyResponse = await fetch('/api/document/classify-enhanced', {
+                        method: 'POST',
+                        body: classifyFormData
+                    });
+
+                    // Hide progress loader
+                    if (window.progressLoader) {
+                        window.progressLoader.hide();
+                    }
+
+                    if (!classifyResponse.ok) {
+                        const errorData = await classifyResponse.json();
+                        throw new Error(errorData.message || 'Classification failed');
+                    }
+
+                    const classifyResult = await classifyResponse.json();
+                    console.log('✅ Classification complete:', classifyResult);
+
+                    // Extract and populate form fields
+                    if (classifyResult.success && classifyResult.results && classifyResult.results.length > 0) {
+                        const result = classifyResult.results[0];
+                        
+                        let extractedFields = {};
+                        if (result.extraction) {
+                            extractedFields = {
+                                ...result.extraction.mandatory || {},
+                                ...result.extraction.optional || {},
+                                ...result.extraction.conditional || {}
+                            };
+                        } else if (result.extracted_fields) {
+                            extractedFields = result.extracted_fields;
+                        }
+
+                        console.log('📋 Extracted fields:', Object.keys(extractedFields).length, 'fields');
+
+                        // Populate form
+                        populateFormFromQRClassification(extractedFields, result);
+
+                        showMessage(`✅ QR Document processed! Extracted ${Object.keys(extractedFields).length} fields from ${documentFileName}`, 'success');
+                    } else {
+                        throw new Error('No classification results received');
+                    }
+                } catch (error) {
+                    console.error('❌ Error in direct processing:', error);
+                    
+                    // Hide progress loader
+                    if (window.progressLoader) {
+                        window.progressLoader.hide();
+                    }
+                    
+                    showMessage('❌ ' + error.message, 'error');
+                }
+            }
+
+            // Populate form from QR classification results (SAME mapping as Smart Capture)
+            function populateFormFromQRClassification(extractedFields, result) {
+                console.log('📝 Populating form from QR document classification...');
+
+                const fieldMappings = {
+                    'lc_number': 'lcNumber',
+                    'lc_type': 'lcType',
+                    'issue_date': 'issueDate',
+                    'expiry_date': 'expiryDate',
+                    'applicant': 'applicant',
+                    'beneficiary': 'beneficiary',
+                    'issuing_bank': 'issuingBank',
+                    'advising_bank': 'advisingBank',
+                    'confirming_bank': 'confirmingBank',
+                    'currency': 'currency',
+                    'amount': 'amount',
+                    'tolerance': 'tolerance',
+                    'available_with': 'availableWith',
+                    'payment_terms': 'paymentTerms',
+                    'tenor': 'tenor',
+                    'port_of_loading': 'portOfLoading',
+                    'port_of_discharge': 'portOfDischarge',
+                    'latest_shipment_date': 'latestShipmentDate',
+                    'partial_shipment': 'partialShipment',
+                    'transhipment': 'transhipment',
+                    'goods_description': 'goodsDescription',
+                    'incoterms': 'incoterms'
+                };
+
+                let fieldsPopulated = 0;
+                
+                Object.keys(extractedFields).forEach(extractedKey => {
+                    const value = extractedFields[extractedKey];
+                    if (!value) return;
+
+                    let formFieldName = fieldMappings[extractedKey.toLowerCase()];
+                    
+                    if (!formFieldName) {
+                        // Fuzzy matching
+                        const normalizedKey = extractedKey.toLowerCase().replace(/[_\s]/g, '');
+                        for (const [mappedKey, mappedField] of Object.entries(fieldMappings)) {
+                            if (normalizedKey.includes(mappedKey.replace(/[_\s]/g, ''))) {
+                                formFieldName = mappedField;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (formFieldName) {
+                        const formField = document.getElementById(formFieldName);
+                        if (formField) {
+                            formField.value = value;
+                            formField.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                            fieldsPopulated++;
+                            console.log(`  ✓ ${formFieldName} = ${value}`);
+                        }
+                    }
+                });
+
+                console.log(`✅ Populated ${fieldsPopulated} form fields from QR document`);
+
+                // Scroll to first field
+                const firstField = document.querySelector('input[style*="background-color"]');
+                if (firstField) {
+                    firstField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            // Function to show QR document preview before processing
+            function showQRDocumentPreview(blob, fileName, mimeType, originalUrl) {
+                console.log('📋 Showing QR document preview:', { fileName, mimeType, size: blob.size });
+                
+                // Store document for later processing
+                window.qrDocumentToProcess = {
+                    blob: blob,
+                    fileName: fileName,
+                    mimeType: mimeType,
+                    originalUrl: originalUrl
+                };
+
+                // Get the modal content area
+                const qrContent = document.querySelector('.qr-scanner-content');
+                if (!qrContent) {
+                    console.error('❌ QR Scanner content area not found');
+                    alert('Error: QR Scanner not properly initialized');
+                    return;
+                }
+                
+                console.log('✅ QR Scanner content area found, creating preview...');
+                
+                // Create preview HTML dynamically (compact version)
+                const previewHTML = `
+                    <div id="qrDocumentPreviewDynamic" class="qr-document-preview">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid rgba(16, 185, 129, 0.2);">
+                            <i class="mdi mdi-file-document" style="font-size: 24px; color: #10b981;"></i>
+                            <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin: 0;">Document Found</h3>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(248, 250, 252, 0.8); border-radius: 6px; border-left: 3px solid #10b981;">
+                                <i class="mdi mdi-file" style="font-size: 16px; color: #10b981;"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Document</div>
+                                    <div style="font-size: 13px; color: #1e293b; word-break: break-all;">${fileName}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(248, 250, 252, 0.8); border-radius: 6px; border-left: 3px solid #10b981;">
+                                <i class="mdi mdi-file-pdf-box" style="font-size: 16px; color: #10b981;"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Type & Size</div>
+                                    <div style="font-size: 13px; color: #1e293b;">${mimeType} • ${formatFileSize(blob.size)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button onclick="processQRDocument()" style="padding: 12px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s ease;">
+                                <i class="mdi mdi-check-circle" style="font-size: 14px;"></i>
+                                Process Document
+                            </button>
+                            <button onclick="cancelQRPreview()" style="padding: 12px 20px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; background: white; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.3s ease;">
+                                <i class="mdi mdi-close-circle" style="font-size: 14px;"></i>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Replace modal content with preview
+                qrContent.innerHTML = previewHTML;
+                console.log('✅ Compact preview HTML inserted into modal');
+
+                console.log('✅ Preview displayed. Waiting for user confirmation...');
+            }
+
+            // Function to format file size
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            // Function to generate thumbnail for preview
+            function generateThumbnail(blob, mimeType) {
+                const thumbnailDiv = document.getElementById('qrPreviewThumbnail');
+                thumbnailDiv.innerHTML = ''; // Clear existing content
+
+                if (mimeType === 'application/pdf') {
+                    // For PDFs, show a PDF icon
+                    thumbnailDiv.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #e74c3c;">
+                            <i class="fas fa-file-pdf" style="font-size: 48px; margin-bottom: 8px;"></i>
+                            <span style="font-size: 12px; color: #666;">PDF Document</span>
+                        </div>
+                    `;
+                } else if (mimeType.startsWith('image/')) {
+                    // For images, show actual thumbnail
+                    const img = document.createElement('img');
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
+                    img.style.objectFit = 'contain';
+                    img.src = URL.createObjectURL(blob);
+                    thumbnailDiv.appendChild(img);
+                    
+                    // Clean up blob URL after image loads
+                    img.onload = () => URL.revokeObjectURL(img.src);
+                } else {
+                    // For other file types, show generic icon
+                    thumbnailDiv.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #3498db;">
+                            <i class="fas fa-file" style="font-size: 48px; margin-bottom: 8px;"></i>
+                            <span style="font-size: 12px; color: #666;">Document</span>
+                        </div>
+                    `;
+                }
+            }
+
+            // Function to process QR document after user confirmation
+            function processQRDocument() {
+                console.log('🚀 ========================================');
+                console.log('🚀 USER CLICKED "PROCESS DOCUMENT" BUTTON');
+                console.log('🚀 ========================================');
+                console.log('🚀 User confirmed. Processing QR document...');
+                
+                const docData = window.qrDocumentToProcess;
+                if (!docData) {
+                    console.error('❌ No document to process');
+                    alert('Error: No document data found. Please try again.');
+                    return;
+                }
+                
+                console.log('📄 Document data:', {
+                    fileName: docData.fileName,
+                    mimeType: docData.mimeType,
+                    blobSize: docData.blob.size,
+                    originalUrl: docData.originalUrl
+                });
+
+                // Close QR modal
+                document.getElementById('qrScannerModal').style.display = 'none';
+
+                // Store document for Smart Capture to access
+                window.qrDocumentForSmartCapture = docData;
+                
+                // Open Smart Capture modal (this loads the iframe with proper initialization)
+                openSmartCapture();
+                
+                // Wait for iframe to load, then send document
+                const iframe = document.getElementById('smartCaptureIframe');
+                iframe.onload = function() {
+                    console.log('📤 Smart Capture iframe loaded, hiding loader...');
+                    
+                    // Hide the loading indicator
+                    hideSmartCaptureLoading();
+                    
+                    setTimeout(() => {
+                        // Convert blob to base64 for postMessage transfer
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const base64Data = e.target.result;
+                            
+                            try {
+                                iframe.contentWindow.postMessage({
+                                    type: 'PROCESS_DOCUMENT',
+                                    fileData: base64Data,
+                                    fileName: docData.fileName,
+                                    mimeType: docData.mimeType,
+                                    source: 'qr_scanner'
+                                }, '*');
+                                console.log('✅ Document sent to Smart Capture via postMessage');
+                            } catch (error) {
+                                console.error('❌ Error sending postMessage:', error);
+                            }
+                        };
+                        
+                        reader.onerror = function(error) {
+                            console.error('❌ Error reading file:', error);
+                        };
+                        
+                        reader.readAsDataURL(docData.blob);
+                    }, 1000); // Wait 1 second for iframe to fully initialize
+                };
+
+                // Clean up
+                window.qrDocumentToProcess = null;
+            }
+
+            // Function to cancel QR preview and go back to options
+            function cancelQRPreview() {
+                console.log('❌ User cancelled. Resetting QR scanner...');
+                
+                // Hide preview section
+                document.getElementById('qrDocumentPreview').style.display = 'none';
+                
+                // Show options section
+                document.getElementById('qrScannerOptions').style.display = 'block';
+
+                // Clear stored document
+                window.qrDocumentToProcess = null;
+
+                // Reset file input
+                const fileInput = document.getElementById('qrFileInput');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+
+                console.log('✅ QR scanner reset');
+            }
+
+            // Helper function to show notification
+            function showNotification(message, type = 'info') {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 16px 24px;
+                    border-radius: 10px;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    max-width: 400px;
+                `;
+
+                // Set color based on type
+                if (type === 'success') {
+                    notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                } else if (type === 'error') {
+                    notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                } else {
+                    notification.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+                }
+
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            // Helper function to show progress loader
+            function showProgressLoader(message) {
+                let loader = document.getElementById('progressLoader');
+                if (!loader) {
+                    loader = document.createElement('div');
+                    loader.id = 'progressLoader';
+                    loader.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.7);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10000;
+                        backdrop-filter: blur(4px);
+                    `;
+                    
+                    loader.innerHTML = `
+                        <div style="background: white; padding: 32px; border-radius: 16px; text-align: center; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);">
+                            <div style="width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+                            <p id="progressMessage" style="margin: 0; font-size: 16px; font-weight: 600; color: #1e293b;">${message}</p>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(loader);
+                    
+                    // Add spin animation if not already added
+                    if (!document.getElementById('spinAnimation')) {
+                        const style = document.createElement('style');
+                        style.id = 'spinAnimation';
+                        style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+                        document.head.appendChild(style);
+                    }
+                } else {
+                    loader.style.display = 'flex';
+                    const messageEl = loader.querySelector('#progressMessage');
+                    if (messageEl) messageEl.textContent = message;
+                }
+            }
+
+            // Helper function to hide progress loader
+            function hideProgressLoader() {
+                const loader = document.getElementById('progressLoader');
+                if (loader) {
+                    loader.style.display = 'none';
+                }
+            }
+
+            // ========================================
+            // END QR SCANNER FUNCTIONS
+            // ========================================
 
             // Load draft on page load
             window.addEventListener('load', function () {

@@ -457,8 +457,8 @@ Quality Guidelines:
 
     def analyze_document_quality_fast(self, file_path: str, file_name: str, progress_tracker=None) -> Dict:
         """
-        OPTIMIZED: Fast quality analysis focusing on 5 key metrics.
-        Reduces processing time by 70-80% while maintaining accuracy.
+        OPTIMIZED: Parallel quality analysis with threading for maximum speed.
+        Analyzes all pages simultaneously instead of sequentially.
         
         Args:
             file_path: Path to the document file
@@ -471,10 +471,10 @@ Quality Guidelines:
         start_time = time.time()
         
         try:
-            logger.info(f"FAST quality analysis for: {file_name}")
+            logger.info(f"PARALLEL quality analysis for: {file_name}")
             
             if progress_tracker:
-                progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, "Fast quality analysis...", 10)
+                progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, "Parallel quality analysis...", 10)
             
             # Convert document to images
             if file_path.lower().endswith('.pdf'):
@@ -486,26 +486,54 @@ Quality Guidelines:
             if not images:
                 return self._create_error_result("Failed to process document images", file_name)
             
-            page_results = []
-            total_score = 0
-            valid_pages = 0
+            logger.info(f"Starting PARALLEL analysis of {len(images)} pages using threading")
             
-            # Analyze each page with optimized settings
+            # PARALLEL PROCESSING: Analyze all pages simultaneously
+            import threading
+            from queue import Queue
+            
+            results_queue = Queue()
+            threads = []
+            
+            def analyze_page_thread(img_base64, page_num, results_queue):
+                """Thread worker for parallel page analysis"""
+                try:
+                    result = self._analyze_page_fast(img_base64, page_num)
+                    results_queue.put((page_num, result))
+                except Exception as e:
+                    logger.error(f"Thread error analyzing page {page_num}: {str(e)}")
+                    results_queue.put((page_num, None))
+            
+            # Start all threads
             for i, img_base64 in enumerate(images):
-                if progress_tracker:
-                    progress = 20 + (i / len(images)) * 70
-                    progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, f"Analyzing page {i+1}/{len(images)}", progress)
-                
-                page_result = self._analyze_page_fast(img_base64, i + 1)
-                if page_result:
-                    page_results.append(page_result)
-                    total_score += page_result["score"]
-                    valid_pages += 1
+                thread = threading.Thread(
+                    target=analyze_page_thread,
+                    args=(img_base64, i + 1, results_queue),
+                    daemon=True
+                )
+                threads.append(thread)
+                thread.start()
             
-            if valid_pages == 0:
+            # Wait for all threads to complete
+            for thread in threads:
+                thread.join()
+            
+            # Collect results in order
+            page_results_dict = {}
+            while not results_queue.empty():
+                page_num, result = results_queue.get()
+                if result:
+                    page_results_dict[page_num] = result
+            
+            # Sort by page number
+            page_results = [page_results_dict[i] for i in sorted(page_results_dict.keys())]
+            
+            if not page_results:
                 return self._create_error_result("No pages could be analyzed", file_name)
             
             # Calculate results
+            total_score = sum(r["score"] for r in page_results)
+            valid_pages = len(page_results)
             overall_score = total_score / valid_pages
             verdict = self._determine_verdict(overall_score)
             processing_time = time.time() - start_time
@@ -514,7 +542,7 @@ Quality Guidelines:
                 "success": True,
                 "quality_score": round(overall_score, 3),
                 "verdict": verdict,
-                "analysis_type": "gpt4o_vision_optimized",
+                "analysis_type": "gpt4o_vision_parallel",
                 "pages_analyzed": valid_pages,
                 "page_results": page_results,
                 "file_name": file_name,
@@ -522,15 +550,15 @@ Quality Guidelines:
                 "recommendations": self._get_processing_recommendations(verdict, overall_score)
             }
             
-            logger.info(f"FAST quality analysis: {verdict} (score: {overall_score:.3f}) in {processing_time:.2f}s")
+            logger.info(f"PARALLEL quality analysis: {verdict} (score: {overall_score:.3f}) in {processing_time:.2f}s - {len(images)} pages analyzed simultaneously")
             
             if progress_tracker:
-                progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, f"Fast analysis complete: {verdict}", 100)
+                progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, f"Parallel analysis complete: {verdict}", 100)
             
             return result
             
         except Exception as e:
-            logger.error(f"Fast quality analysis failed for {file_name}: {str(e)}")
+            logger.error(f"Parallel quality analysis failed for {file_name}: {str(e)}")
             return self._create_error_result(str(e), file_name)
 
     def _convert_pdf_to_images_fast(self, pdf_path: str) -> List[str]:

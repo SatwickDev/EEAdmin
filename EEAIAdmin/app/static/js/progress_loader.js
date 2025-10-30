@@ -25,7 +25,6 @@ class ProgressLoader {
             'ocr_extraction': 'Extracting Text (OCR)',
             'document_classification': 'Analyzing Document',
             'field_extraction': 'Extracting Fields',
-            'compliance_check': 'Checking Compliance',
             'finalizing': 'Finalizing',
             'completed': 'Complete',
             'error': 'Error'
@@ -39,7 +38,6 @@ class ProgressLoader {
             'ocr_extraction': 'mdi-text-recognition',
             'document_classification': 'mdi-file-search',
             'field_extraction': 'mdi-table-search',
-            'compliance_check': 'mdi-shield-check',
             'finalizing': 'mdi-check-circle',
             'completed': 'mdi-check-circle',
             'error': 'mdi-alert-circle'
@@ -114,14 +112,6 @@ class ProgressLoader {
                             <div class="progress-stage-item" data-stage="field_extraction">
                                 <div class="progress-stage-dot"></div>
                                 <span>Extract</span>
-                            </div>
-                            <div class="progress-stage-item" data-stage="compliance_check">
-                                <div class="progress-stage-dot"></div>
-                                <span>Comply</span>
-                            </div>
-                            <div class="progress-stage-item" data-stage="finalizing">
-                                <div class="progress-stage-dot"></div>
-                                <span>Finalize</span>
                             </div>
                             <div class="progress-stage-item" data-stage="completed">
                                 <div class="progress-stage-dot"></div>

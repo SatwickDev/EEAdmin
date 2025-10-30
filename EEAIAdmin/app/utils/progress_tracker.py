@@ -215,14 +215,14 @@ class DocumentProcessingTracker(ProgressTracker):
     def __init__(self, websocket_handler=None, client_id: Optional[str] = None, task_id: Optional[str] = None):
         super().__init__(websocket_handler, client_id, task_id)
         # Define stage weights for progress calculation
+        # Note: Compliance check removed from visible progress (runs in background)
         self.stage_weights = {
             ProcessingStage.UPLOADING: 10,
-            ProcessingStage.QUALITY_ANALYSIS: 10,
+            ProcessingStage.QUALITY_ANALYSIS: 15,
             ProcessingStage.OCR_EXTRACTION: 25,
-            ProcessingStage.DOCUMENT_CLASSIFICATION: 20,
-            ProcessingStage.FIELD_EXTRACTION: 20,
-            ProcessingStage.COMPLIANCE_CHECK: 10,
-            ProcessingStage.FINALIZING: 5
+            ProcessingStage.DOCUMENT_CLASSIFICATION: 25,
+            ProcessingStage.FIELD_EXTRACTION: 25,
+            ProcessingStage.FINALIZING: 0
         }
 
     def start_upload(self, filename: str):
@@ -330,11 +330,11 @@ class DocumentProcessingTracker(ProgressTracker):
         )
 
     def field_extraction_complete(self, extracted_count: int):
-        """Mark field extraction as complete and move to compliance check"""
+        """Mark field extraction as complete and finalize (compliance runs in background)"""
         self.update_stage(
-            ProcessingStage.COMPLIANCE_CHECK,
-            f"Extracted {extracted_count} fields",
-            progress=85
+            ProcessingStage.FINALIZING,
+            f"Extracted {extracted_count} fields - Processing complete",
+            progress=100
         )
 
     def start_compliance_check(self):

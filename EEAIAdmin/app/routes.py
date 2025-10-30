@@ -7,6 +7,7 @@ import re
 import shutil
 import tempfile
 import uuid
+import threading
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 from collections import defaultdict
@@ -103,6 +104,7 @@ from app.utils.coordinate_mapper import coordinate_mapper
 # WebSocket and progress tracking
 from app.utils.websocket_handler import get_websocket_handler
 from app.utils.progress_tracker import DocumentProcessingTracker
+from app.utils.quality_analyzer import DocumentQualityAnalyzer
 from app.utils import (
     process_user_query, handle_api_request, trigger_proactive_alerts, extract_text_from_file,
     generate_sql_query, execute_sql_and_format, generate_visualization_with_inference,
@@ -400,6 +402,9 @@ conversation_manager = ConversationManager(db)
 # Initialize vetting rule engine (will be set in setup_routes)
 vetting_engine = None
 
+# Global dictionary to track background compliance check status
+# Format: {file_hash: {'status': 'processing'|'completed', 'result': {}, 'timestamp': datetime}}
+compliance_status_tracker = {}
 
 
 # ========================
@@ -4077,9 +4082,332 @@ Generate a query recipe for this request."""
 
     # Initialize rule manager
     discrepancy_rule_manager = DiscrepancyRuleManager()
-
+    
+    @app.route('/api/qr/process', methods=['POST'])
+    @timing_aspect
+    def process_qr_code():
+        """
+        Process QR code image and extract document URL or data
+        Returns document URL/data for Smart Capture to handle classification
+        """
+        try:
+            logger.info("=== QR Processing: Starting ===")
+            
+            # Get uploaded QR image
+            if 'file' not in request.files:
+                return jsonify({
+                    'success': False,
+                    'error': 'No file uploaded'
+                }), 400
+            
+            qr_file = request.files['file']
+            if not qr_file or qr_file.filename == '':
+                return jsonify({
+                    'success': False,
+                    'error': 'No file selected'
+                }), 400
+            
+            # Get additional parameters
+            repository_id = request.form.get('repository_id', 'trade_finance')
+            
+            logger.info(f"QR file: {qr_file.filename}, Repository: {repository_id}")
+            
+            # Save QR image temporarily
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_qr_file:
+                qr_file.save(temp_qr_file.name)
+                qr_image_path = temp_qr_file.name
+            
+            try:
+                # Read QR code image using OpenCV
+                img = cv2.imread(qr_image_path)
+                if img is None:
+                    raise Exception("Could not read QR code image")
+                
+                # Initialize QR detector
+                qr_detector = cv2.QRCodeDetector()
+                
+                # Detect and decode QR code
+                data, points, straight_qrcode = qr_detector.detectAndDecode(img)
+                
+                # Enhanced logging for debugging
+                logger.info(f"QR Detection result - Data present: {bool(data)}, Data length: {len(data) if data else 0}")
+                if points is not None:
+                    logger.info(f"QR Detection result - Points detected: {len(points)}")
+                
+                if not data or data == '':
+                    logger.warning("No QR code detected in image")
+                    return jsonify({
+                        'success': False,
+                        'error': 'No QR code detected in the image. Please upload a clear QR code image.'
+                    }), 400
+                
+                logger.info(f"✅ QR Code decoded successfully!")
+                logger.info(f"   Data length: {len(data)} characters")
+                logger.info(f"   First 200 chars: {data[:200]}")
+                if len(data) > 200:
+                    logger.info(f"   Last 100 chars: ...{data[-100:]}")
+                
+                # Determine if QR contains URL or embedded data
+                is_url = data.startswith('http://') or data.startswith('https://')
+                logger.info(f"QR data type: {'url' if is_url else 'data'}")
+                
+                if is_url:
+                    # QR contains document URL - return URL for Smart Capture to fetch and process
+                    logger.info(f"📌 QR contains document URL: {data}")
+                    
+                    # Special handling for scan.page URLs (they use JS redirects)
+                    final_document_url = data
+                    
+                    # Check if URL is already a direct PDF/document link
+                    is_direct_document = (
+                        data.lower().endswith('.pdf') or 
+                        data.lower().endswith('.jpg') or 
+                        data.lower().endswith('.jpeg') or 
+                        data.lower().endswith('.png') or
+                        '/uploads/' in data.lower()  # Common pattern for direct uploads
+                    )
+                    
+                    if 'scan.page' in data and not is_direct_document:
+                        logger.info(f"🔍 Detected scan.page landing page URL - attempting to find direct PDF link...")
+                        try:
+                            import requests
+                            from bs4 import BeautifulSoup
+                            import re
+                            
+                            # Fetch the HTML page with browser-like headers
+                            headers = {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                                'Accept-Language': 'en-US,en;q=0.5',
+                                'Accept-Encoding': 'gzip, deflate, br',
+                                'Connection': 'keep-alive',
+                                'Upgrade-Insecure-Requests': '1'
+                            }
+                            response = requests.get(data, timeout=10, allow_redirects=True, headers=headers)
+                            response.raise_for_status()
+                            
+                            # Parse HTML to find the PDF link
+                            soup = BeautifulSoup(response.text, 'html.parser')
+                            
+                            # Method 1: Look for PDF links in the HTML
+                            pdf_link = None
+                            
+                            # Try to find direct PDF link in various places
+                            for link in soup.find_all(['a', 'iframe', 'embed', 'object']):
+                                href = link.get('href') or link.get('src') or link.get('data')
+                                if href and '.pdf' in href.lower():
+                                    if href.startswith('http'):
+                                        pdf_link = href
+                                    elif href.startswith('/'):
+                                        pdf_link = f"https://qr.scan.page{href}"
+                                    else:
+                                        pdf_link = f"https://qr.scan.page/{href}"
+                                    logger.info(f"   Found PDF link in HTML: {pdf_link}")
+                                    break
+                            
+                            # Method 2: Look for PDF URL in JavaScript code
+                            if not pdf_link:
+                                scripts = soup.find_all('script')
+                                for script in scripts:
+                                    if script.string:
+                                        # Look for PDF URLs in JavaScript
+                                        pdf_matches = re.findall(r'https?://[^\s"\')]+\.pdf[^\s"\']*', script.string)
+                                        if pdf_matches:
+                                            pdf_link = pdf_matches[0]
+                                            logger.info(f"   Found PDF link in JavaScript: {pdf_link}")
+                                            break
+                            
+                            # Method 3: Try to find PDF URL in page source (even if in JS variables)
+                            if not pdf_link:
+                                logger.info(f"   Searching entire page source for PDF URLs...")
+                                # Search the entire HTML content for any PDF URLs
+                                pdf_urls_in_source = re.findall(r'https?://[^\s"\')]+\.pdf[^\s"\']*', response.text)
+                                if pdf_urls_in_source:
+                                    # Filter for qr.scan.page URLs
+                                    for url in pdf_urls_in_source:
+                                        if 'qr.scan.page' in url or 'scan.page' in url:
+                                            pdf_link = url.split('"')[0].split("'")[0]  # Clean up any trailing quotes
+                                            logger.info(f"   Found PDF URL in page source: {pdf_link}")
+                                            break
+                                    
+                                    # If no qr.scan.page URL, use the first PDF URL found
+                                    if not pdf_link and pdf_urls_in_source:
+                                        pdf_link = pdf_urls_in_source[0].split('"')[0].split("'")[0]
+                                        logger.info(f"   Found generic PDF URL in page source: {pdf_link}")
+                            
+                            # Method 4: Try common scan.page API endpoints
+                            if not pdf_link:
+                                logger.info(f"   Trying scan.page API endpoints...")
+                                page_id_match = re.search(r'scan\.page/([a-zA-Z0-9]+)', data)
+                                if page_id_match:
+                                    page_id = page_id_match.group(1)
+                                    logger.info(f"   Extracted page ID: {page_id}")
+                                    
+                                    # Try various API endpoint patterns
+                                    possible_endpoints = [
+                                        f"https://qr.scan.page/api/scans/{page_id}",
+                                        f"https://api.scan.page/scans/{page_id}",
+                                        f"https://scan.page/api/scans/{page_id}",
+                                        f"https://qr.scan.page/api/pages/{page_id}",
+                                    ]
+                                    
+                                    for endpoint in possible_endpoints:
+                                        try:
+                                            logger.info(f"   Trying API endpoint: {endpoint}")
+                                            api_response = requests.get(endpoint, timeout=5)
+                                            if api_response.status_code == 200:
+                                                api_data = api_response.json()
+                                                # Look for PDF URL in response
+                                                if 'pdf_url' in api_data:
+                                                    pdf_link = api_data['pdf_url']
+                                                    logger.info(f"   Found PDF URL via API: {pdf_link}")
+                                                    break
+                                                elif 'file_url' in api_data:
+                                                    pdf_link = api_data['file_url']
+                                                    logger.info(f"   Found file URL via API: {pdf_link}")
+                                                    break
+                                                elif 'url' in api_data:
+                                                    pdf_link = api_data['url']
+                                                    logger.info(f"   Found URL via API: {pdf_link}")
+                                                    break
+                                                else:
+                                                    # Search entire response for PDF URL
+                                                    api_text = str(api_data)
+                                                    pdf_match = re.search(r'https?://[^\s"\']+\.pdf[^\s"\']*', api_text)
+                                                    if pdf_match:
+                                                        pdf_link = pdf_match.group(0)
+                                                        logger.info(f"   Found PDF URL in API response: {pdf_link}")
+                                                        break
+                                        except Exception as api_error:
+                                            logger.debug(f"   API endpoint {endpoint} failed: {api_error}")
+                                            continue
+                            
+                            if pdf_link:
+                                final_document_url = pdf_link
+                                logger.info(f"✅ Resolved scan.page URL to direct PDF: {final_document_url}")
+                            else:
+                                logger.warning(f"⚠️ Could not find direct PDF link, will use original URL")
+                                logger.warning(f"   Frontend will attempt to parse the HTML")
+                                
+                        except Exception as e:
+                            logger.error(f"❌ Error processing scan.page URL: {e}")
+                            logger.warning(f"   Will use original URL - frontend will handle it")
+                    
+                    # Validate final URL is accessible (quick HEAD request with redirect tracking)
+                    import requests
+                    try:
+                        logger.info(f"🔍 Checking URL accessibility (with redirect following)...")
+                        head_response = requests.head(final_document_url, timeout=10, allow_redirects=True)
+                        
+                        # Log redirect information
+                        if head_response.history:
+                            logger.info(f"✅ URL redirects detected:")
+                            logger.info(f"   Original URL: {final_document_url}")
+                            for i, resp in enumerate(head_response.history, 1):
+                                logger.info(f"   Redirect {i}: {resp.status_code} → {resp.url}")
+                            logger.info(f"   Final URL: {head_response.url}")
+                            logger.info(f"   Final status: {head_response.status_code}")
+                        else:
+                            logger.info(f"✅ Direct URL (no redirects)")
+                            logger.info(f"   Status: {head_response.status_code}")
+                        
+                        # Log response headers for debugging
+                        content_type = head_response.headers.get('content-type', 'unknown')
+                        content_length = head_response.headers.get('content-length', 'unknown')
+                        logger.info(f"   Content-Type: {content_type}")
+                        logger.info(f"   Content-Length: {content_length}")
+                        
+                        head_response.raise_for_status()
+                        logger.info(f"✅ Document URL is accessible!")
+                    except requests.RequestException as e:
+                        logger.warning(f"⚠️ Could not verify URL accessibility: {e}")
+                        logger.warning(f"   URL will still be returned - frontend will handle the fetch")
+                    
+                    return jsonify({
+                        'success': True,
+                        'document_url': final_document_url,
+                        'original_url': data if final_document_url != data else None,
+                        'qr_data_type': 'url',
+                        'is_scan_page': 'scan.page' in data,
+                        'message': 'QR code decoded successfully - contains document URL'
+                    }), 200
+                
+                else:
+                    # QR contains embedded data - check if it's a base64 encoded document
+                    logger.info("QR contains embedded data, attempting to decode...")
+                    
+                    try:
+                        # Try to decode as base64
+                        if len(data) > 100:  # Reasonable size for embedded document
+                            decoded_data = base64.b64decode(data)
+                            
+                            # Detect file type
+                            file_extension = '.pdf'
+                            content_type = 'application/pdf'
+                            
+                            if decoded_data[:4] == b'%PDF':
+                                file_extension = '.pdf'
+                                content_type = 'application/pdf'
+                            elif decoded_data[:2] == b'\xff\xd8':
+                                file_extension = '.jpg'
+                                content_type = 'image/jpeg'
+                            elif decoded_data[:4] == b'\x89PNG':
+                                file_extension = '.png'
+                                content_type = 'image/png'
+                            
+                            # Save decoded document temporarily and return file path
+                            with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_doc_file:
+                                temp_doc_file.write(decoded_data)
+                                document_path = temp_doc_file.name
+                            
+                            # Encode the file content to base64 to send to frontend
+                            with open(document_path, 'rb') as f:
+                                document_content_base64 = base64.b64encode(f.read()).decode('utf-8')
+                            
+                            # Clean up temp file
+                            os.unlink(document_path)
+                            
+                            logger.info(f"Successfully decoded embedded document ({len(decoded_data)} bytes, type: {content_type})")
+                            
+                            return jsonify({
+                                'success': True,
+                                'document_file': document_content_base64,
+                                'filename': f'QR_Document{file_extension}',
+                                'content_type': content_type,
+                                'qr_data_type': 'embedded',
+                                'message': 'QR code decoded successfully - contains embedded document'
+                            }), 200
+                        
+                        else:
+                            # Small data - likely text/metadata only
+                            logger.warning("QR contains text data only (no embedded document)")
+                            return jsonify({
+                                'success': False,
+                                'error': 'QR code contains text data but no document. Please use a QR code that contains a document URL or embedded document.',
+                                'qr_data': data[:200]  # Return first 200 chars for debugging
+                            }), 400
+                    
+                    except Exception as decode_error:
+                        logger.error(f"Error decoding embedded data: {decode_error}")
+                        return jsonify({
+                            'success': False,
+                            'error': 'Could not decode embedded document data from QR code. The QR may contain text only.',
+                            'qr_data': data[:200]
+                        }), 400
+            
+            finally:
+                # Cleanup QR image file
+                if os.path.exists(qr_image_path):
+                    os.unlink(qr_image_path)
+        
+        except Exception as e:
+            logger.error(f"Error processing QR code: {e}", exc_info=True)
+            return jsonify({
+                'success': False,
+                'error': f'Error processing QR code: {str(e)}'
+            }), 500
+    
     # Discrepancy Rule API Routes
-
     @app.route('/api/discrepancy-rules', methods=['GET'])
     @timing_aspect
     def get_discrepancy_rules():
@@ -13586,6 +13914,87 @@ Return compliance status for each field.'''
     #         logger.error(f"Error in document classification: {str(e)}")
     #         return jsonify({"error": str(e)}), 500
 
+    def run_compliance_check_background(file_hash, extracted_fields, document_type):
+        """
+        Run compliance check in background thread.
+        Updates compliance_status_tracker when complete.
+        """
+        global compliance_status_tracker
+        
+        try:
+            logger.info(f"🔄 Background compliance check started for hash: {file_hash}")
+            logger.info(f"📋 Document type: {document_type}, Fields count: {len(extracted_fields)}")
+            
+            compliance_status_tracker[file_hash] = {
+                'status': 'processing',
+                'result': None,
+                'timestamp': datetime.now()
+            }
+            
+            logger.info(f"✅ Added {file_hash} to tracker with status 'processing'")
+            
+            # Initialize unified compliance result
+            unified_compliance = {}
+            
+            # Perform compliance analysis if we have extracted fields
+            if extracted_fields:
+                # Remove coordinate mapping fields before compliance analysis
+                compliance_fields = {k: v for k, v in extracted_fields.items() 
+                                   if not k.startswith('_coordinate_mapping') and 
+                                      k not in ['coordinate_mapping_stats']}
+                
+                logger.info(f"📋 Compliance fields after filtering: {len(compliance_fields)}")
+                
+                try:
+                    # RULE-BASED UNIFIED COMPLIANCE
+                    from app.utils.query_utils import (
+                        analyze_unified_compliance_fast, 
+                        get_unified_compliance_result, 
+                        clear_unified_compliance_result
+                    )
+                    
+                    clear_unified_compliance_result()
+                    
+                    logger.info(f"📋 Starting compliance analysis for {document_type}")
+                    
+                    # Single unified compliance call
+                    analyze_unified_compliance_fast(compliance_fields, document_type)
+                    
+                    # Get the unified compliance result
+                    unified_compliance = get_unified_compliance_result()
+                    
+                    logger.info(f"✅ Compliance analysis returned: {len(unified_compliance)} fields")
+                    logger.info(f"📊 Sample compliance data: {str(list(unified_compliance.keys())[:5])}")
+                    
+                except Exception as e:
+                    logger.error(f"❌ Background compliance analysis failed: {e}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+                    unified_compliance = {}
+            else:
+                logger.warning(f"⚠️ No extracted fields provided for compliance check")
+            
+            # Update tracker with completed result
+            compliance_status_tracker[file_hash] = {
+                'status': 'completed',
+                'result': unified_compliance,
+                'timestamp': datetime.now()
+            }
+            
+            logger.info(f"✅ Updated tracker for {file_hash} - status: completed, fields: {len(unified_compliance)}")
+            logger.info(f"📋 Current tracker keys: {list(compliance_status_tracker.keys())}")
+            
+        except Exception as e:
+            logger.error(f"❌ Error in background compliance for {file_hash}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            compliance_status_tracker[file_hash] = {
+                'status': 'error',
+                'result': None,
+                'error': str(e),
+                'timestamp': datetime.now()
+            }
+
     def process_document_with_config(uploaded_file, function_name=None, product_name=None,
                                      document_type=None, progress_tracker=None, config=None):
         """
@@ -13817,7 +14226,7 @@ Return compliance status for each field.'''
             extraction_config = config.get('extraction', {}) if config else {}
             extraction_model = extraction_config.get('model', deployment_name)
             extraction_temp = extraction_config.get('temperature', 0.0)
-            extraction_max_tokens = extraction_config.get('max_tokens', 4000)
+            extraction_max_tokens = extraction_config.get('max_tokens', 16000)  # Increased for 46 fields with full descriptions
 
             logger.info(f"PARAMETERS: Using extraction config - Model: {extraction_model}, Temp: {extraction_temp}, MaxTokens: {extraction_max_tokens}")
 
@@ -13862,68 +14271,25 @@ Return compliance status for each field.'''
             if progress_tracker:
                 progress_tracker.field_extraction_complete(extracted_count=len(extracted_fields))
 
-            # === UCP600/SWIFT COMPLIANCE ANALYSIS ===
-            logger.info(f"SEARCH: STEP 5/6: UCP600/SWIFT COMPLIANCE ANALYSIS")
+            # === BACKGROUND COMPLIANCE ANALYSIS ===
+            # Create file hash for tracking compliance status
+            file_content_hash = hashlib.md5(f"{file_name}_{datetime.now().isoformat()}".encode()).hexdigest()
             
-            # Start compliance check progress tracking
-            if progress_tracker:
-                progress_tracker.start_compliance_check()
+            logger.info(f"🚀 Starting background compliance check for {file_content_hash}")
             
-            compliance_analysis_start = time.time()
+            # Start compliance check in background thread (non-blocking)
+            compliance_thread = threading.Thread(
+                target=run_compliance_check_background,
+                args=(file_content_hash, extracted_fields, detected_doc_type),
+                daemon=True
+            )
+            compliance_thread.start()
             
-            # Initialize unified compliance result
-            unified_compliance = {}  # NEW: Unified compliance result
+            # Set placeholder compliance result (will be updated by background thread)
+            unified_compliance = {}
+            compliance_analysis_time = 0.0  # Background processing time not counted
             
-            # Perform UCP600 and SWIFT compliance analysis if we have extracted fields
-            if extracted_fields:
-                # Remove coordinate mapping fields before compliance analysis
-                compliance_fields = {k: v for k, v in extracted_fields.items() 
-                                   if not k.startswith('_coordinate_mapping') and 
-                                      k not in ['coordinate_mapping_stats']}
-                
-                logger.info(f"Original fields: {len(extracted_fields)}, Compliance fields: {len(compliance_fields)}")
-                
-                try:
-                    # RULE-BASED UNIFIED COMPLIANCE: Use document-specific rules from discrepancy_rules.json
-                    from app.utils.query_utils import analyze_unified_compliance_fast, get_unified_compliance_result, clear_unified_compliance_result
-                    
-                    # Clear any previous compliance results
-                    clear_unified_compliance_result()
-                    
-                    logger.info(f"SPEED: RULE-BASED UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields with document-specific rules")
-                    logger.info(f"Document type: {document_type}")
-                    logger.info(f"Compliance fields: {list(compliance_fields.keys())}")
-                    
-                    # Single unified compliance call using document-specific rules
-                    analyze_unified_compliance_fast(compliance_fields, document_type)
-                    
-                    # Get the actual unified compliance result
-                    unified_compliance = get_unified_compliance_result()
-                    
-                    logger.info(f"SUCCESS:Unified compliance completed: {len(unified_compliance)} fields analyzed")
-                    logger.info(f"Unified compliance sample: {str(unified_compliance)[:150]}...")
-                    
-                except Exception as e:
-                    logger.error(f"ERROR: Unified compliance analysis failed: {e}")
-                    logger.error(f"Traceback: {traceback.format_exc()}")
-                    
-                    # Fallback: Create empty compliance
-                    logger.info("MODE: Falling back to empty compliance results...")
-                    unified_compliance = {}
-            
-            compliance_analysis_time = time.time() - compliance_analysis_start
-            logger.info(f"SUCCESS:Compliance analysis completed in {compliance_analysis_time:.2f}s")
-
-            # Complete compliance check progress tracking
-            if progress_tracker:
-                # Count compliance issues from unified compliance for progress tracking
-                compliance_issues = 0
-                if unified_compliance:
-                    # Count non-compliant fields
-                    for field_data in unified_compliance.values():
-                        if isinstance(field_data, dict) and not field_data.get("compliant", True):
-                            compliance_issues += 1
-                progress_tracker.compliance_complete(compliance_issues)
+            logger.info(f"✅ Compliance check running in background (hash: {file_content_hash})")
 
             # Transform compliance data for UI consumption
             def transform_compliance_for_ui(compliance_data, compliance_type):
@@ -14119,6 +14485,8 @@ Return compliance status for each field.'''
                 },
                 "success": True,
                 "enhanced_mode": True,
+                "compliance_hash": file_content_hash,  # Hash for tracking background compliance
+                "compliance_status": "processing",  # Initial status
                 # Legacy timing fields for frontend compatibility
                 "qualityTime": f"{quality_time:.1f}",
                 "ocrTime": f"{ocr_time:.1f}",
@@ -14181,6 +14549,546 @@ Return compliance status for each field.'''
                 except Exception as cleanup_error:
                     logger.warning(f"WARNINGS: Failed to cleanup temp file {temp_file_path}: {cleanup_error}")
 
+    def analyze_document_quality_instant(file_path, file_name, file_type):
+        """
+        OPTIMIZED: Instant quality check using file-based heuristics.
+        Replaces slow Vision API (3-5s per page) with instant file analysis (<0.1s).
+        
+        For 13-page doc: Vision API = 40-65s, Instant = <0.1s (99.8% faster!)
+        
+        Heuristics:
+        - File size (larger = better quality scans typically)
+        - File type (PDFs from digital sources are usually high quality)
+        - Page count estimate from file size
+        - Filename patterns (scan/export indicators)
+        
+        Returns same structure as Vision API for compatibility.
+        """
+        import os
+        
+        try:
+            # Get file metadata
+            file_size = os.path.getsize(file_path)
+            file_size_mb = file_size / (1024 * 1024)
+            
+            # Estimate quality based on file characteristics
+            quality_score = 0.7  # Default: good quality
+            verdict = "pre_processing"  # Default verdict
+            
+            # Size-based heuristics
+            if file_type == "application/pdf":
+                # PDF quality indicators
+                if file_size_mb > 5:
+                    # Large PDFs usually have high-quality scans or digital content
+                    quality_score = 0.85
+                    verdict = "pre_processing"
+                elif file_size_mb > 1:
+                    # Medium PDFs - typical scanned documents
+                    quality_score = 0.75
+                    verdict = "pre_processing"
+                else:
+                    # Small PDFs - might be compressed or text-only
+                    quality_score = 0.7
+                    verdict = "pre_processing"
+                
+                # Estimate page count (rough: ~100KB per page average for PDFs)
+                estimated_pages = max(1, int(file_size_mb / 0.1))
+            else:
+                # Image files
+                if file_size_mb > 2:
+                    quality_score = 0.85
+                elif file_size_mb > 0.5:
+                    quality_score = 0.75
+                else:
+                    quality_score = 0.65
+                estimated_pages = 1
+            
+            # Filename pattern heuristics
+            filename_lower = file_name.lower()
+            if any(word in filename_lower for word in ['hq', 'high', 'quality', 'export', 'digital']):
+                quality_score = min(1.0, quality_score + 0.1)
+            elif any(word in filename_lower for word in ['scan', 'fax', 'copy']):
+                quality_score = max(0.5, quality_score - 0.1)
+            
+            # Build result (same format as Vision API for compatibility)
+            result = {
+                "success": True,
+                "quality_score": round(quality_score, 3),
+                "verdict": verdict,
+                "analysis_type": "instant_heuristic",
+                "pages_analyzed": estimated_pages,
+                "page_results": [],  # Empty - not analyzing individual pages
+                "file_name": file_name,
+                "file_size_mb": round(file_size_mb, 2),
+                "processing_time": 0.0,  # Instant!
+                "recommendations": [
+                    f"Estimated {estimated_pages} pages",
+                    f"File size: {round(file_size_mb, 1)}MB",
+                    f"Quality score: {quality_score:.2f} (heuristic-based)",
+                    "Using standard OCR settings for optimal processing"
+                ]
+            }
+            
+            logger.info(f"⚡ INSTANT quality check: {verdict} (score: {quality_score:.3f}, {estimated_pages} pages, {round(file_size_mb, 1)}MB)")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Instant quality check failed: {e}")
+            # Return safe defaults
+            return {
+                "success": True,
+                "quality_score": 0.7,
+                "verdict": "pre_processing",
+                "analysis_type": "instant_heuristic_fallback",
+                "pages_analyzed": 1,
+                "page_results": [],
+                "file_name": file_name,
+                "processing_time": 0.0,
+                "recommendations": ["Using default settings"]
+            }
+
+    def extract_fields_parallel(document_groups, document_classifier, extraction_model, 
+                               extraction_temp, extraction_max_tokens, file_name,
+                               all_preview_images, quality_time, ocr_time, classification_time,
+                               quality_result, progress_tracker):
+        """
+        OPTIMIZED: Extract fields from multiple document groups in PARALLEL using threading.
+        This reduces total extraction time from (N × time_per_extraction) to max(time_per_extraction).
+        
+        For 8 document groups: Sequential = 8×8s = 64s, Parallel = ~8-10s (85% faster!)
+        
+        Args:
+            document_groups: List of document groups to extract from
+            document_classifier: DocumentClassifier instance
+            extraction_model: Model name for extraction
+            extraction_temp: Temperature for extraction
+            extraction_max_tokens: Max tokens for extraction
+            file_name: Original filename
+            all_preview_images: List of preview images
+            quality_time: Quality analysis time
+            ocr_time: OCR time
+            classification_time: Classification time
+            quality_result: Quality analysis result
+            progress_tracker: Progress tracking object
+            
+        Returns:
+            list: Extraction results for all document groups
+        """
+        import threading
+        import queue
+        import time
+        
+        results_queue = queue.Queue()
+        threads = []
+        
+        def extract_single_group(idx, group):
+            """Extract fields for a single document group (runs in separate thread)"""
+            try:
+                logger.info(f"🧵 Thread {idx}: Extracting {group['document_type']}")
+                extraction_start = time.time()
+                
+                # Build extraction prompt
+                extraction_prompt = document_classifier.build_extraction_prompt(
+                    document_type=group['document_type'],
+                    ocr_text=group['text'],
+                    page_number=group['pages'][0]
+                )
+                
+                logger.info(f"📝 Thread {idx}: Built extraction prompt ({len(extraction_prompt)} chars)")
+                logger.info(f"📝 Thread {idx}: Prompt preview (first 1000 chars): {extraction_prompt[:1000]}")
+                
+                # Add field mappings
+                field_mapping_data = load_document_field_mappings(group['document_type'])
+                if field_mapping_data:
+                    field_mapping_example = field_mapping_data.get('example', '')
+                    extraction_prompt += f"\n\n{field_mapping_example}"
+                    logger.info(f"📝 Thread {idx}: Added field mapping examples ({len(field_mapping_example)} chars)")
+                
+                logger.info(f"🤖 Thread {idx}: Calling LLM API (model: {extraction_model}, temp: {extraction_temp}, max_tokens: {extraction_max_tokens})")
+                
+                # Call LLM for extraction
+                extraction_response = openai.ChatCompletion.create(
+                    engine=extraction_model,
+                    messages=[{"role": "user", "content": extraction_prompt}],
+                    temperature=extraction_temp,
+                    max_tokens=extraction_max_tokens
+                )
+                extraction_result = extraction_response.choices[0].message.content
+                
+                logger.info(f"✅ Thread {idx}: Received LLM response ({len(extraction_result)} chars)")
+                
+                # Parse extraction result
+                try:
+                    # Log raw response for debugging
+                    logger.info(f"🔍 Thread {idx}: Raw LLM response (first 500 chars): {extraction_result[:500]}")
+                    
+                    # Try to extract JSON from markdown code blocks if present
+                    if '```json' in extraction_result:
+                        json_start = extraction_result.find('```json') + 7
+                        json_end = extraction_result.find('```', json_start)
+                        extraction_result = extraction_result[json_start:json_end].strip()
+                    elif '```' in extraction_result:
+                        json_start = extraction_result.find('```') + 3
+                        json_end = extraction_result.find('```', json_start)
+                        extraction_result = extraction_result[json_start:json_end].strip()
+                    
+                    extraction_json = json.loads(extraction_result)
+                    extracted_fields = extraction_json.get('extracted_fields', {})
+                    logger.info(f"✅ Thread {idx}: Successfully parsed {len(extracted_fields)} fields from JSON")
+                except json.JSONDecodeError as e:
+                    logger.error(f"❌ Thread {idx}: JSON parsing failed: {e}")
+                    logger.error(f"❌ Thread {idx}: Response content (first 1000 chars): {extraction_result[:1000]}")
+                    extracted_fields = {}
+                except Exception as e:
+                    logger.error(f"❌ Thread {idx}: Unexpected error during parsing: {e}")
+                    extracted_fields = {}
+                
+                extraction_time = time.time() - extraction_start
+                logger.info(f"✅ Thread {idx}: Extracted {len(extracted_fields)} fields in {extraction_time:.2f}s")
+                
+                # Start background compliance check
+                file_content_hash = hashlib.md5(f"{file_name}_{group['document_type']}_{datetime.now().isoformat()}".encode()).hexdigest()
+                compliance_thread = threading.Thread(
+                    target=run_compliance_check_background,
+                    args=(file_content_hash, extracted_fields, group['document_type']),
+                    daemon=True
+                )
+                compliance_thread.start()
+                
+                # Build result object (simplified - no transform_compliance_for_ui)
+                result = build_extraction_result(
+                    group, extracted_fields, field_mapping_data, file_name,
+                    all_preview_images, quality_time, ocr_time, classification_time,
+                    extraction_time, quality_result, extraction_model, extraction_temp,
+                    file_content_hash
+                )
+                
+                # Put result in queue with index for proper ordering
+                results_queue.put((idx, result))
+                
+                # Update progress
+                if progress_tracker:
+                    progress_tracker.update_field_extraction(current_field=idx, total_fields=len(document_groups))
+                
+            except Exception as e:
+                logger.error(f"❌ Thread {idx} error: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                results_queue.put((idx, None))
+        
+        # Start all extraction threads
+        for idx, group in enumerate(document_groups, 1):
+            thread = threading.Thread(target=extract_single_group, args=(idx, group), daemon=False)
+            thread.start()
+            threads.append(thread)
+        
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+        
+        # Collect results in correct order
+        results_dict = {}
+        while not results_queue.empty():
+            idx, result = results_queue.get()
+            if result:
+                results_dict[idx] = result
+        
+        # Return results in order
+        results = [results_dict[i] for i in sorted(results_dict.keys()) if i in results_dict]
+        
+        logger.info(f"✅ Parallel extraction complete: {len(results)} document groups processed")
+        return results
+
+    def build_extraction_result(group, extracted_fields, field_mapping_data, file_name,
+                                all_preview_images, quality_time, ocr_time, classification_time,
+                                extraction_time, quality_result, extraction_model, extraction_temp,
+                                file_content_hash):
+        """
+        Build the result object for a single extraction (simplified and optimized).
+        Removed dead code (unused transform functions) and simplified field categorization.
+        """
+        # === Categorize fields in a SINGLE PASS (optimization) ===
+        mandatory_fields = {}
+        optional_fields = {}
+        conditional_fields = {}
+        
+        # Extract coordinate mapping stats before categorization
+        coordinate_mapping_stats = extracted_fields.pop('_coordinate_mapping_stats', None)
+        
+        # Single-pass categorization
+        if field_mapping_data:
+            # Build field type lookup for O(1) access
+            field_type_map = {}
+            for mapping in field_mapping_data.get('mappings', []):
+                entity_name = mapping.get('entityName')
+                field_type = mapping.get('fieldType', 'optional')
+                if entity_name:
+                    field_type_map[entity_name] = field_type
+            
+            # Single loop through extracted fields
+            for field_name, field_data in extracted_fields.items():
+                field_type = field_type_map.get(field_name, 'optional')
+                
+                if field_type == 'mandatory':
+                    mandatory_fields[field_name] = field_data
+                elif field_type == 'conditional':
+                    conditional_fields[field_name] = field_data
+                else:
+                    optional_fields[field_name] = field_data
+        else:
+            # No mappings - all optional
+            optional_fields = extracted_fields
+        
+        # Calculate verdict from quality result
+        verdict = quality_result.get("verdict", "pre_processing") if quality_result else "pre_processing"
+        quality_score = quality_result.get("quality_score", 0.5) if quality_result else 0.5
+        
+        # Build result
+        result = {
+            "file_name": file_name,
+            "document_type": group['document_type'],
+            "confidence": int(group['confidence']),
+            "complianceScore": 85,  # Default, will be updated by background compliance
+            "classification": {
+                "document_type": group['document_type'],
+                "document_code": "",
+                "document_id": "",
+                "confidence": int(group['confidence']),
+                "reasoning": f"Classified as {group['document_type']} with {group['confidence']:.0f}% confidence on {group['page_range']}"
+            },
+            "extraction": {
+                "mandatory": mandatory_fields,
+                "optional": optional_fields,
+                "conditional": conditional_fields,
+                "schema": {
+                    "total_fields": len(extracted_fields),
+                    "mandatory_count": len(mandatory_fields),
+                    "optional_count": len(optional_fields),
+                    "conditional_count": len(conditional_fields)
+                },
+                "document_id": group['document_type']
+            },
+            "compliance": {
+                "unified": {}  # Will be populated by background thread
+            },
+            "preview_images": [all_preview_images[page-1] for page in group['pages'] if page-1 < len(all_preview_images)],
+            "processing_time": {
+                "total": f"{quality_time + ocr_time + classification_time + extraction_time:.1f}",
+                "quality_analysis": f"{quality_time:.1f}",
+                "ocr": f"{ocr_time:.1f}",
+                "classification": f"{classification_time:.1f}",
+                "extraction": f"{extraction_time:.1f}",
+                "coordinate_mapping": "0.0",
+                "compliance_analysis": "0.0"
+            },
+            "quality_analysis": {
+                "verdict": verdict,
+                "score": quality_score,
+                "recommendations": quality_result.get("recommendations", []) if quality_result else [],
+                "detailed_metrics": quality_result.get("page_results", []) if quality_result else [],
+                "processing_time": quality_result.get("processing_time", 0) if quality_result else 0,
+                "page_count": len(quality_result.get("page_results", [])) if quality_result else 0,
+                "average_metrics": _calculate_average_metrics(quality_result.get("page_results", [])) if quality_result else {}
+            },
+            "coordinate_mapping": coordinate_mapping_stats,
+            "ocr_data": {
+                "pages": group['pages'],
+                "page_range": group['page_range'],
+                "text_entries": len(group['ocr_data']),
+                "formatted_text": group['text'][:500] + "..." if len(group['text']) > 500 else group['text'],
+                "individual_pages": group.get('individual_pages', [])
+            },
+            "success": True,
+            "enhanced_mode": True,
+            "page_by_page_mode": True,
+            "compliance_hash": file_content_hash,
+            "compliance_status": "processing",
+            "qualityTime": f"{quality_time:.1f}",
+            "ocrTime": f"{ocr_time:.1f}",
+            "classificationTime": f"{classification_time:.1f}",
+            "llmTime": f"{extraction_time:.1f}",
+            "complianceTime": "0.0",
+            "config_used": {
+                "extraction_model": extraction_model,
+                "extraction_temp": extraction_temp
+            },
+            "field_mapping_enhanced": bool(field_mapping_data)
+        }
+        
+        return result
+
+    def classify_pages_batch(pages_ocr_data, document_classifier):
+        """
+        OPTIMIZED: Classify all pages in a single batch API call instead of one-by-one.
+        This reduces API calls from N to 1, dramatically improving speed for multi-page documents.
+        
+        Args:
+            pages_ocr_data: List of OCR data for each page
+            document_classifier: DocumentClassifier instance
+            
+        Returns:
+            list: Page classifications with document_type, confidence, etc.
+        """
+        try:
+            import json
+            import openai
+            
+            # Build compact page summaries for batch classification
+            pages_summary = []
+            for page_num, page_data in enumerate(pages_ocr_data, 1):
+                page_text = "\n".join([text['text'] for text in page_data])
+                
+                # Skip empty pages
+                if len(page_text.strip()) < 50:
+                    pages_summary.append({
+                        'page': page_num,
+                        'text': '[INSUFFICIENT TEXT]',
+                        'chars': len(page_text)
+                    })
+                else:
+                    # Truncate long pages for efficiency
+                    truncated_text = page_text[:1500] + "..." if len(page_text) > 1500 else page_text
+                    pages_summary.append({
+                        'page': page_num,
+                        'text': truncated_text,
+                        'chars': len(page_text)
+                    })
+            
+            # Get available document types by category
+            doc_types_by_category = {}
+            for cat_id, cat_name in document_classifier.document_categories.items():
+                doc_types_by_category[cat_name] = []
+            
+            for doc_id, mapping in document_classifier.entity_mappings.items():
+                category_name = mapping.get('documentCategoryName', 'Other')
+                document_name = mapping.get('documentName', doc_id)
+                if category_name in doc_types_by_category:
+                    if document_name not in doc_types_by_category[category_name]:
+                        doc_types_by_category[category_name].append(document_name)
+            
+            # Build categorized document list
+            category_sections = []
+            for category_name in sorted(doc_types_by_category.keys()):
+                if doc_types_by_category[category_name]:
+                    category_sections.append(f"**{category_name}:**\n{', '.join(sorted(doc_types_by_category[category_name]))}")
+            
+            # Build batch classification prompt
+            batch_prompt = f"""You are an expert document classifier for international trade and finance documents.
+
+TASK: Classify ALL {len(pages_summary)} pages in this multi-page document in a SINGLE response.
+
+### Available Document Types by Business Process Category:
+
+{chr(10).join(category_sections)}
+
+### PAGES TO CLASSIFY:
+
+{json.dumps(pages_summary, indent=2)}
+
+INSTRUCTIONS:
+1. For each page, determine if it's a FRESH new document or CONTINUATION of the previous page
+2. Classify each page's document type (MUST be from the list above)
+3. Empty pages should be marked as "Empty/Insufficient Text"
+4. Return JSON array with one entry per page
+
+Respond in VALID JSON format ONLY (no markdown, no additional text):
+{{
+  "pages": [
+    {{
+      "page": 1,
+      "document_type": "exact document name from list",
+      "is_continuation": false,
+      "confidence": 0.95,
+      "reasoning": "brief explanation"
+    }},
+    ...
+  ]
+}}
+
+Guidelines:
+- document_type MUST be exactly one of the document types listed above
+- is_continuation: true if page continues previous document, false if new document starts
+- Provide concise reasoning for each classification"""
+
+            logger.info(f"📤 Sending batch classification request for {len(pages_summary)} pages...")
+            
+            # Single API call for all pages
+            response = openai.ChatCompletion.create(
+                engine=deployment_name,
+                messages=[{"role": "user", "content": batch_prompt}],
+                temperature=0.1,
+                max_tokens=2000  # Increased for multiple pages
+            )
+            
+            response_text = response.choices[0].message.content.strip()
+            
+            # Clean up response
+            if response_text.startswith('```json'):
+                response_text = response_text.replace('```json', '').replace('```', '')
+            elif response_text.startswith('```'):
+                response_text = response_text.replace('```', '')
+            response_text = response_text.strip()
+            
+            # Parse batch response
+            batch_result = json.loads(response_text)
+            pages_data = batch_result.get('pages', [])
+            
+            if len(pages_data) != len(pages_ocr_data):
+                logger.warning(f"⚠️ Batch classification returned {len(pages_data)} results but expected {len(pages_ocr_data)}")
+            
+            # Build page classifications from batch result
+            page_classifications = []
+            for idx, page_info in enumerate(pages_data):
+                page_num = page_info.get('page', idx + 1)
+                document_type = page_info.get('document_type', 'Unknown')
+                is_continuation = page_info.get('is_continuation', False)
+                confidence = page_info.get('confidence', 0.8)
+                reasoning = page_info.get('reasoning', '')
+                
+                # Get original page text
+                if page_num - 1 < len(pages_ocr_data):
+                    page_data = pages_ocr_data[page_num - 1]
+                    page_text = "\n".join([text['text'] for text in page_data])
+                else:
+                    page_text = ""
+                    page_data = []
+                
+                # Apply continuation logic
+                if is_continuation and len(page_classifications) > 0:
+                    prev_type = page_classifications[-1]['document_type']
+                    if prev_type not in ['Empty/Insufficient Text', 'Unknown']:
+                        final_document_type = prev_type
+                        final_confidence = max(confidence * 100, 75)
+                        logger.info(f"  Page {page_num}: CONTINUATION of {prev_type} (confidence: {final_confidence:.0f}%)")
+                    else:
+                        final_document_type = document_type
+                        final_confidence = confidence * 100 if confidence <= 1.0 else confidence
+                        logger.info(f"  Page {page_num}: FRESH {final_document_type} (confidence: {final_confidence:.0f}%)")
+                else:
+                    final_document_type = document_type
+                    final_confidence = confidence * 100 if confidence <= 1.0 else confidence
+                    logger.info(f"  Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
+                
+                logger.info(f"    ↳ {reasoning}")
+                
+                page_classifications.append({
+                    'page': page_num,
+                    'document_type': final_document_type,
+                    'confidence': final_confidence,
+                    'text': page_text,
+                    'ocr_data': page_data,
+                    'is_continuation': is_continuation
+                })
+            
+            logger.info(f"✅ Batch classification completed: {len(page_classifications)} pages classified in single API call")
+            return page_classifications
+            
+        except Exception as e:
+            logger.error(f"❌ Batch classification failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return []  # Fall back to sequential classification
+
     def process_document_page_by_page(uploaded_file, function_name=None, product_name=None,
                                       document_type=None, progress_tracker=None, config=None):
         """
@@ -14206,6 +15114,9 @@ Return compliance status for each field.'''
         import time
         import traceback
 
+        # Initialize quality analyzer for parallel processing
+        quality_analyzer = DocumentQualityAnalyzer()
+        
         temp_file_path = None  # Track temp file for cleanup
         try:
             file_name = uploaded_file.filename
@@ -14234,12 +15145,12 @@ Return compliance status for each field.'''
             logger.info(f"SEARCH: STEP 1/5: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
             quality_start = time.time()
             
-            # Import quality analyzer
-            from app.utils.quality_analyzer import quality_analyzer
-            
+            # OPTIMIZATION: Use PARALLEL Vision API quality analysis
+            # Old: Sequential (3-5s × 13 pages = 40-65s)
+            # New: Parallel threading (all pages at once = ~3-5s total!)
             quality_result = quality_analyzer.analyze_document_quality_fast(
-                temp_file_path, 
-                file_name, 
+                temp_file_path,
+                file_name,
                 progress_tracker
             )
             quality_time = time.time() - quality_start
@@ -14247,7 +15158,7 @@ Return compliance status for each field.'''
             if quality_result.get("success", False):
                 verdict = quality_result.get("verdict", "pre_processing")
                 quality_score = quality_result.get("quality_score", 0.5)
-                logger.info(f"SUCCESS:Quality analysis completed in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
+                logger.info(f"SUCCESS:PARALLEL quality analysis in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
                 
                 if progress_tracker:
                     progress_tracker.quality_complete(verdict, quality_score)
@@ -14313,165 +15224,48 @@ Return compliance status for each field.'''
             pages_ocr_data = organize_ocr_data_by_page(text_data)
             logger.info(f" Organized into {len(pages_ocr_data)} pages")
 
-            # === STEP 4: CLASSIFY EACH PAGE ===
-            logger.info(f"SEARCH: STEP 3/5: PAGE-BY-PAGE CLASSIFICATION")
+            # === STEP 4: CLASSIFY PAGES (BATCH OPTIMIZATION) ===
+            logger.info(f"SEARCH: STEP 3/5: PAGE-BY-PAGE CLASSIFICATION ({len(pages_ocr_data)} pages)")
             classification_start = time.time()
 
-            page_classifications = []
-            for page_num, page_data in enumerate(pages_ocr_data, 1):
-                page_text = "\n".join([text['text'] for text in page_data])
-
-                # Skip pages with very little text
-                if len(page_text.strip()) < 50:
-                    logger.info(f"Page {page_num}: Skipping (insufficient text)")
-                    page_classifications.append({
-                        'page': page_num,
-                        'document_type': 'Empty/Insufficient Text',
-                        'confidence': 0,
-                        'text': page_text
-                    })
-                    continue
-
-                # Enhanced classification with context awareness
-                if len(page_classifications) > 0:  # If there's a previous page
-                    prev_page = page_classifications[-1]
-                    prev_type = prev_page['document_type']
-                    
-                    # Get available document types from the classifier
-                    doc_types_by_category = {}
-                    
-                    # Initialize with the 5 proper categories from entity_mappings
-                    for cat_id, cat_name in document_classifier.document_categories.items():
-                        doc_types_by_category[cat_name] = []
-
-                    # Map document types to their proper categories from entity_mappings
-                    for doc_id, mapping in document_classifier.entity_mappings.items():
-                        category_name = mapping.get('documentCategoryName', 'Other')
-                        document_name = mapping.get('documentName', doc_id)
-
-                        if category_name in doc_types_by_category:
-                            if document_name not in doc_types_by_category[category_name]:
-                                doc_types_by_category[category_name].append(document_name)
-
-                    # Build categorized document list for prompt
-                    category_sections = []
-                    for category_name in sorted(doc_types_by_category.keys()):
-                        if doc_types_by_category[category_name]:
-                            category_sections.append(f"**{category_name}:**\n{', '.join(sorted(doc_types_by_category[category_name]))}")
-                    
-                    # Enhanced prompt for contextual classification
-                    contextual_prompt = f"""You are an expert document classifier for international trade and finance documents.
-
-CONTEXT: This is page {page_num} of a multi-page document. The previous page (page {page_num-1}) was classified as "{prev_type}".
-
-### Available Document Types by Business Process Category:
-
-{chr(10).join(category_sections)}
-
-TASK: Analyze this page and determine:
-1. Is this page a FRESH new document or a CONTINUATION of the previous document?
-2. What is the document type of this page? (MUST be from the list above)
-
-DOCUMENT TEXT (Page {page_num}):
-{page_text}
-
-Respond in VALID JSON format (no markdown, no additional text):
-{{
-    "is_continuation": true/false,
-    "document_type": "exact document name from the list above",
-    "confidence": 0.95,
-    "reasoning": "brief explanation of why this is fresh/continuation and the classification"
-}}
-
-Guidelines:
-- document_type MUST be exactly one of the document types listed above
-- If the page contains headers, titles, or document numbers that suggest a new document, mark as fresh (is_continuation: false)
-- If the page appears to be a continuation of content from the previous page without clear document boundaries, mark as continuation (is_continuation: true)
-- For continuation pages, consider inheriting the document type from the previous page unless there's strong evidence otherwise
-- For fresh pages, classify independently based on the content but only use document types from the provided list"""
-
-                    try:
-                        # Call LLM with enhanced contextual prompt
-                        response = openai.ChatCompletion.create(
-                            engine=deployment_name,
-                            messages=[{"role": "user", "content": contextual_prompt}],
-                            temperature=0.1,
-                            max_tokens=500
-                        )
-                        
-                        response_text = response.choices[0].message.content.strip()
-                        logger.info(f"Raw LLM response for page {page_num}: {response_text[:200]}...")
-                        
-                        # Clean up the response - remove markdown formatting if present
-                        if response_text.startswith('```json'):
-                            response_text = response_text.replace('```json', '').replace('```', '')
-                        elif response_text.startswith('```'):
-                            response_text = response_text.replace('```', '')
-                        
-                        response_text = response_text.strip()
-                        
-                        if not response_text:
-                            raise ValueError("Empty response from LLM")
-                        
-                        classification_result = json.loads(response_text)
-                        
-                        is_continuation = classification_result.get('is_continuation', False)
-                        detected_type = classification_result.get('document_type', 'Unknown')
-                        raw_confidence = classification_result.get('confidence', 0)
-                        reasoning = classification_result.get('reasoning', '')
-                        
-                        # Apply contextual logic
-                        if is_continuation and prev_type not in ['Empty/Insufficient Text', 'Unknown']:
-                            final_document_type = prev_type
-                            confidence = max(raw_confidence * 100, 75)  # Boost confidence for continuation
-                            logger.info(f" Page {page_num}: CONTINUATION of {prev_type} (original: {detected_type}, confidence: {confidence:.0f}%)")
-                            logger.info(f"   ↳ Reasoning: {reasoning}")
-                        else:
-                            final_document_type = detected_type
-                            confidence = raw_confidence * 100 if raw_confidence <= 1.0 else raw_confidence
-                            logger.info(f" Page {page_num}: FRESH {final_document_type} (confidence: {confidence:.0f}%)")
-                            logger.info(f"   ↳ Reasoning: {reasoning}")
-                        
-                    except json.JSONDecodeError as e:
-                        logger.error(f"JSON parsing error in contextual classification for page {page_num}: {e}")
-                        logger.error(f"Raw response was: {response_text if 'response_text' in locals() else 'No response'}")
-                        # Fallback to regular classification
+            # OPTIMIZATION: Always use batch classification for speed (single API call for all pages)
+            logger.info(f"🚀 OPTIMIZATION: Using BATCH classification for {len(pages_ocr_data)} pages (single API call)")
+            page_classifications = classify_pages_batch(pages_ocr_data, document_classifier)
+            
+            # If batch classification fails completely, fall back to simple classification
+            if not page_classifications:
+                logger.warning(f"⚠️ Batch classification failed, using simple fallback")
+                page_classifications = []
+                for page_num, page_data in enumerate(pages_ocr_data, 1):
+                    page_text = "\n".join([text['text'] for text in page_data])
+                    if len(page_text.strip()) < 50:
+                        page_classifications.append({
+                            'page': page_num,
+                            'document_type': 'Empty/Insufficient Text',
+                            'confidence': 0,
+                            'text': page_text,
+                            'ocr_data': page_data,
+                            'is_continuation': False
+                        })
+                    else:
+                        # Simple classification without context
                         classification_result = document_classifier.classify_document(page_text)
-                        final_document_type = classification_result.get('document_type', 'Unknown')
-                        confidence = classification_result.get('confidence', 0) * 100
-                        is_continuation = False
-                        logger.info(f" Page {page_num}: FALLBACK {final_document_type} (confidence: {confidence:.0f}%)")
-                    except Exception as e:
-                        logger.error(f"Error in contextual classification for page {page_num}: {e}")
-                        # Fallback to regular classification
-                        classification_result = document_classifier.classify_document(page_text)
-                        final_document_type = classification_result.get('document_type', 'Unknown')
-                        confidence = classification_result.get('confidence', 0) * 100
-                        is_continuation = False
-                        logger.info(f" Page {page_num}: FALLBACK {final_document_type} (confidence: {confidence:.0f}%)")
-                
-                else:
-                    # First page - use regular classification
-                    classification_result = document_classifier.classify_document(page_text)
-                    final_document_type = classification_result.get('document_type', 'Unknown')
-                    raw_confidence = classification_result.get('confidence', 0)
-                    confidence = raw_confidence * 100 if raw_confidence <= 1.0 else raw_confidence
-                    is_continuation = False
-                    logger.info(f" Page {page_num}: FIRST PAGE {final_document_type} (confidence: {confidence:.0f}%)")
-                
-                page_classifications.append({
-                    'page': page_num,
-                    'document_type': final_document_type,
-                    'confidence': confidence,
-                    'text': page_text,
-                    'ocr_data': page_data,
-                    'is_continuation': is_continuation
-                })
+                        page_classifications.append({
+                            'page': page_num,
+                            'document_type': classification_result.get('document_type', 'Unknown'),
+                            'confidence': classification_result.get('confidence', 0) * 100,
+                            'text': page_text,
+                            'ocr_data': page_data,
+                            'is_continuation': False
+                        })
 
             classification_time = time.time() - classification_start
             logger.info(f"SUCCESS:Classification completed in {classification_time:.2f}s")
 
-            # === STEP 4: GROUP CONSECUTIVE PAGES BY DOCUMENT TYPE ===
+            classification_time = time.time() - classification_start
+            logger.info(f"SUCCESS:Classification completed in {classification_time:.2f}s")
+
+            # === STEP 5: GROUP CONSECUTIVE PAGES BY DOCUMENT TYPE ===
             logger.info(f"STEP 4/5: GROUPING pages by document type")
             
             # Debug: Log all page classifications before grouping
@@ -14544,7 +15338,7 @@ Guidelines:
                     all_preview_images = [encoded_image]
                     logger.info(f"SUCCESS:Generated 1 preview image")
 
-            # === STEP 5B: EXTRACT FIELDS FOR EACH DOCUMENT TYPE ===
+            # === STEP 5B: EXTRACT FIELDS FOR EACH DOCUMENT TYPE (PARALLEL OPTIMIZATION) ===
             logger.info(f"UPLOAD: STEP 5/5: EXTRACTING fields for each document type")
 
             # Progress: Start field extraction
@@ -14558,13 +15352,34 @@ Guidelines:
             logger.info(f"Extraction model: {extraction_model}")
             extraction_temp = extraction_config.get('temperature', 0.0)
             logger.info(f"Extraction temperature: {extraction_temp}")
-            extraction_max_tokens = extraction_config.get('max_tokens', 4000)
+            extraction_max_tokens = extraction_config.get('max_tokens', 16000)  # Increased for 46 fields with full descriptions
             logger.info(f"Extraction max tokens: {extraction_max_tokens}")
 
-            results = []
-
-            for idx, group in enumerate(document_groups, 1):
-                logger.info(f"MODE: Extracting fields for {group['document_type']} (Group {idx}/{len(document_groups)})")
+            # OPTIMIZATION: Parallel extraction for multiple document groups
+            use_parallel_extraction = len(document_groups) > 1  # Use parallel for 2+ groups
+            
+            if use_parallel_extraction:
+                logger.info(f"🚀 OPTIMIZATION: Using PARALLEL extraction for {len(document_groups)} document groups")
+                results = extract_fields_parallel(
+                    document_groups, 
+                    document_classifier, 
+                    extraction_model, 
+                    extraction_temp, 
+                    extraction_max_tokens,
+                    file_name,
+                    all_preview_images,
+                    quality_time,
+                    ocr_time,
+                    classification_time,
+                    quality_result,
+                    progress_tracker
+                )
+            else:
+                logger.info(f"📄 Using sequential extraction for {len(document_groups)} document group(s)")
+                results = []
+                
+                for idx, group in enumerate(document_groups, 1):
+                    logger.info(f"MODE: Extracting fields for {group['document_type']} (Group {idx}/{len(document_groups)})")
                 
                 # Progress: Update field extraction progress
                 if progress_tracker:
@@ -14578,17 +15393,19 @@ Guidelines:
                     ocr_text=group['text'],
                     page_number=group['pages'][0]
                 )
-                logger.info(f"Printing the value of extraction_prompt: {extraction_prompt}")
-                logger.info("The prompt has been completed here");
+                logger.info(f"📝 Built extraction prompt ({len(extraction_prompt)} chars)")
+                logger.info(f"📝 Prompt preview (first 1000 chars): {extraction_prompt[:1000]}")
+                
                 # Add field mappings
                 field_mapping_data = load_document_field_mappings(group['document_type'])
                 field_mapping_example = None
                 if field_mapping_data:
                     field_mapping_example = field_mapping_data.get('example', '')
                     extraction_prompt += f"\n\n{field_mapping_example}"
-                    logger.info(f" Enhanced extraction prompt with field mapping examples for {group['document_type']}")
+                    logger.info(f"📝 Added field mapping examples ({len(field_mapping_example)} chars)")
+                    logger.info(f"📝 Enhanced extraction prompt with field mapping examples for {group['document_type']}")
 
-                logger.info("Built extraction prompt : {extraction_prompt}")
+                logger.info(f"🤖 Calling LLM API (model: {extraction_model}, temp: {extraction_temp}, max_tokens: {extraction_max_tokens})")
 
                 # Call LLM for extraction
                 extraction_response = openai.ChatCompletion.create(
@@ -14598,296 +15415,71 @@ Guidelines:
                     max_tokens=extraction_max_tokens
                 )
                 extraction_result = extraction_response.choices[0].message.content
+                
+                logger.info(f"✅ Received LLM response ({len(extraction_result)} chars)")
+                
                 # Parse extraction result
                 try:
+                    # Log raw response for debugging
+                    logger.info(f"🔍 Raw LLM response (first 500 chars): {extraction_result[:500]}")
+                    
+                    # Try to extract JSON from markdown code blocks if present
+                    if '```json' in extraction_result:
+                        json_start = extraction_result.find('```json') + 7
+                        json_end = extraction_result.find('```', json_start)
+                        extraction_result = extraction_result[json_start:json_end].strip()
+                        logger.info("🔍 Extracted JSON from markdown code block")
+                    elif '```' in extraction_result:
+                        json_start = extraction_result.find('```') + 3
+                        json_end = extraction_result.find('```', json_start)
+                        extraction_result = extraction_result[json_start:json_end].strip()
+                        logger.info("🔍 Extracted content from generic code block")
+                    
                     extraction_json = json.loads(extraction_result)
                     extracted_fields = extraction_json.get('extracted_fields', {})
-                except:
+                    logger.info(f"✅ Successfully parsed {len(extracted_fields)} fields from JSON")
+                except json.JSONDecodeError as e:
+                    logger.error(f"❌ JSON parsing failed: {e}")
+                    logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
+                    extracted_fields = {}
+                except Exception as e:
+                    logger.error(f"❌ Unexpected error during parsing: {e}")
+                    logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
                     extracted_fields = {}
 
                 extraction_time = time.time() - extraction_start
                 logger.info(f"SUCCESS:Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
 
-                # === COORDINATE MAPPING DISABLED ===
-                # Note: Real-time coordinate mapping will be done on-demand via API calls
-                logger.info(f"Coordinate mapping disabled - will be done on-demand for accuracy")
-                coordinate_mapping_time = 0.0
-
-                # === UNIFIED COMPLIANCE ANALYSIS ===
-                logger.info(f"SEARCH: Running unified compliance analysis for {group['document_type']}")
-
-                # Start compliance check progress tracking
-                if progress_tracker:
-                    progress_tracker.start_compliance_check()
-
-                compliance_analysis_start = time.time()
-
-                # Initialize unified compliance result
-                unified_compliance = {}  # NEW: Unified compliance result
-
-                # Perform UCP600 and SWIFT compliance analysis if we have extracted fields
-                if extracted_fields:
-                    # Remove coordinate mapping fields before compliance analysis
-                    compliance_fields = {k: v for k, v in extracted_fields.items() 
-                                       if not k.startswith('_coordinate_mapping') and 
-                                          k not in ['coordinate_mapping_stats']}
-
-                    logger.info(f"Original fields: {len(extracted_fields)}, Compliance fields: {len(compliance_fields)}")
-
-                    try:
-                        # RULE-BASED UNIFIED COMPLIANCE: Use document-specific rules for page-by-page mode
-                        from app.utils.query_utils import analyze_unified_compliance_fast, get_unified_compliance_result, clear_unified_compliance_result
-
-                        # Clear any previous compliance results
-                        clear_unified_compliance_result()
-
-                        logger.info(f"SPEED: PAGE-BY-PAGE RULE-BASED UNIFIED COMPLIANCE: Analyzing {len(compliance_fields)} fields")
-                        logger.info(f"Document type: {group['document_type']}")
-                        logger.info(f"Compliance fields: {list(compliance_fields.keys())}")
-                        
-                        # Single unified compliance call using document-specific rules
-                        analyze_unified_compliance_fast(compliance_fields, group['document_type'])
-                        
-                        # Get the actual unified compliance result
-                        unified_compliance = get_unified_compliance_result()
-                        
-                        logger.info(f"SUCCESS:Page unified compliance completed: {len(unified_compliance)} fields analyzed")
-                        logger.info(f"Unified compliance sample: {str(unified_compliance)[:150]}...")
-                        
-                    except Exception as e:
-                        logger.error(f"ERROR: Page unified compliance analysis failed: {e}")
-                        logger.error(f"Traceback: {traceback.format_exc()}")
-                        
-                        # Fallback: Create empty compliance
-                        logger.info("MODE: Page fallback to empty compliance results...")
-                        unified_compliance = {}
+                # === BACKGROUND COMPLIANCE ANALYSIS ===
+                file_content_hash = hashlib.md5(f"{file_name}_{group['document_type']}_{datetime.now().isoformat()}".encode()).hexdigest()
+                logger.info(f"🚀 Starting background compliance check for {file_content_hash}")
                 
-                compliance_analysis_time = time.time() - compliance_analysis_start
-                logger.info(f"SUCCESS:Compliance analysis completed in {compliance_analysis_time:.2f}s")
-
-                # Transform compliance data for UI consumption
-                def transform_compliance_for_ui(compliance_data, compliance_type):
-                    """Transform field-level compliance data to UI-expected format"""
-                    logger.info(f"MODE: Transforming {compliance_type} compliance data: {type(compliance_data)}")
-                    
-                    if not compliance_data:
-                        logger.warning(f"No {compliance_type} compliance data to transform")
-                        return None
-                    
-                    # Handle case where compliance_data is a string (JSON error case)
-                    if isinstance(compliance_data, str):
-                        logger.warning(f"{compliance_type} compliance data is string (likely JSON error): {compliance_data[:100]}...")
-                        return {
-                            "status": "error",
-                            "violations": [{"field": "analysis", "description": f"Compliance analysis error: {compliance_data}", "severity": "high"}],
-                            "warnings": [],
-                            "compliance_percentage": 0,
-                            "total_fields_checked": 0,
-                            "compliant_fields": 0
-                        }
-                    
-                    # Handle case where compliance_data is not a dict
-                    if not isinstance(compliance_data, dict):
-                        logger.warning(f"{compliance_type} compliance data is not dict: {type(compliance_data)}")
-                        return {
-                            "status": "error", 
-                            "violations": [{"field": "analysis", "description": f"Invalid compliance data format", "severity": "high"}],
-                            "warnings": [],
-                            "compliance_percentage": 0,
-                            "total_fields_checked": 0,
-                            "compliant_fields": 0
-                        }
-                        
-                    violations = []
-                    warnings = []
-                    compliant_count = 0
-                    total_count = len(compliance_data)
-                    
-                    logger.info(f"Processing {total_count} {compliance_type} compliance fields")
-                    """Transform field-level compliance data to UI-expected format"""
-                    if not compliance_data:
-                        return None
-                        
-                    violations = []
-                    warnings = []
-                    compliant_count = 0
-                    total_count = len(compliance_data)
-                    
-                    for field_name, field_data in compliance_data.items():
-                        if isinstance(field_data, dict):
-                            is_compliant = field_data.get("compliant", True)
-                            severity = field_data.get("severity", "medium")
-                            reason = field_data.get("reason", "Compliance check completed")
-                            
-                            if is_compliant:
-                                compliant_count += 1
-                            else:
-                                issue = {
-                                    "field": field_name,
-                                    "description": reason,
-                                    "severity": severity
-                                }
-                                
-                                if severity == "high":
-                                    violations.append(issue)
-                                else:
-                                    warnings.append(issue)
-                    
-                    # Determine overall status
-                    overall_status = "compliant" if len(violations) == 0 else "non-compliant"
-                    
-                    return {
-                        "status": overall_status,
-                        "violations": violations,
-                        "warnings": warnings,
-                        "compliance_percentage": round((compliant_count / total_count * 100) if total_count > 0 else 100),
-                        "total_fields_checked": total_count,
-                        "compliant_fields": compliant_count
-                    }
-
-                # Calculate overall compliance score from unified compliance
-                overall_compliance_score = 85  # Default score
-                if unified_compliance:
-                    compliant_count = 0
-                    total_count = len(unified_compliance)
-                    
-                    for field_data in unified_compliance.values():
-                        if isinstance(field_data, dict) and field_data.get("compliant", True):
-                            compliant_count += 1
-                    
-                    if total_count > 0:
-                        overall_compliance_score = round((compliant_count / total_count) * 100)
-                        logger.info(f"ANALYTICS: Page unified compliance: {compliant_count}/{total_count} fields compliant = {overall_compliance_score}%")
-                    else:
-                        logger.info(f"ANALYTICS: No unified compliance data, using default score: {overall_compliance_score}%")
-                else:
-                    logger.info(f"ANALYTICS: No unified compliance result, using default score: {overall_compliance_score}%")
-
-                # === Categorize fields by type (mandatory/optional/conditional) ===
-                mandatory_fields = {}
-                optional_fields = {}
-                conditional_fields = {}
+                compliance_thread = threading.Thread(
+                    target=run_compliance_check_background,
+                    args=(file_content_hash, extracted_fields, group['document_type']),
+                    daemon=True
+                )
+                compliance_thread.start()
                 
-                # Extract coordinate mapping stats (if present) before categorization
-                coordinate_mapping_stats = extracted_fields.pop('_coordinate_mapping_stats', None)
-                
-                # If we have field mappings, categorize the extracted fields
-                if field_mapping_data:
-                    field_mappings = field_mapping_data.get('mappings', [])
-                    for field_name, field_data in extracted_fields.items():
-                        # Find the field type from mappings
-                        field_type = None
-                        for mapping in field_mappings:
-                            if mapping.get('entityName') == field_name:
-                                field_type = mapping.get('fieldType', 'optional')
-                                break
-                        
-                        # Categorize based on field type
-                        if field_type == 'mandatory':
-                            mandatory_fields[field_name] = field_data
-                        elif field_type == 'conditional':
-                            conditional_fields[field_name] = field_data
-                        else:
-                            optional_fields[field_name] = field_data
-                else:
-                    # If no field mappings, put all in optional
-                    optional_fields = extracted_fields
+                logger.info(f"✅ Compliance check running in background (hash: {file_content_hash})")
 
-                # === Validate compliance using YAML config rules ===
-                compliance_result = validate_compliance(extracted_fields, field_mapping_data, config)
+                # Build result using simplified helper function
+                result = build_extraction_result(
+                    group, extracted_fields, field_mapping_data, file_name,
+                    all_preview_images, quality_time, ocr_time, classification_time,
+                    extraction_time, quality_result, extraction_model, extraction_temp,
+                    file_content_hash
+                )
+                results.append(result)
 
-                # Build YAML-compliant result for this document group
-                results.append({
-                    "file_name": file_name,
-                    "document_type": group['document_type'],
-                    "confidence": int(group['confidence']),
-                    "complianceScore": overall_compliance_score,
-                    "classification": {
-                        "document_type": group['document_type'],
-                        "document_code": "",  # Could be enhanced to extract from classification
-                        "document_id": "",
-                        "confidence": int(group['confidence']),
-                        "reasoning": f"Classified as {group['document_type']} with {group['confidence']:.0f}% confidence on {group['page_range']}"
-                    },
-                    "extraction": {
-                        "mandatory": mandatory_fields,
-                        "optional": optional_fields,
-                        "conditional": conditional_fields,
-                        "schema": {
-                            "total_fields": len(extracted_fields),
-                            "mandatory_count": len(mandatory_fields),
-                            "optional_count": len(optional_fields),
-                            "conditional_count": len(conditional_fields)
-                        },
-                        "document_id": group['document_type']
-                    },
-                    "compliance": {
-                        "unified": unified_compliance   # Unified rule-based compliance
-                    },
-                    "preview_images": [all_preview_images[page-1] for page in group['pages'] if page-1 < len(all_preview_images)],
-                    "processing_time": {
-                        "total": f"{quality_time + ocr_time + classification_time + extraction_time + coordinate_mapping_time + compliance_analysis_time:.1f}",
-                        "quality_analysis": f"{quality_time:.1f}",
-                        "ocr": f"{ocr_time:.1f}",
-                        "classification": f"{classification_time:.1f}",
-                        "extraction": f"{extraction_time:.1f}",
-                        "coordinate_mapping": f"{coordinate_mapping_time:.1f}",
-                        "compliance_analysis": f"{compliance_analysis_time:.1f}"
-                    },
-                    "quality_analysis": {
-                        "verdict": verdict,
-                        "score": quality_score,
-                        "recommendations": quality_result.get("recommendations", []),
-                        "detailed_metrics": quality_result.get("page_results", []),
-                        "processing_time": quality_result.get("processing_time", 0),
-                        "page_count": len(quality_result.get("page_results", [])),
-                        "average_metrics": _calculate_average_metrics(quality_result.get("page_results", []))
-                    },
-                    "coordinate_mapping": coordinate_mapping_stats,
-                    "ocr_data": {
-                        "pages": group['pages'],
-                        "page_range": group['page_range'],
-                        "text_entries": len(group['ocr_data']),
-                        "formatted_text": group['text'][:500] + "..." if len(group['text']) > 500 else group['text'],
-                        "individual_pages": group.get('individual_pages', [])  # Add individual page data for tabs
-                    },
-                    "success": True,
-                    "enhanced_mode": True,
-                    "page_by_page_mode": True,
-                    # Legacy timing fields for frontend compatibility
-                    "qualityTime": f"{quality_time:.1f}",
-                    "ocrTime": f"{ocr_time:.1f}",
-                    "classificationTime": f"{classification_time:.1f}",
-                    "llmTime": f"{extraction_time:.1f}",  # Field extraction time
-                    "complianceTime": f"{compliance_analysis_time:.1f}",
-                    "config_used": {
-                        "extraction_model": extraction_model,
-                        "extraction_temp": extraction_temp
-                    },
-                    "field_mapping_enhanced": bool(field_mapping_data)
-                })
-
-            # Progress: Field extraction complete, calculate compliance issues
+            # Mark field extraction complete AFTER all document groups are processed
             if progress_tracker:
                 total_extracted = sum(len(result.get("extraction", {}).get("mandatory", {})) + 
                                     len(result.get("extraction", {}).get("optional", {})) + 
                                     len(result.get("extraction", {}).get("conditional", {})) 
                                     for result in results)
                 progress_tracker.field_extraction_complete(extracted_count=total_extracted)
-                
-                # Count compliance issues from all results
-                compliance_issues = 0
-                for result in results:
-                    compliance_data = result.get("compliance", {})
-                    if compliance_data and not compliance_data.get("compliant", True):
-                        compliance_issues += len(compliance_data.get("missing_mandatory", []))
-                        compliance_issues += len(compliance_data.get("warnings", []))
-                
-                # Mark compliance complete
-                progress_tracker.compliance_complete(issues_found=compliance_issues)
-                
-                # Finalize processing
-                progress_tracker.finalize()
+                logger.info(f"✅ All extractions complete - {total_extracted} total fields extracted from {len(results)} document groups")
 
             total_time = time.time() - start_time
             logger.info(f"SUCCESS:Page-by-page processing completed in {total_time:.2f}s - Found {len(results)} document types")
@@ -14952,9 +15544,10 @@ Guidelines:
                 all_ocr_data.extend(group_ocr)
                 ocr_stats['pages'] = max(ocr_stats['pages'], group.get('pages', [0])[-1] if group.get('pages') else 0)
             
-            session['current_ocr_data'] = all_ocr_data
+            # NOTE: OCR data stored in temp file, not session (session cookie size limit)
+            # session['current_ocr_data'] = all_ocr_data  # REMOVED - causes cookie overflow
             
-            # WORKAROUND: Also store OCR data in a temporary file due to session size limits
+            # Store OCR data in a temporary file for coordinate search API
             import tempfile as temp_module
             import pickle
             import uuid
@@ -15128,6 +15721,70 @@ Guidelines:
             import traceback
             logger.error(traceback.format_exc())
             return jsonify({"error": str(e)}), 500
+
+    @app.route('/api/document/compliance-status/<file_hash>', methods=['GET'])
+    def check_compliance_status(file_hash):
+        """
+        Check the status of background compliance check.
+        Returns status and result if completed.
+        """
+        global compliance_status_tracker
+        
+        try:
+            logger.info(f"📊 Checking compliance status for hash: {file_hash}")
+            logger.info(f"📋 Available hashes in tracker: {list(compliance_status_tracker.keys())}")
+            
+            if file_hash not in compliance_status_tracker:
+                logger.warning(f"❌ Hash {file_hash} not found in tracker")
+                return jsonify({
+                    "status": "not_found",
+                    "message": "No compliance check found for this file"
+                }), 404
+            
+            tracker_data = compliance_status_tracker[file_hash]
+            status = tracker_data.get('status', 'unknown')
+            
+            logger.info(f"📊 Status for {file_hash}: {status}")
+            
+            if status == 'completed':
+                result_data = tracker_data.get('result', {})
+                logger.info(f"✅ Compliance completed for {file_hash} - {len(result_data)} fields")
+                return jsonify({
+                    "status": "completed",
+                    "compliance_ready": True,
+                    "result": result_data,
+                    "timestamp": tracker_data.get('timestamp').isoformat() if tracker_data.get('timestamp') else None
+                })
+            elif status == 'processing':
+                logger.info(f"⏳ Compliance still processing for {file_hash}")
+                return jsonify({
+                    "status": "processing",
+                    "compliance_ready": False,
+                    "message": "Compliance check is still running"
+                })
+            elif status == 'error':
+                logger.error(f"❌ Compliance error for {file_hash}: {tracker_data.get('error')}")
+                return jsonify({
+                    "status": "error",
+                    "compliance_ready": False,
+                    "error": tracker_data.get('error', 'Unknown error'),
+                    "timestamp": tracker_data.get('timestamp').isoformat() if tracker_data.get('timestamp') else None
+                })
+            else:
+                logger.warning(f"⚠️ Unknown status for {file_hash}: {status}")
+                return jsonify({
+                    "status": "unknown",
+                    "compliance_ready": False
+                })
+                
+        except Exception as e:
+            logger.error(f"❌ Error checking compliance status: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({
+                "status": "error",
+                "error": str(e)
+            }), 500
 
     @app.route('/api/document/extract-region', methods=['POST'])
     def extract_text_from_region():
