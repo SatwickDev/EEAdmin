@@ -6717,7 +6717,6 @@
                     return this.selectedResult?.individualPages && this.selectedResult.individualPages.length > 1;
                 },
 
-                // Populate form fields back to parent LC form
 populateFormFields() {
     if (!this.results || this.results.length === 0) {
         alert('No documents processed');
@@ -6751,13 +6750,36 @@ populateFormFields() {
         'Baseport Unloading Location': 'portOfDischarge',
         'Place of the delivery of the goods (by the carrier)': 'finalDestination',
         'Latest pick-up date': 'latestShipmentDate',
+        'Latest Date of Shipment': 'latestShipmentDate', // ADD THIS MAPPING
+        'Latest Shipment Date': 'latestShipmentDate', // ADD THIS MAPPING
+        'Shipment Date': 'latestShipmentDate', // ADD THIS MAPPING
         'Despatch': 'dispatchLocation',
+
+        // LC Type
+        'Form of Documentary Credit': 'lcType',
+        'LC Type': 'lcType',
+        'Type of Credit': 'lcType',
+        'Credit Type': 'lcType',
+        'Documentary Credit Type': 'lcType',
+
+        // Shipment Restrictions - ADD THESE MAPPINGS
+        'Partial Shipments': 'partialShipment',
+        'Partial Shipment': 'partialShipment',
+        'Partial Shipment (43P)': 'partialShipment',
+        'Transhipment': 'transhipment',
+        'Transhipment (43T)': 'transhipment',
 
         // Goods
         'Description of Goods': 'goodsDescription',
         'Invoice Number': 'invoiceNumber',
 
-        // Documents Required - ADD THIS MAPPING
+         // Incoterms - ADD THIS MAPPING
+        'Incoterms': 'incoterms',
+        'Incoterm': 'incoterms',
+        'Trade Terms': 'incoterms',
+        'Delivery Terms': 'incoterms',
+
+        // Documents Required
         'Documents Required': 'documentsRequired',
         'Documents Required (46A)': 'documentsRequired',
         'Required Documents': 'documentsRequired',
@@ -6771,6 +6793,12 @@ populateFormFields() {
     // Track seen values to prevent duplicates within same document type and page
     const seenValues = new Map(); // Map<fieldName_documentType_page, value>
 
+    // DEBUG: Log all available field names
+    console.log('=== DEBUG: ALL AVAILABLE FIELD NAMES ===');
+    this.results.forEach((result, index) => {
+        console.log(`Result ${index} (${result.documentType}):`, Object.keys(result.extractedFields || {}));
+    });
+
     // Process ALL results (all documents in the uploaded PDF)
     this.results.forEach((result, resultIndex) => {
         console.log(`Processing result ${resultIndex}:`, result.documentType);
@@ -6781,6 +6809,9 @@ populateFormFields() {
         if (extractedFields && typeof extractedFields === 'object') {
             for (const [key, fieldData] of Object.entries(extractedFields)) {
                 const formFieldName = fieldMapping[key];
+
+                // DEBUG: Log each field being processed
+                console.log(`Processing field: "${key}" -> "${formFieldName}"`, fieldData);
 
                 if (formFieldName && fieldData) {
                     let value = '';
@@ -6807,6 +6838,24 @@ populateFormFields() {
 
                         // Mark this value as seen for this document type and page
                         seenValues.set(dedupeKey, value);
+
+                        // ⭐⭐⭐ MAP LC TYPE VALUES ⭐⭐⭐
+                        if (formFieldName === 'lcType') {
+                            console.log(`Mapping LC Type: "${value}" -> "${this.mapLcTypeValue(value)}"`);
+                            value = this.mapLcTypeValue(value);
+                        }
+
+                        // ⭐⭐⭐ MAP PARTIAL SHIPMENT VALUES ⭐⭐⭐
+                        if (formFieldName === 'partialShipment') {
+                            console.log(`Mapping Partial Shipment: "${value}" -> "${this.mapPartialShipmentValue(value)}"`);
+                            value = this.mapPartialShipmentValue(value);
+                        }
+
+                        // ⭐⭐⭐ MAP TRANSHIPMENT VALUES ⭐⭐⭐
+                        if (formFieldName === 'transhipment') {
+                            console.log(`Mapping Transhipment: "${value}" -> "${this.mapTranshipmentValue(value)}"`);
+                            value = this.mapTranshipmentValue(value);
+                        }
 
                         // Handle amount field splitting
                         if (key === 'Documentary credit amount') {
@@ -6862,6 +6911,7 @@ populateFormFields() {
     });
 
     console.log('Total fields collected from all documents after deduplication:', this.confirmationFields.length);
+    console.log('Confirmation fields:', this.confirmationFields);
 
     // Check for duplicates across different document types/pages and auto-select
     this.checkDuplicateFields();
@@ -6873,6 +6923,70 @@ populateFormFields() {
     this.showFieldConfirmation = true;
 },
 
+// Add these mapping methods after your existing mapLcTypeValue method:
+
+// Map backend LC Type values to frontend values
+mapLcTypeValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    const lowerValue = backendValue.toLowerCase().trim();
+    console.log(`Mapping LC Type: Original="${backendValue}", Lowercase="${lowerValue}"`);
+
+    // Map various backend LC type formats to frontend values
+    if (lowerValue.includes('irrevocable') || lowerValue.includes('100%')) {
+        return 'irrevocable';
+    } else if (lowerValue.includes('confirmed')) {
+        return 'confirmed';
+    } else if (lowerValue.includes('transferable')) {
+        return 'transferable';
+    } else if (lowerValue.includes('standby')) {
+        return 'standby';
+    } else if (lowerValue.includes('revolving')) {
+        return 'revolving';
+    }
+
+    // If no match found, return the original value
+    console.log(`No mapping found for LC Type: "${backendValue}"`);
+    return backendValue;
+},
+
+// Map backend Partial Shipment values to frontend values
+mapPartialShipmentValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    const lowerValue = backendValue.toLowerCase().trim();
+    console.log(`Mapping Partial Shipment: Original="${backendValue}", Lowercase="${lowerValue}"`);
+
+    // Map backend values to frontend values
+    if (lowerValue.includes('prohibited') || lowerValue.includes('not allowed') || lowerValue.includes('not_allowed')) {
+        return 'not_allowed';
+    } else if (lowerValue.includes('permitted') || lowerValue.includes('allowed')) {
+        return 'allowed';
+    }
+
+    // If no match found, return the original value
+    console.log(`No mapping found for Partial Shipment: "${backendValue}"`);
+    return backendValue;
+},
+
+// Map backend Transhipment values to frontend values
+mapTranshipmentValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    const lowerValue = backendValue.toLowerCase().trim();
+    console.log(`Mapping Transhipment: Original="${backendValue}", Lowercase="${lowerValue}"`);
+
+    // Map backend values to frontend values
+    if (lowerValue.includes('prohibited') || lowerValue.includes('not allowed') || lowerValue.includes('not_allowed')) {
+        return 'not_allowed';
+    } else if (lowerValue.includes('permitted') || lowerValue.includes('allowed')) {
+        return 'allowed';
+    }
+
+    // If no match found, return the original value
+    console.log(`No mapping found for Transhipment: "${backendValue}"`);
+    return backendValue;
+},
 // Enhanced checkDuplicateFields method
 checkDuplicateFields() {
     const fieldCount = {};
