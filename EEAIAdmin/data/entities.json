@@ -3783,7 +3783,7 @@
     {
       "id": "424",
       "name": "Permit/Certificate/Carnet number",
-      "description": "Permit/Certificate/Carnet number",
+      "description": "Permit/Certificate/Carnet number -Extract the Permit/Certificate/Carnet number , NOT the LC number or any code similar to it. Exclude any values resembling 'ILCAE0022100098', 'ILCAE0022100098-1', or formats starting with alphabetical bank codes followed by digits. Do not extract any LC numbers, L/C references, or document numbers matching that pattern.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
