@@ -22,7 +22,7 @@ class EnhancedCreationHandler:
                         'currency', 'amount', 'tolerancePercent', 'paymentTerms',
                         'placeOfTaking', 'portOfLoading', 'portOfDischarge', 'finalDestination',
                         'latestShipmentDate', 'partialShipment', 'transhipment', 'incoterms',
-                        'goodsDescription', 'hsCode', 'quantity', 'documents',
+                        'goodsDescription', 'hsCode', 'quantity', 'documents','documentsRequired',
                         'additionalDocuments', 'additionalConditions', 'charges'
                     ],
                     'required': [

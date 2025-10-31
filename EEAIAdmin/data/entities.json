@@ -453,7 +453,7 @@
     {
       "id": "51",
       "name": "Net Weight",
-      "description": "Weight of goods excluding packaging",
+      "description": "Weight of goods excluding packaging - Extract Net weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -462,7 +462,7 @@
     {
       "id": "52",
       "name": "Volume",
-      "description": "Total volume of the shipment",
+      "description": "Total volume of the shipment - Extract the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -1245,7 +1245,7 @@
     {
       "id": "140",
       "name": "Total Invoice Amount",
-      "description": "Total Invoice Amount for commercial invoice",
+      "description": "Total Invoice Amount for commercial invoice - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -1335,7 +1335,7 @@
     {
       "id": "150",
       "name": "Payee",
-      "description": "Payee",
+      "description": "Payee - Extract ONLY payee name Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1929,7 +1929,7 @@
     {
       "id": "216",
       "name": "Drawee",
-      "description": "Drawee",
+      "description": "Drawee- Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3009,7 +3009,7 @@
     {
       "id": "336",
       "name": "Insurance condition",
-      "description": "Insurance condition",
+      "description": "Insurance condition - Extract Complete insurance coverage terms and clauses. Extract ALL specified conditions including: Institute Cargo Clauses (A/B/C), War Clauses, Strike Clauses, Warehouse to Warehouse, and any special terms, exclusions, or deductibles. Include clause dates if stated (e.g., \"ICC (A) 01/01/2009\"). DO NOT summarize - extract complete text from fields labeled \"Coverage\", \"Conditions\", \"Clauses\", \"Terms\", \"Risks Covered\". Format: \"ICC (A), Institute War Clauses (Cargo), Institute Strike Clauses (Cargo), Warehouse to Warehouse, subject to USD 500 deductible\". Include ALL clauses mentioned, not just the primary one.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3027,7 +3027,7 @@
     {
       "id": "338",
       "name": "Transport means identifier",
-      "description": "Transport means identifier",
+      "description": "Unique identification of the vessel/aircraft/vehicle transporting goods. For ocean freight, extract the complete vessel name (e.g., \"MAERSK ESSEX\"). Include IMO number if stated (format: \"VESSEL NAME (IMO: 1234567)\"). For air freight, extract flight/aircraft registration. For multimodal transport, extract the ocean vessel name (primary transport). DO NOT extract carrier company names (e.g., \"Maersk Line\") - only extract the actual vessel/vehicle identifier. Commonly found in fields labeled \"Vessel Name\", \"Ocean Vessel\", \"Carrying Vessel\", or \"Vessel/Voy\". Extract complete name as stated, including any prefix like \"M.V.\" or \"S.S.\" if present",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3045,7 +3045,7 @@
     {
       "id": "340",
       "name": "Transport Contract Document / Bill of Lading number",
-      "description": "Transport Contract Document / Bill of Lading number",
+      "description": "Transport Contract Document / Bill of Lading number - Unique B/L reference number (e.g., \"MAEU123456789\", \"BL-2024-001234\"). Extract complete number with all prefixes, hyphens, and characters exactly as stated. Found in fields labeled \"B/L No.\", \"Bill of Lading No.\", \"BL Number\", typically in document header. Preserve exact format.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3081,7 +3081,7 @@
     {
       "id": "344",
       "name": "Freight payer",
-      "description": "Freight payer",
+      "description": "Name and address of a party responsible for the payment of freight charges",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3153,7 +3153,7 @@
     {
       "id": "352",
       "name": "Seal Identifier",
-      "description": "Seal Identifier",
+      "description": "Seal Identifier - Extract the identification number of a seal affixed to a piece of transport equipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "12",
@@ -3216,7 +3216,7 @@
     {
       "id": "359",
       "name": "Transport Means, gross weight",
-      "description": "Transport Means, gross weight",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -3423,7 +3423,7 @@
     {
       "id": "382",
       "name": "Insured value amount",
-      "description": "Insured value amount",
+      "description": "Insured value amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3432,7 +3432,7 @@
     {
       "id": "383",
       "name": "Issuer / Drawer",
-      "description": "Issuer / Drawer",
+      "description": "Issuer / Drawer - Extract ONLY name of the entity or person who issues the bill of exchange (the party making the payment), Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3657,7 +3657,7 @@
     {
       "id": "408",
       "name": "Certification",
-      "description": "Certification",
+      "description": "Certification - Text of official certification, legalisation or stamp etc.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3855,7 +3855,7 @@
     {
       "id": "430",
       "name": "Monetary amount",
-      "description": "Monetary amount",
+      "description": "Monetary amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).\"",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
