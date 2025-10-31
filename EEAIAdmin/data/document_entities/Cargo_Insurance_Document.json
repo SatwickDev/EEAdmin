@@ -184,7 +184,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "364",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -198,7 +198,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "365",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -212,7 +212,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "366",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -226,7 +226,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "367",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -240,7 +240,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "368",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -254,7 +254,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "369",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -268,7 +268,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "386",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -282,7 +282,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "387",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -296,7 +296,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "388",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -310,7 +310,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "389",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -324,7 +324,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "390",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -338,7 +338,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "391",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -352,7 +352,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "392",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -366,7 +366,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "393",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -380,7 +380,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "394",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",
@@ -393,6 +393,20 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "optional"
+    },
+    {
+      "documentId": "Cargo_Insurance_Document",
+      "documentName": "Cargo Insurance Document",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "486",
+      "entityName": "Insurance claim adjuster Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "mandatory",
+      "id": "88484"
     }
   ]
 }

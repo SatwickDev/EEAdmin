@@ -14573,6 +14573,48 @@
       "dataCategoryValue": "Amounts/charges/percentages",
       "fieldType": "mandatory",
       "id": "88481"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "484",
+      "entityName": "Applicant Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory",
+      "id": "88482"
+    },
+    {
+      "documentId": "Bill_of_Lading",
+      "documentName": "Bill of Lading",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "485",
+      "entityName": "Consignor Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "mandatory",
+      "id": "88483"
+    },
+    {
+      "documentId": "Cargo_Insurance_Document",
+      "documentName": "Cargo Insurance Document",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "486",
+      "entityName": "Insurance claim adjuster Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "mandatory",
+      "id": "88484"
     }
   ],
   "documentName": "Letter of Credit"

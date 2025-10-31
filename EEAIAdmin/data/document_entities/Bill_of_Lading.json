@@ -841,6 +841,20 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "optional"
+    },
+    {
+      "documentId": "Bill_of_Lading",
+      "documentName": "Bill of Lading",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "485",
+      "entityName": "Consignor Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "mandatory",
+      "id": "88483"
     }
   ]
 }

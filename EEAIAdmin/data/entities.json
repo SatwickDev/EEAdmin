@@ -3,7 +3,7 @@
     {
       "id": "1",
       "name": "Document Identifier",
-      "description": "Reference number identifying a specific document",
+      "description": "Reference number identifying a specific document - Extract reference number.DO not extract LC or L/C number like (e.g., 'ILCAE0022100098')",
       "mappingFormField": "doc_index",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -1200,7 +1200,7 @@
     {
       "id": "135",
       "name": "Consignor",
-      "description": "Consignor for commercial invoice",
+      "description": "Consignor for commercial invoice - Extract ONLY the beneficiary's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1263,7 +1263,7 @@
     {
       "id": "142",
       "name": "Documentary Credit Identifier",
-      "description": "Documentary Credit Identifier for commercial invoice",
+      "description": "Documentary Credit Identifier - Extract the unique reference number assigned to this specific documentary credit document, NOT the LC number or any code similar to it. Exclude any values resembling 'ILCAE0022100098', 'ILCAE0022100098-1', or formats starting with alphabetical bank codes followed by digits. Do not extract any LC numbers, L/C references, or document numbers matching that pattern.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -2100,7 +2100,7 @@
     {
       "id": "235",
       "name": "Documentary credit number",
-      "description": "Documentary credit number",
+      "description": "Documentary Credit Number - Extract the exact LC number used to identify the documentary credit. Capture only the main continuous alphanumeric reference without any suffixes, extensions, or version indicators. If the value includes additional segments such as '-1', '/001', '_A', '/REV1', or any non-alphanumeric characters after the main code, remove everything from the first separator onward. Keep only the core alphanumeric sequence (e.g., extract 'ILCAE0022100098' from 'ILCAE0022100098-1' or 'ILCAE0022100098 / 001'). Ensure no extra symbols, spaces, or suffixes remain in the final output.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -2429,15 +2429,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
-    },
-    {
-      "id": "272",
-      "name": "Charges",
-      "description": "Charges",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts/charges/percentages"
     },
     {
       "id": "273",
@@ -2809,15 +2800,6 @@
       "dataCategoryValue": "Locations"
     },
     {
-      "id": "314",
-      "name": "Payment term",
-      "description": "Payment term",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms"
-    },
-    {
       "id": "315",
       "name": "Allowance / Charge",
       "description": "Allowance / Charge",
@@ -2874,7 +2856,7 @@
     {
       "id": "321",
       "name": "Seller's bank account number",
-      "description": "Seller's bank account number",
+      "description": "Seller's bank account number - Extract Seller's bank account number. DO not extract LC or L/C number like (e.g., 'ILCAE0022100098').",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3414,7 +3396,7 @@
     {
       "id": "381",
       "name": "Insurance claim adjuster",
-      "description": "Insurance claim adjuster",
+      "description": "Insurance claim adjuster - Extract ONLY the claim adjuster's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -4071,6 +4053,7 @@
     {
       "id": "454",
       "entityName": "Payment term",
+      "description": "Payment term - Extract the payment term mentioned in the document. Identify and normalize the value to one of the following standardized options: (1) At Sight, (2) Deferred Payment, (3) Acceptance, or (4) Negotiation. Interpret synonymous phrases accurately — for example, 'Sight Payment' or 'Payable at Sight' → 'At Sight'; 'Usance', 'Deferred', or 'Payable after X days' → 'Deferred Payment'; 'Acceptance by Drawee' → 'Acceptance'; and 'Available by Negotiation' → 'Negotiation'. Return only the standardized term from the list above, not the full sentence from the document.",
       "mappingFormField": "Tag 42C",
       "mappingFormDescription": "Payment term",
       "dataCategoryId": "6",
@@ -4302,15 +4285,6 @@
       "dataCategoryValue": "Instructions"
     },
     {
-      "id": "480",
-      "name": "Documentary Credit Number",
-      "description": "Documentary Credit Number",
-      "mappingFormField": "doc_index",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References"
-    },
-    {
       "id": "481",
       "name": "Shipment Period",
       "description": "Shipment Period",
@@ -4336,6 +4310,33 @@
       "mappingFormDescription": "",
       "dataCategoryId": "",
       "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "484",
+      "name": "Applicant Address",
+      "description": "Applicant Address - Extract ONLY the applicant's address. Do NOT include name. Only the address is required.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "485",
+      "name": "Consignor Address",
+      "description": "Address of the Consigner - Extract ONLY the Consigner's address. Do NOT include name. Only the address is required.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "486",
+      "name": "Insurance claim adjuster Address",
+      "description": "Address of the Insurance claim adjuster - Extract ONLY the claim adjuster's address. Do NOT include name. Only the address is required.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
     }
   ]
 }
