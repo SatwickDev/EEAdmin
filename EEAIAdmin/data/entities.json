@@ -3,7 +3,7 @@
     {
       "id": "1",
       "name": "Document Identifier",
-      "description": "Reference number identifying a specific document - Extract reference number.DO not extract LC or L/C number like (e.g., 'ILCAE0022100098')",
+      "description": "Reference number identifying a specific document - Extract the unique reference number assigned to this specific documentary credit document, NOT the LC number or any code similar to it. Exclude any values resembling 'ILCAE0022100098', 'ILCAE0022100098-1', or formats starting with alphabetical bank codes followed by digits. Do not extract any LC numbers, L/C references, or document numbers matching that pattern.",
       "mappingFormField": "doc_index",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3027,7 +3027,7 @@
     {
       "id": "340",
       "name": "Transport Contract Document / Bill of Lading number",
-      "description": "Transport Contract Document / Bill of Lading number - Unique B/L reference number (e.g., \"MAEU123456789\", \"BL-2024-001234\"). Extract complete number with all prefixes, hyphens, and characters exactly as stated. Found in fields labeled \"B/L No.\", \"Bill of Lading No.\", \"BL Number\", typically in document header. Preserve exact format.",
+      "description": "Transport Contract Document / Bill of Lading number - Unique B/L reference number (e.g., \"MAEU123456789\", \"BL-2024-001234\"). Extract complete number with all prefixes, hyphens, and characters exactly as stated. Found in fields labeled \"B/L No.\", \"Bill of Lading No.\", \"BL Number\", typically in document header. Preserve exact format. DO NOT extract the LC number or any code similar to it. Exclude any values resembling 'ILCAE0022100098', 'ILCAE0022100098-1', or formats starting with alphabetical bank codes followed by digits. Do not extract any LC numbers, L/C references, or document numbers matching that pattern.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3216,7 +3216,7 @@
     {
       "id": "361",
       "name": "Freight and charges amount",
-      "description": "Freight and charges amount",
+      "description": "Freight and charges amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",

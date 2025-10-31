@@ -14615,6 +14615,20 @@
       "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory",
       "id": "88484"
+    },
+    {
+      "documentId": "Air_Waybill",
+      "documentName": "Air Waybill",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "483",
+      "entityName": "Currency",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages",
+      "fieldType": "mandatory",
+      "id": "88485"
     }
   ],
   "documentName": "Letter of Credit"
