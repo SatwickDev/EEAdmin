@@ -114,7 +114,6 @@
       "dataCategoryValue": "Parties",
       "fieldType": "optional"
     },
-
     {
       "id": "861",
       "documentId": "Letter_of_Credit",
@@ -143,7 +142,6 @@
       "dataCategoryValue": "Parties",
       "fieldType": "optional"
     },
-
     {
       "id": "864",
       "documentId": "Letter_of_Credit",
@@ -186,7 +184,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "867",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter of Credit",
@@ -200,7 +198,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "868",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter of Credit",
@@ -214,7 +212,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-      {
+    {
       "id": "870",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter of Credit",
@@ -452,7 +450,6 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-
     {
       "id": "871",
       "documentId": "Letter_of_Credit",
@@ -607,7 +604,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-{
+    {
       "id": "88480",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter of Credit",
@@ -621,7 +618,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-{
+    {
       "id": "8281",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter Of Credit",
@@ -635,7 +632,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "9381",
       "documentId": "Letter_of_Credit",
       "documentName": "Letter Of Credit",
@@ -648,6 +645,20 @@
       "dataCategoryId": "5",
       "dataCategoryValue": "Clauses/conditions/instructions",
       "fieldType": "optional"
-    }  
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "483",
+      "entityName": "Currency",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages",
+      "fieldType": "mandatory",
+      "id": "88481"
+    }
   ]
 }

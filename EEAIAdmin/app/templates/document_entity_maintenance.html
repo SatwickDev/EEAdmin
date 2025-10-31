@@ -6014,12 +6014,25 @@
     });
 
     function entitycheck(value, aid = null) {
-        if (aid) {
-            return entities.some((item, i) => item.name.toLowerCase() === value.name.toLowerCase() && item['id'] != aid);
-        } else {
-            return entities.some((item, i) => item.name.toLowerCase() === value.name.toLowerCase());
-        }
+        if (!value) return false;
+
+        const valueName = (typeof value === 'string' ? value : value.name) || '';
+        const normalizedValue = valueName.trim().toLowerCase();
+
+        // Convert entities object → array of { name, ... }
+        const entityArray = Object.keys(entities).map(key => ({
+            name: key,
+            ...entities[key]
+        }));
+
+        return entityArray.some(item => {
+            const itemName = (item.name || '').trim().toLowerCase();
+            const sameName = itemName === normalizedValue;
+            const differentId = aid ? item.id != aid : true;
+            return sameName && differentId;
+        });
     }
+
 
     async function confirmEntityChange(newValue, currentValue = null) {
         let htmlText;
