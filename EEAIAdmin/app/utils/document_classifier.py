@@ -755,11 +755,11 @@ Return ONLY this JSON structure (no markdown, no additional text):
         # Build extraction instructions based on enabled field types
         extraction_instructions = []
         if extract_mandatory:
-            extraction_instructions.append(f"1. **MANDATORY fields** ({total_mandatory} fields) - These are REQUIRED and MUST be extracted")
+            extraction_instructions.append(f"1. **MANDATORY fields** ({total_mandatory} fields) - These are REQUIRED and MUST be included in response. Return ALL mandatory fields even if value is empty.")
         if extract_optional:
-            extraction_instructions.append(f"2. **OPTIONAL fields** ({total_optional} fields) - Extract if clearly present in document")
+            extraction_instructions.append(f"2. **OPTIONAL fields** ({total_optional} fields) - Include ONLY if you found a value in the document. DO NOT include optional fields with empty values.")
         if extract_conditional:
-            extraction_instructions.append(f"3. **CONDITIONAL fields** ({total_conditional} fields) - Extract based on document context and relevance")
+            extraction_instructions.append(f"3. **CONDITIONAL fields** ({total_conditional} fields) - Include ONLY if you found a value and field is relevant to document context. DO NOT include conditional fields with empty values.")
         
         extraction_instructions_text = "\n".join(extraction_instructions) if extraction_instructions else "No extraction instructions defined."
 
@@ -799,9 +799,11 @@ Return ONLY this JSON structure (no markdown, no additional text):
     - Use "{document_type}" NOT "letter_of_credit"
     - Preserve spaces, not underscores
 
-    5. **Extract ALL Configured Fields**: Include all enabled field types in your response
-    - For missing fields, use empty string "" with confidence 0
-    - Include EVERY field in extracted_fields, even if not found
+    5. **CRITICAL - Field Inclusion Rules**:
+    - **MANDATORY fields**: MUST include ALL mandatory fields in response, even if value is empty (use "" with confidence 0)
+    - **OPTIONAL fields**: Include ONLY if you found a value in the document. Skip optional fields with no value.
+    - **CONDITIONAL fields**: Include ONLY if you found a value and field is relevant. Skip conditional fields with no value.
+    - This selective inclusion reduces response size and improves clarity by showing only relevant optional/conditional data
 
     ### Fields to Extract:
 
@@ -840,12 +842,14 @@ Return ONLY this JSON structure (no markdown, no additional text):
     "extraction_completeness": <percentage 0-100 based on fields found vs total configured>
     }}
 
-    **REMINDER: You must attempt to extract ALL {total_all_fields} configured fields. Include every field in extracted_fields:**
-    - Mandatory fields: {total_mandatory}
-    - Optional fields: {total_optional}
-    - Conditional fields: {total_conditional}
-
-    **For fields not found in the document, use empty string "" with confidence 0, but still include them in the response.**
+    **CRITICAL REMINDER - Field Inclusion Rules:**
+    - **MANDATORY fields ({total_mandatory})**: Include ALL in response, even if empty (use "" with confidence 0)
+    - **OPTIONAL fields ({total_optional})**: Include ONLY if value found. Skip if empty.
+    - **CONDITIONAL fields ({total_conditional})**: Include ONLY if value found and relevant. Skip if empty.
+    
+    **This means your extracted_fields will contain:**
+    - All {total_mandatory} mandatory fields (some may be empty)
+    - Only optional/conditional fields that have values
     """
         else:
             # Fallback to hardcoded template with enhanced field descriptions
@@ -863,9 +867,14 @@ Return ONLY this JSON structure (no markdown, no additional text):
 
 **These descriptions are sourced from our entities.json database and provide precise definitions of what each field represents. Use these descriptions as your primary guide for accurate field identification and extraction.**
 
+**CRITICAL - Field Inclusion Rules:**
+- **MANDATORY fields**: Include ALL in response, even if empty (use "" with confidence 0)
+- **OPTIONAL fields**: Include ONLY if value found in document. Skip if empty.
+- **CONDITIONAL fields**: Include ONLY if value found and relevant. Skip if empty.
+
 ### Fields to Extract (organized by data category):
 
-{fields_text}{mandatory_summary}
+{fields_text}
 
 ### Extraction Guidelines:
 1. **Entity Descriptions**: Each field above includes a detailed description from our entity database explaining exactly what information to look for in the document.

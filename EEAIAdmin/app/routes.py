@@ -1589,6 +1589,16 @@ def setup_auth_routes(app: Flask):
     def document_classification_embed():
         """Embedded document classification for modal/iframe use"""
         return render_template('document_classification_embed.html')
+    
+    @app.route('/data/<path:filename>')
+    def serve_data_file(filename):
+        """Serve data files from the app/data directory"""
+        try:
+            data_dir = os.path.join(app.root_path, 'data')
+            return send_file(os.path.join(data_dir, filename))
+        except Exception as e:
+            logger.error(f"Error serving data file {filename}: {e}")
+            return jsonify({"error": "File not found"}), 404
 
     @app.route("/auth/login", methods=["POST"])
     @timing_aspect
@@ -3690,6 +3700,7 @@ Generate a query recipe for this request."""
                 'hsCode': data.get('hsCode', ''),
                 'quantity': data.get('quantity', ''),
                 'documents': data.get('documents', []),
+                'documentsRequired': data.get('documentsRequired', ''),
                 'additionalDocuments': data.get('additionalDocuments', ''),
                 'additionalConditions': data.get('additionalConditions', ''),
                 'charges': data.get('charges', 'beneficiary'),
@@ -6130,6 +6141,139 @@ Provide a structured summary with your findings.""",
                     'message': f'Analysis failed completely: {str(fallback_error)}',
                     'fallback_available': False
                 }), 500
+
+    @app.route('/api/parse-required-documents', methods=['POST'])
+    @timing_aspect
+    def parse_required_documents():
+        """
+        Parse required documents text into a structured checklist using LLM
+        """
+        import json
+        import re
+        
+        try:
+            logger.info("🤖 Parsing required documents with LLM")
+            
+            data = request.get_json()
+            if not data:
+                return jsonify({'success': False, 'error': 'No data provided'}), 400
+            
+            required_documents_text = data.get('required_documents_text', '')
+            document_type = data.get('document_type', 'Unknown')
+            
+            if not required_documents_text or required_documents_text.strip() == '':
+                return jsonify({'success': False, 'error': 'No required documents text provided'}), 400
+            
+            logger.info(f"📄 Parsing required documents for {document_type}")
+            logger.info(f"📝 Raw text: {required_documents_text[:200]}...")
+            
+            # Get Azure OpenAI config
+            deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+            
+            # Comprehensive prompt to handle any format
+            prompt = f"""You are a trade finance document expert. Parse the following required documents text into a JSON array.
+
+The text may be in ANY format:
+- Numbered list (1. 2. 3.)
+- Bullet points (-, *, •)
+- Newline separated
+- Comma or semicolon separated
+- Paragraph form
+- Mixed format
+
+Your task:
+1. Carefully read through ALL the text
+2. Identify EACH DISTINCT document type mentioned (typically 5-15 documents in an LC)
+3. Extract EVERY document - do not skip any
+4. For EACH document, provide:
+   - name: Clear, standardized document name
+   - description: Key requirements in 10-15 words
+   - priority: "Mandatory" (default) or "Optional" if explicitly stated
+   - category: "trade" (invoices, packing lists), "financial" (insurance), "certification" (certificates, attestations), "shipping" (B/L, vessel docs), "other"
+
+Common document types to look for:
+- Commercial Invoice
+- Bill of Lading (B/L, Ocean B/L, Shipped B/L)
+- Certificate of Origin (C/O)
+- Packing List
+- Insurance Policy/Certificate
+- Inspection Certificate
+- Certificate of Weight
+- Certificate of Quality
+- Vessel/Shipping Certificates
+- Beneficiary Certificates
+- Bank Certificates
+
+Required Documents Text:
+{required_documents_text}
+
+CRITICAL INSTRUCTIONS:
+- Extract ALL documents mentioned in the text above
+- If you see numbers (1, 2, 3...) or bullets, each one is typically a separate document
+- Look for document names like "invoice", "bill of lading", "certificate", "policy", "list"
+- Standardize abbreviations: B/L → Bill of Lading, C/O → Certificate of Origin, GSP → Certificate of Origin (GSP Form)
+- If one item mentions multiple documents (e.g., "invoice and packing list"), create separate entries
+- Return ONLY the JSON array with NO extra text
+
+Output format:
+[
+  {{"name": "Commercial Invoice", "description": "Signed original, attested, legalized by embassy", "priority": "Mandatory", "category": "trade"}},
+  {{"name": "Bill of Lading", "description": "Full set, clean on board, made to order", "priority": "Mandatory", "category": "shipping"}},
+  {{"name": "Certificate of Origin", "description": "Attested by chamber, legalized", "priority": "Mandatory", "category": "certification"}},
+  {{"name": "Marine Insurance Policy", "description": "110% invoice value, warehouse to warehouse", "priority": "Mandatory", "category": "financial"}},
+  {{"name": "Packing List", "description": "Original plus copies", "priority": "Mandatory", "category": "trade"}}
+]"""
+            
+            # Call OpenAI with explicit instructions
+            response = openai.ChatCompletion.create(
+                engine=deployment_name,
+                messages=[
+                    {"role": "system", "content": "You are a meticulous trade finance expert. Extract EVERY SINGLE document from the text, no matter the format. Count how many distinct documents are mentioned and extract all of them. Return only valid JSON array."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                max_tokens=2000
+            )
+            
+            response_text = response["choices"][0]["message"]["content"].strip()
+            logger.info(f"🤖 LLM Response: {response_text[:500]}...")
+            
+            # Extract JSON
+            if '```json' in response_text:
+                response_text = response_text.split('```json')[1].split('```')[0].strip()
+            elif '```' in response_text:
+                response_text = response_text.split('```')[1].split('```')[0].strip()
+            
+            json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            parsed_documents = json.loads(response_text)
+            
+            # Clean up
+            cleaned_documents = []
+            for doc in parsed_documents:
+                if isinstance(doc, dict) and doc.get('name'):
+                    cleaned_documents.append({
+                        'name': doc.get('name', '').strip(),
+                        'description': doc.get('description', '').strip(),
+                        'priority': doc.get('priority', 'Mandatory'),
+                        'category': doc.get('category', 'other'),
+                        'mandatory': doc.get('priority', 'Mandatory').lower() == 'mandatory'
+                    })
+            
+            logger.info(f"✅ Successfully parsed {len(cleaned_documents)} documents")
+            
+            return jsonify({
+                'success': True,
+                'documents': cleaned_documents,
+                'count': len(cleaned_documents)
+            })
+            
+        except Exception as e:
+            logger.error(f"❌ Error parsing required documents: {e}")
+            logger.exception("Full traceback:")
+            return jsonify({'success': False, 'error': str(e)}), 500
 
     @app.route('/api/document/analyze-discrepancies-optimized', methods=['POST'])
     @timing_aspect
@@ -20266,8 +20410,11 @@ def generate_mt700_message(lc_data):
     for doc in lc_data.get('documents', []):
         documents_text += "- " + doc.replace('_', ' ').title() + "\n"
 
-    if lc_data.get('additionalDocuments'):
-        documents_text += "- " + lc_data['additionalDocuments']
+    # Add additional documents text if provided
+    if lc_data.get('documentsRequired'):
+        documents_text += lc_data['documentsRequired']
+    elif lc_data.get('additionalDocuments'):
+        documents_text += lc_data['additionalDocuments']
 
     swift_lines.append(":46A:" + documents_text[:6000])  # Max 6000 chars
 

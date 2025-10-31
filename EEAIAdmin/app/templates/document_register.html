@@ -315,10 +315,7 @@
         }
 
         .smart-capture-iframe-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: relative;
             width: 100%;
             height: 100%;
             max-width: 1400px;
@@ -334,20 +331,15 @@
                 0 0 0 1px rgba(255, 255, 255, 0.5),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(229, 231, 235, 0.3);
-            animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes slideUpModal {
-            from {
-                transform: translate(-50%, -45%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translate(-50%, -50%);
-                opacity: 1;
-            }
+        .smart-capture-modal.active .smart-capture-iframe-container {
+            opacity: 1;
+            transform: scale(1) translateY(0);
         }
 
         .smart-capture-header {
@@ -3265,6 +3257,41 @@ later than expiry date of credit
                 }
             }
 
+            // Set up onload handler BEFORE setting src to ensure it fires
+            iframe.onload = function() {
+                console.log('🔌 Smart Capture iframe loaded, sending LC context...');
+                
+                // Remove loading state from modal
+                modal.classList.remove('loading');
+                
+                // Get LC context
+                const lcData = getLCContext();
+                
+                if (lcData) {
+                    console.log('📤 Sending LC context to iframe:', lcData);
+                    
+                    // Wait a bit for the iframe Vue app to be fully initialized
+                    setTimeout(() => {
+                        try {
+                            if (iframe.contentWindow) {
+                                iframe.contentWindow.postMessage({
+                                    type: 'LC_CONTEXT',
+                                    lcData: lcData
+                                }, '*');
+                                console.log('✅ LC context sent successfully');
+                            } else {
+                                console.error('❌ iframe.contentWindow is not available');
+                            }
+                        } catch (error) {
+                            console.error('❌ Error sending LC context:', error);
+                        }
+                    }, 1000); // Longer delay to ensure Vue app is initialized
+                } else {
+                    console.warn('⚠️ No LC context available to send');
+                }
+            };
+            
+            // Now set the iframe source (this will trigger onload when ready)
             iframe.src = `/document-classification-overlay?${params.toString()}`;
 
             // Show the modal with animation
