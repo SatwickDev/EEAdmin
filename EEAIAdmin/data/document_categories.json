@@ -281,6 +281,14 @@
       "processType": "Financial Processes"
     },
     {
+      "id": "37",
+      "code": "CS",
+      "name": "Covering Schedule",
+      "sender": "Payer/Buyer",
+      "receiver": "Payee/Seller",
+      "processType": "Financial Processes"
+    },
+    {
       "id": "36",
       "code": "PN",
       "name": "Promissory Note",
