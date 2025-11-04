@@ -12067,6 +12067,203 @@ Return compliance status for each field.'''
     }}
     """
 
+    def aggregate_extracted_fields(extraction_results: List[Dict], strategy: str = "union", confidence_threshold: int = 70) -> Dict:
+        """
+        Aggregate multiple extraction results into a single consolidated result.
+        
+        Args:
+            extraction_results: List of extraction result dictionaries from parallel calls
+            strategy: Aggregation strategy - "union", "intersection", or "majority"
+            confidence_threshold: Minimum confidence to include a field
+            
+        Returns:
+            Aggregated extraction result with merged fields
+        """
+        logger.info(f"🔀 Aggregating {len(extraction_results)} extraction results using '{strategy}' strategy")
+        
+        if not extraction_results:
+            return {}
+        
+        # Initialize aggregated result with first successful result as base
+        aggregated = None
+        for result in extraction_results:
+            if result and 'extracted_fields' in result:
+                aggregated = {
+                    'page_number': result.get('page_number', 1),
+                    'classification': result.get('classification', {}),
+                    'extracted_fields': {},
+                    'confidence_score': 0,
+                    'mandatory_fields_found': 0,
+                    'total_mandatory_fields': result.get('total_mandatory_fields', 0),
+                    'extraction_completeness': 0,
+                    'aggregation_metadata': {
+                        'total_attempts': len(extraction_results),
+                        'successful_attempts': sum(1 for r in extraction_results if r and 'extracted_fields' in r),
+                        'strategy': strategy,
+                        'confidence_threshold': confidence_threshold
+                    }
+                }
+                break
+        
+        if not aggregated:
+            logger.error("❌ No valid extraction results to aggregate")
+            return {}
+        
+        # Collect all fields from all results
+        field_occurrences = {}  # {field_name: [{'value': val, 'confidence': conf, 'bounding_box': box}, ...]}
+        
+        for result in extraction_results:
+            if not result or 'extracted_fields' not in result:
+                continue
+                
+            for field_name, field_data in result['extracted_fields'].items():
+                if not isinstance(field_data, dict):
+                    continue
+                    
+                confidence = field_data.get('confidence', 0)
+                value = field_data.get('value', '')
+                
+                # Skip if below confidence threshold or empty value
+                if confidence < confidence_threshold or not value:
+                    continue
+                
+                if field_name not in field_occurrences:
+                    field_occurrences[field_name] = []
+                
+                field_occurrences[field_name].append({
+                    'value': value,
+                    'confidence': confidence,
+                    'bounding_box': field_data.get('bounding_box', [0, 0, 0, 0]),
+                    'bounding_page': field_data.get('bounding_page', 1)
+                })
+        
+        logger.info(f"📊 Found {len(field_occurrences)} unique fields across all attempts")
+        
+        # Apply aggregation strategy
+        if strategy == "union":
+            # Union: Include all fields found in any attempt (take highest confidence occurrence)
+            for field_name, occurrences in field_occurrences.items():
+                # Sort by confidence and take the highest
+                best_occurrence = max(occurrences, key=lambda x: x['confidence'])
+                aggregated['extracted_fields'][field_name] = best_occurrence
+                logger.debug(f"   ✓ {field_name}: {len(occurrences)} occurrences, using highest confidence")
+        
+        elif strategy == "intersection":
+            # Intersection: Only include fields found in ALL attempts
+            required_count = aggregated['aggregation_metadata']['successful_attempts']
+            for field_name, occurrences in field_occurrences.items():
+                if len(occurrences) >= required_count:
+                    # Take the occurrence with highest confidence
+                    best_occurrence = max(occurrences, key=lambda x: x['confidence'])
+                    aggregated['extracted_fields'][field_name] = best_occurrence
+                    logger.debug(f"   ✓ {field_name}: Found in all {required_count} attempts")
+                else:
+                    logger.debug(f"   ✗ {field_name}: Only in {len(occurrences)}/{required_count} attempts (skipped)")
+        
+        elif strategy == "majority":
+            # Majority: Include fields found in 50%+ of attempts
+            required_count = aggregated['aggregation_metadata']['successful_attempts'] / 2
+            for field_name, occurrences in field_occurrences.items():
+                if len(occurrences) >= required_count:
+                    # For majority voting, we could:
+                    # Option 1: Take highest confidence
+                    # Option 2: Take most common value
+                    # Let's use Option 1 for now
+                    best_occurrence = max(occurrences, key=lambda x: x['confidence'])
+                    aggregated['extracted_fields'][field_name] = best_occurrence
+                    logger.debug(f"   ✓ {field_name}: Found in {len(occurrences)} attempts (majority)")
+                else:
+                    logger.debug(f"   ✗ {field_name}: Only in {len(occurrences)} attempts (below majority)")
+        
+        # Calculate aggregate metrics
+        total_fields = len(aggregated['extracted_fields'])
+        aggregated['confidence_score'] = (
+            sum(f['confidence'] for f in aggregated['extracted_fields'].values()) / total_fields
+            if total_fields > 0 else 0
+        )
+        
+        # Count mandatory fields (assuming fields with high confidence or specific naming pattern)
+        aggregated['mandatory_fields_found'] = sum(
+            1 for f in aggregated['extracted_fields'].values() 
+            if f.get('confidence', 0) >= 85
+        )
+        
+        if aggregated['total_mandatory_fields'] > 0:
+            aggregated['extraction_completeness'] = int(
+                (aggregated['mandatory_fields_found'] / aggregated['total_mandatory_fields']) * 100
+            )
+        
+        logger.info(f"✅ Aggregation complete: {total_fields} fields, avg confidence: {aggregated['confidence_score']:.1f}")
+        return aggregated
+
+    def extract_entities_parallel(prompt: str, model: str, temperature: float, num_attempts: int = 3) -> List[Dict]:
+        """
+        Perform parallel entity extraction with multiple concurrent LLM calls.
+        
+        Args:
+            prompt: The extraction prompt
+            model: The model name/engine to use
+            temperature: Temperature setting for LLM
+            num_attempts: Number of parallel extraction attempts
+            
+        Returns:
+            List of extraction results from all attempts
+        """
+        logger.info(f"🚀 Starting parallel extraction with {num_attempts} concurrent attempts")
+        
+        def single_extraction_call(attempt_num: int) -> Dict:
+            """Single extraction call for parallel execution."""
+            try:
+                logger.info(f"   📤 Attempt {attempt_num + 1}/{num_attempts}: Sending request to LLM")
+                response = openai.ChatCompletion.create(
+                    engine=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=temperature,
+                    seed=12345,
+                    top_p=1.0,
+                    frequency_penalty=0,
+                    presence_penalty=0
+                )
+                
+                result = response["choices"][0]["message"]["content"].strip()
+                parsed_json = parse_json_from_llm_response(result)
+                
+                if parsed_json and 'extracted_fields' in parsed_json:
+                    field_count = len(parsed_json.get('extracted_fields', {}))
+                    logger.info(f"   ✅ Attempt {attempt_num + 1}: Extracted {field_count} fields")
+                else:
+                    logger.warning(f"   ⚠️  Attempt {attempt_num + 1}: Failed to parse response")
+                
+                return parsed_json if parsed_json else {}
+                
+            except Exception as e:
+                logger.error(f"   ❌ Attempt {attempt_num + 1}: Error - {str(e)}")
+                return {}
+        
+        # Execute parallel extraction calls using ThreadPoolExecutor
+        results = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_attempts) as executor:
+            # Submit all extraction tasks
+            future_to_attempt = {
+                executor.submit(single_extraction_call, i): i 
+                for i in range(num_attempts)
+            }
+            
+            # Collect results as they complete
+            for future in concurrent.futures.as_completed(future_to_attempt):
+                attempt_num = future_to_attempt[future]
+                try:
+                    result = future.result()
+                    results.append(result)
+                except Exception as e:
+                    logger.error(f"   ❌ Attempt {attempt_num + 1}: Exception - {str(e)}")
+                    results.append({})
+        
+        successful_count = sum(1 for r in results if r and 'extracted_fields' in r)
+        logger.info(f"🏁 Parallel extraction complete: {successful_count}/{num_attempts} successful attempts")
+        
+        return results
+
     def process_page_with_llm_analysis(page_number, page_ocr_data, userQuery, annotations, productName, functionName, documentType=None):
         global prompt_config  # Declare at function start to avoid SyntaxError
 
@@ -12238,19 +12435,59 @@ Return compliance status for each field.'''
 
             logger.info(f"PARAMETERS: Using extraction config - Model: {model}, Temperature: {temperature}")
 
-            # Send prompt to LLM (note: build_extraction_prompt already includes system prompt)
-            response = openai.ChatCompletion.create(
-                engine=model if model else deployment_name,
-                messages=[
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=temperature
-            )
+            # Check if parallel extraction is enabled
+            extraction_config = prompt_config.get('extraction', {}) if prompt_config else {}
+            enable_parallel = extraction_config.get('enable_parallel_extraction', False)
+            parallel_attempts = extraction_config.get('parallel_extraction_attempts', 3)
+            aggregation_strategy = extraction_config.get('aggregation_strategy', 'union')
+            confidence_threshold = extraction_config.get('confidence_threshold', 70)
 
-            result = response["choices"][0]["message"]["content"].strip()
-            parsed_json = parse_json_from_llm_response(result)
-            if not parsed_json:
-                return {"page_number": page_number, "error": "Invalid LLM response format"}
+            if enable_parallel and parallel_attempts > 1:
+                # ======= PARALLEL EXTRACTION MODE =======
+                logger.info(f"🔄 Parallel extraction ENABLED: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
+                
+                # Perform parallel extraction
+                extraction_results = extract_entities_parallel(
+                    prompt=prompt,
+                    model=model if model else deployment_name,
+                    temperature=temperature,
+                    num_attempts=parallel_attempts
+                )
+                
+                # Aggregate results
+                parsed_json = aggregate_extracted_fields(
+                    extraction_results=extraction_results,
+                    strategy=aggregation_strategy,
+                    confidence_threshold=confidence_threshold
+                )
+                
+                if not parsed_json or 'extracted_fields' not in parsed_json:
+                    logger.error("❌ Parallel extraction aggregation failed, no valid results")
+                    return {"page_number": page_number, "error": "Parallel extraction failed"}
+                
+                logger.info(f"✅ Parallel extraction successful: {len(parsed_json.get('extracted_fields', {}))} total fields aggregated")
+                
+            else:
+                # ======= SINGLE EXTRACTION MODE (Original) =======
+                logger.info(f"📤 Single extraction mode (parallel disabled or attempts=1)")
+                
+                # Send prompt to LLM (note: build_extraction_prompt already includes system prompt)
+                response = openai.ChatCompletion.create(
+                    engine=model if model else deployment_name,
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=temperature,
+                    seed=12345,
+                    top_p=1.0,
+                    frequency_penalty=0,
+                    presence_penalty=0
+                )
+
+                result = response["choices"][0]["message"]["content"].strip()
+                parsed_json = parse_json_from_llm_response(result)
+                if not parsed_json:
+                    return {"page_number": page_number, "error": "Invalid LLM response format"}
 
             # Ensure compliance results are included for all document types
             # No need to remove compliance results anymore
@@ -15883,45 +16120,80 @@ Guidelines:
 
                 logger.info(f"🤖 Calling LLM API (model: {extraction_model}, temp: {extraction_temp}, max_tokens: {extraction_max_tokens})")
 
-                # Call LLM for extraction
-                extraction_response = openai.ChatCompletion.create(
-                    engine=extraction_model,
-                    messages=[{"role": "user", "content": extraction_prompt}],
-                    temperature=extraction_temp,
-                    max_tokens=extraction_max_tokens
-                )
-                extraction_result = extraction_response.choices[0].message.content
-                
-                logger.info(f"✅ Received LLM response ({len(extraction_result)} chars)")
-                
-                # Parse extraction result
-                try:
-                    # Log raw response for debugging
-                    logger.info(f"🔍 Raw LLM response (first 500 chars): {extraction_result[:500]}")
+                # Check if parallel extraction is enabled for individual documents
+                enable_parallel = extraction_config.get('enable_parallel_extraction', False)
+                parallel_attempts = extraction_config.get('parallel_extraction_attempts', 3)
+                aggregation_strategy = extraction_config.get('aggregation_strategy', 'union')
+                confidence_threshold = extraction_config.get('confidence_threshold', 70)
+
+                if enable_parallel and parallel_attempts > 1:
+                    # ======= PARALLEL EXTRACTION FOR THIS DOCUMENT =======
+                    logger.info(f"🔄 Using parallel extraction: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
                     
-                    # Try to extract JSON from markdown code blocks if present
-                    if '```json' in extraction_result:
-                        json_start = extraction_result.find('```json') + 7
-                        json_end = extraction_result.find('```', json_start)
-                        extraction_result = extraction_result[json_start:json_end].strip()
-                        logger.info("🔍 Extracted JSON from markdown code block")
-                    elif '```' in extraction_result:
-                        json_start = extraction_result.find('```') + 3
-                        json_end = extraction_result.find('```', json_start)
-                        extraction_result = extraction_result[json_start:json_end].strip()
-                        logger.info("🔍 Extracted content from generic code block")
+                    # Perform parallel extraction
+                    extraction_results = extract_entities_parallel(
+                        prompt=extraction_prompt,
+                        model=extraction_model,
+                        temperature=extraction_temp,
+                        num_attempts=parallel_attempts
+                    )
                     
-                    extraction_json = json.loads(extraction_result)
+                    # Aggregate results
+                    extraction_json = aggregate_extracted_fields(
+                        extraction_results=extraction_results,
+                        strategy=aggregation_strategy,
+                        confidence_threshold=confidence_threshold
+                    )
+                    
                     extracted_fields = extraction_json.get('extracted_fields', {})
-                    logger.info(f"✅ Successfully parsed {len(extracted_fields)} fields from JSON")
-                except json.JSONDecodeError as e:
-                    logger.error(f"❌ JSON parsing failed: {e}")
-                    logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
-                    extracted_fields = {}
-                except Exception as e:
-                    logger.error(f"❌ Unexpected error during parsing: {e}")
-                    logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
-                    extracted_fields = {}
+                    if not extracted_fields:
+                        logger.error("❌ Parallel extraction aggregation returned no fields")
+                    else:
+                        logger.info(f"✅ Parallel extraction successful: {len(extracted_fields)} aggregated fields")
+                        
+                else:
+                    # ======= SINGLE EXTRACTION (Original) =======
+                    logger.info(f"📤 Using single extraction call")
+                    
+                    # Call LLM for extraction
+                    extraction_response = openai.ChatCompletion.create(
+                        engine=extraction_model,
+                        messages=[{"role": "user", "content": extraction_prompt}],
+                        temperature=extraction_temp,
+                        max_tokens=extraction_max_tokens
+                    )
+                    extraction_result = extraction_response.choices[0].message.content
+                    
+                    logger.info(f"✅ Received LLM response ({len(extraction_result)} chars)")
+                    
+                    # Parse extraction result
+                    try:
+                        # Log raw response for debugging
+                        logger.info(f"🔍 Raw LLM response (first 500 chars): {extraction_result[:500]}")
+                        
+                        # Try to extract JSON from markdown code blocks if present
+                        if '```json' in extraction_result:
+                            json_start = extraction_result.find('```json') + 7
+                            json_end = extraction_result.find('```', json_start)
+                            extraction_result = extraction_result[json_start:json_end].strip()
+                            logger.info("🔍 Extracted JSON from markdown code block")
+                        elif '```' in extraction_result:
+                            json_start = extraction_result.find('```') + 3
+                            json_end = extraction_result.find('```', json_start)
+                            extraction_result = extraction_result[json_start:json_end].strip()
+                            logger.info("🔍 Extracted content from generic code block")
+                        
+                        extraction_json = json.loads(extraction_result)
+                        extracted_fields = extraction_json.get('extracted_fields', {})
+                        logger.info(f"✅ Successfully parsed {len(extracted_fields)} fields from JSON")
+                    except json.JSONDecodeError as e:
+                        logger.error(f"❌ JSON parsing failed: {e}")
+                        logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
+                        extracted_fields = {}
+                    except Exception as e:
+                        logger.error(f"❌ Unexpected error during parsing: {e}")
+                        logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
+                        extracted_fields = {}
 
                 extraction_time = time.time() - extraction_start
                 logger.info(f"SUCCESS:Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")

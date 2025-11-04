@@ -10061,6 +10061,56 @@
       "priority": "Optional",
       "createdAt": "2025-10-21T10:00:00",
       "updatedAt": "2025-10-21T10:00:00"
-    }
+    },
+    {
+    "id": "cs-rule-001",
+    "code": "CS-R-001",
+    "documentType": "Covering Schedule",
+    "description": "LC number must be present in the covering schedule document.",
+    "basis": "ISBP 745 Para. A1",
+    "priority": "Mandatory",
+    "createdAt": "2024-10-14T10:00:00",
+    "updatedAt": "2024-10-14T10:00:00"
+  },
+  {
+    "id": "cs-rule-002",
+    "code": "CS-R-002",
+    "documentType": "Covering Schedule",
+    "description": "Drawee and Drawer details must match with those specified in the Letter of Credit (LC).",
+    "basis": "UCP 600 Art. 14(d)",
+    "priority": "Mandatory",
+    "createdAt": "2024-10-14T10:00:00",
+    "updatedAt": "2024-10-14T10:00:00"
+  },
+  {
+    "id": "cs-rule-003",
+    "code": "CS-R-003",
+    "documentType": "Covering Schedule",
+    "description": "Bill amount must match with the master data as per the LC terms.",
+    "basis": "UCP 600 Art. 14(e)",
+    "priority": "Mandatory",
+    "createdAt": "2024-10-14T10:00:00",
+    "updatedAt": "2024-10-14T10:00:00"
+  },
+  {
+    "id": "cs-rule-004",
+    "code": "CS-R-004",
+    "documentType": "Covering Schedule",
+    "description": "Tenor must be clearly stated in the covering schedule document.",
+    "basis": "UCP 600 Art. 3",
+    "priority": "Mandatory",
+    "createdAt": "2024-10-14T10:00:00",
+    "updatedAt": "2024-10-14T10:00:00"
+  },
+  {
+    "id": "cs-rule-005",
+    "code": "CS-R-005",
+    "documentType": "Covering Schedule",
+    "description": "Total amount must be mentioned and should align with the presented documents.",
+    "basis": "ISBP 745 Para. A10",
+    "priority": "Mandatory",
+    "createdAt": "2024-10-14T10:00:00",
+    "updatedAt": "2024-10-14T10:00:00"
+  } 
   ]
 }
