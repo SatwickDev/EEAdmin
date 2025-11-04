@@ -6275,6 +6275,323 @@ Output format:
             logger.exception("Full traceback:")
             return jsonify({'success': False, 'error': str(e)}), 500
 
+    @app.route('/api/parse-additional-conditions', methods=['POST'])
+    @timing_aspect
+    def parse_additional_conditions():
+        """
+        Parse LC Additional Conditions text into structured validation rules using LLM
+        """
+        import json
+        import re
+        
+        try:
+            logger.info("🤖 Parsing LC Additional Conditions with LLM")
+            
+            data = request.get_json()
+            if not data:
+                return jsonify({'success': False, 'error': 'No data provided'}), 400
+            
+            additional_conditions_text = data.get('additional_conditions_text', '')
+            lc_number = data.get('lc_number', 'Unknown')
+            
+            if not additional_conditions_text or additional_conditions_text.strip() == '':
+                return jsonify({'success': False, 'error': 'No additional conditions text provided'}), 400
+            
+            logger.info(f"📄 Parsing additional conditions for LC: {lc_number}")
+            logger.info(f"📝 Raw text: {additional_conditions_text[:200]}...")
+            
+            # Get Azure OpenAI config
+            deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+            
+            # Comprehensive prompt to extract validation rules
+            prompt = f"""You are a trade finance compliance expert. Parse the following LC Additional Conditions into structured validation rules.
+
+LC Number: {lc_number}
+
+Additional Conditions Text:
+{additional_conditions_text}
+
+Your task is to extract EVERY validation rule from the text and structure them as JSON objects.
+
+For EACH condition, create a rule with:
+- id: Unique identifier (e.g., "lc-cond-001", "lc-cond-002")
+- code: Rule code (e.g., "LC-COND-001")
+- category: One of ["language", "reference_number", "date_validation", "signature", "document_type", "shipping", "presentation", "formatting", "general"]
+- description: Clear description of what is required/prohibited
+- field_affected: Which field/document this applies to (e.g., "all_documents", "invoice", "bill_of_lading", "document_date", "lc_number_reference")
+- validation_type: Type of validation needed (e.g., "language_check", "contains_lc_number", "date_comparison", "signature_required", "format_check", "prohibited_content")
+- expected_value: What value is expected (if applicable)
+- severity: "high" (mandatory), "medium" (important), or "low" (optional)
+- actionable: true if this can be automatically validated, false if it's informational only
+
+Common validation types:
+- "language_check": Document must be in specific language
+- "contains_lc_number": Document must reference LC number
+- "date_comparison": Date validations (e.g., not before LC date, within 21 days)
+- "signature_required": Document must be signed/attested
+- "prohibited_content": Certain clauses/content not acceptable
+- "format_check": Specific format requirements
+- "consignor_check": Consignor must match beneficiary
+- "courier_receipt": Postal receipt must be submitted
+- "document_copies": Number of copies required
+- "presentation_method": How documents must be presented
+
+Output ONLY valid JSON array, no extra text:
+
+[
+  {{
+    "id": "lc-cond-001",
+    "code": "LC-COND-001",
+    "category": "language",
+    "description": "All documents must be prepared in English only",
+    "field_affected": "all_documents",
+    "validation_type": "language_check",
+    "expected_value": "English",
+    "severity": "high",
+    "actionable": true
+  }},
+  {{
+    "id": "lc-cond-002",
+    "code": "LC-COND-002",
+    "category": "reference_number",
+    "description": "All documents must bear LC number {lc_number}",
+    "field_affected": "all_documents",
+    "validation_type": "contains_lc_number",
+    "expected_value": "{lc_number}",
+    "severity": "high",
+    "actionable": true
+  }}
+]
+
+Extract ALL conditions from the text above."""
+            
+            # Call OpenAI
+            response = openai.ChatCompletion.create(
+                engine=deployment_name,
+                messages=[
+                    {"role": "system", "content": "You are a meticulous LC compliance expert. Extract EVERY condition as a validation rule. Return only valid JSON array."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.1,
+                max_tokens=3000
+            )
+            
+            response_text = response["choices"][0]["message"]["content"].strip()
+            logger.info(f"🤖 LLM Response: {response_text[:500]}...")
+            
+            # Extract JSON
+            if '```json' in response_text:
+                response_text = response_text.split('```json')[1].split('```')[0].strip()
+            elif '```' in response_text:
+                response_text = response_text.split('```')[1].split('```')[0].strip()
+            
+            json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            parsed_rules = json.loads(response_text)
+            
+            # Clean up
+            cleaned_rules = []
+            for idx, rule in enumerate(parsed_rules):
+                if isinstance(rule, dict):
+                    cleaned_rules.append({
+                        'id': rule.get('id', f'lc-cond-{idx+1:03d}'),
+                        'code': rule.get('code', f'LC-COND-{idx+1:03d}'),
+                        'category': rule.get('category', 'general'),
+                        'description': rule.get('description', '').strip(),
+                        'field_affected': rule.get('field_affected', 'all_documents'),
+                        'validation_type': rule.get('validation_type', 'general_check'),
+                        'expected_value': rule.get('expected_value', ''),
+                        'severity': rule.get('severity', 'high'),
+                        'actionable': rule.get('actionable', True),
+                        'source': 'lc_conditions',
+                        'lc_number': lc_number
+                    })
+            
+            logger.info(f"✅ Successfully parsed {len(cleaned_rules)} LC condition rules")
+            
+            return jsonify({
+                'success': True,
+                'rules': cleaned_rules,
+                'count': len(cleaned_rules),
+                'lc_number': lc_number
+            })
+            
+        except Exception as e:
+            logger.error(f"❌ Error parsing additional conditions: {e}")
+            logger.exception("Full traceback:")
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route('/api/validate-lc-conditions', methods=['POST'])
+    @timing_aspect
+    def validate_lc_conditions():
+        """
+        LLM-based validation of documents against LC Additional Conditions
+        Uses parallel batch processing: 4 rules per batch, all documents per batch
+        """
+        import json
+        import concurrent.futures
+        import re
+        from threading import Lock
+        
+        def validate_rule_batch(batch_rules, documents, lc_data, deployment_name, batch_num):
+            """Process a batch of rules against all documents"""
+            try:
+                logger.info(f"🔄 Batch {batch_num}: Processing {len(batch_rules)} rules against {len(documents)} documents")
+                
+                # Create focused document summaries (reduce token usage)
+                doc_summaries = []
+                for doc in documents:
+                    summary = {
+                        'documentType': doc.get('documentType', 'Unknown'),
+                        'fileName': doc.get('fileName', ''),
+                        'pages': doc.get('pages', []),
+                        'hasLcNumber': lc_data.get('lcNumber', '') in str(doc.get('extractedFields', {})),
+                        'keyFields': list(doc.get('extractedFields', {}).keys())[:10],  # Top 10 fields only
+                        'textPreview': str(doc.get('fullText', ''))[:500]  # First 500 chars
+                    }
+                    doc_summaries.append(summary)
+                
+                prompt = f"""Validate documents against LC conditions. Return ONLY valid JSON array.
+
+LC DATA:
+- LC Number: {lc_data.get('lcNumber', 'Unknown')}
+- Beneficiary: {lc_data.get('beneficiary', 'Unknown')}
+- Issue Date: {lc_data.get('issueDate', 'Unknown')}
+- Expiry Date: {lc_data.get('expiryDate', 'Unknown')}
+
+DOCUMENTS ({len(doc_summaries)} total):
+{json.dumps(doc_summaries, indent=2)}
+
+RULES TO VALIDATE ({len(batch_rules)} rules):
+{json.dumps(batch_rules, indent=2)}
+
+CRITICAL: Validate EACH rule against ALL {len(doc_summaries)} documents.
+
+OUTPUT FORMAT (JSON array only, no markdown):
+[
+  {{
+    "rule": {{"code": "LC-COND-XXX", "description": "rule text"}},
+    "status": "compliant" OR "non_compliant" OR "manual_review",
+    "isCompliant": true OR false OR null,
+    "message": "summary for all {len(doc_summaries)} documents",
+    "severity": "high",
+    "category": "category_name",
+    "details": {{
+      "compliant": [{{"document": "Type", "fileName": "name", "pages": "Pages X", "reason": "why"}}],
+      "nonCompliant": [],
+      "requiresManualReview": []
+    }}
+  }}
+]
+
+Return results for all {len(batch_rules)} rules. Check every document."""
+                
+                request_params = {
+                    'engine': deployment_name,
+                    'messages': [
+                        {
+                            "role": "system",
+                            "content": "You are a precise LC validator. Return ONLY valid JSON array. No explanations. Check all rules against all documents."
+                        },
+                        {"role": "user", "content": prompt}
+                    ],
+                    'temperature': 0.1,
+                    'max_tokens': 8000
+                }
+                
+                response = openai.ChatCompletion.create(**request_params)
+                response_text = response["choices"][0]["message"]["content"].strip()
+                
+                # Extract JSON
+                if '```json' in response_text:
+                    response_text = response_text.split('```json')[1].split('```')[0].strip()
+                elif '```' in response_text:
+                    response_text = response_text.split('```')[1].split('```')[0].strip()
+                
+                json_match = re.search(r'\[\s*\{.*\}\s*\]', response_text, re.DOTALL)
+                if json_match:
+                    response_text = json_match.group(0)
+                
+                # Parse JSON with fixes
+                try:
+                    batch_results = json.loads(response_text)
+                except json.JSONDecodeError:
+                    # Auto-fix common issues
+                    response_text = response_text.replace('\n', ' ')
+                    response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
+                    batch_results = json.loads(response_text)
+                
+                logger.info(f"✅ Batch {batch_num}: Generated {len(batch_results)} validation results")
+                return batch_results
+                
+            except Exception as e:
+                logger.error(f"❌ Batch {batch_num} failed: {e}")
+                return []
+        
+        try:
+            logger.info("🤖 Starting PARALLEL LLM-based LC Conditions validation")
+            
+            data = request.get_json()
+            if not data:
+                return jsonify({'success': False, 'error': 'No data provided'}), 400
+            
+            rules = data.get('rules', [])
+            documents = data.get('documents', [])
+            lc_data = data.get('lc_data', {})
+            
+            if not rules:
+                return jsonify({'success': False, 'error': 'No validation rules provided'}), 400
+            
+            if not documents:
+                return jsonify({'success': False, 'error': 'No documents provided'}), 400
+            
+            logger.info(f"📋 Processing {len(rules)} rules against {len(documents)} documents - 1 rule per parallel call")
+            
+            # Get Azure OpenAI config
+            deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+            
+            # Each rule gets its own batch (1 rule per batch for maximum parallelism)
+            BATCH_SIZE = 1
+            rule_batches = [[rule] for rule in rules]  # Each rule in its own list
+            logger.info(f"🔢 Created {len(rule_batches)} parallel batches (1 rule each)")
+            
+            # Process ALL rules in parallel using ThreadPoolExecutor
+            all_results = []
+            with concurrent.futures.ThreadPoolExecutor(max_workers=18) as executor:  # Up to 18 parallel calls
+                # Submit all batches
+                future_to_batch = {
+                    executor.submit(validate_rule_batch, batch, documents, lc_data, deployment_name, idx + 1): idx 
+                    for idx, batch in enumerate(rule_batches)
+                }
+                
+                # Collect results as they complete
+                for future in concurrent.futures.as_completed(future_to_batch):
+                    batch_idx = future_to_batch[future]
+                    try:
+                        batch_results = future.result()
+                        all_results.extend(batch_results)
+                        logger.info(f"✅ Collected results from batch {batch_idx + 1}")
+                    except Exception as e:
+                        logger.error(f"❌ Batch {batch_idx + 1} failed: {e}")
+            
+            logger.info(f"✅ All batches complete. Total validation results: {len(all_results)}")
+            
+            return jsonify({
+                'success': True,
+                'validation_results': all_results,
+                'count': len(all_results),
+                'rules_checked': len(rules),
+                'documents_analyzed': len(documents),
+                'batches_processed': len(rule_batches)
+            })
+            
+        except Exception as e:
+            logger.error(f"❌ Error in parallel LLM-based LC validation: {e}")
+            logger.exception("Full traceback:")
+            return jsonify({'success': False, 'error': str(e)}), 500
+
     @app.route('/api/document/analyze-discrepancies-optimized', methods=['POST'])
     @timing_aspect
     def analyze_discrepancies_optimized():
