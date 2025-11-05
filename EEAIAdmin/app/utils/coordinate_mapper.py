@@ -30,6 +30,61 @@ class FieldCoordinateMapper:
         
         return normalized
     
+    def normalize_date_for_matching(self, date_str: str) -> list:
+        """
+        Generate multiple date format variations for matching
+        
+        Args:
+            date_str: Date string in any format
+            
+        Returns:
+            List of normalized date variations for matching
+        """
+        variations = []
+        
+        # Try to parse as ISO date (YYYY-MM-DD)
+        iso_date_match = re.match(r'(\d{4})-(\d{2})-(\d{2})', str(date_str))
+        if iso_date_match:
+            year, month, day = iso_date_match.groups()
+            
+            # Add variations:
+            variations.append(f"{year}{month}{day}")  # YYYYMMDD: 20210817
+            variations.append(f"{year[2:]}{month}{day}")  # YYMMDD: 210817
+            variations.append(f"{day}{month}{year}")  # DDMMYYYY: 17082021
+            variations.append(f"{day}{month}{year[2:]}")  # DDMMYY: 170821
+            variations.append(f"{month}{day}{year}")  # MMDDYYYY: 08172021
+            variations.append(f"{month}{day}{year[2:]}")  # MMDDYY: 081721
+            variations.append(f"{day}/{month}/{year}")  # DD/MM/YYYY: 17/08/2021
+            variations.append(f"{day}/{month}/{year[2:]}")  # DD/MM/YY: 17/08/21
+            variations.append(f"{month}/{day}/{year}")  # MM/DD/YYYY: 08/17/2021
+            variations.append(f"{day}-{month}-{year}")  # DD-MM-YYYY: 17-08-2021
+            variations.append(date_str)  # Original format
+        
+        # Try to parse compact date formats (YYMMDD, YYYYMMDD)
+        compact_date_match = re.match(r'(\d{6}|\d{8})', str(date_str).replace('-', '').replace('/', '').replace(' ', ''))
+        if compact_date_match:
+            date_digits = compact_date_match.group(1)
+            
+            if len(date_digits) == 6:  # YYMMDD format
+                yy, mm, dd = date_digits[0:2], date_digits[2:4], date_digits[4:6]
+                # Assume 20xx for years
+                yyyy = f"20{yy}"
+                variations.append(f"{yyyy}-{mm}-{dd}")  # 2021-08-17
+                variations.append(f"{yyyy}{mm}{dd}")  # 20210817
+                variations.append(date_digits)  # 210817
+                
+            elif len(date_digits) == 8:  # YYYYMMDD format
+                yyyy, mm, dd = date_digits[0:4], date_digits[4:6], date_digits[6:8]
+                variations.append(f"{yyyy}-{mm}-{dd}")  # 2021-08-17
+                variations.append(f"{yyyy[2:]}{mm}{dd}")  # 210817
+                variations.append(date_digits)  # 20210817
+        
+        # Always add the original value
+        if str(date_str) not in variations:
+            variations.append(str(date_str))
+        
+        return variations
+    
     def calculate_similarity(self, field_value: str, ocr_text: str) -> float:
         """Calculate similarity between field value and OCR text"""
         if not field_value or not ocr_text:
@@ -61,24 +116,80 @@ class FieldCoordinateMapper:
         if len(field_str) < 2:  # Skip very short values
             return None
         
+        # Check if this looks like a date field (contains YYYY-MM-DD pattern)
+        is_date_field = bool(re.match(r'\d{4}-\d{2}-\d{2}', field_str))
+        date_variations = []
+        
+        if is_date_field:
+            # Generate date variations for better matching
+            date_variations = self.normalize_date_for_matching(field_str)
+            logger.info(f"🗓️ Date field detected: '{field_str}' → Generated {len(date_variations)} variations: {date_variations[:3]}...")
+        
         for ocr_entry in ocr_data:
             ocr_text = ocr_entry.get('text', '')
             if not ocr_text:
                 continue
-                
-            similarity = self.calculate_similarity(field_str, ocr_text)
             
-            if similarity > best_score and similarity >= self.similarity_threshold:
-                best_score = similarity
-                best_match = {
-                    'ocr_entry': ocr_entry,
-                    'similarity': similarity,
-                    'field_value': field_str,
-                    'matched_text': ocr_text
-                }
+            # Normalize OCR text for comparison
+            ocr_text_clean = re.sub(r'[^a-zA-Z0-9]', '', str(ocr_text))
+            
+            # For date fields, try matching against all variations
+            if is_date_field and date_variations:
+                for variation in date_variations:
+                    variation_clean = re.sub(r'[^a-zA-Z0-9]', '', str(variation))
+                    
+                    # Check for exact substring match (ignoring punctuation)
+                    if variation_clean in ocr_text_clean or ocr_text_clean in variation_clean:
+                        similarity = 1.0  # Perfect match for date variation
+                        if similarity > best_score:
+                            best_score = similarity
+                            best_match = {
+                                'ocr_entry': ocr_entry,
+                                'similarity': similarity,
+                                'field_value': field_str,
+                                'matched_text': ocr_text,
+                                'date_variation_used': variation
+                            }
+                            logger.info(f"✅ Date match SUCCESS: '{field_str}' → OCR: '{ocr_text}' using variation '{variation}'")
+                            break  # Found perfect match, no need to check more variations
+                    
+                    # Also try fuzzy matching for each variation (with lower threshold for dates)
+                    variation_similarity = self.calculate_similarity(variation, ocr_text)
+                    if variation_similarity > best_score and variation_similarity >= 0.5:  # Lower threshold for dates
+                        best_score = variation_similarity
+                        best_match = {
+                            'ocr_entry': ocr_entry,
+                            'similarity': variation_similarity,
+                            'field_value': field_str,
+                            'matched_text': ocr_text,
+                            'date_variation_used': variation
+                        }
+                        logger.info(f"✅ Date fuzzy match: '{field_str}' → OCR: '{ocr_text}' (similarity: {variation_similarity:.2f}, variation: '{variation}')")
+                
+                # If we found a match for this OCR entry, stop checking other entries
+                if best_match and best_match['ocr_entry'] == ocr_entry:
+                    break
+            else:
+                # Regular text matching (non-date fields)
+                similarity = self.calculate_similarity(field_str, ocr_text)
+                
+                if similarity > best_score and similarity >= self.similarity_threshold:
+                    best_score = similarity
+                    best_match = {
+                        'ocr_entry': ocr_entry,
+                        'similarity': similarity,
+                        'field_value': field_str,
+                        'matched_text': ocr_text
+                    }
                 
         if best_match:
-            logger.debug(f"Found match for '{field_str[:50]}...': '{best_match['matched_text'][:50]}...' (similarity: {best_match['similarity']:.2f})")
+            if is_date_field:
+                logger.info(f"📅 Date match FINAL: '{field_str}' → '{best_match['matched_text'][:50]}' (score: {best_match['similarity']:.2f})")
+            else:
+                logger.debug(f"Found match for '{field_str[:50]}...': '{best_match['matched_text'][:50]}...' (similarity: {best_match['similarity']:.2f})")
+        else:
+            if is_date_field:
+                logger.warning(f"❌ NO DATE MATCH for '{field_str}' - tried {len(date_variations)} variations")
             
         return best_match
     

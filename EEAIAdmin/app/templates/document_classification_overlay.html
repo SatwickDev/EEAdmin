@@ -2803,69 +2803,101 @@
 
 
 
-                        <!-- Document Image Viewer -->
-                        <div class="flex-1 overflow-auto p-4"
-                             @wheel.prevent="handleWheel"
-                             @mousedown="startPan"
-                             @mousemove="pan"
-                             @mouseup="endPan"
-                             @mouseleave="endPan"
-                             style="display: flex; align-items: flex-start; justify-content: center;">
-                            <div class="relative bg-gray-50 shadow-lg rounded-lg overflow-hidden border border-gray-200"
-                                 :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: 'center', position: 'relative', display: 'inline-block' }"
-                                 v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage]">
-                                <img ref="documentImage"
-                                     :src="'data:image/png;base64,' + selectedResult.previewImages[currentPage]"
-                                     :alt="'Page ' + (currentPage + 1)"
-                                     @load="onImageLoad"
-                                     class="block w-full h-auto"
-                                     style="max-width: 100%; max-height: 75vh; object-fit: contain;">
+                        <!-- Document Image Viewer - 2 Pages Side by Side (Book Layout) -->
+                        <div class="flex-1 flex gap-4 p-4">
+                            
+                            <!-- First Page (Current Page) - Independent Scrollable Container -->
+                            <div class="flex-1 overflow-auto"
+                                 v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage]"
+                                 @wheel.prevent="handleWheel"
+                                 @mousedown="startPan"
+                                 @mousemove="pan"
+                                 @mouseup="endPan"
+                                 @mouseleave="endPan"
+                                 style="display: flex; align-items: flex-start; justify-content: center; background: #f3f4f6;">
+                                <div class="relative bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-gray-300"
+                                     :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: 'center', position: 'relative', display: 'inline-block', margin: '20px' }">
+                                    <div class="absolute top-2 left-2 bg-blue-600 text-white px-3 py-1 text-sm font-bold rounded-lg shadow-lg z-10">
+                                        Page {% raw %}{{ currentPage + 1 }}{% endraw %}
+                                    </div>
+                                    <img ref="documentImage"
+                                         :src="'data:image/png;base64,' + selectedResult.previewImages[currentPage]"
+                                         :alt="'Page ' + (currentPage + 1)"
+                                         @load="onImageLoad"
+                                         class="block w-full h-auto"
+                                         style="max-width: 100%; object-fit: contain;">
 
-                                <!-- Canvas for drawing -->
-                                <canvas ref="drawingCanvas"
-                                        class="canvas-overlay"
-                                        :class="{ drawing: currentTool !== 'select' }"
-                                        @mousedown="startDrawing"
-                                        @mousemove="draw"
-                                        @mouseup="endDrawing"
-                                        @mouseleave="endDrawing"></canvas>
+                                    <!-- Canvas for drawing -->
+                                    <canvas ref="drawingCanvas"
+                                            class="canvas-overlay"
+                                            :class="{ drawing: currentTool !== 'select' }"
+                                            @mousedown="startDrawing"
+                                            @mousemove="draw"
+                                            @mouseup="endDrawing"
+                                            @mouseleave="endDrawing"></canvas>
 
-                                <!-- Field Highlights -->
-                                <div v-for="(field, idx) in getFieldsWithBoundingBox()"
-                                     :key="'bbox-' + idx"
-                                     v-show="field && field.bounding_box && (field.bounding_page === currentPage || field.page === currentPage)"
-                                     class="absolute border-2 border-blue-500 cursor-pointer hover:bg-blue-200 transition-all duration-200"
-                                     :class="{ 
-                                         'border-red-500 bg-red-100 bg-opacity-30': activeFieldIndex === field.index,
-                                         'bg-blue-100 bg-opacity-20': activeFieldIndex !== field.index
-                                     }"
-                                     :style="getBoundingBoxStyle(field)"
-                                     @click="highlightField(field.index, field)"
-                                     :title="field.fieldKey || field.name">
-                                    <span class="absolute -top-6 left-0 bg-blue-500 text-white px-2 py-1 text-xs rounded whitespace-nowrap">
-                                        {% raw %}{{ field.name }}{% endraw %}
-                                    </span>
-                                </div>
+                                    <!-- Field Highlights for First Page -->
+                                    <!-- Search Result Highlights for First Page -->
+                                    <div v-for="(block, idx) in getSearchBlocksForPage(currentPage)"
+                                         :key="'search-' + idx"
+                                         class="absolute pointer-events-none"
+                                         :style="getSearchBlockStyle(block, currentPage)"
+                                         style="background: rgba(255, 235, 59, 0.4);">
+                                    </div>
 
-                                <!-- Text Selection Highlight -->
-                                <div v-if="textSelectionBox"
-                                     class="absolute pointer-events-none"
-                                     :style="{
-                                         left: textSelectionBox.x + 'px',
-                                         top: textSelectionBox.y + 'px',
-                                         width: textSelectionBox.width + 'px',
-                                         height: textSelectionBox.height + 'px',
-                                         background: 'rgba(255, 235, 59, 0.5)',
-                                         border: '2px solid #FFC107',
-                                         borderRadius: '4px',
-                                         boxShadow: '0 0 0 2px rgba(255, 193, 7, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.8)'
-                                     }">
+                                    <!-- Text Selection Highlight for First Page -->
+                                    <div v-if="textSelectionBox"
+                                         class="absolute pointer-events-none"
+                                         :style="{
+                                             left: textSelectionBox.x + 'px',
+                                             top: textSelectionBox.y + 'px',
+                                             width: textSelectionBox.width + 'px',
+                                             height: textSelectionBox.height + 'px',
+                                             background: 'rgba(255, 235, 59, 0.5)',
+                                             border: '2px solid #FFC107',
+                                             borderRadius: '4px',
+                                             boxShadow: '0 0 0 2px rgba(255, 193, 7, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.8)'
+                                         }">
+                                    </div>
                                 </div>
                             </div>
 
-                            <div v-else class="text-center">
-                                <i class="mdi mdi-file-document-outline text-6xl text-gray-400 mb-4"></i>
-                                <p class="text-gray-600">No preview available</p>
+                            <!-- Divider Line (Book Spine) -->
+                            <div class="w-1 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-300 rounded-full shadow-md"
+                                 v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage] && selectedResult.previewImages[currentPage + 1]">
+                            </div>
+
+                            <!-- Second Page (Next Page) - Independent Scrollable Container -->
+                            <div class="flex-1 overflow-auto"
+                                 v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage + 1]"
+                                 style="display: flex; align-items: flex-start; justify-content: center; background: #f3f4f6;">
+                                <div class="relative bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-gray-300"
+                                     :style="{ transform: `scale(${zoomLevel})`, transformOrigin: 'center', position: 'relative', display: 'inline-block', margin: '20px' }">
+                                    <div class="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 text-sm font-bold rounded-lg shadow-lg z-10">
+                                        Page {% raw %}{{ currentPage + 2 }}{% endraw %}
+                                    </div>
+                                    <img ref="documentImage2"
+                                         :src="'data:image/png;base64,' + selectedResult.previewImages[currentPage + 1]"
+                                         :alt="'Page ' + (currentPage + 2)"
+                                         class="block w-full h-auto"
+                                         style="max-width: 100%; object-fit: contain;">
+                                    <!-- Search Result Highlights for Second Page -->
+                                    <div v-for="(block, idx) in getSearchBlocksForPage(currentPage + 1)"
+                                         :key="'search2-' + idx"
+                                         class="absolute pointer-events-none"
+                                         :style="getSearchBlockStyle(block, currentPage + 1)"
+                                         style="background: rgba(255, 235, 59, 0.4);">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div v-if="!selectedResult?.previewImages || selectedResult.previewImages.length === 0" 
+                                 class="flex-1 flex items-center justify-center text-center">
+                                <div>
+                                    <i class="mdi mdi-file-document-outline text-6xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-600">No preview available</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4955,6 +4987,12 @@
                     // Coordinate search properties
                     searchingField: null,
                     coordinateSearchResults: {},
+                    searchResultBlocks: [], // Merged blocks for CSS overlay rendering
+                    multiPageContent: {
+                        active: false,
+                        pages: [],
+                        matches: []
+                    },
                     // Document management features
                     currentUser: null,
                     isAllowed: false,
@@ -7905,6 +7943,11 @@ populateFormFields() {
         'Currency' : 'currency',
         'Documentary credit amount': 'amount',
         'Payment term': 'paymentTerms',
+        'Payment terms': 'paymentTerms',
+        'Payment Terms (42C)': 'paymentTerms',
+        'Payment': 'paymentTerms',
+        'Terms of Payment': 'paymentTerms',
+        'Payment Terms': 'paymentTerms',
 
         // Shipment Details
         'Original Loading Location': 'portOfLoading',
@@ -8017,6 +8060,12 @@ populateFormFields() {
                         if (formFieldName === 'transhipment') {
                             console.log(`Mapping Transhipment: "${value}" -> "${this.mapTranshipmentValue(value)}"`);
                             value = this.mapTranshipmentValue(value);
+                        }
+
+                        // ⭐⭐⭐ MAP PAYMENT TERMS VALUES ⭐⭐⭐
+                        if (formFieldName === 'paymentTerms') {
+                            console.log(`Mapping Payment Terms: "${value}" -> "${this.mapPaymentTermsValue(value)}"`);
+                            value = this.mapPaymentTermsValue(value);
                         }
 
                         // Handle amount field splitting
@@ -8147,6 +8196,95 @@ mapTranshipmentValue(backendValue) {
 
     // If no match found, return the original value
     console.log(`No mapping found for Transhipment: "${backendValue}"`);
+    return backendValue;
+},
+// ENHANCED DEBUG VERSION: Map backend Payment Terms values to frontend dropdown values
+mapPaymentTermsValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    const lowerValue = backendValue.toLowerCase().trim();
+    console.log(`🔍 PAYMENT TERMS MAPPING DEBUG:`);
+    console.log(`   Original: "${backendValue}"`);
+    console.log(`   Lowercase: "${lowerValue}"`);
+
+    // =====================================================
+    // 1. AT SIGHT DETECTION - return "sight" for dropdown
+    // =====================================================
+    if (lowerValue.includes('sight') ||
+        lowerValue.includes('at sight') ||
+        lowerValue.includes('sight payment') ||
+        lowerValue.includes('payment at sight') ||
+        lowerValue.includes('immediate payment') ||
+        lowerValue.includes('on presentation') ||
+        lowerValue.includes('upon presentation')) {
+        console.log(`✅ MAPPED: "${backendValue}" -> "sight"`);
+        return 'sight';
+    }
+
+    // =====================================================
+    // 2. DEFERRED PAYMENT DETECTION - return "deferred" for dropdown
+    // =====================================================
+    // Look for time-based patterns that indicate deferred payment
+    const deferredPatterns = [
+        /\b(\d+)\s*days?\s*(after|from)\s*(bill\s*of\s*lading|b\/l|bl|shipment|b\/l\s*date)/i,
+        /\b(\d+)\s*days?\s*(after|from)\s*(date\s*of\s*shipment|date\s*of\s*b\/l)/i,
+        /\b(\d+)\s*day\s*deferred/i,
+        /\bdeferred\s*payment\s*(\d+)\s*days?/i,
+        /\bpayment\s*(\d+)\s*days?\s*(after|from)/i,
+        /\b(\d+)\s*days?\s*deferred/i,
+        /\bdeferred\s*(\d+)\s*days?/i,
+        /\busance\s*(\d+)\s*days?/i
+    ];
+
+    for (const pattern of deferredPatterns) {
+        const match = lowerValue.match(pattern);
+        if (match) {
+            console.log(`✅ MAPPED: "${backendValue}" -> "deferred" (pattern: ${pattern})`);
+            console.log(`   Pattern match:`, match);
+            return 'deferred';
+        }
+    }
+
+    // Additional deferred payment keywords
+    if (lowerValue.includes('deferred') ||
+        lowerValue.includes('usance') ||
+        lowerValue.includes('time payment') ||
+        lowerValue.includes('term payment') ||
+        (lowerValue.includes('days') && !lowerValue.includes('sight'))) {
+        console.log(`✅ MAPPED: "${backendValue}" -> "deferred" (keyword detected)`);
+        return 'deferred';
+    }
+
+    // =====================================================
+    // 3. ACCEPTANCE DETECTION - return "acceptance" for dropdown
+    // =====================================================
+    if (lowerValue.includes('acceptance') ||
+        lowerValue.includes('acceptance credit') ||
+        lowerValue.includes('documents against acceptance') ||
+        lowerValue.includes('d/a') ||
+        lowerValue.includes('d.a.') ||
+        lowerValue.includes('bill of exchange') ||
+        lowerValue.includes('time draft') ||
+        lowerValue.includes('usance draft')) {
+        console.log(`✅ MAPPED: "${backendValue}" -> "acceptance"`);
+        return 'acceptance';
+    }
+
+    // =====================================================
+    // 4. NEGOTIATION DETECTION - return "negotiation" for dropdown
+    // =====================================================
+    if (lowerValue.includes('negotiation') ||
+        lowerValue.includes('negotiation credit') ||
+        lowerValue.includes('by negotiation') ||
+        lowerValue.includes('available with any bank') ||
+        lowerValue.includes('negotiable') ||
+        lowerValue.includes('with negotiation')) {
+        console.log(`✅ MAPPED: "${backendValue}" -> "negotiation"`);
+        return 'negotiation';
+    }
+
+    // If no match found, return the original value
+    console.log(`❌ NO MAPPING FOUND: "${backendValue}" -> returning original value`);
     return backendValue;
 },
 // Enhanced checkDuplicateFields method
@@ -8473,6 +8611,28 @@ splitCurrencyAndAmount(combinedValue) {
 
                     return fields;
                 },
+                
+                getSearchBlocksForPage(pageIndex) {
+                    // Get search result blocks for a specific page
+                    if (!this.searchResultBlocks || this.searchResultBlocks.length === 0) {
+                        return [];
+                    }
+                    
+                    // Filter blocks by page
+                    return this.searchResultBlocks.filter(block => {
+                        const blockPage = this.getRelativePageIndex(block.bounding_page);
+                        return blockPage === pageIndex;
+                    });
+                },
+                
+                getSearchBlockStyle(block, pageNumber) {
+                    // Calculate CSS positioning for search result highlight overlay
+                    if (!block || !block.bounding_box) return {};
+                    
+                    // Use the same logic as getBoundingBoxStyle
+                    return this.getBoundingBoxStyle(block, pageNumber);
+                },
+                
                 highlightField(index, fieldData) {
                     // Set active field index
                     this.activeFieldIndex = index;
@@ -8503,6 +8663,15 @@ splitCurrencyAndAmount(combinedValue) {
 
     console.log(`🔎 Setting search state for field: ${fieldKey}`);
     this.searchingField = fieldKey;
+    
+    // Clear previous search results at the START of a new search
+    this.searchResultBlocks = [];
+    this.multiPageContent = {
+        active: false,
+        pages: [],
+        matches: []
+    };
+    console.log('🧹 Cleared previous search state');
 
     try {
         console.log(`🔍 Searching coordinates for field '${fieldKey}' with value '${fieldValue}'`);
@@ -8539,23 +8708,139 @@ splitCurrencyAndAmount(combinedValue) {
             this.coordinateSearchResults[fieldKey] = data.matches;
             console.log('💾 Stored all search results for field:', fieldKey);
 
-            // FIX: Find the best match (longest matched text) instead of using first match
-            let bestMatch = data.matches[0];
-            let longestMatchLength = bestMatch.matched_text ? bestMatch.matched_text.length : 0;
-
-            // Find the match with the longest text (most complete match)
-            data.matches.forEach(match => {
-                if (match.matched_text && match.matched_text.length > longestMatchLength) {
-                    bestMatch = match;
-                    longestMatchLength = match.matched_text.length;
+            // Intelligent match selection strategy:
+            // 1. For SHORT searches (< 100 chars), use priority score (field definitions > narrative)
+            // 2. For LONG searches (>= 100 chars, multi-line), use largest bounding box
+            let bestMatch = data.best_match || data.matches[0];
+            const searchLength = fieldValue.length;
+            
+            // Check if we have multiple matches
+            if (data.matches.length > 1) {
+                if (searchLength >= 100) {
+                    // LONG TEXT: Find the match with the LARGEST bounding box (where main content is)
+                    console.log(`📊 Long text search (${searchLength} chars), finding largest bounding box...`);
+                    
+                    let largestMatch = bestMatch;
+                    let largestArea = 0;
+                    
+                    data.matches.forEach((match, idx) => {
+                        const bbox = match.bounding_box;
+                        let area = 0;
+                        
+                        if (bbox && bbox.length >= 4) {
+                            if (bbox.length === 8) {
+                                // 8-coordinate format: calculate area from min/max
+                                const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                                const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                                const width = Math.max(...x_coords) - Math.min(...x_coords);
+                                const height = Math.max(...y_coords) - Math.min(...y_coords);
+                                area = width * height;
+                            } else {
+                                // 4-coordinate format: [x1, y1, x2, y2]
+                                const width = bbox[2] - bbox[0];
+                                const height = bbox[3] - bbox[1];
+                                area = width * height;
+                            }
+                        }
+                        
+                        console.log(`   Match ${idx + 1}: Page ${match.bounding_page}, Area: ${area.toFixed(2)} sq.in, Priority: ${match.priority_score}`);
+                        
+                        if (area > largestArea) {
+                            largestArea = area;
+                            largestMatch = match;
+                        }
+                    });
+                    
+                    console.log(`🎯 Selected match with largest area (${largestArea.toFixed(2)} sq.in) on page ${largestMatch.bounding_page}`);
+                    bestMatch = largestMatch;
+                    
+                    // Check if content spans multiple consecutive pages (for dual-page display)
+                    const matchPages = data.matches.map(m => m.bounding_page).filter(p => p > 0);
+                    const uniquePages = [...new Set(matchPages)].sort((a, b) => a - b);
+                    
+                    // ALWAYS check for multi-page content when we have matches on multiple pages
+                    if (uniquePages.length > 1) {
+                        // Multi-page content detected - find best consecutive page pair
+                        console.log(`📖 Multi-page content detected spanning ${uniquePages.length} pages: ${uniquePages.join(', ')}`);
+                        
+                        // Find two consecutive pages with the largest combined content
+                        let bestPagePair = [uniquePages[0], uniquePages[0]];
+                        let bestPairArea = 0;
+                        
+                        for (let i = 0; i < uniquePages.length - 1; i++) {
+                            const page1 = uniquePages[i];
+                            const page2 = uniquePages[i + 1];
+                            
+                            // Check if pages are consecutive
+                            if (page2 === page1 + 1) {
+                                // Calculate combined area for this pair
+                                const page1Matches = data.matches.filter(m => m.bounding_page === page1);
+                                const page2Matches = data.matches.filter(m => m.bounding_page === page2);
+                                
+                                let pairArea = 0;
+                                [...page1Matches, ...page2Matches].forEach(match => {
+                                    const bbox = match.bounding_box;
+                                    if (bbox && bbox.length >= 4) {
+                                        if (bbox.length === 8) {
+                                            const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                                            const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                                            const width = Math.max(...x_coords) - Math.min(...x_coords);
+                                            const height = Math.max(...y_coords) - Math.min(...y_coords);
+                                            pairArea += width * height;
+                                        } else {
+                                            const width = bbox[2] - bbox[0];
+                                            const height = bbox[3] - bbox[1];
+                                            pairArea += width * height;
+                                        }
+                                    }
+                                });
+                                
+                                console.log(`   Pages ${page1}-${page2}: Combined area ${pairArea.toFixed(2)} sq.in, Matches: P${page1}=${page1Matches.length}, P${page2}=${page2Matches.length}`);
+                                
+                                if (pairArea > bestPairArea) {
+                                    bestPairArea = pairArea;
+                                    bestPagePair = [page1, page2];
+                                }
+                            }
+                        }
+                        
+                        // If we found a consecutive pair with substantial content, activate dual-page mode
+                        // Lower threshold to 2 sq.in to catch multi-line text across pages
+                        if (bestPairArea > 2 && bestPagePair[0] !== bestPagePair[1]) {
+                            console.log(`✅ Activating dual-page view: Pages ${bestPagePair[0]}-${bestPagePair[1]} (combined area: ${bestPairArea.toFixed(2)} sq.in)`);
+                            
+                            // Store info about multi-page content for highlighting
+                            this.multiPageContent = {
+                                active: true,
+                                pages: bestPagePair,
+                                matches: data.matches
+                            };
+                            
+                            // Navigate to first page of the pair (dual-page view will show both)
+                            bestMatch = data.matches.find(m => m.bounding_page === bestPagePair[0]) || bestMatch;
+                        } else {
+                            console.log(`⚠️ Multi-page content found but combined area too small (${bestPairArea.toFixed(2)} sq.in), using single-page view`);
+                        }
+                    }
+                } else {
+                    // SHORT TEXT: Use priority score (backend already sorted by priority)
+                    console.log(`🎯 Short text search (${searchLength} chars), using priority score...`);
+                    
+                    data.matches.forEach((match, idx) => {
+                        console.log(`   Match ${idx + 1}: Page ${match.bounding_page}, Priority: ${match.priority_score}, Text: "${match.matched_text.substring(0, 50)}${match.matched_text.length > 50 ? '...' : ''}"`);
+                    });
+                    
+                    // Backend already sorted by priority, so best_match is correct
+                    console.log(`🎯 Using backend-prioritized best match (Priority: ${bestMatch.priority_score}) on page ${bestMatch.bounding_page}`);
                 }
-            });
-
-            console.log('🎯 Selected best match:', {
-                matched_text: bestMatch.matched_text,
-                length: longestMatchLength,
-                bounding_page: bestMatch.bounding_page
-            });
+            } else {
+                console.log('🎯 Single match found:', {
+                    matched_text: bestMatch.matched_text,
+                    priority_score: bestMatch.priority_score,
+                    confidence: bestMatch.match_confidence,
+                    bounding_page: bestMatch.bounding_page
+                });
+            }
 
             // Convert absolute page number to relative page index
             const absolutePage = bestMatch.bounding_page;
@@ -8620,6 +8905,8 @@ splitCurrencyAndAmount(combinedValue) {
     } finally {
         console.log(`🏁 Clearing search state for field: ${fieldKey}`);
         this.searchingField = null;
+        // DON'T clear searchResultBlocks or multiPageContent here!
+        // They are needed for highlighting after navigation completes
         console.log('🔍 === FRONTEND COORDINATE SEARCH COMPLETED ===');
     }
 },
@@ -8672,58 +8959,209 @@ splitCurrencyAndAmount(combinedValue) {
                     }
                 },
                 
-                highlightAllSearchResults(matches) {
-                    console.log('🎨 === HIGHLIGHTING ALL SEARCH RESULTS ===');
-                    console.log(`📦 Highlighting ${matches.length} matches`);
+                mergeMatchesIntoBlocks(matches) {
+                    console.log('🔗 === MERGING MATCHES INTO CONTIGUOUS BLOCKS ===');
+                    console.log(`📦 Input: ${matches.length} individual matches`);
                     
-                    // Clear previous highlights ONCE at the beginning
-                    const ctx = this.drawingContext;
-                    if (ctx) {
-                        console.log('🧽 Clearing previous highlights');
-                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    } else {
-                        console.warn('⚠️ No drawing context available');
-                        return;
+                    if (!matches || matches.length === 0) {
+                        return [];
                     }
                     
-                    // Highlight each match WITHOUT clearing between them
+                    // Check if matches are already merged blocks from backend (8-coordinate format)
+                    const firstMatch = matches[0];
+                    if (firstMatch && firstMatch.bounding_box && firstMatch.bounding_box.length === 8) {
+                        console.log('✅ Matches are already merged blocks from backend (8-coordinate format)');
+                        console.log('📦 Converting to 4-coordinate format for display...');
+                        
+                        // Convert 8-coordinate to 4-coordinate format (min/max)
+                        return matches.map((match, index) => {
+                            const bbox = match.bounding_box;
+                            // 8-coordinate format: [x1, y1, x2, y2, x3, y3, x4, y4]
+                            // Extract min/max to get bounding rectangle
+                            const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                            const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                            
+                            const converted_bbox = [
+                                Math.min(...x_coords),  // x1 (left)
+                                Math.min(...y_coords),  // y1 (top)
+                                Math.max(...x_coords),  // x2 (right)
+                                Math.max(...y_coords)   // y2 (bottom)
+                            ];
+                            
+                            console.log(`   Block ${index + 1}: Page ${match.bounding_page}, converted bbox: [${converted_bbox.map(v => v.toFixed(2)).join(', ')}]`);
+                            
+                            return {
+                                bounding_page: match.bounding_page,
+                                bounding_box: converted_bbox,
+                                matched_texts: [match.matched_text],
+                                matches: [match],
+                                match_confidence: match.match_confidence,
+                                priority_score: match.priority_score
+                            };
+                        });
+                    }
+                    
+                    console.log('🔄 Matches are individual words, merging into blocks...');
+                    
+                    // Group matches by page first
+                    const matchesByPage = {};
                     matches.forEach((match, index) => {
-                        console.log(`🎯 Highlighting match ${index + 1}/${matches.length}:`, {
-                            text: match.matched_text,
-                            confidence: match.match_confidence,
-                            page: match.bounding_page,
-                            bbox: match.bounding_box
+                        const page = match.bounding_page;
+                        if (!matchesByPage[page]) {
+                            matchesByPage[page] = [];
+                        }
+                        matchesByPage[page].push({ ...match, original_index: index });
+                    });
+                    
+                    console.log(`📄 Matches grouped into ${Object.keys(matchesByPage).length} pages`);
+                    
+                    const blocks = [];
+                    
+                    // Process each page independently
+                    Object.keys(matchesByPage).forEach(page => {
+                        const pageMatches = matchesByPage[page];
+                        console.log(`📄 Processing page ${page} with ${pageMatches.length} matches`);
+                        
+                        // Sort matches by vertical position (y1), then horizontal (x1)
+                        pageMatches.sort((a, b) => {
+                            const ay1 = a.bounding_box[1];
+                            const by1 = b.bounding_box[1];
+                            const ax1 = a.bounding_box[0];
+                            const bx1 = b.bounding_box[0];
+                            
+                            // If on roughly the same line (within 10px tolerance)
+                            if (Math.abs(ay1 - by1) < 10) {
+                                return ax1 - bx1; // Sort by x position (left to right)
+                            }
+                            return ay1 - by1; // Sort by y position (top to bottom)
                         });
                         
-                        // Only highlight matches on the current page
-                        const matchPage = this.getRelativePageIndex(match.bounding_page);
-                        console.log(`🔍 Match absolute page: ${match.bounding_page}, relative page: ${matchPage}, current page: ${this.currentPage}`);
+                        // Merge adjacent matches into blocks
+                        let currentBlock = null;
                         
-                        if (matchPage === this.currentPage) {
-                            console.log(`✅ Match ${index + 1} is on current page ${this.currentPage}, highlighting...`);
+                        pageMatches.forEach((match, idx) => {
+                            const [x1, y1, x2, y2] = match.bounding_box;
                             
-                            // Create a temporary field object for highlighting
-                            const tempField = {
-                                bounding_box: match.bounding_box,
-                                bounding_page: matchPage,
-                                fieldKey: `search_result_${index}`,
-                                name: `Found: ${match.matched_text}`,
-                                confidence: match.match_confidence
-                            };
-                            
-                            try {
-                                // Draw highlight WITHOUT clearing previous ones
-                                this.drawHighlight(tempField, false);
-                                console.log(`✅ Match ${index + 1} highlighted successfully`);
-                            } catch (error) {
-                                console.error(`❌ Error highlighting match ${index + 1}:`, error);
+                            if (!currentBlock) {
+                                // Start a new block
+                                currentBlock = {
+                                    bounding_page: match.bounding_page,
+                                    bounding_box: [x1, y1, x2, y2],
+                                    matched_texts: [match.matched_text],
+                                    matches: [match],
+                                    match_confidence: match.match_confidence,
+                                    priority_score: match.priority_score
+                                };
+                                console.log(`🆕 Starting new block at (${x1}, ${y1})`);
+                            } else {
+                                // Check if this match is adjacent to current block
+                                const [blockX1, blockY1, blockX2, blockY2] = currentBlock.bounding_box;
+                                
+                                // Calculate distances
+                                const verticalGap = Math.abs(y1 - blockY2);  // Gap from bottom of block to top of this match
+                                const horizontalGap = Math.abs(x1 - blockX2);  // Gap from right edge of block to left edge of this match
+                                
+                                // Check if on same line (y values close) or next line
+                                const onSameLine = Math.abs(y1 - blockY1) < 15;  // Within 15px vertically
+                                const onNextLine = y1 > blockY1 && verticalGap < 50;  // Below, within 50px gap
+                                
+                                // Check horizontal proximity (for same-line merging)
+                                const horizontallyAdjacent = horizontalGap < 100;  // Within 100px horizontally
+                                
+                                const shouldMerge = (onSameLine && horizontallyAdjacent) || onNextLine;
+                                
+                                console.log(`   Match at (${x1}, ${y1}): vGap=${verticalGap}px, hGap=${horizontalGap}px, sameLine=${onSameLine}, nextLine=${onNextLine}, merge=${shouldMerge}`);
+                                
+                                if (shouldMerge) {
+                                    // Merge this match into current block
+                                    currentBlock.bounding_box = [
+                                        Math.min(blockX1, x1),  // leftmost x
+                                        Math.min(blockY1, y1),  // topmost y
+                                        Math.max(blockX2, x2),  // rightmost x
+                                        Math.max(blockY2, y2)   // bottommost y
+                                    ];
+                                    currentBlock.matched_texts.push(match.matched_text);
+                                    currentBlock.matches.push(match);
+                                    console.log(`   ✅ Merged into block. New bbox: ${currentBlock.bounding_box}`);
+                                } else {
+                                    // Save current block and start new one
+                                    blocks.push(currentBlock);
+                                    console.log(`   💾 Saved block with ${currentBlock.matches.length} matches`);
+                                    
+                                    currentBlock = {
+                                        bounding_page: match.bounding_page,
+                                        bounding_box: [x1, y1, x2, y2],
+                                        matched_texts: [match.matched_text],
+                                        matches: [match],
+                                        match_confidence: match.match_confidence,
+                                        priority_score: match.priority_score
+                                    };
+                                    console.log(`   🆕 Starting new block at (${x1}, ${y1})`);
+                                }
                             }
-                        } else {
-                            console.log(`⏭️ Match ${index + 1} is on page ${matchPage}, current page is ${this.currentPage}, skipping...`);
+                        });
+                        
+                        // Save the last block for this page
+                        if (currentBlock) {
+                            blocks.push(currentBlock);
+                            console.log(`💾 Saved final block with ${currentBlock.matches.length} matches`);
                         }
                     });
                     
-                    console.log('🎨 === ALL HIGHLIGHTS COMPLETED ===');
+                    console.log(`✅ Created ${blocks.length} contiguous blocks from ${matches.length} matches`);
+                    blocks.forEach((block, idx) => {
+                        console.log(`   Block ${idx + 1}: Page ${block.bounding_page}, ${block.matches.length} matches, bbox: [${block.bounding_box.map(v => v.toFixed(1)).join(', ')}]`);
+                        console.log(`      Texts: ${block.matched_texts.slice(0, 5).join(' ')}${block.matched_texts.length > 5 ? '...' : ''}`);
+                    });
+                    
+                    return blocks;
+                },
+                
+                highlightAllSearchResults(matches) {
+                    // Merge matches into contiguous blocks first
+                    const blocks = this.mergeMatchesIntoBlocks(matches);
+                    
+                    // Store blocks in reactive data property for CSS overlays to use
+                    this.searchResultBlocks = blocks;
+                    
+                    // Now highlight blocks on the FIRST page only using canvas
+                    // The SECOND page will be highlighted automatically by CSS overlays (Vue reactive)
+                    
+                    // Clear previous canvas highlights ONCE at the beginning
+                    const ctx = this.drawingContext;
+                    if (!ctx) {
+                        return;
+                    }
+                    
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    
+                    // Highlight blocks on FIRST page only (canvas)
+                    // CSS overlays will automatically render second page highlights via Vue reactivity
+                    blocks.forEach((block, index) => {
+                        const blockPage = this.getRelativePageIndex(block.bounding_page);
+                        
+                        // Only use canvas for FIRST page (currentPage)
+                        if (blockPage === this.currentPage) {
+                            // Create a temporary field object for highlighting (using block's merged bbox)
+                            const tempField = {
+                                bounding_box: block.bounding_box,
+                                bounding_page: blockPage,
+                                fieldKey: `search_block_${index}`,
+                                name: `Block: ${block.matched_texts.slice(0, 3).join(' ')}${block.matched_texts.length > 3 ? '...' : ''}`,
+                                confidence: block.match_confidence
+                            };
+                            
+                            try {
+                                this.drawHighlight(tempField, false);
+                            } catch (error) {
+                                console.error(`Error highlighting block ${index + 1}:`, error);
+                            }
+                        }
+                        // Second page: CSS overlays handle this automatically via Vue reactivity
+                    });
+                    
+                    // Force Vue to update the CSS overlays
+                    this.$forceUpdate();
                 },
                 
                 showNotification(message, type = 'info') {
@@ -8777,58 +9215,66 @@ splitCurrencyAndAmount(combinedValue) {
                         word.charAt(0).toUpperCase() + word.slice(1)
                     ).join(' ');
                 },
-                getBoundingBoxStyle(field) {
-                    if (!field?.bounding_box || !this.$refs.documentImage) return {};
+                getBoundingBoxStyle(field, pageNumber = null) {
+                    if (!field?.bounding_box) {
+                        return {};
+                    }
 
                     try {
                         const box = field.bounding_box;
-                        const img = this.$refs.documentImage;
-
-                        if (!Array.isArray(box) || box.length !== 4) return {};
-
-                        // Bounding box format is [x1, y1, x2, y2] in inches
-                        // Convert from inches to pixels using the document DPI
-                        // Most PDF documents are rendered at 150-300 DPI, but we need to scale to displayed image
-                        const [x1_inches, y1_inches, x2_inches, y2_inches] = box;
-
-                        // Calculate relative positions as percentages of the image
-                        // Assume the bounding box coordinates are relative to the document's natural size
-                        const imgWidth = img.clientWidth || img.width;
-                        const imgHeight = img.clientHeight || img.height;
-
-                        // Convert inches to percentage of the displayed image
-                        // This assumes the document was processed at a specific DPI that maps to the image
-                        const DPI_SCALE = 150; // Typical document processing DPI
-                        const docWidthInches = img.naturalWidth / DPI_SCALE;
-                        const docHeightInches = img.naturalHeight / DPI_SCALE;
-
-                        // Check if coordinates are normalized (0-1) or in pixels
-                        let left, top, width, height;
-
-                        if (x2_inches <= 1 && y2_inches <= 1) {
-                            // Normalized coordinates (0-1)
-                            left = x1_inches * 100;
-                            top = y1_inches * 100;
-                            width = (x2_inches - x1_inches) * 100;
-                            height = (y2_inches - y1_inches) * 100;
+                        
+                        // Determine which page this field belongs to
+                        const fieldPage = field.bounding_page ?? field.page ?? this.currentPage;
+                        
+                        // CRITICAL: Must have valid page number
+                        if (!fieldPage && fieldPage !== 0) {
+                            return {};
+                        }
+                        
+                        // Get the correct image reference based on the page
+                        let img;
+                        if (pageNumber !== null && pageNumber === this.currentPage + 1) {
+                            // Second page
+                            img = this.$refs.documentImage2;
                         } else {
-                            // Pixel coordinates - need to normalize
-                            const imgNaturalWidth = img.naturalWidth || img.width;
-                            const imgNaturalHeight = img.naturalHeight || img.height;
-
-                            left = (x1_inches / imgNaturalWidth) * 100;
-                            top = (y1_inches / imgNaturalHeight) * 100;
-                            width = ((x2_inches - x1_inches) / imgNaturalWidth) * 100;
-                            height = ((y2_inches - y1_inches) / imgNaturalHeight) * 100;
+                            // First page (default)
+                            img = this.$refs.documentImage;
+                        }
+                        
+                        if (!img) {
+                            return {};
                         }
 
-                        return {
+                        if (!Array.isArray(box) || box.length !== 4) {
+                            return {};
+                        }
+
+                        // Bounding box format is [x1, y1, x2, y2] in inches
+                        const [x1_inches, y1_inches, x2_inches, y2_inches] = box;
+
+                        // Use the SAME calculation as canvas drawing
+                        // Convert from inches to pixels (PDF standard DPI = 72)
+                        const DPI = 72;
+                        const x1_pixels = x1_inches * DPI;
+                        const y1_pixels = y1_inches * DPI;
+                        const x2_pixels = x2_inches * DPI;
+                        const y2_pixels = y2_inches * DPI;
+
+                        // Convert pixels to percentage of naturalWidth/naturalHeight
+                        const left = (x1_pixels / img.naturalWidth) * 100;
+                        const top = (y1_pixels / img.naturalHeight) * 100;
+                        const width = ((x2_pixels - x1_pixels) / img.naturalWidth) * 100;
+                        const height = ((y2_pixels - y1_pixels) / img.naturalHeight) * 100;
+
+                        const result = {
                             left: `${left}%`,
                             top: `${top}%`,
                             width: `${width}%`,
                             height: `${height}%`,
                             position: 'absolute'
                         };
+                        
+                        return result;
                     } catch (error) {
                         console.error('Error calculating bounding box style:', error);
                         return {};
@@ -8943,6 +9389,26 @@ splitCurrencyAndAmount(combinedValue) {
 
                     console.log(`🎨 Drew highlight at (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) size ${scaledWidth.toFixed(1)}x${scaledHeight.toFixed(1)}`);
                 },
+                
+                drawHighlightOnSecondPage(field) {
+                    // Draw highlight on the second page of dual-page view
+                    // Since we don't have a separate canvas for page 2, we'll use CSS overlay
+                    if (!field?.bounding_box || !this.$refs.documentImage2) return;
+
+                    const box = field.bounding_box;
+                    if (!Array.isArray(box) || (box.length !== 4 && box.length !== 8)) return;
+
+                    console.log(`🎨 Drawing highlight on second page for field:`, field.name);
+                    
+                    // Note: For second page, we're using the CSS-based bounding box overlay
+                    // which is already in the template. The highlighting will be visible
+                    // through the field highlights div elements that are already rendered.
+                    // We just need to make sure they're visible.
+                    
+                    // The actual highlighting is handled by the v-for loop in the template
+                    // that renders field highlights on both pages automatically
+                },
+                
                 startDrawing(event) {
                     if (this.currentTool === 'select') return;
 

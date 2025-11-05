@@ -7725,6 +7725,7 @@ Return compliance status for each field.'''
         Normalize different date formats to a common format for comparison
         Handles formats like: 2025-05-15, 15-05-2025, 15/05/2025, 15.05.2025
         And different orders: yyyy-mm-dd, dd-mm-yyyy, mm-dd-yyyy, etc.
+        Also handles compact formats like: 210817, 170821, 20210817
         
         Returns:
             list: All possible normalized date representations
@@ -7737,13 +7738,10 @@ Return compliance status for each field.'''
         # Remove extra whitespace
         text = text.strip()
         
-        # Define date separators
-        separators = ['-', '/', '.', ' ']
-        
         # Extract potential date patterns
         date_patterns = []
         
-        # Pattern for various date formats (4 digits or 1-2 digits)
+        # Pattern 1: Dates WITH separators (4 digits or 1-2 digits)
         date_regex = r'(\d{1,4})[\/\-\.\s](\d{1,2})[\/\-\.\s](\d{1,4})'
         matches = re.finditer(date_regex, text)
         
@@ -7762,39 +7760,423 @@ Return compliance status for each field.'''
             # Case 1: First part is year (yyyy-mm-dd format)
             if p1 >= 1900 and p1 <= 2100:
                 if 1 <= p2 <= 12 and 1 <= p3 <= 31:
+                    # Separated formats
                     normalized_dates.append(f"{p1:04d}-{p2:02d}-{p3:02d}")
                     normalized_dates.append(f"{p3:02d}-{p2:02d}-{p1:04d}")
                     normalized_dates.append(f"{p3:02d}/{p2:02d}/{p1:04d}")
                     normalized_dates.append(f"{p3:02d}.{p2:02d}.{p1:04d}")
+                    # Compact formats
+                    normalized_dates.append(f"{p1:04d}{p2:02d}{p3:02d}")  # YYYYMMDD: 20210429
+                    normalized_dates.append(f"{str(p1)[2:]}{p2:02d}{p3:02d}")  # YYMMDD: 210429
+                    normalized_dates.append(f"{p3:02d}{p2:02d}{str(p1)[2:]}")  # DDMMYY: 290421
+                    normalized_dates.append(f"{p3:02d}{p2:02d}{p1:04d}")  # DDMMYYYY: 29042021
             
             # Case 2: Last part is year (dd-mm-yyyy or mm-dd-yyyy format)
             if p3 >= 1900 and p3 <= 2100:
                 # dd-mm-yyyy
                 if 1 <= p1 <= 31 and 1 <= p2 <= 12:
+                    # Separated formats
                     normalized_dates.append(f"{p3:04d}-{p2:02d}-{p1:02d}")
                     normalized_dates.append(f"{p1:02d}-{p2:02d}-{p3:04d}")
                     normalized_dates.append(f"{p1:02d}/{p2:02d}/{p3:04d}")
                     normalized_dates.append(f"{p1:02d}.{p2:02d}.{p3:04d}")
+                    # Compact formats
+                    normalized_dates.append(f"{p3:04d}{p2:02d}{p1:02d}")  # YYYYMMDD: 20210429
+                    normalized_dates.append(f"{str(p3)[2:]}{p2:02d}{p1:02d}")  # YYMMDD: 210429
+                    normalized_dates.append(f"{p1:02d}{p2:02d}{str(p3)[2:]}")  # DDMMYY: 290421
+                    normalized_dates.append(f"{p1:02d}{p2:02d}{p3:04d}")  # DDMMYYYY: 29042021
                 
                 # mm-dd-yyyy
                 if 1 <= p1 <= 12 and 1 <= p2 <= 31:
+                    # Separated formats
                     normalized_dates.append(f"{p3:04d}-{p1:02d}-{p2:02d}")
                     normalized_dates.append(f"{p2:02d}-{p1:02d}-{p3:04d}")
                     normalized_dates.append(f"{p2:02d}/{p1:02d}/{p3:04d}")
                     normalized_dates.append(f"{p2:02d}.{p1:02d}.{p3:04d}")
+                    # Compact formats
+                    normalized_dates.append(f"{p3:04d}{p1:02d}{p2:02d}")  # YYYYMMDD: 20210429
+                    normalized_dates.append(f"{str(p3)[2:]}{p1:02d}{p2:02d}")  # YYMMDD: 210429
+                    normalized_dates.append(f"{p2:02d}{p1:02d}{str(p3)[2:]}")  # DDMMYY: 290421
+                    normalized_dates.append(f"{p2:02d}{p1:02d}{p3:04d}")  # DDMMYYYY: 29042021
             
             # Case 3: Year in middle (rare but possible)
             if p2 >= 1900 and p2 <= 2100:
                 if 1 <= p1 <= 31 and 1 <= p3 <= 12:
+                    # Separated formats
                     normalized_dates.append(f"{p2:04d}-{p3:02d}-{p1:02d}")
                     normalized_dates.append(f"{p1:02d}-{p3:02d}-{p2:04d}")
                     normalized_dates.append(f"{p1:02d}/{p3:02d}/{p2:04d}")
                     normalized_dates.append(f"{p1:02d}.{p3:02d}.{p2:04d}")
+                    # Compact formats
+                    normalized_dates.append(f"{p2:04d}{p3:02d}{p1:02d}")  # YYYYMMDD: 20210429
+                    normalized_dates.append(f"{str(p2)[2:]}{p3:02d}{p1:02d}")  # YYMMDD: 210429
+                    normalized_dates.append(f"{p1:02d}{p3:02d}{str(p2)[2:]}")  # DDMMYY: 290421
+                    normalized_dates.append(f"{p1:02d}{p3:02d}{p2:04d}")  # DDMMYYYY: 29042021
             
             date_patterns.extend(normalized_dates)
         
+        # Pattern 2: Compact dates WITHOUT separators (6 or 8 digits)
+        # Matches: YYMMDD (210429), DDMMYY (290421), YYYYMMDD (20210429), DDMMYYYY (29042021)
+        # Also matches dates embedded in text like "210429xyz" or "abc210429def"
+        compact_regex = r'(\d{6}|\d{8})'
+        compact_matches = re.finditer(compact_regex, text)
+        
+        for match in compact_matches:
+            compact_date = match.group(1)
+            
+            if len(compact_date) == 6:
+                # 6-digit format: YYMMDD or DDMMYY
+                try:
+                    # Try YYMMDD format
+                    yy = int(compact_date[0:2])
+                    mm = int(compact_date[2:4])
+                    dd = int(compact_date[4:6])
+                    
+                    if 1 <= mm <= 12 and 1 <= dd <= 31:
+                        # Assume 20xx for years
+                        yyyy = 2000 + yy
+                        # Add all format variations
+                        date_patterns.append(f"{yyyy:04d}-{mm:02d}-{dd:02d}")  # YYYY-MM-DD
+                        date_patterns.append(f"{dd:02d}-{mm:02d}-{yyyy:04d}")  # DD-MM-YYYY
+                        date_patterns.append(f"{yyyy:04d}{mm:02d}{dd:02d}")    # YYYYMMDD
+                        date_patterns.append(f"{yy:02d}{mm:02d}{dd:02d}")      # YYMMDD (original)
+                        date_patterns.append(f"{dd:02d}{mm:02d}{yy:02d}")      # DDMMYY
+                    
+                    # Try DDMMYY format
+                    dd2 = int(compact_date[0:2])
+                    mm2 = int(compact_date[2:4])
+                    yy2 = int(compact_date[4:6])
+                    
+                    if 1 <= mm2 <= 12 and 1 <= dd2 <= 31:
+                        yyyy2 = 2000 + yy2
+                        date_patterns.append(f"{yyyy2:04d}-{mm2:02d}-{dd2:02d}")  # YYYY-MM-DD
+                        date_patterns.append(f"{dd2:02d}-{mm2:02d}-{yyyy2:04d}")  # DD-MM-YYYY
+                        date_patterns.append(f"{yyyy2:04d}{mm2:02d}{dd2:02d}")    # YYYYMMDD
+                        date_patterns.append(f"{yy2:02d}{mm2:02d}{dd2:02d}")      # YYMMDD
+                        date_patterns.append(f"{dd2:02d}{mm2:02d}{yy2:02d}")      # DDMMYY (original)
+                except (ValueError, IndexError):
+                    pass
+            
+            elif len(compact_date) == 8:
+                # 8-digit format: YYYYMMDD or DDMMYYYY
+                try:
+                    # Try YYYYMMDD format
+                    yyyy = int(compact_date[0:4])
+                    mm = int(compact_date[4:6])
+                    dd = int(compact_date[6:8])
+                    
+                    if 1900 <= yyyy <= 2100 and 1 <= mm <= 12 and 1 <= dd <= 31:
+                        yy = int(str(yyyy)[2:])
+                        date_patterns.append(f"{yyyy:04d}-{mm:02d}-{dd:02d}")  # YYYY-MM-DD
+                        date_patterns.append(f"{dd:02d}-{mm:02d}-{yyyy:04d}")  # DD-MM-YYYY
+                        date_patterns.append(f"{yyyy:04d}{mm:02d}{dd:02d}")    # YYYYMMDD (original)
+                        date_patterns.append(f"{yy:02d}{mm:02d}{dd:02d}")      # YYMMDD
+                        date_patterns.append(f"{dd:02d}{mm:02d}{yy:02d}")      # DDMMYY
+                    
+                    # Try DDMMYYYY format
+                    dd2 = int(compact_date[0:2])
+                    mm2 = int(compact_date[2:4])
+                    yyyy2 = int(compact_date[4:8])
+                    
+                    if 1 <= mm2 <= 12 and 1 <= dd2 <= 31 and 1900 <= yyyy2 <= 2100:
+                        yy2 = int(str(yyyy2)[2:])
+                        date_patterns.append(f"{yyyy2:04d}-{mm2:02d}-{dd2:02d}")  # YYYY-MM-DD
+                        date_patterns.append(f"{dd2:02d}-{mm2:02d}-{yyyy2:04d}")  # DD-MM-YYYY
+                        date_patterns.append(f"{yyyy2:04d}{mm2:02d}{dd2:02d}")    # YYYYMMDD
+                        date_patterns.append(f"{yy2:02d}{mm2:02d}{dd2:02d}")      # YYMMDD
+                        date_patterns.append(f"{dd2:02d}{mm2:02d}{yy2:02d}")      # DDMMYY
+                        date_patterns.append(f"{dd2:02d}{mm2:02d}{yyyy2:04d}")    # DDMMYYYY (original)
+                except (ValueError, IndexError):
+                    pass
+        
         # Remove duplicates and return
         return list(set(date_patterns))
+
+    def normalize_amount_for_search(text):
+        """
+        Normalize different amount formats to extract the numeric value.
+        Handles formats like: $6789.00, $6,789, 6789.00$, #6789.00#, %6,789%, etc.
+        
+        Args:
+            text (str): Text that may contain an amount
+        
+        Returns:
+            list: All possible numeric representations of the amount
+        """
+        import re
+        
+        if not text or not isinstance(text, str):
+            return []
+        
+        amount_patterns = []
+        
+        # Remove common currency symbols and separators, keep only digits and decimal point
+        # Pattern: Extract numbers with optional thousand separators and decimal points
+        # Matches: $6,789.00, 6789.00$, #6,789#, %6789%, (6789.00), etc.
+        amount_regex = r'[\$#%€£¥₹₽¢]?\s*(\d{1,3}(?:[,\s]\d{3})*(?:\.\d{1,4})?|\d+(?:\.\d{1,4})?)\s*[\$#%€£¥₹₽¢]?'
+        
+        matches = re.finditer(amount_regex, text)
+        
+        for match in matches:
+            amount_str = match.group(1)
+            
+            if not amount_str:
+                continue
+            
+            # Remove thousand separators (commas and spaces)
+            clean_amount = amount_str.replace(',', '').replace(' ', '')
+            
+            try:
+                # Convert to float to validate it's a number
+                amount_value = float(clean_amount)
+                
+                # Generate multiple format variations
+                # 1. Original cleaned format
+                amount_patterns.append(clean_amount)
+                
+                # 2. Without decimal point (if it has decimals)
+                if '.' in clean_amount:
+                    without_decimal = clean_amount.replace('.', '')
+                    amount_patterns.append(without_decimal)
+                    
+                    # 3. Integer part only
+                    integer_part = clean_amount.split('.')[0]
+                    amount_patterns.append(integer_part)
+                    
+                    # 4. With different decimal places
+                    decimal_part = clean_amount.split('.')[1]
+                    # If decimal is .00, also try without it
+                    if decimal_part == '00' or decimal_part == '0':
+                        amount_patterns.append(integer_part)
+                
+                # 5. With thousand separators (comma)
+                if amount_value >= 1000:
+                    formatted_with_comma = f"{amount_value:,.2f}".rstrip('0').rstrip('.')
+                    amount_patterns.append(formatted_with_comma)
+                    # Also without decimals
+                    formatted_int = f"{int(amount_value):,}"
+                    amount_patterns.append(formatted_int)
+                
+                # 6. Just the numeric string representation
+                amount_patterns.append(str(amount_value))
+                amount_patterns.append(str(int(amount_value)))
+                
+            except (ValueError, IndexError):
+                continue
+        
+        # Remove duplicates and return
+        return list(set(amount_patterns))
+
+    def is_amount_field(text):
+        """
+        Check if the search text looks like an amount/number.
+        
+        Args:
+            text (str): The search text
+        
+        Returns:
+            bool: True if it looks like an amount
+        """
+        import re
+        
+        # Check if text is primarily numeric (with optional decimal point and thousand separators)
+        # Examples: "6789.00", "6,789", "6789", "123.45"
+        amount_pattern = r'^\d{1,3}(?:[,\s]\d{3})*(?:\.\d{1,4})?$|^\d+(?:\.\d{1,4})?$'
+        return bool(re.match(amount_pattern, text.strip()))
+
+    def is_date_in_valid_context(text, date_pattern):
+        """
+        Check if a date pattern appears in a valid context (not part of SWIFT codes, 
+        reference numbers, or other structured identifiers).
+        
+        Args:
+            text (str): The OCR text containing the date
+            date_pattern (str): The date pattern to check
+        
+        Returns:
+            bool: True if date is in valid context, False otherwise
+        """
+        import re
+        
+        # If the date is the entire text or very close to it, it's valid
+        text_clean = re.sub(r'[^a-zA-Z0-9]', '', text.lower())
+        date_clean = re.sub(r'[^a-zA-Z0-9]', '', date_pattern.lower())
+        
+        # If date is 80%+ of the text content, it's standalone (GOOD)
+        if len(date_clean) >= len(text_clean) * 0.8:
+            return True
+        
+        # Find the position of the date in the text
+        pos = text.lower().find(date_pattern.lower())
+        if pos == -1:
+            return False
+        
+        # Check characters around the date
+        before_date = text[:pos] if pos > 0 else ""
+        after_date = text[pos + len(date_pattern):] if pos + len(date_pattern) < len(text) else ""
+        
+        # PRIMARY BAD CONTEXT CHECK: SWIFT-specific patterns (very strict)
+        swift_patterns = [
+            r'[A-Z]{3}[A-Z]{2}[A-Z]{2}XXX',  # SWIFT BIC: ABDIAEADAXXX (country+location+XXX)
+            r'XXX[0-9]{10,}',  # XXX followed by long number
+            r'F21[A-Z]{6}[A-Z]{2}XXX',  # F21 + SWIFT BIC format
+        ]
+        
+        for pattern in swift_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return False
+        
+        # SECONDARY BAD CONTEXT: Structured SWIFT message format
+        if re.search(r'\{[0-9]+:\s*[0-9]+\}', text):  # {177:2104291726} format
+            return False
+        
+        # Check what comes immediately after the date
+        if after_date and len(after_date.strip()) > 0:
+            after_stripped = after_date.strip()
+            
+            # BAD: Date followed immediately (no space) by random alphanumeric code (SWIFT style)
+            # Pattern: 210817ABCDXYZQWER (mixed case nonsense)
+            if pos + len(date_pattern) < len(text) and text[pos + len(date_pattern)] != ' ':
+                # No space after date - check if it's a code or a real word
+                # Extract the immediate next segment
+                next_segment_match = re.match(r'^([A-Z0-9]+)', after_date, re.IGNORECASE)
+                if next_segment_match:
+                    next_segment = next_segment_match.group(1)
+                    
+                    # If it's all uppercase AND contains XXX pattern, it's SWIFT
+                    if next_segment.isupper() and 'XXX' in next_segment:
+                        return False
+                    
+                    # If it's a mix of uppercase and weird patterns (non-word), reject
+                    # Example: ABDIAEADAXXX - not a real word
+                    # But allow: BENEFICIARY, COUNTRY - real words
+                    if len(next_segment) >= 10:
+                        # Long segment - check if it's gibberish or real words
+                        # Real words are more likely to have vowel patterns
+                        vowels = sum(1 for c in next_segment.lower() if c in 'aeiou')
+                        consonants = sum(1 for c in next_segment.lower() if c.isalpha() and c not in 'aeiou')
+                        
+                        # If very few vowels relative to length, it's likely a code
+                        if len(next_segment) > 10 and vowels < len(next_segment) * 0.2:
+                            return False
+        
+        # GOOD CONTEXT PATTERNS (these indicate a standalone date or labeled date)
+        good_patterns = [
+            # Date labels
+            r'date[:\s]*$',
+            r'dated[:\s]*$',
+            r'on[:\s]*$',
+            r'from[:\s]*$',
+            r'to[:\s]*$',
+            r'due[:\s]*$',
+            r'value[:\s]*$',
+            r'issued[:\s]*$',
+            r'expire[:\s]*$',
+            r'valid[:\s]*$',
+        ]
+        
+        # Check if before_date contains good indicators
+        before_lower = before_date.lower().strip()
+        for pattern in good_patterns:
+            if re.search(pattern, before_lower):
+                return True
+        
+        # Check if after_date starts with a space (indicates separate field)
+        if after_date and after_date[0] in [' ', '\t', '\n', ':', '-', '/']:
+            return True
+        
+        # Check if text has common field separators around the date
+        if ':' in before_date or ':' in after_date[:5] if len(after_date) >= 5 else False:
+            return True
+        
+        # If text is relatively short and no SWIFT patterns, accept it
+        # This handles cases like "210817BENEFICIARY" where BENEFICIARY is a real word
+        if len(text) < 50 and not re.search(r'XXX[0-9]{5,}', text):
+            return True
+        
+        # Default: if no strong bad patterns detected, consider it valid
+        return True
+
+    def calculate_match_priority_score(match_text, field_value, match_confidence, match_type):
+        """
+        Calculate a priority score for a match to rank field values higher than narrative text.
+        
+        Args:
+            match_text (str): The matched OCR text
+            field_value (str): The search query
+            match_confidence (float): The match confidence percentage
+            match_type (str): Type of match (exact, contains, etc.)
+        
+        Returns:
+            float: Priority score (higher = better priority)
+        """
+        import re
+        
+        priority_score = match_confidence  # Start with base confidence
+        
+        # Factor 1: Text length - shorter is better (likely a field value)
+        text_len = len(match_text)
+        if text_len <= 20:
+            priority_score += 15  # Very short - likely a label/field
+        elif text_len <= 40:
+            priority_score += 10  # Short - possibly a field
+        elif text_len <= 60:
+            priority_score += 5   # Medium - could be either
+        else:
+            priority_score -= 10  # Long - likely narrative text
+        
+        # Factor 2: Field value is near the start of the text
+        field_pos = match_text.lower().find(field_value.lower())
+        if field_pos == 0:
+            priority_score += 10  # Starts with field value - excellent
+        elif field_pos <= 3:
+            priority_score += 5   # Near the start - good
+        
+        # Factor 3: Format patterns indicating field definitions
+        # Example: "USD (US DOLLAR)" - field with description in parentheses
+        if re.search(rf'\b{re.escape(field_value)}\s*\([^)]+\)', match_text, re.IGNORECASE):
+            priority_score += 20  # Field with description pattern
+        
+        # Factor 4: Detect sentence patterns (narrative text indicators)
+        sentence_indicators = [
+            r'\b(we|will|shall|must|should|may|can)\b',  # Modal verbs
+            r'\b(the|a|an)\b.*\b(the|a|an)\b',  # Multiple articles
+            r'\b(of|with|for|from|by)\b',  # Prepositions in narrative
+            r'[.!?]\s',  # Sentence endings
+            r'^\d+\.',  # Numbered list items (e.g., "6. WE WILL...")
+        ]
+        
+        for pattern in sentence_indicators:
+            if re.search(pattern, match_text, re.IGNORECASE):
+                priority_score -= 15  # Penalize narrative text
+                break
+        
+        # Factor 5: Detect amount mentions (e.g., "USD 100/-", "USD100", "100USD")
+        # These are less relevant than currency field definitions
+        # Match patterns: USD100, USD 100, 100USD, etc.
+        amount_patterns = [
+            rf'\b{re.escape(field_value)}\s*\d+',  # USD100 or USD 100
+            rf'\d+\s*{re.escape(field_value)}\b',  # 100USD or 100 USD
+        ]
+        for pattern in amount_patterns:
+            if re.search(pattern, match_text, re.IGNORECASE):
+                priority_score -= 10  # Currency amount mention, not field definition
+                break
+        
+        # Factor 6: Check if match is mostly the field value (high ratio)
+        field_ratio = len(field_value) / len(match_text) if len(match_text) > 0 else 0
+        if field_ratio > 0.5:
+            priority_score += 15  # Field value is >50% of text - very relevant
+        elif field_ratio > 0.3:
+            priority_score += 8   # Field value is >30% of text - relevant
+        
+        # Factor 7: Exact match type bonus
+        if match_type == 'exact':
+            priority_score += 5
+        elif match_type in ['date_exact', 'date_contains', 'amount_exact', 'amount_contains']:
+            priority_score += 3
+        
+        return priority_score
 
     def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
         """
@@ -7831,8 +8213,32 @@ Return compliance status for each field.'''
         field_date_patterns = normalize_date_for_search(field_value)
         is_date_search = len(field_date_patterns) > 0
         
+        # Check if field_value is a simple number (e.g., "21" for "Period of presentation")
+        # This handles cases where user searches "21" but OCR has "21 Days", "21 DAYS", "21/Days", etc.
+        # PRIORITY: Check this BEFORE amount detection since simple numbers like "21" should be treated as periods
+        is_numeric_period = False
+        if not is_date_search:
+            # Check if it's just a simple integer (1-3 digits, no decimals or currency)
+            numeric_value = field_value.strip()
+            if numeric_value.isdigit() and len(numeric_value) <= 3:  # Period values are typically small numbers
+                is_numeric_period = True
+                logger.info(f"📅 Detected numeric period search: '{numeric_value}' (will match variations like '{numeric_value} Days', '{numeric_value}/DAYS', etc.)")
+        
+        # Check if field_value looks like an amount and normalize it
+        # Only check for amount if it's not a date or numeric period
+        field_amount_patterns = []
+        is_amount_search = False
+        if not is_date_search and not is_numeric_period:
+            is_amount_search = is_amount_field(field_value)
+            if is_amount_search:
+                field_amount_patterns = normalize_amount_for_search(field_value)
+        
         if is_date_search:
             logger.info(f"Detected date search. Normalized patterns: {field_date_patterns}")
+        elif is_numeric_period:
+            logger.info(f"📅 Searching for numeric period: '{field_value}' with day/time variations")
+        elif is_amount_search:
+            logger.info(f"💰 Detected amount search. Normalized patterns: {field_amount_patterns}")
         else:
             logger.info(f"INFO: Searching for phrase/sentence: '{field_value}'")
         
@@ -7842,6 +8248,8 @@ Return compliance status for each field.'''
         contains_matches = 0
         partial_matches = 0
         date_matches = 0
+        amount_matches = 0
+        numeric_period_matches = 0
         no_matches = 0
         
         logger.info(f"Starting sentence/phrase search through {len(ocr_data)} OCR entries")
@@ -7863,41 +8271,164 @@ Return compliance status for each field.'''
             if is_date_search and match_confidence < 100:
                 ocr_date_patterns = normalize_date_for_search(ocr_text)
                 if ocr_date_patterns:
-                    # Check if any normalized date patterns match
+                    # Check if any normalized date patterns match (exact or contained)
                     for field_pattern in field_date_patterns:
                         for ocr_pattern in ocr_date_patterns:
                             if field_pattern == ocr_pattern:
-                                match_confidence = 100
-                                match_type = 'date_exact'
+                                # Validate that this is a genuine standalone date, not part of SWIFT code
+                                if is_date_in_valid_context(ocr_text, ocr_pattern):
+                                    match_confidence = 100
+                                    match_type = 'date_exact'
+                                    date_matches += 1
+                                    match_info = f"'{field_pattern}' matches '{ocr_pattern}'"
+                                    logger.debug(f"      SUCCESS: DATE EXACT MATCH! {match_info} - Confidence: 100%")
+                                    break
+                                else:
+                                    logger.debug(f"      REJECTED: Date '{ocr_pattern}' in invalid context (likely SWIFT/reference code)")
+                        if match_confidence == 100:
+                            break
+                
+                # If no exact date match, check if date pattern is contained in OCR text
+                # This handles cases like "210429xyz" where the date is embedded in text
+                # BUT we validate it's not part of SWIFT codes or reference numbers
+                if match_confidence < 100:
+                    for field_pattern in field_date_patterns:
+                        if field_pattern in ocr_text_lower:
+                            # Check if the date is in a valid context (not SWIFT code)
+                            if is_date_in_valid_context(ocr_text, field_pattern):
+                                match_confidence = 95
+                                match_type = 'date_contains'
                                 date_matches += 1
+                                match_info = f"'{field_pattern}' found in '{ocr_text_lower}'"
+                                logger.debug(f"      SUCCESS: DATE CONTAINS MATCH! {match_info} - Confidence: 95%")
+                                break
+                            else:
+                                logger.debug(f"      REJECTED: Date '{field_pattern}' in invalid context (likely SWIFT/reference code)")
+            
+            # Amount matching logic (for numeric/currency searches)
+            if is_amount_search and match_confidence < 100:
+                ocr_amount_patterns = normalize_amount_for_search(ocr_text)
+                if ocr_amount_patterns:
+                    # Check if any normalized amount patterns match
+                    for field_pattern in field_amount_patterns:
+                        for ocr_pattern in ocr_amount_patterns:
+                            if field_pattern == ocr_pattern:
+                                match_confidence = 100
+                                match_type = 'amount_exact'
+                                amount_matches += 1
                                 match_info = f"'{field_pattern}' matches '{ocr_pattern}'"
-                                logger.debug(f"      SUCCESS: DATE EXACT MATCH! {match_info} - Confidence: 100%")
+                                logger.debug(f"      SUCCESS: 💰 AMOUNT EXACT MATCH! {match_info} - Confidence: 100%")
                                 break
                         if match_confidence == 100:
                             break
+                
+                # If no exact amount match, check if amount pattern is contained in OCR text
+                if match_confidence < 100:
+                    for field_pattern in field_amount_patterns:
+                        if field_pattern in ocr_text:
+                            match_confidence = 95
+                            match_type = 'amount_contains'
+                            amount_matches += 1
+                            match_info = f"'{field_pattern}' found in '{ocr_text}'"
+                            logger.debug(f"      SUCCESS: 💰 AMOUNT CONTAINS MATCH! {match_info} - Confidence: 95%")
+                            break
             
-            # Regular exact match (high priority)
-            if match_confidence < 100 and search_mode in ['exact', 'fuzzy', 'contains']:
+            # Numeric period matching (e.g., "21" matches "21 Days", "21 DAYS", "21/Days", etc.)
+            # STRICT: Only match when followed by "days" - don't match standalone numbers or dates
+            if is_numeric_period and match_confidence < 100:
+                import re
+                # Create pattern to match the number followed by REQUIRED separator and "days" variants
+                # Handles: "21 Days", "21 DAYS", "21/Days", "21/DAYS", "21Days", "21-Days", etc.
+                # Does NOT match: "21", "29/04/21", "210429", "ILCAE00221000098"
+                number = re.escape(field_value.strip())
+                # Pattern: the number followed by optional space/slash/hyphen, then REQUIRED "days" (case-insensitive)
+                # Using lookahead to ensure "days" exists
+                pattern = rf'\b{number}\s*[/\-\s]?\s*(days?|DAYS?)\b'
+                
+                match = re.search(pattern, ocr_text, re.IGNORECASE)
+                if match:
+                    match_confidence = 100
+                    match_type = 'numeric_period'
+                    numeric_period_matches += 1
+                    logger.debug(f"      SUCCESS: 📅 NUMERIC PERIOD MATCH! '{number} Days' pattern found in '{ocr_text}' - Confidence: 100%")
+            
+            # Regular exact/contains/partial match (skip if it's a numeric period search to avoid noise)
+            # For numeric period searches, ONLY match the "X Days" pattern above
+            if match_confidence < 100 and search_mode in ['exact', 'fuzzy', 'contains'] and not is_numeric_period:
                 if field_value_lower == ocr_text_lower:
                     match_confidence = 100
                     match_type = 'exact'
                     exact_matches += 1
                     logger.debug("      SUCCESS: EXACT MATCH! Confidence: 100%")
                 elif field_value_lower in ocr_text_lower:
-                    match_confidence = 90
-                    match_type = 'contains'
-                    contains_matches += 1
-                    contains_info = f"'{field_value_lower}' found in '{ocr_text_lower}'"
-                    logger.debug(f"      SUCCESS: CONTAINS MATCH! {contains_info} - Confidence: 90%")
+                    # Use strict word boundary checking for short search terms (≤20 chars)
+                    # e.g., "Allowed" should NOT match "Not Allowed" or "Not-Allowed"
+                    # "Not-Allowed" should NOT match "Allowed"
+                    import re
+                    if len(field_value_lower) <= 20:
+                        # STRICT: Search term must be at START of text or preceded ONLY by punctuation (not words)
+                        # This ensures "Allowed" doesn't match "Not Allowed" or "Pre-Allowed"
+                        # But "Allowed" matches "Allowed", "(Allowed)", "[Allowed Shipment]"
+                        pattern = r'^' + re.escape(field_value_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
+                        match_start = re.match(pattern, ocr_text_lower)
+                        
+                        # Also check if preceded by punctuation only (not alphanumeric)
+                        pattern_with_punct = r'(?:^|[^\w])' + re.escape(field_value_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
+                        match_punct = re.search(pattern_with_punct, ocr_text_lower)
+                        
+                        # Only match if it starts the text or is preceded by non-word characters
+                        # This rejects: "Not Allowed" when searching "Allowed" (preceded by word "Not")
+                        # This accepts: "Allowed", "(Allowed)", "Allowed Shipment"
+                        if match_start or (match_punct and not re.search(r'\w+\s+' + re.escape(field_value_lower), ocr_text_lower)):
+                            match_confidence = 90
+                            match_type = 'contains'
+                            contains_matches += 1
+                            contains_info = f"'{field_value_lower}' found as complete word in '{ocr_text_lower}'"
+                            logger.debug(f"      SUCCESS: CONTAINS MATCH (strict word boundary)! {contains_info} - Confidence: 90%")
+                        else:
+                            # Found as substring but preceded by another word - skip it
+                            logger.debug(f"      REJECTED: '{field_value_lower}' found in '{ocr_text_lower}' but preceded by another word (e.g., 'Allowed' in 'Not Allowed')")
+                    else:
+                        # For longer phrases, use regular substring matching
+                        match_confidence = 90
+                        match_type = 'contains'
+                        contains_matches += 1
+                        contains_info = f"'{field_value_lower}' found in '{ocr_text_lower}'"
+                        logger.debug(f"      SUCCESS: CONTAINS MATCH! {contains_info} - Confidence: 90%")
                 elif ocr_text_lower in field_value_lower:
-                    match_confidence = 85
-                    match_type = 'partial'
-                    partial_matches += 1
-                    partial_info = f"'{ocr_text_lower}' found in '{field_value_lower}'"
-                    logger.debug(f"      SUCCESS: PARTIAL MATCH! {partial_info} - Confidence: 85%")
+                    # Apply same strict word boundary checking for short OCR text in partial matches
+                    # e.g., when searching "Not Allowed", don't match OCR text "Allowed" 
+                    import re
+                    if len(ocr_text_lower) <= 20:
+                        # STRICT: OCR text must be at START of search term or preceded ONLY by punctuation
+                        # This ensures searching "Not Allowed" doesn't match "Allowed" 
+                        pattern = r'^' + re.escape(ocr_text_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
+                        match_start = re.match(pattern, field_value_lower)
+                        
+                        # Also check if preceded by punctuation only (not alphanumeric)
+                        pattern_with_punct = r'(?:^|[^\w])' + re.escape(ocr_text_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
+                        match_punct = re.search(pattern_with_punct, field_value_lower)
+                        
+                        # Only match if it starts the search term or is preceded by non-word characters
+                        if match_start or (match_punct and not re.search(r'\w+\s+' + re.escape(ocr_text_lower), field_value_lower)):
+                            match_confidence = 85
+                            match_type = 'partial'
+                            partial_matches += 1
+                            partial_info = f"'{ocr_text_lower}' found as complete word in '{field_value_lower}'"
+                            logger.debug(f"      SUCCESS: PARTIAL MATCH (strict word boundary)! {partial_info} - Confidence: 85%")
+                        else:
+                            # Found as substring but preceded by another word - skip it
+                            logger.debug(f"      REJECTED: '{ocr_text_lower}' found in '{field_value_lower}' but preceded by another word (e.g., 'Allowed' in 'Not Allowed')")
+                    else:
+                        # For longer OCR text, use regular substring matching
+                        match_confidence = 85
+                        match_type = 'partial'
+                        partial_matches += 1
+                        partial_info = f"'{ocr_text_lower}' found in '{field_value_lower}'"
+                        logger.debug(f"      SUCCESS: PARTIAL MATCH! {partial_info} - Confidence: 85%")
             
-            # Fuzzy matching if enabled and no exact match
-            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
+            # Fuzzy matching if enabled and no exact match (skip for numeric period searches)
+            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90 and not is_numeric_period:
                 similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
                 logger.debug(f"Fuzzy similarity: {similarity:.3f}")
                 if similarity >= 0.8:  # High similarity threshold
@@ -7914,27 +8445,74 @@ Return compliance status for each field.'''
             
             # Only include high-confidence matches
             if match_confidence >= 80:
+                # Filter out small partial matches for long search phrases
+                # Use dynamic threshold: longer searches require larger matches
+                if match_type == 'partial':
+                    search_length = len(field_value)
+                    match_length = len(ocr_text.strip())
+                    
+                    # Dynamic filtering based on search phrase length:
+                    # - Short phrases (30-50 chars): skip matches ≤4 chars
+                    # - Medium phrases (50-100 chars): skip matches ≤10 chars
+                    # - Long phrases (100-200 chars): skip matches ≤20 chars
+                    # - Very long phrases (200+ chars): skip matches ≤30 chars (fixed cap, not percentage)
+                    skip_match = False
+                    
+                    if search_length > 200:
+                        # Very long search: use fixed threshold of 30 chars (not percentage-based)
+                        # This ensures we keep substantial multi-line blocks while filtering single words
+                        if match_length <= 30:
+                            skip_match = True
+                            logger.debug(f"Skipping small partial match '{ocr_text[:50]}...' ({match_length} chars ≤30 for {search_length}-char search)")
+                    elif search_length > 100:
+                        if match_length <= 20:
+                            skip_match = True
+                            logger.debug(f"Skipping small partial match '{ocr_text}' ({match_length} chars ≤20 for {search_length}-char search)")
+                    elif search_length > 50:
+                        if match_length <= 10:
+                            skip_match = True
+                            logger.debug(f"Skipping small partial match '{ocr_text}' ({match_length} chars ≤10 for {search_length}-char search)")
+                    elif search_length > 30:
+                        if match_length <= 4:
+                            skip_match = True
+                            logger.debug(f"Skipping tiny partial match '{ocr_text}' ({match_length} chars ≤4 for {search_length}-char search)")
+                    
+                    if skip_match:
+                        no_matches += 1
+                        continue
+                
+                # Calculate priority score for intelligent ranking
+                priority_score = calculate_match_priority_score(
+                    ocr_text, 
+                    field_value, 
+                    match_confidence, 
+                    match_type
+                )
+                
                 match_data = {
                     'ocr_index': i,
                     'matched_text': ocr_text,
                     'field_value': field_value,
                     'match_confidence': round(match_confidence, 1),
                     'match_type': match_type,
+                    'priority_score': round(priority_score, 1),
                     'bounding_box': ocr_entry.get('bounding_box', []),
                     'bounding_page': ocr_entry.get('bounding_page', 1),
                     'ocr_confidence': ocr_entry.get('confidence', 0)
                 }
                 matches.append(match_data)
                 
-                logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
+                logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type}), Priority: {priority_score:.1f}")
                 logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
         
-        # Sort matches by confidence (highest first)
-        matches.sort(key=lambda x: x['match_confidence'], reverse=True)
+        # Sort matches by priority score first, then confidence (highest first)
+        matches.sort(key=lambda x: (x['priority_score'], x['match_confidence']), reverse=True)
         
         # Log search summary
         logger.info(f"ANALYTICS: === SEARCH STATISTICS ===")
         logger.info(f"   Date matches: {date_matches}")
+        logger.info(f"   Amount matches: {amount_matches}")
+        logger.info(f"   Numeric period matches: {numeric_period_matches}")
         logger.info(f"   Exact matches: {exact_matches}")
         logger.info(f"   Contains matches: {contains_matches}")
         logger.info(f"   Partial matches: {partial_matches}")
@@ -7944,8 +8522,15 @@ Return compliance status for each field.'''
         
         if matches:
             best_match = matches[0]
-            logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
+            logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']}, Priority: {best_match['priority_score']})")
             logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
+            
+            # Show ranking if multiple matches
+            if len(matches) > 1:
+                logger.info(f"ANALYTICS: Match ranking (by priority score):")
+                for idx, match in enumerate(matches[:5], 1):  # Show top 5
+                    match_text_preview = match['matched_text'][:50] + '...' if len(match['matched_text']) > 50 else match['matched_text']
+                    logger.info(f"   #{idx}: '{match_text_preview}' - Confidence: {match['match_confidence']}%, Priority: {match['priority_score']}")
         else:
             logger.warning(f"ERROR: NO QUALIFYING MATCHES FOUND for '{field_value}'")
             logger.info(f"IDEA: Search suggestions:")
@@ -15424,7 +16009,11 @@ Return compliance status for each field.'''
                     engine=extraction_model,
                     messages=[{"role": "user", "content": extraction_prompt}],
                     temperature=extraction_temp,
-                    max_tokens=extraction_max_tokens
+                    max_tokens=extraction_max_tokens,
+                    seed=12345,
+                    top_p=1.0,
+                    frequency_penalty=0,
+                    presence_penalty=0
                 )
                 extraction_result = extraction_response.choices[0].message.content
                 
