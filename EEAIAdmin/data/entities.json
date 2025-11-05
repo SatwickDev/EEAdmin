@@ -1110,10 +1110,10 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-    {
+        {
       "id": "142",
       "name": "Documentary Credit Identifier",
-      "description": "Reference number to identify a documentary credit",
+      "description": "Extract the MUR (Message User Reference) number from the Letter of Credit application. The MUR number uniquely identifies the transaction reference used in SWIFT messages or LC documentation. Do not extract the LC number or any other reference numbers.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
