@@ -2231,7 +2231,11 @@ Available Schema:
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.1,  # Low temperature for deterministic output
-                max_tokens=500
+                max_tokens=500,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
             )
 
             sql_query = response.choices[0].message.content.strip()
@@ -3249,7 +3253,12 @@ Generate a query recipe for this request."""
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=2000,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
 
             # Parse LLM response
@@ -3550,7 +3559,7 @@ Generate a query recipe for this request."""
                 'message': f'Error processing upload: {str(e)}'
             }), 500
 
-    
+
     @app.route('/document_register')
     def document_register():
         """Document registration page with supporting documents upload"""
@@ -4108,7 +4117,7 @@ Generate a query recipe for this request."""
 
     # Initialize rule manager
     discrepancy_rule_manager = DiscrepancyRuleManager()
-    
+
     @app.route('/api/qr/process', methods=['POST'])
     @timing_aspect
     def process_qr_code():
@@ -4118,88 +4127,88 @@ Generate a query recipe for this request."""
         """
         try:
             logger.info("=== QR Processing: Starting ===")
-            
+
             # Get uploaded QR image
             if 'file' not in request.files:
                 return jsonify({
                     'success': False,
                     'error': 'No file uploaded'
                 }), 400
-            
+
             qr_file = request.files['file']
             if not qr_file or qr_file.filename == '':
                 return jsonify({
                     'success': False,
                     'error': 'No file selected'
                 }), 400
-            
+
             # Get additional parameters
             repository_id = request.form.get('repository_id', 'trade_finance')
-            
+
             logger.info(f"QR file: {qr_file.filename}, Repository: {repository_id}")
-            
+
             # Save QR image temporarily
             with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_qr_file:
                 qr_file.save(temp_qr_file.name)
                 qr_image_path = temp_qr_file.name
-            
+
             try:
                 # Read QR code image using OpenCV
                 img = cv2.imread(qr_image_path)
                 if img is None:
                     raise Exception("Could not read QR code image")
-                
+
                 # Initialize QR detector
                 qr_detector = cv2.QRCodeDetector()
-                
+
                 # Detect and decode QR code
                 data, points, straight_qrcode = qr_detector.detectAndDecode(img)
-                
+
                 # Enhanced logging for debugging
                 logger.info(f"QR Detection result - Data present: {bool(data)}, Data length: {len(data) if data else 0}")
                 if points is not None:
                     logger.info(f"QR Detection result - Points detected: {len(points)}")
-                
+
                 if not data or data == '':
                     logger.warning("No QR code detected in image")
                     return jsonify({
                         'success': False,
                         'error': 'No QR code detected in the image. Please upload a clear QR code image.'
                     }), 400
-                
+
                 logger.info(f"✅ QR Code decoded successfully!")
                 logger.info(f"   Data length: {len(data)} characters")
                 logger.info(f"   First 200 chars: {data[:200]}")
                 if len(data) > 200:
                     logger.info(f"   Last 100 chars: ...{data[-100:]}")
-                
+
                 # Determine if QR contains URL or embedded data
                 is_url = data.startswith('http://') or data.startswith('https://')
                 logger.info(f"QR data type: {'url' if is_url else 'data'}")
-                
+
                 if is_url:
                     # QR contains document URL - return URL for Smart Capture to fetch and process
                     logger.info(f"📌 QR contains document URL: {data}")
-                    
+
                     # Special handling for scan.page URLs (they use JS redirects)
                     final_document_url = data
-                    
+
                     # Check if URL is already a direct PDF/document link
                     is_direct_document = (
-                        data.lower().endswith('.pdf') or 
-                        data.lower().endswith('.jpg') or 
-                        data.lower().endswith('.jpeg') or 
+                        data.lower().endswith('.pdf') or
+                        data.lower().endswith('.jpg') or
+                        data.lower().endswith('.jpeg') or
                         data.lower().endswith('.png') or
                         '/uploads/' in data.lower()  # Common pattern for direct uploads
                     )
-                    
+
                     if 'scan.page' in data and not is_direct_document:
                         logger.info(f"🔍 Detected scan.page landing page URL - attempting to find direct PDF link...")
                         try:
                             import requests
                             from bs4 import BeautifulSoup
                             import re
-                            
+
                             # Fetch the HTML page with browser-like headers
                             headers = {
                                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -4211,13 +4220,13 @@ Generate a query recipe for this request."""
                             }
                             response = requests.get(data, timeout=10, allow_redirects=True, headers=headers)
                             response.raise_for_status()
-                            
+
                             # Parse HTML to find the PDF link
                             soup = BeautifulSoup(response.text, 'html.parser')
-                            
+
                             # Method 1: Look for PDF links in the HTML
                             pdf_link = None
-                            
+
                             # Try to find direct PDF link in various places
                             for link in soup.find_all(['a', 'iframe', 'embed', 'object']):
                                 href = link.get('href') or link.get('src') or link.get('data')
@@ -4230,7 +4239,7 @@ Generate a query recipe for this request."""
                                         pdf_link = f"https://qr.scan.page/{href}"
                                     logger.info(f"   Found PDF link in HTML: {pdf_link}")
                                     break
-                            
+
                             # Method 2: Look for PDF URL in JavaScript code
                             if not pdf_link:
                                 scripts = soup.find_all('script')
@@ -4242,7 +4251,7 @@ Generate a query recipe for this request."""
                                             pdf_link = pdf_matches[0]
                                             logger.info(f"   Found PDF link in JavaScript: {pdf_link}")
                                             break
-                            
+
                             # Method 3: Try to find PDF URL in page source (even if in JS variables)
                             if not pdf_link:
                                 logger.info(f"   Searching entire page source for PDF URLs...")
@@ -4255,12 +4264,12 @@ Generate a query recipe for this request."""
                                             pdf_link = url.split('"')[0].split("'")[0]  # Clean up any trailing quotes
                                             logger.info(f"   Found PDF URL in page source: {pdf_link}")
                                             break
-                                    
+
                                     # If no qr.scan.page URL, use the first PDF URL found
                                     if not pdf_link and pdf_urls_in_source:
                                         pdf_link = pdf_urls_in_source[0].split('"')[0].split("'")[0]
                                         logger.info(f"   Found generic PDF URL in page source: {pdf_link}")
-                            
+
                             # Method 4: Try common scan.page API endpoints
                             if not pdf_link:
                                 logger.info(f"   Trying scan.page API endpoints...")
@@ -4268,7 +4277,7 @@ Generate a query recipe for this request."""
                                 if page_id_match:
                                     page_id = page_id_match.group(1)
                                     logger.info(f"   Extracted page ID: {page_id}")
-                                    
+
                                     # Try various API endpoint patterns
                                     possible_endpoints = [
                                         f"https://qr.scan.page/api/scans/{page_id}",
@@ -4276,7 +4285,7 @@ Generate a query recipe for this request."""
                                         f"https://scan.page/api/scans/{page_id}",
                                         f"https://qr.scan.page/api/pages/{page_id}",
                                     ]
-                                    
+
                                     for endpoint in possible_endpoints:
                                         try:
                                             logger.info(f"   Trying API endpoint: {endpoint}")
@@ -4307,24 +4316,24 @@ Generate a query recipe for this request."""
                                         except Exception as api_error:
                                             logger.debug(f"   API endpoint {endpoint} failed: {api_error}")
                                             continue
-                            
+
                             if pdf_link:
                                 final_document_url = pdf_link
                                 logger.info(f"✅ Resolved scan.page URL to direct PDF: {final_document_url}")
                             else:
                                 logger.warning(f"⚠️ Could not find direct PDF link, will use original URL")
                                 logger.warning(f"   Frontend will attempt to parse the HTML")
-                                
+
                         except Exception as e:
                             logger.error(f"❌ Error processing scan.page URL: {e}")
                             logger.warning(f"   Will use original URL - frontend will handle it")
-                    
+
                     # Validate final URL is accessible (quick HEAD request with redirect tracking)
                     import requests
                     try:
                         logger.info(f"🔍 Checking URL accessibility (with redirect following)...")
                         head_response = requests.head(final_document_url, timeout=10, allow_redirects=True)
-                        
+
                         # Log redirect information
                         if head_response.history:
                             logger.info(f"✅ URL redirects detected:")
@@ -4336,19 +4345,19 @@ Generate a query recipe for this request."""
                         else:
                             logger.info(f"✅ Direct URL (no redirects)")
                             logger.info(f"   Status: {head_response.status_code}")
-                        
+
                         # Log response headers for debugging
                         content_type = head_response.headers.get('content-type', 'unknown')
                         content_length = head_response.headers.get('content-length', 'unknown')
                         logger.info(f"   Content-Type: {content_type}")
                         logger.info(f"   Content-Length: {content_length}")
-                        
+
                         head_response.raise_for_status()
                         logger.info(f"✅ Document URL is accessible!")
                     except requests.RequestException as e:
                         logger.warning(f"⚠️ Could not verify URL accessibility: {e}")
                         logger.warning(f"   URL will still be returned - frontend will handle the fetch")
-                    
+
                     return jsonify({
                         'success': True,
                         'document_url': final_document_url,
@@ -4357,20 +4366,20 @@ Generate a query recipe for this request."""
                         'is_scan_page': 'scan.page' in data,
                         'message': 'QR code decoded successfully - contains document URL'
                     }), 200
-                
+
                 else:
                     # QR contains embedded data - check if it's a base64 encoded document
                     logger.info("QR contains embedded data, attempting to decode...")
-                    
+
                     try:
                         # Try to decode as base64
                         if len(data) > 100:  # Reasonable size for embedded document
                             decoded_data = base64.b64decode(data)
-                            
+
                             # Detect file type
                             file_extension = '.pdf'
                             content_type = 'application/pdf'
-                            
+
                             if decoded_data[:4] == b'%PDF':
                                 file_extension = '.pdf'
                                 content_type = 'application/pdf'
@@ -4380,21 +4389,21 @@ Generate a query recipe for this request."""
                             elif decoded_data[:4] == b'\x89PNG':
                                 file_extension = '.png'
                                 content_type = 'image/png'
-                            
+
                             # Save decoded document temporarily and return file path
                             with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_doc_file:
                                 temp_doc_file.write(decoded_data)
                                 document_path = temp_doc_file.name
-                            
+
                             # Encode the file content to base64 to send to frontend
                             with open(document_path, 'rb') as f:
                                 document_content_base64 = base64.b64encode(f.read()).decode('utf-8')
-                            
+
                             # Clean up temp file
                             os.unlink(document_path)
-                            
+
                             logger.info(f"Successfully decoded embedded document ({len(decoded_data)} bytes, type: {content_type})")
-                            
+
                             return jsonify({
                                 'success': True,
                                 'document_file': document_content_base64,
@@ -4403,7 +4412,7 @@ Generate a query recipe for this request."""
                                 'qr_data_type': 'embedded',
                                 'message': 'QR code decoded successfully - contains embedded document'
                             }), 200
-                        
+
                         else:
                             # Small data - likely text/metadata only
                             logger.warning("QR contains text data only (no embedded document)")
@@ -4412,7 +4421,7 @@ Generate a query recipe for this request."""
                                 'error': 'QR code contains text data but no document. Please use a QR code that contains a document URL or embedded document.',
                                 'qr_data': data[:200]  # Return first 200 chars for debugging
                             }), 400
-                    
+
                     except Exception as decode_error:
                         logger.error(f"Error decoding embedded data: {decode_error}")
                         return jsonify({
@@ -4420,19 +4429,19 @@ Generate a query recipe for this request."""
                             'error': 'Could not decode embedded document data from QR code. The QR may contain text only.',
                             'qr_data': data[:200]
                         }), 400
-            
+
             finally:
                 # Cleanup QR image file
                 if os.path.exists(qr_image_path):
                     os.unlink(qr_image_path)
-        
+
         except Exception as e:
             logger.error(f"Error processing QR code: {e}", exc_info=True)
             return jsonify({
                 'success': False,
                 'error': f'Error processing QR code: {str(e)}'
             }), 500
-    
+
     # Discrepancy Rule API Routes
     @app.route('/api/discrepancy-rules', methods=['GET'])
     @timing_aspect
@@ -4463,7 +4472,7 @@ Generate a query recipe for this request."""
                     'success': False,
                     'error': 'Rule not found'
                 }), 404
-            
+
             return jsonify({
                 'success': True,
                 'rule': rule
@@ -4481,7 +4490,7 @@ Generate a query recipe for this request."""
         """Create new discrepancy rule"""
         try:
             data = request.get_json()
-            
+
             # Validate required fields
             required_fields = ['code', 'documentType', 'description', 'basis', 'priority']
             for field in required_fields:
@@ -4490,7 +4499,7 @@ Generate a query recipe for this request."""
                         'success': False,
                         'error': f'Missing required field: {field}'
                     }), 400
-            
+
             # Check if rule code already exists
             existing = next((r for r in discrepancy_rule_manager.rules if r['code'] == data['code']), None)
             if existing:
@@ -4498,13 +4507,13 @@ Generate a query recipe for this request."""
                     'success': False,
                     'error': f'Rule with code {data["code"]} already exists'
                 }), 400
-            
+
             new_rule = discrepancy_rule_manager.add_rule(data)
             return jsonify({
                 'success': True,
                 'rule': new_rule
             }), 201
-        
+
         except Exception as e:
             logger.error(f"Error creating discrepancy rule: {e}")
             return jsonify({
@@ -4518,7 +4527,7 @@ Generate a query recipe for this request."""
         """Update existing discrepancy rule"""
         try:
             data = request.get_json()
-            
+
             # Validate required fields
             required_fields = ['code', 'documentType', 'description', 'basis', 'priority']
             for field in required_fields:
@@ -4527,7 +4536,7 @@ Generate a query recipe for this request."""
                         'success': False,
                         'error': f'Missing required field: {field}'
                     }), 400
-            
+
             # Check if rule code already exists for different rule
             existing = next((r for r in discrepancy_rule_manager.rules if r['code'] == data['code'] and r['id'] != rule_id), None)
             if existing:
@@ -4535,19 +4544,19 @@ Generate a query recipe for this request."""
                     'success': False,
                     'error': f'Rule with code {data["code"]} already exists'
                 }), 400
-            
+
             updated_rule = discrepancy_rule_manager.update_rule(rule_id, data)
             if not updated_rule:
                 return jsonify({
                     'success': False,
                     'error': 'Rule not found'
                 }), 404
-            
+
             return jsonify({
                 'success': True,
                 'rule': updated_rule
             })
-        
+
         except Exception as e:
             logger.error(f"Error updating discrepancy rule: {e}")
             return jsonify({
@@ -4566,12 +4575,12 @@ Generate a query recipe for this request."""
                     'success': False,
                     'error': 'Rule not found'
                 }), 404
-            
+
             return jsonify({
                 'success': True,
                 'message': 'Rule deleted successfully'
             })
-        
+
         except Exception as e:
             logger.error(f"Error deleting discrepancy rule: {e}")
             return jsonify({
@@ -4587,15 +4596,15 @@ Generate a query recipe for this request."""
             data = request.get_json()
             content = data.get('content', '')
             file_type = data.get('type', 'txt')
-            
+
             if not content:
                 return jsonify({
                     'success': False,
                     'error': 'No content provided'
                 }), 400
-            
+
             imported_count = 0
-            
+
             if file_type == 'txt':
                 imported_count = discrepancy_rule_manager.import_from_text(content)
             elif file_type == 'json':
@@ -4627,7 +4636,7 @@ Generate a query recipe for this request."""
                             'basis': rule_elem.find('basis').text if rule_elem.find('basis') is not None else '',
                             'priority': rule_elem.find('priority').text if rule_elem.find('priority') is not None else 'Mandatory'
                         }
-                        
+
                         if all(rule_data.values()):
                             existing = next((r for r in discrepancy_rule_manager.rules if r['code'] == rule_data['code']), None)
                             if not existing:
@@ -4638,13 +4647,13 @@ Generate a query recipe for this request."""
                         'success': False,
                         'error': 'Invalid XML format'
                     }), 400
-            
+
             return jsonify({
                 'success': True,
                 'imported': imported_count,
                 'message': f'Successfully imported {imported_count} rules'
             })
-        
+
         except Exception as e:
             logger.error(f"Error importing discrepancy rules: {e}")
             return jsonify({
@@ -4658,7 +4667,7 @@ Generate a query recipe for this request."""
         """Export rules to XML file"""
         try:
             xml_content = discrepancy_rule_manager.export_to_xml()
-            
+
             # Create response with XML content
             response = Response(
                 xml_content,
@@ -4668,7 +4677,7 @@ Generate a query recipe for this request."""
                 }
             )
             return response
-        
+
         except Exception as e:
             logger.error(f"Error exporting discrepancy rules: {e}")
             return jsonify({
@@ -5552,7 +5561,12 @@ Format as JSON with fields: explanation, example_scenarios (array), approval_cri
                         {"role": "user", "content": prompt}
                     ],
                     temperature=0.3,
-                    max_tokens=1200
+                    max_tokens=1200,
+                    seed=12345,  # ✅ Reproducibility
+                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
                 )
                 ai_response = response.choices[0].message.content.strip()
 
@@ -6150,26 +6164,26 @@ Provide a structured summary with your findings.""",
         """
         import json
         import re
-        
+
         try:
             logger.info("🤖 Parsing required documents with LLM")
-            
+
             data = request.get_json()
             if not data:
                 return jsonify({'success': False, 'error': 'No data provided'}), 400
-            
+
             required_documents_text = data.get('required_documents_text', '')
             document_type = data.get('document_type', 'Unknown')
-            
+
             if not required_documents_text or required_documents_text.strip() == '':
                 return jsonify({'success': False, 'error': 'No required documents text provided'}), 400
-            
+
             logger.info(f"📄 Parsing required documents for {document_type}")
             logger.info(f"📝 Raw text: {required_documents_text[:200]}...")
-            
+
             # Get Azure OpenAI config
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
-            
+
             # Comprehensive prompt to handle any format
             prompt = f"""You are a trade finance document expert. Parse the following required documents text into a JSON array.
 
@@ -6223,7 +6237,7 @@ Output format:
   {{"name": "Marine Insurance Policy", "description": "110% invoice value, warehouse to warehouse", "priority": "Mandatory", "category": "financial"}},
   {{"name": "Packing List", "description": "Original plus copies", "priority": "Mandatory", "category": "trade"}}
 ]"""
-            
+
             # Call OpenAI with explicit instructions
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
@@ -6232,24 +6246,29 @@ Output format:
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_tokens=2000
+                max_tokens=2000,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
-            
+
             response_text = response["choices"][0]["message"]["content"].strip()
             logger.info(f"🤖 LLM Response: {response_text[:500]}...")
-            
+
             # Extract JSON
             if '```json' in response_text:
                 response_text = response_text.split('```json')[1].split('```')[0].strip()
             elif '```' in response_text:
                 response_text = response_text.split('```')[1].split('```')[0].strip()
-            
+
             json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(0)
-            
+
             parsed_documents = json.loads(response_text)
-            
+
             # Clean up
             cleaned_documents = []
             for doc in parsed_documents:
@@ -6261,15 +6280,15 @@ Output format:
                         'category': doc.get('category', 'other'),
                         'mandatory': doc.get('priority', 'Mandatory').lower() == 'mandatory'
                     })
-            
+
             logger.info(f"✅ Successfully parsed {len(cleaned_documents)} documents")
-            
+
             return jsonify({
                 'success': True,
                 'documents': cleaned_documents,
                 'count': len(cleaned_documents)
             })
-            
+
         except Exception as e:
             logger.error(f"❌ Error parsing required documents: {e}")
             logger.exception("Full traceback:")
@@ -6283,26 +6302,26 @@ Output format:
         """
         import json
         import re
-        
+
         try:
             logger.info("🤖 Parsing LC Additional Conditions with LLM")
-            
+
             data = request.get_json()
             if not data:
                 return jsonify({'success': False, 'error': 'No data provided'}), 400
-            
+
             additional_conditions_text = data.get('additional_conditions_text', '')
             lc_number = data.get('lc_number', 'Unknown')
-            
+
             if not additional_conditions_text or additional_conditions_text.strip() == '':
                 return jsonify({'success': False, 'error': 'No additional conditions text provided'}), 400
-            
+
             logger.info(f"📄 Parsing additional conditions for LC: {lc_number}")
             logger.info(f"📝 Raw text: {additional_conditions_text[:200]}...")
-            
+
             # Get Azure OpenAI config
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
-            
+
             # Comprehensive prompt to extract validation rules
             prompt = f"""You are a trade finance compliance expert. Parse the following LC Additional Conditions into structured validation rules.
 
@@ -6364,7 +6383,7 @@ Output ONLY valid JSON array, no extra text:
 ]
 
 Extract ALL conditions from the text above."""
-            
+
             # Call OpenAI
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
@@ -6373,24 +6392,29 @@ Extract ALL conditions from the text above."""
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_tokens=3000
+                max_tokens=3000,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
-            
+
             response_text = response["choices"][0]["message"]["content"].strip()
             logger.info(f"🤖 LLM Response: {response_text[:500]}...")
-            
+
             # Extract JSON
             if '```json' in response_text:
                 response_text = response_text.split('```json')[1].split('```')[0].strip()
             elif '```' in response_text:
                 response_text = response_text.split('```')[1].split('```')[0].strip()
-            
+
             json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(0)
-            
+
             parsed_rules = json.loads(response_text)
-            
+
             # Clean up
             cleaned_rules = []
             for idx, rule in enumerate(parsed_rules):
@@ -6408,16 +6432,16 @@ Extract ALL conditions from the text above."""
                         'source': 'lc_conditions',
                         'lc_number': lc_number
                     })
-            
+
             logger.info(f"✅ Successfully parsed {len(cleaned_rules)} LC condition rules")
-            
+
             return jsonify({
                 'success': True,
                 'rules': cleaned_rules,
                 'count': len(cleaned_rules),
                 'lc_number': lc_number
             })
-            
+
         except Exception as e:
             logger.error(f"❌ Error parsing additional conditions: {e}")
             logger.exception("Full traceback:")
@@ -6434,12 +6458,12 @@ Extract ALL conditions from the text above."""
         import concurrent.futures
         import re
         from threading import Lock
-        
+
         def validate_rule_batch(batch_rules, documents, lc_data, deployment_name, batch_num):
             """Process a batch of rules against all documents"""
             try:
                 logger.info(f"🔄 Batch {batch_num}: Processing {len(batch_rules)} rules against {len(documents)} documents")
-                
+
                 # Create focused document summaries (reduce token usage)
                 doc_summaries = []
                 for doc in documents:
@@ -6452,7 +6476,7 @@ Extract ALL conditions from the text above."""
                         'textPreview': str(doc.get('fullText', ''))[:500]  # First 500 chars
                     }
                     doc_summaries.append(summary)
-                
+
                 prompt = f"""Validate documents against LC conditions. Return ONLY valid JSON array.
 
 LC DATA:
@@ -6487,7 +6511,7 @@ OUTPUT FORMAT (JSON array only, no markdown):
 ]
 
 Return results for all {len(batch_rules)} rules. Check every document."""
-                
+
                 request_params = {
                     'engine': deployment_name,
                     'messages': [
@@ -6500,20 +6524,20 @@ Return results for all {len(batch_rules)} rules. Check every document."""
                     'temperature': 0.1,
                     'max_tokens': 8000
                 }
-                
+
                 response = openai.ChatCompletion.create(**request_params)
                 response_text = response["choices"][0]["message"]["content"].strip()
-                
+
                 # Extract JSON
                 if '```json' in response_text:
                     response_text = response_text.split('```json')[1].split('```')[0].strip()
                 elif '```' in response_text:
                     response_text = response_text.split('```')[1].split('```')[0].strip()
-                
+
                 json_match = re.search(r'\[\s*\{.*\}\s*\]', response_text, re.DOTALL)
                 if json_match:
                     response_text = json_match.group(0)
-                
+
                 # Parse JSON with fixes
                 try:
                     batch_results = json.loads(response_text)
@@ -6522,50 +6546,50 @@ Return results for all {len(batch_rules)} rules. Check every document."""
                     response_text = response_text.replace('\n', ' ')
                     response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
                     batch_results = json.loads(response_text)
-                
+
                 logger.info(f"✅ Batch {batch_num}: Generated {len(batch_results)} validation results")
                 return batch_results
-                
+
             except Exception as e:
                 logger.error(f"❌ Batch {batch_num} failed: {e}")
                 return []
-        
+
         try:
             logger.info("🤖 Starting PARALLEL LLM-based LC Conditions validation")
-            
+
             data = request.get_json()
             if not data:
                 return jsonify({'success': False, 'error': 'No data provided'}), 400
-            
+
             rules = data.get('rules', [])
             documents = data.get('documents', [])
             lc_data = data.get('lc_data', {})
-            
+
             if not rules:
                 return jsonify({'success': False, 'error': 'No validation rules provided'}), 400
-            
+
             if not documents:
                 return jsonify({'success': False, 'error': 'No documents provided'}), 400
-            
+
             logger.info(f"📋 Processing {len(rules)} rules against {len(documents)} documents - 1 rule per parallel call")
-            
+
             # Get Azure OpenAI config
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
-            
+
             # Each rule gets its own batch (1 rule per batch for maximum parallelism)
             BATCH_SIZE = 1
             rule_batches = [[rule] for rule in rules]  # Each rule in its own list
             logger.info(f"🔢 Created {len(rule_batches)} parallel batches (1 rule each)")
-            
+
             # Process ALL rules in parallel using ThreadPoolExecutor
             all_results = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=18) as executor:  # Up to 18 parallel calls
                 # Submit all batches
                 future_to_batch = {
-                    executor.submit(validate_rule_batch, batch, documents, lc_data, deployment_name, idx + 1): idx 
+                    executor.submit(validate_rule_batch, batch, documents, lc_data, deployment_name, idx + 1): idx
                     for idx, batch in enumerate(rule_batches)
                 }
-                
+
                 # Collect results as they complete
                 for future in concurrent.futures.as_completed(future_to_batch):
                     batch_idx = future_to_batch[future]
@@ -6575,9 +6599,9 @@ Return results for all {len(batch_rules)} rules. Check every document."""
                         logger.info(f"✅ Collected results from batch {batch_idx + 1}")
                     except Exception as e:
                         logger.error(f"❌ Batch {batch_idx + 1} failed: {e}")
-            
+
             logger.info(f"✅ All batches complete. Total validation results: {len(all_results)}")
-            
+
             return jsonify({
                 'success': True,
                 'validation_results': all_results,
@@ -6586,7 +6610,7 @@ Return results for all {len(batch_rules)} rules. Check every document."""
                 'documents_analyzed': len(documents),
                 'batches_processed': len(rule_batches)
             })
-            
+
         except Exception as e:
             logger.error(f"❌ Error in parallel LLM-based LC validation: {e}")
             logger.exception("Full traceback:")
@@ -7726,37 +7750,37 @@ Return compliance status for each field.'''
         Handles formats like: 2025-05-15, 15-05-2025, 15/05/2025, 15.05.2025
         And different orders: yyyy-mm-dd, dd-mm-yyyy, mm-dd-yyyy, etc.
         Also handles compact formats like: 210817, 170821, 20210817
-        
+
         Returns:
             list: All possible normalized date representations
         """
         import re
-        
+
         if not text or not isinstance(text, str):
             return []
-        
+
         # Remove extra whitespace
         text = text.strip()
-        
+
         # Extract potential date patterns
         date_patterns = []
-        
+
         # Pattern 1: Dates WITH separators (4 digits or 1-2 digits)
         date_regex = r'(\d{1,4})[\/\-\.\s](\d{1,2})[\/\-\.\s](\d{1,4})'
         matches = re.finditer(date_regex, text)
-        
+
         for match in matches:
             part1, part2, part3 = match.groups()
-            
+
             # Convert to integers for processing
             try:
                 p1, p2, p3 = int(part1), int(part2), int(part3)
             except ValueError:
                 continue
-            
+
             # Determine which part is year, month, day
             normalized_dates = []
-            
+
             # Case 1: First part is year (yyyy-mm-dd format)
             if p1 >= 1900 and p1 <= 2100:
                 if 1 <= p2 <= 12 and 1 <= p3 <= 31:
@@ -7770,7 +7794,7 @@ Return compliance status for each field.'''
                     normalized_dates.append(f"{str(p1)[2:]}{p2:02d}{p3:02d}")  # YYMMDD: 210429
                     normalized_dates.append(f"{p3:02d}{p2:02d}{str(p1)[2:]}")  # DDMMYY: 290421
                     normalized_dates.append(f"{p3:02d}{p2:02d}{p1:04d}")  # DDMMYYYY: 29042021
-            
+
             # Case 2: Last part is year (dd-mm-yyyy or mm-dd-yyyy format)
             if p3 >= 1900 and p3 <= 2100:
                 # dd-mm-yyyy
@@ -7785,7 +7809,7 @@ Return compliance status for each field.'''
                     normalized_dates.append(f"{str(p3)[2:]}{p2:02d}{p1:02d}")  # YYMMDD: 210429
                     normalized_dates.append(f"{p1:02d}{p2:02d}{str(p3)[2:]}")  # DDMMYY: 290421
                     normalized_dates.append(f"{p1:02d}{p2:02d}{p3:04d}")  # DDMMYYYY: 29042021
-                
+
                 # mm-dd-yyyy
                 if 1 <= p1 <= 12 and 1 <= p2 <= 31:
                     # Separated formats
@@ -7798,7 +7822,7 @@ Return compliance status for each field.'''
                     normalized_dates.append(f"{str(p3)[2:]}{p1:02d}{p2:02d}")  # YYMMDD: 210429
                     normalized_dates.append(f"{p2:02d}{p1:02d}{str(p3)[2:]}")  # DDMMYY: 290421
                     normalized_dates.append(f"{p2:02d}{p1:02d}{p3:04d}")  # DDMMYYYY: 29042021
-            
+
             # Case 3: Year in middle (rare but possible)
             if p2 >= 1900 and p2 <= 2100:
                 if 1 <= p1 <= 31 and 1 <= p3 <= 12:
@@ -7812,18 +7836,18 @@ Return compliance status for each field.'''
                     normalized_dates.append(f"{str(p2)[2:]}{p3:02d}{p1:02d}")  # YYMMDD: 210429
                     normalized_dates.append(f"{p1:02d}{p3:02d}{str(p2)[2:]}")  # DDMMYY: 290421
                     normalized_dates.append(f"{p1:02d}{p3:02d}{p2:04d}")  # DDMMYYYY: 29042021
-            
+
             date_patterns.extend(normalized_dates)
-        
+
         # Pattern 2: Compact dates WITHOUT separators (6 or 8 digits)
         # Matches: YYMMDD (210429), DDMMYY (290421), YYYYMMDD (20210429), DDMMYYYY (29042021)
         # Also matches dates embedded in text like "210429xyz" or "abc210429def"
         compact_regex = r'(\d{6}|\d{8})'
         compact_matches = re.finditer(compact_regex, text)
-        
+
         for match in compact_matches:
             compact_date = match.group(1)
-            
+
             if len(compact_date) == 6:
                 # 6-digit format: YYMMDD or DDMMYY
                 try:
@@ -7831,7 +7855,7 @@ Return compliance status for each field.'''
                     yy = int(compact_date[0:2])
                     mm = int(compact_date[2:4])
                     dd = int(compact_date[4:6])
-                    
+
                     if 1 <= mm <= 12 and 1 <= dd <= 31:
                         # Assume 20xx for years
                         yyyy = 2000 + yy
@@ -7841,12 +7865,12 @@ Return compliance status for each field.'''
                         date_patterns.append(f"{yyyy:04d}{mm:02d}{dd:02d}")    # YYYYMMDD
                         date_patterns.append(f"{yy:02d}{mm:02d}{dd:02d}")      # YYMMDD (original)
                         date_patterns.append(f"{dd:02d}{mm:02d}{yy:02d}")      # DDMMYY
-                    
+
                     # Try DDMMYY format
                     dd2 = int(compact_date[0:2])
                     mm2 = int(compact_date[2:4])
                     yy2 = int(compact_date[4:6])
-                    
+
                     if 1 <= mm2 <= 12 and 1 <= dd2 <= 31:
                         yyyy2 = 2000 + yy2
                         date_patterns.append(f"{yyyy2:04d}-{mm2:02d}-{dd2:02d}")  # YYYY-MM-DD
@@ -7856,7 +7880,7 @@ Return compliance status for each field.'''
                         date_patterns.append(f"{dd2:02d}{mm2:02d}{yy2:02d}")      # DDMMYY (original)
                 except (ValueError, IndexError):
                     pass
-            
+
             elif len(compact_date) == 8:
                 # 8-digit format: YYYYMMDD or DDMMYYYY
                 try:
@@ -7864,7 +7888,7 @@ Return compliance status for each field.'''
                     yyyy = int(compact_date[0:4])
                     mm = int(compact_date[4:6])
                     dd = int(compact_date[6:8])
-                    
+
                     if 1900 <= yyyy <= 2100 and 1 <= mm <= 12 and 1 <= dd <= 31:
                         yy = int(str(yyyy)[2:])
                         date_patterns.append(f"{yyyy:04d}-{mm:02d}-{dd:02d}")  # YYYY-MM-DD
@@ -7872,12 +7896,12 @@ Return compliance status for each field.'''
                         date_patterns.append(f"{yyyy:04d}{mm:02d}{dd:02d}")    # YYYYMMDD (original)
                         date_patterns.append(f"{yy:02d}{mm:02d}{dd:02d}")      # YYMMDD
                         date_patterns.append(f"{dd:02d}{mm:02d}{yy:02d}")      # DDMMYY
-                    
+
                     # Try DDMMYYYY format
                     dd2 = int(compact_date[0:2])
                     mm2 = int(compact_date[2:4])
                     yyyy2 = int(compact_date[4:8])
-                    
+
                     if 1 <= mm2 <= 12 and 1 <= dd2 <= 31 and 1900 <= yyyy2 <= 2100:
                         yy2 = int(str(yyyy2)[2:])
                         date_patterns.append(f"{yyyy2:04d}-{mm2:02d}-{dd2:02d}")  # YYYY-MM-DD
@@ -7888,7 +7912,7 @@ Return compliance status for each field.'''
                         date_patterns.append(f"{dd2:02d}{mm2:02d}{yyyy2:04d}")    # DDMMYYYY (original)
                 except (ValueError, IndexError):
                     pass
-        
+
         # Remove duplicates and return
         return list(set(date_patterns))
 
@@ -7896,59 +7920,59 @@ Return compliance status for each field.'''
         """
         Normalize different amount formats to extract the numeric value.
         Handles formats like: $6789.00, $6,789, 6789.00$, #6789.00#, %6,789%, etc.
-        
+
         Args:
             text (str): Text that may contain an amount
-        
+
         Returns:
             list: All possible numeric representations of the amount
         """
         import re
-        
+
         if not text or not isinstance(text, str):
             return []
-        
+
         amount_patterns = []
-        
+
         # Remove common currency symbols and separators, keep only digits and decimal point
         # Pattern: Extract numbers with optional thousand separators and decimal points
         # Matches: $6,789.00, 6789.00$, #6,789#, %6789%, (6789.00), etc.
         amount_regex = r'[\$#%€£¥₹₽¢]?\s*(\d{1,3}(?:[,\s]\d{3})*(?:\.\d{1,4})?|\d+(?:\.\d{1,4})?)\s*[\$#%€£¥₹₽¢]?'
-        
+
         matches = re.finditer(amount_regex, text)
-        
+
         for match in matches:
             amount_str = match.group(1)
-            
+
             if not amount_str:
                 continue
-            
+
             # Remove thousand separators (commas and spaces)
             clean_amount = amount_str.replace(',', '').replace(' ', '')
-            
+
             try:
                 # Convert to float to validate it's a number
                 amount_value = float(clean_amount)
-                
+
                 # Generate multiple format variations
                 # 1. Original cleaned format
                 amount_patterns.append(clean_amount)
-                
+
                 # 2. Without decimal point (if it has decimals)
                 if '.' in clean_amount:
                     without_decimal = clean_amount.replace('.', '')
                     amount_patterns.append(without_decimal)
-                    
+
                     # 3. Integer part only
                     integer_part = clean_amount.split('.')[0]
                     amount_patterns.append(integer_part)
-                    
+
                     # 4. With different decimal places
                     decimal_part = clean_amount.split('.')[1]
                     # If decimal is .00, also try without it
                     if decimal_part == '00' or decimal_part == '0':
                         amount_patterns.append(integer_part)
-                
+
                 # 5. With thousand separators (comma)
                 if amount_value >= 1000:
                     formatted_with_comma = f"{amount_value:,.2f}".rstrip('0').rstrip('.')
@@ -7956,29 +7980,29 @@ Return compliance status for each field.'''
                     # Also without decimals
                     formatted_int = f"{int(amount_value):,}"
                     amount_patterns.append(formatted_int)
-                
+
                 # 6. Just the numeric string representation
                 amount_patterns.append(str(amount_value))
                 amount_patterns.append(str(int(amount_value)))
-                
+
             except (ValueError, IndexError):
                 continue
-        
+
         # Remove duplicates and return
         return list(set(amount_patterns))
 
     def is_amount_field(text):
         """
         Check if the search text looks like an amount/number.
-        
+
         Args:
             text (str): The search text
-        
+
         Returns:
             bool: True if it looks like an amount
         """
         import re
-        
+
         # Check if text is primarily numeric (with optional decimal point and thousand separators)
         # Examples: "6789.00", "6,789", "6789", "123.45"
         amount_pattern = r'^\d{1,3}(?:[,\s]\d{3})*(?:\.\d{1,4})?$|^\d+(?:\.\d{1,4})?$'
@@ -7986,54 +8010,54 @@ Return compliance status for each field.'''
 
     def is_date_in_valid_context(text, date_pattern):
         """
-        Check if a date pattern appears in a valid context (not part of SWIFT codes, 
+        Check if a date pattern appears in a valid context (not part of SWIFT codes,
         reference numbers, or other structured identifiers).
-        
+
         Args:
             text (str): The OCR text containing the date
             date_pattern (str): The date pattern to check
-        
+
         Returns:
             bool: True if date is in valid context, False otherwise
         """
         import re
-        
+
         # If the date is the entire text or very close to it, it's valid
         text_clean = re.sub(r'[^a-zA-Z0-9]', '', text.lower())
         date_clean = re.sub(r'[^a-zA-Z0-9]', '', date_pattern.lower())
-        
+
         # If date is 80%+ of the text content, it's standalone (GOOD)
         if len(date_clean) >= len(text_clean) * 0.8:
             return True
-        
+
         # Find the position of the date in the text
         pos = text.lower().find(date_pattern.lower())
         if pos == -1:
             return False
-        
+
         # Check characters around the date
         before_date = text[:pos] if pos > 0 else ""
         after_date = text[pos + len(date_pattern):] if pos + len(date_pattern) < len(text) else ""
-        
+
         # PRIMARY BAD CONTEXT CHECK: SWIFT-specific patterns (very strict)
         swift_patterns = [
             r'[A-Z]{3}[A-Z]{2}[A-Z]{2}XXX',  # SWIFT BIC: ABDIAEADAXXX (country+location+XXX)
             r'XXX[0-9]{10,}',  # XXX followed by long number
             r'F21[A-Z]{6}[A-Z]{2}XXX',  # F21 + SWIFT BIC format
         ]
-        
+
         for pattern in swift_patterns:
             if re.search(pattern, text, re.IGNORECASE):
                 return False
-        
+
         # SECONDARY BAD CONTEXT: Structured SWIFT message format
         if re.search(r'\{[0-9]+:\s*[0-9]+\}', text):  # {177:2104291726} format
             return False
-        
+
         # Check what comes immediately after the date
         if after_date and len(after_date.strip()) > 0:
             after_stripped = after_date.strip()
-            
+
             # BAD: Date followed immediately (no space) by random alphanumeric code (SWIFT style)
             # Pattern: 210817ABCDXYZQWER (mixed case nonsense)
             if pos + len(date_pattern) < len(text) and text[pos + len(date_pattern)] != ' ':
@@ -8042,11 +8066,11 @@ Return compliance status for each field.'''
                 next_segment_match = re.match(r'^([A-Z0-9]+)', after_date, re.IGNORECASE)
                 if next_segment_match:
                     next_segment = next_segment_match.group(1)
-                    
+
                     # If it's all uppercase AND contains XXX pattern, it's SWIFT
                     if next_segment.isupper() and 'XXX' in next_segment:
                         return False
-                    
+
                     # If it's a mix of uppercase and weird patterns (non-word), reject
                     # Example: ABDIAEADAXXX - not a real word
                     # But allow: BENEFICIARY, COUNTRY - real words
@@ -8055,11 +8079,11 @@ Return compliance status for each field.'''
                         # Real words are more likely to have vowel patterns
                         vowels = sum(1 for c in next_segment.lower() if c in 'aeiou')
                         consonants = sum(1 for c in next_segment.lower() if c.isalpha() and c not in 'aeiou')
-                        
+
                         # If very few vowels relative to length, it's likely a code
                         if len(next_segment) > 10 and vowels < len(next_segment) * 0.2:
                             return False
-        
+
         # GOOD CONTEXT PATTERNS (these indicate a standalone date or labeled date)
         good_patterns = [
             # Date labels
@@ -8074,46 +8098,46 @@ Return compliance status for each field.'''
             r'expire[:\s]*$',
             r'valid[:\s]*$',
         ]
-        
+
         # Check if before_date contains good indicators
         before_lower = before_date.lower().strip()
         for pattern in good_patterns:
             if re.search(pattern, before_lower):
                 return True
-        
+
         # Check if after_date starts with a space (indicates separate field)
         if after_date and after_date[0] in [' ', '\t', '\n', ':', '-', '/']:
             return True
-        
+
         # Check if text has common field separators around the date
         if ':' in before_date or ':' in after_date[:5] if len(after_date) >= 5 else False:
             return True
-        
+
         # If text is relatively short and no SWIFT patterns, accept it
         # This handles cases like "210817BENEFICIARY" where BENEFICIARY is a real word
         if len(text) < 50 and not re.search(r'XXX[0-9]{5,}', text):
             return True
-        
+
         # Default: if no strong bad patterns detected, consider it valid
         return True
 
     def calculate_match_priority_score(match_text, field_value, match_confidence, match_type):
         """
         Calculate a priority score for a match to rank field values higher than narrative text.
-        
+
         Args:
             match_text (str): The matched OCR text
             field_value (str): The search query
             match_confidence (float): The match confidence percentage
             match_type (str): Type of match (exact, contains, etc.)
-        
+
         Returns:
             float: Priority score (higher = better priority)
         """
         import re
-        
+
         priority_score = match_confidence  # Start with base confidence
-        
+
         # Factor 1: Text length - shorter is better (likely a field value)
         text_len = len(match_text)
         if text_len <= 20:
@@ -8124,19 +8148,19 @@ Return compliance status for each field.'''
             priority_score += 5   # Medium - could be either
         else:
             priority_score -= 10  # Long - likely narrative text
-        
+
         # Factor 2: Field value is near the start of the text
         field_pos = match_text.lower().find(field_value.lower())
         if field_pos == 0:
             priority_score += 10  # Starts with field value - excellent
         elif field_pos <= 3:
             priority_score += 5   # Near the start - good
-        
+
         # Factor 3: Format patterns indicating field definitions
         # Example: "USD (US DOLLAR)" - field with description in parentheses
         if re.search(rf'\b{re.escape(field_value)}\s*\([^)]+\)', match_text, re.IGNORECASE):
             priority_score += 20  # Field with description pattern
-        
+
         # Factor 4: Detect sentence patterns (narrative text indicators)
         sentence_indicators = [
             r'\b(we|will|shall|must|should|may|can)\b',  # Modal verbs
@@ -8145,12 +8169,12 @@ Return compliance status for each field.'''
             r'[.!?]\s',  # Sentence endings
             r'^\d+\.',  # Numbered list items (e.g., "6. WE WILL...")
         ]
-        
+
         for pattern in sentence_indicators:
             if re.search(pattern, match_text, re.IGNORECASE):
                 priority_score -= 15  # Penalize narrative text
                 break
-        
+
         # Factor 5: Detect amount mentions (e.g., "USD 100/-", "USD100", "100USD")
         # These are less relevant than currency field definitions
         # Match patterns: USD100, USD 100, 100USD, etc.
@@ -8162,57 +8186,57 @@ Return compliance status for each field.'''
             if re.search(pattern, match_text, re.IGNORECASE):
                 priority_score -= 10  # Currency amount mention, not field definition
                 break
-        
+
         # Factor 6: Check if match is mostly the field value (high ratio)
         field_ratio = len(field_value) / len(match_text) if len(match_text) > 0 else 0
         if field_ratio > 0.5:
             priority_score += 15  # Field value is >50% of text - very relevant
         elif field_ratio > 0.3:
             priority_score += 8   # Field value is >30% of text - relevant
-        
+
         # Factor 7: Exact match type bonus
         if match_type == 'exact':
             priority_score += 5
         elif match_type in ['date_exact', 'date_contains', 'amount_exact', 'amount_contains']:
             priority_score += 3
-        
+
         return priority_score
 
     def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
         """
         Search for text in OCR data and return matching entries with coordinates
-        
+
         Args:
             field_value (str): The text to search for
             ocr_data (list): List of OCR entries with text and bounding box data
             search_mode (str): Search strategy - 'exact', 'fuzzy', or 'contains'
-        
+
         Returns:
             list: Matching OCR entries with coordinates and confidence scores
         """
         import time
         from difflib import SequenceMatcher
-        
+
         logger.info("SEARCH: === STARTING OCR TEXT SEARCH ===")
         logger.info(f"TARGET: Target field value: '{field_value}'")
         logger.info(f" Search mode: {search_mode}")
         logger.info(f" OCR entries to search: {len(ocr_data)}")
-        
+
         if not field_value or not field_value.strip():
             logger.warning("ERROR: Empty field value provided")
             return []
-        
+
         if not ocr_data:
             logger.warning("ERROR: No OCR data provided")
             return []
-        
+
         field_value_lower = field_value.lower().strip()
         matches = []
-        
+
         # Check if field_value looks like a date and normalize it
         field_date_patterns = normalize_date_for_search(field_value)
         is_date_search = len(field_date_patterns) > 0
-        
+
         # Check if field_value is a simple number (e.g., "21" for "Period of presentation")
         # This handles cases where user searches "21" but OCR has "21 Days", "21 DAYS", "21/Days", etc.
         # PRIORITY: Check this BEFORE amount detection since simple numbers like "21" should be treated as periods
@@ -8223,7 +8247,7 @@ Return compliance status for each field.'''
             if numeric_value.isdigit() and len(numeric_value) <= 3:  # Period values are typically small numbers
                 is_numeric_period = True
                 logger.info(f"📅 Detected numeric period search: '{numeric_value}' (will match variations like '{numeric_value} Days', '{numeric_value}/DAYS', etc.)")
-        
+
         # Check if field_value looks like an amount and normalize it
         # Only check for amount if it's not a date or numeric period
         field_amount_patterns = []
@@ -8232,7 +8256,7 @@ Return compliance status for each field.'''
             is_amount_search = is_amount_field(field_value)
             if is_amount_search:
                 field_amount_patterns = normalize_amount_for_search(field_value)
-        
+
         if is_date_search:
             logger.info(f"Detected date search. Normalized patterns: {field_date_patterns}")
         elif is_numeric_period:
@@ -8241,7 +8265,7 @@ Return compliance status for each field.'''
             logger.info(f"💰 Detected amount search. Normalized patterns: {field_amount_patterns}")
         else:
             logger.info(f"INFO: Searching for phrase/sentence: '{field_value}'")
-        
+
         # Search statistics
         exact_matches = 0
         fuzzy_matches = 0
@@ -8251,22 +8275,22 @@ Return compliance status for each field.'''
         amount_matches = 0
         numeric_period_matches = 0
         no_matches = 0
-        
+
         logger.info(f"Starting sentence/phrase search through {len(ocr_data)} OCR entries")
-        
+
         for i, ocr_entry in enumerate(ocr_data):
             ocr_text = ocr_entry.get('text', '').strip()
-            
+
             if not ocr_text:
                 logger.debug(f"   Entry {i+1}: Skipping empty text")
                 continue
-                
+
             ocr_text_lower = ocr_text.lower()
             match_confidence = 0
             match_type = 'none'
-            
+
             logger.debug(f"   Entry {i+1}: Comparing '{field_value_lower}' with '{ocr_text_lower}'")
-            
+
             # Date matching logic (highest priority for date searches)
             if is_date_search and match_confidence < 100:
                 ocr_date_patterns = normalize_date_for_search(ocr_text)
@@ -8287,7 +8311,7 @@ Return compliance status for each field.'''
                                     logger.debug(f"      REJECTED: Date '{ocr_pattern}' in invalid context (likely SWIFT/reference code)")
                         if match_confidence == 100:
                             break
-                
+
                 # If no exact date match, check if date pattern is contained in OCR text
                 # This handles cases like "210429xyz" where the date is embedded in text
                 # BUT we validate it's not part of SWIFT codes or reference numbers
@@ -8304,7 +8328,7 @@ Return compliance status for each field.'''
                                 break
                             else:
                                 logger.debug(f"      REJECTED: Date '{field_pattern}' in invalid context (likely SWIFT/reference code)")
-            
+
             # Amount matching logic (for numeric/currency searches)
             if is_amount_search and match_confidence < 100:
                 ocr_amount_patterns = normalize_amount_for_search(ocr_text)
@@ -8321,7 +8345,7 @@ Return compliance status for each field.'''
                                 break
                         if match_confidence == 100:
                             break
-                
+
                 # If no exact amount match, check if amount pattern is contained in OCR text
                 if match_confidence < 100:
                     for field_pattern in field_amount_patterns:
@@ -8332,7 +8356,7 @@ Return compliance status for each field.'''
                             match_info = f"'{field_pattern}' found in '{ocr_text}'"
                             logger.debug(f"      SUCCESS: 💰 AMOUNT CONTAINS MATCH! {match_info} - Confidence: 95%")
                             break
-            
+
             # Numeric period matching (e.g., "21" matches "21 Days", "21 DAYS", "21/Days", etc.)
             # STRICT: Only match when followed by "days" - don't match standalone numbers or dates
             if is_numeric_period and match_confidence < 100:
@@ -8344,14 +8368,14 @@ Return compliance status for each field.'''
                 # Pattern: the number followed by optional space/slash/hyphen, then REQUIRED "days" (case-insensitive)
                 # Using lookahead to ensure "days" exists
                 pattern = rf'\b{number}\s*[/\-\s]?\s*(days?|DAYS?)\b'
-                
+
                 match = re.search(pattern, ocr_text, re.IGNORECASE)
                 if match:
                     match_confidence = 100
                     match_type = 'numeric_period'
                     numeric_period_matches += 1
                     logger.debug(f"      SUCCESS: 📅 NUMERIC PERIOD MATCH! '{number} Days' pattern found in '{ocr_text}' - Confidence: 100%")
-            
+
             # Regular exact/contains/partial match (skip if it's a numeric period search to avoid noise)
             # For numeric period searches, ONLY match the "X Days" pattern above
             if match_confidence < 100 and search_mode in ['exact', 'fuzzy', 'contains'] and not is_numeric_period:
@@ -8371,11 +8395,11 @@ Return compliance status for each field.'''
                         # But "Allowed" matches "Allowed", "(Allowed)", "[Allowed Shipment]"
                         pattern = r'^' + re.escape(field_value_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
                         match_start = re.match(pattern, ocr_text_lower)
-                        
+
                         # Also check if preceded by punctuation only (not alphanumeric)
                         pattern_with_punct = r'(?:^|[^\w])' + re.escape(field_value_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
                         match_punct = re.search(pattern_with_punct, ocr_text_lower)
-                        
+
                         # Only match if it starts the text or is preceded by non-word characters
                         # This rejects: "Not Allowed" when searching "Allowed" (preceded by word "Not")
                         # This accepts: "Allowed", "(Allowed)", "Allowed Shipment"
@@ -8397,18 +8421,18 @@ Return compliance status for each field.'''
                         logger.debug(f"      SUCCESS: CONTAINS MATCH! {contains_info} - Confidence: 90%")
                 elif ocr_text_lower in field_value_lower:
                     # Apply same strict word boundary checking for short OCR text in partial matches
-                    # e.g., when searching "Not Allowed", don't match OCR text "Allowed" 
+                    # e.g., when searching "Not Allowed", don't match OCR text "Allowed"
                     import re
                     if len(ocr_text_lower) <= 20:
                         # STRICT: OCR text must be at START of search term or preceded ONLY by punctuation
-                        # This ensures searching "Not Allowed" doesn't match "Allowed" 
+                        # This ensures searching "Not Allowed" doesn't match "Allowed"
                         pattern = r'^' + re.escape(ocr_text_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
                         match_start = re.match(pattern, field_value_lower)
-                        
+
                         # Also check if preceded by punctuation only (not alphanumeric)
                         pattern_with_punct = r'(?:^|[^\w])' + re.escape(ocr_text_lower) + r'(?:$|[\s\-,./;:()\[\]{}|])'
                         match_punct = re.search(pattern_with_punct, field_value_lower)
-                        
+
                         # Only match if it starts the search term or is preceded by non-word characters
                         if match_start or (match_punct and not re.search(r'\w+\s+' + re.escape(ocr_text_lower), field_value_lower)):
                             match_confidence = 85
@@ -8426,7 +8450,7 @@ Return compliance status for each field.'''
                         partial_matches += 1
                         partial_info = f"'{ocr_text_lower}' found in '{field_value_lower}'"
                         logger.debug(f"      SUCCESS: PARTIAL MATCH! {partial_info} - Confidence: 85%")
-            
+
             # Fuzzy matching if enabled and no exact match (skip for numeric period searches)
             if search_mode in ['fuzzy', 'contains'] and match_confidence < 90 and not is_numeric_period:
                 similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
@@ -8438,11 +8462,11 @@ Return compliance status for each field.'''
                         match_type = 'fuzzy'
                         fuzzy_matches += 1
                         logger.debug(f"      SUCCESS:FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
-            
+
             if match_confidence < 80:
                 no_matches += 1
                 logger.debug(f"No sufficient match (confidence: {match_confidence:.1f}%)")
-            
+
             # Only include high-confidence matches
             if match_confidence >= 80:
                 # Filter out small partial matches for long search phrases
@@ -8450,14 +8474,14 @@ Return compliance status for each field.'''
                 if match_type == 'partial':
                     search_length = len(field_value)
                     match_length = len(ocr_text.strip())
-                    
+
                     # Dynamic filtering based on search phrase length:
                     # - Short phrases (30-50 chars): skip matches ≤4 chars
                     # - Medium phrases (50-100 chars): skip matches ≤10 chars
                     # - Long phrases (100-200 chars): skip matches ≤20 chars
                     # - Very long phrases (200+ chars): skip matches ≤30 chars (fixed cap, not percentage)
                     skip_match = False
-                    
+
                     if search_length > 200:
                         # Very long search: use fixed threshold of 30 chars (not percentage-based)
                         # This ensures we keep substantial multi-line blocks while filtering single words
@@ -8476,19 +8500,19 @@ Return compliance status for each field.'''
                         if match_length <= 4:
                             skip_match = True
                             logger.debug(f"Skipping tiny partial match '{ocr_text}' ({match_length} chars ≤4 for {search_length}-char search)")
-                    
+
                     if skip_match:
                         no_matches += 1
                         continue
-                
+
                 # Calculate priority score for intelligent ranking
                 priority_score = calculate_match_priority_score(
-                    ocr_text, 
-                    field_value, 
-                    match_confidence, 
+                    ocr_text,
+                    field_value,
+                    match_confidence,
                     match_type
                 )
-                
+
                 match_data = {
                     'ocr_index': i,
                     'matched_text': ocr_text,
@@ -8501,13 +8525,13 @@ Return compliance status for each field.'''
                     'ocr_confidence': ocr_entry.get('confidence', 0)
                 }
                 matches.append(match_data)
-                
+
                 logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type}), Priority: {priority_score:.1f}")
                 logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
-        
+
         # Sort matches by priority score first, then confidence (highest first)
         matches.sort(key=lambda x: (x['priority_score'], x['match_confidence']), reverse=True)
-        
+
         # Log search summary
         logger.info(f"ANALYTICS: === SEARCH STATISTICS ===")
         logger.info(f"   Date matches: {date_matches}")
@@ -8519,12 +8543,12 @@ Return compliance status for each field.'''
         logger.info(f"   Fuzzy matches: {fuzzy_matches}")
         logger.info(f"   No matches: {no_matches}")
         logger.info(f"   Total qualifying matches: {len(matches)}")
-        
+
         if matches:
             best_match = matches[0]
             logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']}, Priority: {best_match['priority_score']})")
             logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
-            
+
             # Show ranking if multiple matches
             if len(matches) > 1:
                 logger.info(f"ANALYTICS: Match ranking (by priority score):")
@@ -8541,7 +8565,7 @@ Return compliance status for each field.'''
             logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
             logger.info(f"   - Check if the field value exactly matches the document text")
             logger.info(f"   - Verify the document has been processed and OCR data is available")
-        
+
         logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
         return matches
 
@@ -8562,26 +8586,26 @@ Return compliance status for each field.'''
         """Search for field coordinates in existing OCR data with absolute accuracy"""
         try:
             logger.info("SEARCH: === COORDINATE SEARCH API CALLED ===")
-            
+
             data = request.get_json()
             field_value = data.get('field_value', '').strip()
             search_mode = data.get('search_mode', 'exact').lower()
             current_page = data.get('current_page', None)  # Add page filtering support
-            
+
             logger.info(f" Received search request for: '{field_value}' (mode: {search_mode})")
             if current_page:
                 logger.info(f" Page-specific search requested: Page {current_page}")
             else:
                 logger.info(f"Multi-page search (all pages)")
-            
+
             # Get OCR data from session
             ocr_data = session.get('current_ocr_data', [])
             logger.info(f" Session OCR data check: Found {len(ocr_data) if ocr_data else 0} entries")
-            
+
             # Debug session keys
             session_keys = list(session.keys())
             logger.info(f" Available session keys: {session_keys}")
-            
+
             # Log page distribution in OCR data
             if ocr_data:
                 page_counts = {}
@@ -8589,18 +8613,18 @@ Return compliance status for each field.'''
                     page = entry.get('bounding_page', 'unknown')
                     page_counts[page] = page_counts.get(page, 0) + 1
                 logger.info(f"ANALYTICS: OCR data page distribution: {dict(sorted(page_counts.items()))}")
-            
+
             # Filter OCR data by page if requested
             if current_page and ocr_data:
                 original_count = len(ocr_data)
                 ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
                 logger.info(f"SEARCH: Page filtering: {original_count} -> {len(ocr_data)} entries (Page {current_page})")
-            
+
             if not ocr_data:
                 # Try alternative session keys
                 alt_ocr_data = session.get('ocr_data', [])
                 logger.info(f"SEARCH: Checking alternative 'ocr_data' key: Found {len(alt_ocr_data) if alt_ocr_data else 0} entries")
-                
+
                 if alt_ocr_data:
                     ocr_data = alt_ocr_data
                     logger.info("SUCCESS:Using alternative OCR data from 'ocr_data' session key")
@@ -8608,18 +8632,18 @@ Return compliance status for each field.'''
                     # Try loading from temporary file (workaround for session size limits)
                     ocr_session_id = session.get('ocr_session_id')
                     logger.info(f"SEARCH: Looking for OCR session ID: {ocr_session_id}")
-                    
+
                     if ocr_session_id:
                         import tempfile as temp_module
                         import pickle
                         ocr_temp_file = os.path.join(temp_module.gettempdir(), f"ocr_data_{ocr_session_id}.pkl")
-                        
+
                         try:
                             if os.path.exists(ocr_temp_file):
                                 with open(ocr_temp_file, 'rb') as f:
                                     ocr_data = pickle.load(f)
                                 logger.info(f"SUCCESS:Loaded OCR data from temp file: {len(ocr_data)} entries")
-                                
+
                                 # Apply page filtering if requested
                                 if current_page:
                                     original_count = len(ocr_data)
@@ -8635,25 +8659,25 @@ Return compliance status for each field.'''
                         import tempfile as temp_module
                         import pickle
                         import glob
-                        
+
                         try:
                             temp_dir = temp_module.gettempdir()
                             ocr_files = glob.glob(os.path.join(temp_dir, "ocr_data_*.pkl"))
-                            
+
                             if ocr_files:
                                 # Sort by creation time, get the most recent
                                 ocr_files.sort(key=lambda x: os.path.getctime(x), reverse=True)
                                 most_recent_file = ocr_files[0]
-                                
+
                                 # Check if file is recent (less than 10 minutes old)
                                 file_age = time.time() - os.path.getctime(most_recent_file)
                                 if file_age < 600:  # 10 minutes
                                     logger.info(f"SEARCH: Trying most recent OCR file: {most_recent_file} (age: {file_age:.1f}s)")
-                                    
+
                                     with open(most_recent_file, 'rb') as f:
                                         ocr_data = pickle.load(f)
                                     logger.info(f"SUCCESS:Loaded OCR data from recent temp file: {len(ocr_data)} entries")
-                                    
+
                                     # Apply page filtering if requested
                                     if current_page:
                                         original_count = len(ocr_data)
@@ -8665,7 +8689,7 @@ Return compliance status for each field.'''
                                 logger.warning("ERROR: No OCR temp files found")
                         except Exception as e:
                             logger.error(f"ERROR: Failed to search for recent OCR temp files: {e}")
-                    
+
                     if not ocr_data:
                         logger.warning("ERROR: No OCR data found in session under any key")
                         return jsonify({
@@ -8680,15 +8704,15 @@ Return compliance status for each field.'''
                                 'temp_file_attempted': ocr_session_id is not None
                             }
                         }), 400
-            
+
             # Use the search_text_in_ocr helper function
             matches = search_text_in_ocr(field_value, ocr_data, search_mode)
-            
+
             logger.info(f"SAVE: Search complete: Found {len(matches)} matches")
-            
+
             # Prepare response in format expected by frontend
             best_match = matches[0] if matches else None
-            
+
             return jsonify({
                 'success': True,
                 'message': f'Found {len(matches)} matches for "{field_value}"',
@@ -8699,11 +8723,11 @@ Return compliance status for each field.'''
                 'total_matches': len(matches),
                 'total_ocr_entries': len(ocr_data)
             })
-            
+
         except Exception as e:
             logger.error(f"ERROR: Error in coordinate search API: {e}")
             return jsonify({
-                'success': False, 
+                'success': False,
                 'message': f'Search error: {str(e)}',
                 'matches': []
             }), 500
@@ -10444,7 +10468,7 @@ Return compliance status for each field.'''
     except Exception as e:
         logger.error(f"Failed to initialize vetting rule engine: {e}")
         vetting_engine = None
-    
+
     @app.route("/guarantee", methods=["GET"])
     @timing_aspect
     def index():
@@ -10503,19 +10527,19 @@ Return compliance status for each field.'''
     def ai_chat_pro():
         """Professional AI Chat Interface with Enhanced UI/UX"""
         return render_template("ai_chat_dashboard.html")
-    
+
     @app.route("/ai_chat_modern", methods=["GET"])
     @timing_aspect
     def ai_chat_modern():
         """Chatbot interface for iframe/popup"""
         return render_template("ai_chat_modern.html")
-    
+
     @app.route("/ai_chat_modern_overylay", methods=["GET"])
     @timing_aspect
     def ai_chat_modern_overylay():
         """Chatbot interface optimized for modal/overlay display without header"""
         return render_template("ai_chat_modern_overylay.html")
-    
+
     # Form Routes (temporarily without authentication for testing)
     @app.route('/forms_dashboard')
     def forms_dashboard():
@@ -10551,17 +10575,17 @@ Return compliance status for each field.'''
     def trade_finance_guarantee_form():
         """Render the Trade Finance Guarantee form"""
         return render_template('trade_finance_guarantee_form.html')
-    
+
     @app.route('/bank_guarantee_form')
     def bank_guarantee_form():
         """Render the Bank Guarantee form"""
         return render_template('trade_finance_guarantee_form.html')
-    
+
     @app.route('/trade_finance')
     def trade_finance_unified():
         """Render the unified Trade Finance form with tabs"""
         return render_template('trade_finance_unified.html')
-    
+
     @app.route('/trade_finance_dashboard')
     def trade_finance_dashboard():
         """Render the Trade Finance dashboard with service tiles"""
@@ -10576,12 +10600,12 @@ Return compliance status for each field.'''
     def cash_management_form():
         """Render the Cash Management form"""
         return render_template('cash_management_form.html')
-    
+
     @app.route('/components/ai_chatbot_popup')
     def ai_chatbot_popup():
         """Serve the AI chatbot popup component"""
         return render_template('components/ai_chatbot_popup.html')
-    
+
     # API Routes for form submissions
     # @app.route('/api/lc/submit', methods=['POST'])
     # @login_required
@@ -10592,14 +10616,14 @@ Return compliance status for each field.'''
     #         data['user_id'] = session.get('user_id')
     #         data['timestamp'] = datetime.utcnow()
     #         data['status'] = 'pending'
-            
+
     #         # Generate LC number if not provided
     #         if not data.get('lcNumber'):
     #             data['lcNumber'] = f"LC{datetime.now().strftime('%Y%m%d%H%M%S')}"
-            
+
     #         # Store in database
     #         result = db.lc_transactions.insert_one(data)
-            
+
     #         return jsonify({
     #             'success': True,
     #             'lcNumber': data['lcNumber'],
@@ -10608,7 +10632,7 @@ Return compliance status for each field.'''
     #     except Exception as e:
     #         logger.error(f"Error submitting LC: {str(e)}")
     #         return jsonify({'error': 'Failed to submit LC'}), 500
-    
+
     @app.route('/api/guarantee/submit', methods=['POST'])
     @login_required
     def submit_guarantee():
@@ -10618,14 +10642,14 @@ Return compliance status for each field.'''
             data['user_id'] = session.get('user_id')
             data['timestamp'] = datetime.utcnow()
             data['status'] = 'pending'
-            
+
             # Generate Guarantee number if not provided
             if not data.get('guaranteeNumber'):
                 data['guaranteeNumber'] = f"BG{datetime.now().strftime('%Y%m%d%H%M%S')}"
-            
+
             # Store in database
             result = db.guarantee_transactions.insert_one(data)
-            
+
             return jsonify({
                 'success': True,
                 'guaranteeNumber': data['guaranteeNumber'],
@@ -10645,11 +10669,11 @@ Return compliance status for each field.'''
             data['timestamp'] = datetime.utcnow()
             data['transaction_type'] = transaction_type
             data['status'] = 'pending'
-            
+
             # Store in appropriate collection
             collection = db[f'treasury_{transaction_type}']
             result = collection.insert_one(data)
-            
+
             return jsonify({
                 'success': True,
                 'transactionId': str(result.inserted_id),
@@ -10669,11 +10693,11 @@ Return compliance status for each field.'''
             data['timestamp'] = datetime.utcnow()
             data['transaction_type'] = transaction_type
             data['status'] = 'processing'
-            
+
             # Store in appropriate collection
             collection = db[f'cash_{transaction_type}']
             result = collection.insert_one(data)
-            
+
             return jsonify({
                 'success': True,
                 'transactionId': str(result.inserted_id),
@@ -10688,25 +10712,25 @@ Return compliance status for each field.'''
     def analytics():
         """Analytics Category Selector"""
         return render_template("analytics_category_selector.html")
-    
+
     @app.route("/analytics/trade-finance", methods=["GET"])
     @timing_aspect
     def analytics_trade_finance():
         """Trade Finance Analytics Dashboard"""
         return render_template("analytics_trade_finance.html")
-    
+
     @app.route("/analytics/cash-management", methods=["GET"])
     @timing_aspect
     def analytics_cash_management():
         """Cash Management Analytics Dashboard"""
         return render_template("analytics_cash_management.html")
-    
+
     @app.route("/analytics/treasury-management", methods=["GET"])
     @timing_aspect
     def analytics_treasury_management():
         """Treasury Management Analytics Dashboard"""
         return render_template("analytics_treasury_management.html")
-    
+
     @app.route("/analytics_improved", methods=["GET"])
     @timing_aspect
     def analytics_improved():
@@ -11368,7 +11392,12 @@ Return compliance status for each field.'''
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,  # Low temperature for consistent analysis
-                max_tokens=2000
+                max_tokens=2000,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
 
             gpt_response = response.choices[0].message.content
@@ -12146,19 +12175,19 @@ Return compliance status for each field.'''
         """
         try:
             from app.utils.app_config import COMPUTER_VISION_ENDPOINT, COMPUTER_VISION_KEY
-            
+
             if not COMPUTER_VISION_ENDPOINT or not COMPUTER_VISION_KEY:
                 logger.error("ERROR: Azure Computer Vision credentials not configured")
                 return False
-                
+
             # Test if endpoint is reachable (basic validation)
             if not COMPUTER_VISION_ENDPOINT.startswith(('http://', 'https://')):
                 logger.error("ERROR: Invalid Azure Computer Vision endpoint format")
                 return False
-                
+
             logger.info("SUCCESS:Azure Computer Vision configuration validated")
             return True
-            
+
         except Exception as e:
             logger.error(f"ERROR: Azure Computer Vision configuration error: {e}")
             return False
@@ -12172,32 +12201,32 @@ Return compliance status for each field.'''
             # File type validation
             if file_type not in ALLOWED_FILE_TYPES:
                 return f"Unsupported file type: {file_type}. Allowed types: {', '.join(ALLOWED_FILE_TYPES)}"
-            
+
             # File size validation (50MB limit)
             MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB in bytes
             uploaded_file.seek(0, 2)  # Seek to end
             file_size = uploaded_file.tell()
             uploaded_file.seek(0)  # Reset to beginning
-            
+
             if file_size > MAX_FILE_SIZE:
                 return f"File too large: {file_size / (1024*1024):.1f}MB. Maximum allowed: 50MB"
-            
+
             if file_size == 0:
                 return "File is empty"
-            
+
             # Basic file content validation
             if not uploaded_file.filename:
                 return "Filename is required"
-            
+
             # Check for valid file extension
             allowed_extensions = {'.pdf', '.jpg', '.jpeg', '.png'}
             file_ext = Path(uploaded_file.filename).suffix.lower()
             if file_ext not in allowed_extensions:
                 return f"Invalid file extension: {file_ext}. Allowed: {', '.join(allowed_extensions)}"
-            
+
             logger.debug(f"SUCCESS:File validation passed: {uploaded_file.filename} ({file_size / 1024:.1f} KB)")
             return None  # No error
-            
+
         except Exception as e:
             logger.error(f"ERROR: File validation error: {e}")
             return f"File validation failed: {str(e)}"
@@ -12206,58 +12235,58 @@ Return compliance status for each field.'''
         """
         OPTIMIZED: Extract text from file with performance optimizations and retry logic.
         Integrates quality-based OCR optimization with existing retry mechanism.
-        
+
         Args:
             temp_file_path (str): Path to the temporary file
-            file_type (str): MIME type of the file  
+            file_type (str): MIME type of the file
             quality_verdict (str): Quality analysis verdict for optimization
             page_count (int): Number of pages for timeout calculation
             max_retries (int, optional): Override for max retries. Uses OCR_MAX_RETRIES if None
-            
+
         Returns:
             dict: OCR result with text_data or error information
         """
         import time
         from app.utils.file_utils import extract_text_from_file_optimized
         from app.utils.app_config import OCR_MAX_RETRIES, OCR_RETRY_DELAY_BASE
-        
+
         # Use config value if max_retries not specified
         if max_retries is None:
             max_retries = OCR_MAX_RETRIES
-            
+
         # Quality-based retry optimization
         if quality_verdict == "direct_analysis":
             max_retries = max(1, max_retries - 1)  # Reduce retries for high-quality docs
-            
+
         logger.info(f"SPEED: OPTIMIZED OCR retry: max_retries={max_retries}, quality={quality_verdict}, pages={page_count}")
-        
+
         for attempt in range(max_retries):
             try:
                 logger.debug(f"MODE: OCR attempt {attempt + 1}/{max_retries} for file: {temp_file_path}")
                 result = extract_text_from_file_optimized(temp_file_path, file_type, quality_verdict, page_count)
-                
+
                 # Check if OCR was successful
                 if "error" not in result:
                     processing_time = result.get("processing_time", 0)
                     confidence = result.get("overall_confidence", 0)
                     logger.info(f"SUCCESS:OPTIMIZED OCR succeeded on attempt {attempt + 1} in {processing_time:.2f}s (confidence: {confidence:.3f})")
                     return result
-                    
+
                 # If it's the last attempt, return the error
                 if attempt == max_retries - 1:
                     logger.error(f"ERROR: OCR failed after {max_retries} attempts: {result.get('error')}")
                     return result
-                    
+
                 # Wait before retry with exponential backoff
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE
                 logger.warning(f"WARNINGS: OCR attempt {attempt + 1} failed: {result.get('error')} | Retrying in {wait_time}s...")
                 time.sleep(wait_time)
-                
+
             except Exception as e:
                 logger.error(f"ERROR: OCR attempt {attempt + 1} threw exception: {str(e)}")
                 if attempt == max_retries - 1:
                     return {"error": f"OCR extraction failed: {str(e)}", "text_data": []}
-                    
+
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE
                 logger.warning(f"WARNINGS: Retrying in {wait_time}s...")
                 time.sleep(wait_time)
@@ -12280,42 +12309,42 @@ Return compliance status for each field.'''
         import time
         from app.utils.file_utils import extract_text_from_file
         from app.utils.app_config import OCR_MAX_RETRIES, OCR_RETRY_DELAY_BASE
-        
+
         # Use config value if max_retries not specified
         if max_retries is None:
             max_retries = OCR_MAX_RETRIES
-        
+
         logger.info(f"OCR retry configuration: max_retries={max_retries}, base_delay={OCR_RETRY_DELAY_BASE}s")
-        
+
         for attempt in range(max_retries):
             try:
                 logger.debug(f"MODE: OCR attempt {attempt + 1}/{max_retries} for file: {temp_file_path}")
                 result = extract_text_from_file(temp_file_path, file_type)
-                
+
                 # Check if OCR was successful
                 if "error" not in result:
                     logger.debug(f"SUCCESS:OCR succeeded on attempt {attempt + 1}")
                     return result
-                    
+
                 # If it's the last attempt, return the error
                 if attempt == max_retries - 1:
                     logger.error(f"ERROR: OCR failed after {max_retries} attempts: {result.get('error')}")
                     return result
-                    
+
                 # Wait before retry with exponential backoff
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE  # Configurable base delay
                 logger.warning(f"WARNINGS: OCR attempt {attempt + 1} failed: {result.get('error')}. Retrying in {wait_time}s...")
                 time.sleep(wait_time)
-                
+
             except Exception as e:
                 if attempt == max_retries - 1:
                     logger.error(f"ERROR: OCR failed after {max_retries} attempts with exception: {e}")
                     return {"error": f"OCR failed after {max_retries} attempts: {str(e)}", "text_data": []}
-                
+
                 wait_time = (2 ** attempt) * OCR_RETRY_DELAY_BASE
                 logger.warning(f"WARNINGS: OCR attempt {attempt + 1} failed with exception: {e}. Retrying in {wait_time}s...")
                 time.sleep(wait_time)
-                
+
         return {"error": "OCR failed after all retry attempts", "text_data": []}
 
     # Initialize document classifier at module level
@@ -12338,15 +12367,15 @@ Return compliance status for each field.'''
             for idx, uploaded_file in enumerate(uploaded_files):
                 file_type = getattr(uploaded_file, "content_type", "unknown")
                 file_name = getattr(uploaded_file, "filename", "unnamed")
-                
+
                 logger.info(f"DEBUG: Processing file {idx+1}/{len(uploaded_files)}: {file_name}")
                 logger.info(f"DEBUG: progress_tracker is {'available' if progress_tracker else 'None'}")
-                
+
                 # Update upload progress for multiple files
                 if progress_tracker and len(uploaded_files) > 1:
                     upload_progress = int(((idx + 1) / len(uploaded_files)) * 10)  # Upload is 0-10%
                     progress_tracker.set_progress(upload_progress, f"Uploading {file_name} ({idx+1}/{len(uploaded_files)})")
-                
+
                 if file_type not in ALLOWED_FILE_TYPES:
                     results.append({
                         "file_name": file_name,
@@ -12364,7 +12393,7 @@ Return compliance status for each field.'''
                     logger.info(f"DEBUG: Calling progress_tracker.upload_complete() now...")
                     progress_tracker.upload_complete()
                     logger.info(f"SUCCESS:DEBUG: upload_complete() called successfully")
-                    
+
                     # Start quality analysis stage (fast version)
                     logger.info(f"SEARCH: Starting quality analysis for: {file_name}")
                     logger.info(f"DEBUG: Calling progress_tracker.start_quality_analysis() now...")
@@ -12378,18 +12407,18 @@ Return compliance status for each field.'''
                         file_size = os.path.getsize(temp_file_path)
                         quality_verdict = "processed"
                         quality_score = 0.8
-                        
+
                         logger.info(f"SUCCESS:Instant quality check: {quality_verdict} (size: {file_size} bytes)")
-                            
+
                     except Exception as quality_error:
                         logger.warning(f"Quality check error: {quality_error}")
                         quality_verdict = "processed"
                         quality_score = 0.7
-                    
+
                     # Mark quality analysis complete immediately
                     logger.info(f"SUCCESS:Quality analysis complete for: {file_name}")
                     progress_tracker.quality_complete(quality_verdict, quality_score)
-                    
+
                     # Start OCR stage
                     logger.info(f" Starting OCR extraction for: {file_name}")
                     progress_tracker.start_ocr()
@@ -12397,11 +12426,11 @@ Return compliance status for each field.'''
                 try:
                     extracted_text_data = extract_text_with_retry_optimized(temp_file_path, file_type)
                     text_data = extracted_text_data.get("text_data", [])
-                    
+
                     # Mark OCR complete
                     if progress_tracker:
                         progress_tracker.ocr_complete(extracted_entries=len(text_data))
-                    
+
                     if not text_data:
                         logging.warning(f"No text data extracted from {file_name}. Skipping.")
                         results.append({
@@ -12431,7 +12460,7 @@ Return compliance status for each field.'''
                         doc_type = first_page.get("document_type", "unknown")
                         confidence = first_page.get("classification_confidence", 0)
                         progress_tracker.classification_complete(doc_type, int(confidence))
-                        
+
                         # Start field extraction
                         total_fields = sum(len(page.get("extracted_fields", {})) for page in page_analysis_results)
                         progress_tracker.start_field_extraction(field_count=total_fields)
@@ -12475,18 +12504,18 @@ Return compliance status for each field.'''
                     if progress_tracker:
                         total_extracted = sum(len(page.get("extracted_fields", {})) for page in page_analysis_results)
                         progress_tracker.field_extraction_complete(extracted_count=total_extracted)
-                        
+
                         # Start compliance checking
                         progress_tracker.start_compliance_check()
-                        
+
                         # Count compliance issues
                         compliance_issues = 0
                         if combined_unified_result:
                             compliance_issues += len([k for k, v in combined_unified_result.items() if not v.get("compliant", True)])
-                        
+
                         # Mark compliance complete
                         progress_tracker.compliance_complete(compliance_issues)
-                        
+
                         # Finalize processing
                         progress_tracker.finalize()
 
@@ -12532,36 +12561,36 @@ Return compliance status for each field.'''
         """Organize OCR data by page number with enhanced debugging"""
         logger.info(f"ANALYTICS: === ORGANIZING OCR DATA BY PAGE ===")
         logger.info(f"Input: {len(text_data)} OCR entries")
-        
+
         # Debug: Check page distribution in raw data
         page_counts = {}
         missing_page_count = 0
-        
+
         for i, entry in enumerate(text_data):
             page = entry.get("bounding_page", None)
             if page is None:
                 missing_page_count += 1
                 logger.warning(f"Entry {i}: Missing bounding_page field - {entry.get('text', '')[:30]}...")
                 page = 1  # Default fallback
-            
+
             page_counts[page] = page_counts.get(page, 0) + 1
-        
+
         logger.info(f"ANALYTICS: Page distribution in raw OCR data:")
         for page in sorted(page_counts.keys()):
             logger.info(f"   Page {page}: {page_counts[page]} entries")
-        
+
         if missing_page_count > 0:
             logger.warning(f"WARNINGS: Found {missing_page_count} entries without page information")
-        
+
         # Organize by page
         pages = defaultdict(list)
         for entry in text_data:
             page = entry.get("bounding_page", 1)
             pages[page].append(entry)
-        
+
         organized_pages = [pages[k] for k in sorted(pages)]
         logger.info(f"SUCCESS:Organized into {len(organized_pages)} pages")
-        
+
         # Debug: Log sample from each page
         for page_idx, page_data in enumerate(organized_pages):
             actual_page = page_idx + 1
@@ -12569,7 +12598,7 @@ Return compliance status for each field.'''
             if page_data:
                 sample_text = page_data[0].get('text', '')[:30]
                 logger.info(f"      Sample: '{sample_text}...'")
-        
+
         return organized_pages
 
     def calculate_text_token_count(text, model_name="gpt-3.5-turbo"):
@@ -12655,20 +12684,20 @@ Return compliance status for each field.'''
     def aggregate_extracted_fields(extraction_results: List[Dict], strategy: str = "union", confidence_threshold: int = 70) -> Dict:
         """
         Aggregate multiple extraction results into a single consolidated result.
-        
+
         Args:
             extraction_results: List of extraction result dictionaries from parallel calls
             strategy: Aggregation strategy - "union", "intersection", or "majority"
             confidence_threshold: Minimum confidence to include a field
-            
+
         Returns:
             Aggregated extraction result with merged fields
         """
         logger.info(f"🔀 Aggregating {len(extraction_results)} extraction results using '{strategy}' strategy")
-        
+
         if not extraction_results:
             return {}
-        
+
         # Initialize aggregated result with first successful result as base
         aggregated = None
         for result in extraction_results:
@@ -12689,41 +12718,41 @@ Return compliance status for each field.'''
                     }
                 }
                 break
-        
+
         if not aggregated:
             logger.error("❌ No valid extraction results to aggregate")
             return {}
-        
+
         # Collect all fields from all results
         field_occurrences = {}  # {field_name: [{'value': val, 'confidence': conf, 'bounding_box': box}, ...]}
-        
+
         for result in extraction_results:
             if not result or 'extracted_fields' not in result:
                 continue
-                
+
             for field_name, field_data in result['extracted_fields'].items():
                 if not isinstance(field_data, dict):
                     continue
-                    
+
                 confidence = field_data.get('confidence', 0)
                 value = field_data.get('value', '')
-                
+
                 # Skip if below confidence threshold or empty value
                 if confidence < confidence_threshold or not value:
                     continue
-                
+
                 if field_name not in field_occurrences:
                     field_occurrences[field_name] = []
-                
+
                 field_occurrences[field_name].append({
                     'value': value,
                     'confidence': confidence,
                     'bounding_box': field_data.get('bounding_box', [0, 0, 0, 0]),
                     'bounding_page': field_data.get('bounding_page', 1)
                 })
-        
+
         logger.info(f"📊 Found {len(field_occurrences)} unique fields across all attempts")
-        
+
         # Apply aggregation strategy
         if strategy == "union":
             # Union: Include all fields found in any attempt (take highest confidence occurrence)
@@ -12732,7 +12761,7 @@ Return compliance status for each field.'''
                 best_occurrence = max(occurrences, key=lambda x: x['confidence'])
                 aggregated['extracted_fields'][field_name] = best_occurrence
                 logger.debug(f"   ✓ {field_name}: {len(occurrences)} occurrences, using highest confidence")
-        
+
         elif strategy == "intersection":
             # Intersection: Only include fields found in ALL attempts
             required_count = aggregated['aggregation_metadata']['successful_attempts']
@@ -12744,7 +12773,7 @@ Return compliance status for each field.'''
                     logger.debug(f"   ✓ {field_name}: Found in all {required_count} attempts")
                 else:
                     logger.debug(f"   ✗ {field_name}: Only in {len(occurrences)}/{required_count} attempts (skipped)")
-        
+
         elif strategy == "majority":
             # Majority: Include fields found in 50%+ of attempts
             required_count = aggregated['aggregation_metadata']['successful_attempts'] / 2
@@ -12759,43 +12788,43 @@ Return compliance status for each field.'''
                     logger.debug(f"   ✓ {field_name}: Found in {len(occurrences)} attempts (majority)")
                 else:
                     logger.debug(f"   ✗ {field_name}: Only in {len(occurrences)} attempts (below majority)")
-        
+
         # Calculate aggregate metrics
         total_fields = len(aggregated['extracted_fields'])
         aggregated['confidence_score'] = (
             sum(f['confidence'] for f in aggregated['extracted_fields'].values()) / total_fields
             if total_fields > 0 else 0
         )
-        
+
         # Count mandatory fields (assuming fields with high confidence or specific naming pattern)
         aggregated['mandatory_fields_found'] = sum(
-            1 for f in aggregated['extracted_fields'].values() 
+            1 for f in aggregated['extracted_fields'].values()
             if f.get('confidence', 0) >= 85
         )
-        
+
         if aggregated['total_mandatory_fields'] > 0:
             aggregated['extraction_completeness'] = int(
                 (aggregated['mandatory_fields_found'] / aggregated['total_mandatory_fields']) * 100
             )
-        
+
         logger.info(f"✅ Aggregation complete: {total_fields} fields, avg confidence: {aggregated['confidence_score']:.1f}")
         return aggregated
 
     def extract_entities_parallel(prompt: str, model: str, temperature: float, num_attempts: int = 3) -> List[Dict]:
         """
         Perform parallel entity extraction with multiple concurrent LLM calls.
-        
+
         Args:
             prompt: The extraction prompt
             model: The model name/engine to use
             temperature: Temperature setting for LLM
             num_attempts: Number of parallel extraction attempts
-            
+
         Returns:
             List of extraction results from all attempts
         """
         logger.info(f"🚀 Starting parallel extraction with {num_attempts} concurrent attempts")
-        
+
         def single_extraction_call(attempt_num: int) -> Dict:
             """Single extraction call for parallel execution."""
             try:
@@ -12803,37 +12832,38 @@ Return compliance status for each field.'''
                 response = openai.ChatCompletion.create(
                     engine=model,
                     messages=[{"role": "user", "content": prompt}],
-                    temperature=temperature,
-                    seed=12345,
-                    top_p=1.0,
+                    temperature=0,
+                    seed=12345,  # ✅ Reproducibility
+                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                     frequency_penalty=0,
-                    presence_penalty=0
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
                 )
-                
+
                 result = response["choices"][0]["message"]["content"].strip()
                 parsed_json = parse_json_from_llm_response(result)
-                
+
                 if parsed_json and 'extracted_fields' in parsed_json:
                     field_count = len(parsed_json.get('extracted_fields', {}))
                     logger.info(f"   ✅ Attempt {attempt_num + 1}: Extracted {field_count} fields")
                 else:
                     logger.warning(f"   ⚠️  Attempt {attempt_num + 1}: Failed to parse response")
-                
+
                 return parsed_json if parsed_json else {}
-                
+
             except Exception as e:
                 logger.error(f"   ❌ Attempt {attempt_num + 1}: Error - {str(e)}")
                 return {}
-        
+
         # Execute parallel extraction calls using ThreadPoolExecutor
         results = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_attempts) as executor:
             # Submit all extraction tasks
             future_to_attempt = {
-                executor.submit(single_extraction_call, i): i 
+                executor.submit(single_extraction_call, i): i
                 for i in range(num_attempts)
             }
-            
+
             # Collect results as they complete
             for future in concurrent.futures.as_completed(future_to_attempt):
                 attempt_num = future_to_attempt[future]
@@ -12843,10 +12873,10 @@ Return compliance status for each field.'''
                 except Exception as e:
                     logger.error(f"   ❌ Attempt {attempt_num + 1}: Exception - {str(e)}")
                     results.append({})
-        
+
         successful_count = sum(1 for r in results if r and 'extracted_fields' in r)
         logger.info(f"🏁 Parallel extraction complete: {successful_count}/{num_attempts} successful attempts")
-        
+
         return results
 
     def process_page_with_llm_analysis(page_number, page_ocr_data, userQuery, annotations, productName, functionName, documentType=None):
@@ -13030,7 +13060,7 @@ Return compliance status for each field.'''
             if enable_parallel and parallel_attempts > 1:
                 # ======= PARALLEL EXTRACTION MODE =======
                 logger.info(f"🔄 Parallel extraction ENABLED: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
-                
+
                 # Perform parallel extraction
                 extraction_results = extract_entities_parallel(
                     prompt=prompt,
@@ -13038,35 +13068,36 @@ Return compliance status for each field.'''
                     temperature=temperature,
                     num_attempts=parallel_attempts
                 )
-                
+
                 # Aggregate results
                 parsed_json = aggregate_extracted_fields(
                     extraction_results=extraction_results,
                     strategy=aggregation_strategy,
                     confidence_threshold=confidence_threshold
                 )
-                
+
                 if not parsed_json or 'extracted_fields' not in parsed_json:
                     logger.error("❌ Parallel extraction aggregation failed, no valid results")
                     return {"page_number": page_number, "error": "Parallel extraction failed"}
-                
+
                 logger.info(f"✅ Parallel extraction successful: {len(parsed_json.get('extracted_fields', {}))} total fields aggregated")
-                
+
             else:
                 # ======= SINGLE EXTRACTION MODE (Original) =======
                 logger.info(f"📤 Single extraction mode (parallel disabled or attempts=1)")
-                
+
                 # Send prompt to LLM (note: build_extraction_prompt already includes system prompt)
                 response = openai.ChatCompletion.create(
                     engine=model if model else deployment_name,
                     messages=[
                         {"role": "user", "content": prompt}
                     ],
-                    temperature=temperature,
-                    seed=12345,
-                    top_p=1.0,
+                    temperature=0,
+                    seed=12345,  # ✅ Reproducibility
+                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                     frequency_penalty=0,
-                    presence_penalty=0
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
                 )
 
                 result = response["choices"][0]["message"]["content"].strip()
@@ -13123,7 +13154,7 @@ Return compliance status for each field.'''
     #     try:
     #         with open(file_path, 'rb') as file:
     #             reader = PdfReader(file)
-                
+
     #             # Check if PDF is encrypted
     #             if reader.is_encrypted:
     #                 # Try to decrypt with empty password (common for read-protected PDFs)
@@ -13133,7 +13164,7 @@ Return compliance status for each field.'''
     #                     logger.warning(f"PDF {file_path} is encrypted and cannot be decrypted with empty password")
     #                     # Fall back to OCR for encrypted PDFs
     #                     return None
-                
+
     #             # Extract text from all pages
     #             text_parts = []
     #             for page_num, page in enumerate(reader.pages):
@@ -13144,16 +13175,16 @@ Return compliance status for each field.'''
     #                 except Exception as page_error:
     #                     logger.warning(f"Error extracting text from page {page_num}: {page_error}")
     #                     continue
-                
+
     #             text = "\n".join(text_parts)
-                
+
     #             # If no text extracted, return None to trigger OCR fallback
     #             if not text.strip():
     #                 logger.warning(f"No text extracted from PDF {file_path} using PyPDF2")
     #                 return None
-                    
+
     #             return text
-                
+
     #     except Exception as e:
     #         logger.error(f"Error reading PDF {file_path}: {e}")
     #         # Return None instead of empty string to signal OCR fallback needed
@@ -13167,11 +13198,11 @@ Return compliance status for each field.'''
             user = UserRepository.get_user_by_id(user_id) if user_id else None
             if not user:
                 return {"success": False, "message": "User not found"}
-            
+
             # Check if user is allowed
             if user.get("email", "").lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return {"success": False, "message": "Access denied"}
-            
+
             file_type = uploaded_file.content_type
             file_name = uploaded_file.filename
             if file_type not in ALLOWED_FILE_TYPES:
@@ -13184,11 +13215,11 @@ Return compliance status for each field.'''
 
             # Extract text based on file type
             text = None
-            
+
             if file_type == "application/pdf":
                 # First try standard PDF text extraction
                 text = read_pdf(temp_file_path)
-                
+
                 # If standard extraction fails (returns None), use OCR
                 if text is None:
                     logger.info(f"Standard PDF extraction failed for {file_name}, falling back to OCR")
@@ -13219,7 +13250,7 @@ Return compliance status for each field.'''
             # Generate embeddings and store in ChromaDB
             chunk_ids = [f"global_{file_name}_{i}" for i in range(len(text_chunks))]
             metadata = [{
-                "file_name": file_name, 
+                "file_name": file_name,
                 "chunk_index": i,
                 "is_global": True,  # Mark as globally accessible
                 "uploaded_by": user_id,  # Track which admin uploaded it
@@ -13432,7 +13463,7 @@ Return compliance status for each field.'''
         # Check both session and request args for user_id
         user_query, user_id, uploaded_file, annotations = None, None, None, None
         user_id = session.get('user_id') or request.args.get('user_id')
-        
+
         # Check if user is admin
         if user_id:
             user = UserRepository.get_user_by_id(user_id)
@@ -13444,7 +13475,7 @@ Return compliance status for each field.'''
                         "intent": "Train Intent",
                         "success": False
                     }), 403
-        
+
         logger.info("Processing file upload request.")
         user_query = request.form.get("query", "").strip()
         user_id = session.get("user_id") or request.form.get("user_id", "").strip() or None
@@ -13608,7 +13639,12 @@ Return compliance status for each field.'''
                      "content": "You are a document analysis expert. Provide detailed, accurate analysis of documents."},
                     {"role": "user", "content": analysis_prompt}
                 ],
-                temperature=0.1
+                temperature=0.1,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
 
             result = response.choices[0].message.content.strip()
@@ -13699,7 +13735,12 @@ Return compliance status for each field.'''
                      "content": "You are an expert at creating relevant test questions for documents."},
                     {"role": "user", "content": questions_prompt}
                 ],
-                temperature=0.3
+                temperature=0.3,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
 
             result = response.choices[0].message.content.strip()
@@ -13922,7 +13963,11 @@ Return compliance status for each field.'''
                      "content": "You are an expert document analyst specializing in finding and extracting information from documents. You excel at finding relevant information even when it's not directly stated, by understanding context and related concepts."},
                     {"role": "user", "content": answer_prompt}
                 ],
-                temperature=0.0  # More deterministic for better document analysis
+                temperature=0.0,  # More deterministic for better document analysis
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
             )
 
             answer = response.choices[0].message.content.strip()
@@ -14271,7 +14316,7 @@ Return compliance status for each field.'''
             if user:
                 user_email = user.get('email', '')
                 session['user_email'] = user_email  # Cache for future requests
-        
+
         admin_emails = ['ravi@finstack-tech.com', 'ilyashussain9@gmail.com', 'admin@finstack-tech.com']
         is_admin = user_email.lower() in [e.lower() for e in admin_emails]
         return is_admin, user_email
@@ -14280,7 +14325,7 @@ Return compliance status for each field.'''
         """Get all vetting rules (active only for non-admins)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if vetting_engine:
                 rules = vetting_engine.get_all_rules(active_only=not is_admin)
                 return jsonify({
@@ -14293,68 +14338,68 @@ Return compliance status for each field.'''
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-                
+
         except Exception as e:
             logger.error(f"Error getting vetting rules: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/rules', methods=['POST'])
     def create_vetting_rule():
         """Create a new vetting rule (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-                
+
             data = request.get_json()
             rule = vetting_engine.create_rule(data, user_email)
-            
+
             return jsonify({
                 'success': True,
                 'rule': rule
             })
-            
+
         except Exception as e:
             logger.error(f"Error creating vetting rule: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/rules/<rule_id>', methods=['PUT'])
     def update_vetting_rule(rule_id):
         """Update a vetting rule (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-                
+
             data = request.get_json()
             rule = vetting_engine.update_rule(rule_id, data, user_email)
-            
+
             if rule:
                 return jsonify({
                     'success': True,
@@ -14365,34 +14410,34 @@ Return compliance status for each field.'''
                     'success': False,
                     'error': 'Rule not found'
                 }), 404
-                
+
         except Exception as e:
             logger.error(f"Error updating vetting rule: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/rules/<rule_id>', methods=['DELETE'])
     def delete_vetting_rule(rule_id):
         """Delete a vetting rule (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-                
+
             success = vetting_engine.delete_rule(rule_id)
-            
+
             if success:
                 return jsonify({
                     'success': True,
@@ -14403,83 +14448,83 @@ Return compliance status for each field.'''
                     'success': False,
                     'error': 'Rule not found'
                 }), 404
-                
+
         except Exception as e:
             logger.error(f"Error deleting vetting rule: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/rules/<rule_id>/test', methods=['POST'])
     def test_vetting_rule(rule_id):
         """Test a vetting rule with sample texts (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-                
+
             data = request.get_json()
             test_samples = data.get('test_samples', [])
-            
+
             if not test_samples:
                 return jsonify({
                     'success': False,
                     'error': 'Test samples are required'
                 }), 400
-            
+
             test_result = vetting_engine.test_rule(rule_id, test_samples)
-            
+
             return jsonify({
                 'success': True,
                 'test_result': test_result
             })
-            
+
         except Exception as e:
             logger.error(f"Error testing vetting rule: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/rules/<rule_id>/generate-samples', methods=['POST'])
     def generate_test_samples(rule_id):
         """Generate AI-powered test samples for a rule (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-            
+
             rule = vetting_engine.get_rule(rule_id)
             if not rule:
                 return jsonify({
                     'success': False,
                     'error': 'Rule not found'
                 }), 404
-            
+
             # Generate sample texts using LLM
             positive_sample, negative_sample, metadata = vetting_engine.generate_sample_texts_llm(rule)
-            
+
             return jsonify({
                 'success': True,
                 'samples': [
@@ -14496,14 +14541,14 @@ Return compliance status for each field.'''
                 ],
                 'metadata': metadata
             })
-            
+
         except Exception as e:
             logger.error(f"Error generating test samples: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/test', methods=['POST'])
     def test_guarantee_vetting():
         """Test guarantee text against all active rules"""
@@ -14513,35 +14558,35 @@ Return compliance status for each field.'''
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-                
+
             data = request.get_json()
             guarantee_text = data.get('guarantee_text', '')
             include_llm = data.get('include_llm_analysis', True)
-            
+
             if not guarantee_text:
                 return jsonify({
                     'success': False,
                     'error': 'Guarantee text is required'
                 }), 400
-            
+
             # Perform vetting
             if include_llm:
                 vetting_result = vetting_engine.vet_guarantee_with_llm(guarantee_text, include_llm_analysis=True)
             else:
                 vetting_result = vetting_engine.vet_guarantee_basic(guarantee_text)
-            
+
             return jsonify({
                 'success': True,
                 'vetting_result': vetting_result
             })
-            
+
         except Exception as e:
             logger.error(f"Error in guarantee vetting: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/guarantee', methods=['POST'])
     def vet_guarantee_terms():
         """Analyze guarantee terms and conditions from rich text editor"""
@@ -14572,21 +14617,21 @@ Return compliance status for each field.'''
                         ]
                     }
                 })
-                
+
             data = request.get_json()
             terms_html = data.get('terms_html', '')
             terms_text = data.get('terms_text', '')
             form_data = data.get('form_data', {})
-            
+
             if not terms_text or not terms_text.strip():
                 return jsonify({
                     'success': False,
                     'message': 'Guarantee terms and conditions are required'
                 }), 400
-            
+
             # Perform vetting analysis
             vetting_result = vetting_engine.vet_guarantee_with_llm(terms_text, include_llm_analysis=True)
-            
+
             # Format the analysis response
             analysis = {
                 'risk_level': vetting_result.get('risk_level', 'Medium'),
@@ -14596,7 +14641,7 @@ Return compliance status for each field.'''
                 'violations': vetting_result.get('violations', []),
                 'warnings': vetting_result.get('warnings', [])
             }
-            
+
             # Add default values if empty
             if not analysis['key_findings']:
                 analysis['key_findings'] = [
@@ -14604,19 +14649,19 @@ Return compliance status for each field.'''
                     'Standard banking regulations are addressed',
                     'Key guarantee provisions are included'
                 ]
-            
+
             if not analysis['recommendations']:
                 analysis['recommendations'] = [
                     'Review terms with legal counsel',
                     'Ensure all parties understand obligations',
                     'Consider adding additional protective clauses'
                 ]
-            
+
             return jsonify({
                 'success': True,
                 'analysis': analysis
             })
-            
+
         except Exception as e:
             logger.error(f"Error in guarantee terms vetting: {str(e)}")
             # Return mock analysis on error
@@ -14639,125 +14684,125 @@ Return compliance status for each field.'''
                     'warnings': []
                 }
             })
-    
+
     @app.route('/api/vetting/rule-effectiveness/<rule_id>', methods=['GET'])
     def get_rule_effectiveness(rule_id):
         """Get AI-powered effectiveness analysis for a rule (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-            
+
             effectiveness = vetting_engine.analyze_rule_effectiveness(rule_id)
-            
+
             return jsonify({
                 'success': True,
                 'effectiveness': effectiveness
             })
-            
+
         except Exception as e:
             logger.error(f"Error getting rule effectiveness: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/history', methods=['GET'])
     def get_vetting_history():
         """Get vetting test history (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-            
+
             rule_id = request.args.get('rule_id')
             history = vetting_engine.get_test_history(rule_id)
-            
+
             return jsonify({
                 'success': True,
                 'history': history
             })
-            
+
         except Exception as e:
             logger.error(f"Error getting test history: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/explain-rule', methods=['POST'])
     def explain_vetting_rule():
         """Get AI explanation for a rule configuration (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-            
+
             data = request.get_json()
             explanation = vetting_engine.get_rule_explanation(data)
-            
+
             return jsonify({
                 'success': True,
                 'explanation': explanation
             })
-            
+
         except Exception as e:
             logger.error(f"Error explaining rule: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)
             }), 500
-    
+
     @app.route('/api/vetting/generate-test-samples', methods=['POST'])
     def generate_test_samples_direct():
         """Generate test samples for a rule configuration without saving (admin only)"""
         try:
             is_admin, user_email = check_admin_access()
-            
+
             if not is_admin:
                 return jsonify({
                     'success': False,
                     'error': 'Admin access required'
                 }), 403
-            
+
             if not vetting_engine:
                 return jsonify({
                     'success': False,
                     'error': 'Vetting engine not initialized'
                 }), 500
-            
+
             data = request.get_json()
-            
+
             # Create a temporary rule dict for sample generation
             temp_rule = {
                 'name': data.get('name', 'Test Rule'),
@@ -14766,10 +14811,10 @@ Return compliance status for each field.'''
                 'value': data.get('value', ''),
                 'severity': data.get('severity', 'medium')
             }
-            
+
             # Generate samples using the vetting engine
             positive_sample, negative_sample, metadata = vetting_engine.generate_sample_texts_llm(temp_rule)
-            
+
             return jsonify({
                 'success': True,
                 'samples': [
@@ -14786,7 +14831,7 @@ Return compliance status for each field.'''
                 ],
                 'metadata': metadata
             })
-            
+
         except Exception as e:
             logger.error(f"Error generating test samples: {str(e)}")
             return jsonify({
@@ -15218,52 +15263,52 @@ Return compliance status for each field.'''
         Updates compliance_status_tracker when complete.
         """
         global compliance_status_tracker
-        
+
         try:
             logger.info(f"🔄 Background compliance check started for hash: {file_hash}")
             logger.info(f"📋 Document type: {document_type}, Fields count: {len(extracted_fields)}")
-            
+
             compliance_status_tracker[file_hash] = {
                 'status': 'processing',
                 'result': None,
                 'timestamp': datetime.now()
             }
-            
+
             logger.info(f"✅ Added {file_hash} to tracker with status 'processing'")
-            
+
             # Initialize unified compliance result
             unified_compliance = {}
-            
+
             # Perform compliance analysis if we have extracted fields
             if extracted_fields:
                 # Remove coordinate mapping fields before compliance analysis
-                compliance_fields = {k: v for k, v in extracted_fields.items() 
-                                   if not k.startswith('_coordinate_mapping') and 
+                compliance_fields = {k: v for k, v in extracted_fields.items()
+                                   if not k.startswith('_coordinate_mapping') and
                                       k not in ['coordinate_mapping_stats']}
-                
+
                 logger.info(f"📋 Compliance fields after filtering: {len(compliance_fields)}")
-                
+
                 try:
                     # RULE-BASED UNIFIED COMPLIANCE
                     from app.utils.query_utils import (
-                        analyze_unified_compliance_fast, 
-                        get_unified_compliance_result, 
+                        analyze_unified_compliance_fast,
+                        get_unified_compliance_result,
                         clear_unified_compliance_result
                     )
-                    
+
                     clear_unified_compliance_result()
-                    
+
                     logger.info(f"📋 Starting compliance analysis for {document_type}")
-                    
+
                     # Single unified compliance call
                     analyze_unified_compliance_fast(compliance_fields, document_type)
-                    
+
                     # Get the unified compliance result
                     unified_compliance = get_unified_compliance_result()
-                    
+
                     logger.info(f"✅ Compliance analysis returned: {len(unified_compliance)} fields")
                     logger.info(f"📊 Sample compliance data: {str(list(unified_compliance.keys())[:5])}")
-                    
+
                 except Exception as e:
                     logger.error(f"❌ Background compliance analysis failed: {e}")
                     import traceback
@@ -15271,17 +15316,17 @@ Return compliance status for each field.'''
                     unified_compliance = {}
             else:
                 logger.warning(f"⚠️ No extracted fields provided for compliance check")
-            
+
             # Update tracker with completed result
             compliance_status_tracker[file_hash] = {
                 'status': 'completed',
                 'result': unified_compliance,
                 'timestamp': datetime.now()
             }
-            
+
             logger.info(f"✅ Updated tracker for {file_hash} - status: completed, fields: {len(unified_compliance)}")
             logger.info(f"📋 Current tracker keys: {list(compliance_status_tracker.keys())}")
-            
+
         except Exception as e:
             logger.error(f"❌ Error in background compliance for {file_hash}: {e}")
             import traceback
@@ -15361,22 +15406,22 @@ Return compliance status for each field.'''
 
             logger.info(f"SEARCH: STEP 1/4: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
             quality_start = time.time()
-            
+
             # Import quality analyzer
             from app.utils.quality_analyzer import quality_analyzer
-            
+
             quality_result = quality_analyzer.analyze_document_quality_fast(
-                temp_file_path, 
-                file_name, 
+                temp_file_path,
+                file_name,
                 progress_tracker
             )
             quality_time = time.time() - quality_start
-            
+
             if quality_result.get("success", False):
                 verdict = quality_result.get("verdict", "pre_processing")
                 quality_score = quality_result.get("quality_score", 0.5)
                 logger.info(f"SUCCESS:Quality analysis completed in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
-                
+
                 if progress_tracker:
                     progress_tracker.quality_complete(verdict, quality_score)
             else:
@@ -15384,7 +15429,7 @@ Return compliance status for each field.'''
                 logger.warning(f"WARNINGS: Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
                 verdict = "pre_processing"  # Default fallback
                 quality_score = 0.5
-                
+
                 if progress_tracker:
                     progress_tracker.quality_complete("fallback", quality_score)
 
@@ -15394,20 +15439,20 @@ Return compliance status for each field.'''
 
             logger.info(f" STEP 2/4: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
             ocr_start = time.time()
-            
+
             # OPTIMIZATION: Estimate page count for timeout calculation
             estimated_pages = quality_result.get("pages_analyzed", 1) if quality_result else 1
-            
+
             # Use optimized OCR with quality-based optimization
             extracted_text_data = extract_text_with_retry_optimized(
-                temp_file_path, 
+                temp_file_path,
                 file_type,
                 quality_verdict=verdict,
                 page_count=estimated_pages
             )
             text_data = extracted_text_data.get("text_data", [])
             ocr_time = time.time() - ocr_start
-            
+
             # Enhanced logging with optimization stats
             if "optimization_stats" in extracted_text_data:
                 stats = extracted_text_data["optimization_stats"]
@@ -15426,7 +15471,7 @@ Return compliance status for each field.'''
             if "error" in extracted_text_data:
                 error_msg = extracted_text_data["error"]
                 enhanced_error = f"OCR processing failed: {error_msg}"
-                
+
                 # Add specific troubleshooting context
                 if "timeout" in error_msg.lower():
                     enhanced_error += " | Suggestion: Try a smaller file or check Azure OCR service status"
@@ -15438,7 +15483,7 @@ Return compliance status for each field.'''
                     enhanced_error += " | Suggestion: Check internet connection and Azure service availability"
                 else:
                     enhanced_error += " | Suggestion: Ensure file is not corrupted and retry the operation"
-                
+
                 return {
                     "file_name": file_name,
                     "error": enhanced_error,
@@ -15459,7 +15504,7 @@ Return compliance status for each field.'''
                     "troubleshooting": {
                         "possible_causes": [
                             "Document contains only images without text",
-                            "Document is scanned at very low resolution", 
+                            "Document is scanned at very low resolution",
                             "Document contains handwritten text (not supported)",
                             "Document is password protected or corrupted"
                         ],
@@ -15550,7 +15595,12 @@ Return compliance status for each field.'''
                 engine=extraction_model,
                 messages=[{"role": "user", "content": extraction_prompt}],
                 temperature=extraction_temp,
-                max_tokens=extraction_max_tokens
+                max_tokens=extraction_max_tokens,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
 
             extraction_result = extraction_response.choices[0].message.content
@@ -15572,9 +15622,9 @@ Return compliance status for each field.'''
             # === BACKGROUND COMPLIANCE ANALYSIS ===
             # Create file hash for tracking compliance status
             file_content_hash = hashlib.md5(f"{file_name}_{datetime.now().isoformat()}".encode()).hexdigest()
-            
+
             logger.info(f"🚀 Starting background compliance check for {file_content_hash}")
-            
+
             # Start compliance check in background thread (non-blocking)
             compliance_thread = threading.Thread(
                 target=run_compliance_check_background,
@@ -15582,22 +15632,22 @@ Return compliance status for each field.'''
                 daemon=True
             )
             compliance_thread.start()
-            
+
             # Set placeholder compliance result (will be updated by background thread)
             unified_compliance = {}
             compliance_analysis_time = 0.0  # Background processing time not counted
-            
+
             logger.info(f"✅ Compliance check running in background (hash: {file_content_hash})")
 
             # Transform compliance data for UI consumption
             def transform_compliance_for_ui(compliance_data, compliance_type):
                 """Transform field-level compliance data to UI-expected format"""
                 logger.info(f"MODE: Transforming {compliance_type} compliance data: {type(compliance_data)}")
-                
+
                 if not compliance_data:
                     logger.warning(f"No {compliance_type} compliance data to transform")
                     return None
-                
+
                 # Handle case where compliance_data is a string (JSON error case)
                 if isinstance(compliance_data, str):
                     logger.warning(f"{compliance_type} compliance data is string (likely JSON error): {compliance_data[:100]}...")
@@ -15609,32 +15659,32 @@ Return compliance status for each field.'''
                         "total_fields_checked": 0,
                         "compliant_fields": 0
                     }
-                
+
                 # Handle case where compliance_data is not a dict
                 if not isinstance(compliance_data, dict):
                     logger.warning(f"{compliance_type} compliance data is not dict: {type(compliance_data)}")
                     return {
-                        "status": "error", 
+                        "status": "error",
                         "violations": [{"field": "analysis", "description": f"Invalid compliance data format", "severity": "high"}],
                         "warnings": [],
                         "compliance_percentage": 0,
                         "total_fields_checked": 0,
                         "compliant_fields": 0
                     }
-                    
+
                 violations = []
                 warnings = []
                 compliant_count = 0
                 total_count = len(compliance_data)
-                
+
                 logger.info(f"Processing {total_count} {compliance_type} compliance fields")
-                
+
                 for field_name, field_data in compliance_data.items():
                     if isinstance(field_data, dict):
                         is_compliant = field_data.get("compliant", True)
                         severity = field_data.get("severity", "medium")
                         reason = field_data.get("reason", "Compliance check completed")
-                        
+
                         if is_compliant:
                             compliant_count += 1
                         else:
@@ -15643,15 +15693,15 @@ Return compliance status for each field.'''
                                 "description": reason,
                                 "severity": severity
                             }
-                            
+
                             if severity == "high":
                                 violations.append(issue)
                             else:
                                 warnings.append(issue)
-                
+
                 # Determine overall status
                 overall_status = "compliant" if len(violations) == 0 else "non-compliant"
-                
+
                 return {
                     "status": overall_status,
                     "violations": violations,
@@ -15666,11 +15716,11 @@ Return compliance status for each field.'''
             if unified_compliance:
                 compliant_count = 0
                 total_count = len(unified_compliance)
-                
+
                 for field_data in unified_compliance.values():
                     if isinstance(field_data, dict) and field_data.get("compliant", True):
                         compliant_count += 1
-                
+
                 if total_count > 0:
                     overall_compliance_score = round((compliant_count / total_count) * 100)
                     logger.info(f"ANALYTICS: Unified compliance: {compliant_count}/{total_count} fields compliant = {overall_compliance_score}%")
@@ -15698,7 +15748,7 @@ Return compliance status for each field.'''
             mandatory_fields = {}
             optional_fields = {}
             conditional_fields = {}
-            
+
             # If we have field mappings, categorize the extracted fields
             if field_mapping_data:
                 field_mappings = field_mapping_data.get('mappings', [])
@@ -15709,7 +15759,7 @@ Return compliance status for each field.'''
                         if mapping.get('entityName') == field_name:
                             field_type = mapping.get('fieldType', 'optional')
                             break
-                    
+
                     # Categorize based on field type
                     if field_type == 'mandatory':
                         mandatory_fields[field_name] = field_data
@@ -15807,7 +15857,7 @@ Return compliance status for each field.'''
             logger.error(f"ERROR: Error in config-based processing: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
-            
+
             # Enhanced error context
             error_context = {
                 "error_type": type(e).__name__,
@@ -15817,7 +15867,7 @@ Return compliance status for each field.'''
                 "timestamp": datetime.now().isoformat(),
                 "suggestions": []
             }
-            
+
             # Add specific suggestions based on error type
             error_str = str(e).lower()
             if "memory" in error_str or "out of memory" in error_str:
@@ -15830,7 +15880,7 @@ Return compliance status for each field.'''
                 error_context["suggestions"].append("Internal processing error - please try again or contact support")
             else:
                 error_context["suggestions"].append("Unexpected error occurred - please try again or contact support")
-            
+
             return {
                 "file_name": getattr(uploaded_file, 'filename', 'Unknown'),
                 "error": f"Processing failed: {str(e)}",
@@ -15851,28 +15901,28 @@ Return compliance status for each field.'''
         """
         OPTIMIZED: Instant quality check using file-based heuristics.
         Replaces slow Vision API (3-5s per page) with instant file analysis (<0.1s).
-        
+
         For 13-page doc: Vision API = 40-65s, Instant = <0.1s (99.8% faster!)
-        
+
         Heuristics:
         - File size (larger = better quality scans typically)
         - File type (PDFs from digital sources are usually high quality)
         - Page count estimate from file size
         - Filename patterns (scan/export indicators)
-        
+
         Returns same structure as Vision API for compatibility.
         """
         import os
-        
+
         try:
             # Get file metadata
             file_size = os.path.getsize(file_path)
             file_size_mb = file_size / (1024 * 1024)
-            
+
             # Estimate quality based on file characteristics
             quality_score = 0.7  # Default: good quality
             verdict = "pre_processing"  # Default verdict
-            
+
             # Size-based heuristics
             if file_type == "application/pdf":
                 # PDF quality indicators
@@ -15888,7 +15938,7 @@ Return compliance status for each field.'''
                     # Small PDFs - might be compressed or text-only
                     quality_score = 0.7
                     verdict = "pre_processing"
-                
+
                 # Estimate page count (rough: ~100KB per page average for PDFs)
                 estimated_pages = max(1, int(file_size_mb / 0.1))
             else:
@@ -15900,14 +15950,14 @@ Return compliance status for each field.'''
                 else:
                     quality_score = 0.65
                 estimated_pages = 1
-            
+
             # Filename pattern heuristics
             filename_lower = file_name.lower()
             if any(word in filename_lower for word in ['hq', 'high', 'quality', 'export', 'digital']):
                 quality_score = min(1.0, quality_score + 0.1)
             elif any(word in filename_lower for word in ['scan', 'fax', 'copy']):
                 quality_score = max(0.5, quality_score - 0.1)
-            
+
             # Build result (same format as Vision API for compatibility)
             result = {
                 "success": True,
@@ -15926,10 +15976,10 @@ Return compliance status for each field.'''
                     "Using standard OCR settings for optimal processing"
                 ]
             }
-            
+
             logger.info(f"⚡ INSTANT quality check: {verdict} (score: {quality_score:.3f}, {estimated_pages} pages, {round(file_size_mb, 1)}MB)")
             return result
-            
+
         except Exception as e:
             logger.error(f"Instant quality check failed: {e}")
             # Return safe defaults
@@ -15945,16 +15995,16 @@ Return compliance status for each field.'''
                 "recommendations": ["Using default settings"]
             }
 
-    def extract_fields_parallel(document_groups, document_classifier, extraction_model, 
+    def extract_fields_parallel(document_groups, document_classifier, extraction_model,
                                extraction_temp, extraction_max_tokens, file_name,
                                all_preview_images, quality_time, ocr_time, classification_time,
                                quality_result, progress_tracker):
         """
         OPTIMIZED: Extract fields from multiple document groups in PARALLEL using threading.
         This reduces total extraction time from (N × time_per_extraction) to max(time_per_extraction).
-        
+
         For 8 document groups: Sequential = 8×8s = 64s, Parallel = ~8-10s (85% faster!)
-        
+
         Args:
             document_groups: List of document groups to extract from
             document_classifier: DocumentClassifier instance
@@ -15968,62 +16018,63 @@ Return compliance status for each field.'''
             classification_time: Classification time
             quality_result: Quality analysis result
             progress_tracker: Progress tracking object
-            
+
         Returns:
             list: Extraction results for all document groups
         """
         import threading
         import queue
         import time
-        
+
         results_queue = queue.Queue()
         threads = []
-        
+
         def extract_single_group(idx, group):
             """Extract fields for a single document group (runs in separate thread)"""
             try:
                 logger.info(f"🧵 Thread {idx}: Extracting {group['document_type']}")
                 extraction_start = time.time()
-                
+
                 # Build extraction prompt
                 extraction_prompt = document_classifier.build_extraction_prompt(
                     document_type=group['document_type'],
                     ocr_text=group['text'],
                     page_number=group['pages'][0]
                 )
-                
+
                 logger.info(f"📝 Thread {idx}: Built extraction prompt ({len(extraction_prompt)} chars)")
                 logger.info(f"📝 Thread {idx}: Prompt preview (first 1000 chars): {extraction_prompt[:1000]}")
-                
+
                 # Add field mappings
                 field_mapping_data = load_document_field_mappings(group['document_type'])
                 if field_mapping_data:
                     field_mapping_example = field_mapping_data.get('example', '')
                     extraction_prompt += f"\n\n{field_mapping_example}"
                     logger.info(f"📝 Thread {idx}: Added field mapping examples ({len(field_mapping_example)} chars)")
-                
+
                 logger.info(f"🤖 Thread {idx}: Calling LLM API (model: {extraction_model}, temp: {extraction_temp}, max_tokens: {extraction_max_tokens})")
-                
+
                 # Call LLM for extraction
                 extraction_response = openai.ChatCompletion.create(
                     engine=extraction_model,
                     messages=[{"role": "user", "content": extraction_prompt}],
                     temperature=extraction_temp,
                     max_tokens=extraction_max_tokens,
-                    seed=12345,
-                    top_p=1.0,
+                    seed=12345,  # ✅ Reproducibility
+                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                     frequency_penalty=0,
-                    presence_penalty=0
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
                 )
                 extraction_result = extraction_response.choices[0].message.content
-                
+
                 logger.info(f"✅ Thread {idx}: Received LLM response ({len(extraction_result)} chars)")
-                
+
                 # Parse extraction result
                 try:
                     # Log raw response for debugging
                     logger.info(f"🔍 Thread {idx}: Raw LLM response (first 500 chars): {extraction_result[:500]}")
-                    
+
                     # Try to extract JSON from markdown code blocks if present
                     if '```json' in extraction_result:
                         json_start = extraction_result.find('```json') + 7
@@ -16033,7 +16084,7 @@ Return compliance status for each field.'''
                         json_start = extraction_result.find('```') + 3
                         json_end = extraction_result.find('```', json_start)
                         extraction_result = extraction_result[json_start:json_end].strip()
-                    
+
                     extraction_json = json.loads(extraction_result)
                     extracted_fields = extraction_json.get('extracted_fields', {})
                     logger.info(f"✅ Thread {idx}: Successfully parsed {len(extracted_fields)} fields from JSON")
@@ -16044,10 +16095,10 @@ Return compliance status for each field.'''
                 except Exception as e:
                     logger.error(f"❌ Thread {idx}: Unexpected error during parsing: {e}")
                     extracted_fields = {}
-                
+
                 extraction_time = time.time() - extraction_start
                 logger.info(f"✅ Thread {idx}: Extracted {len(extracted_fields)} fields in {extraction_time:.2f}s")
-                
+
                 # Start background compliance check
                 file_content_hash = hashlib.md5(f"{file_name}_{group['document_type']}_{datetime.now().isoformat()}".encode()).hexdigest()
                 compliance_thread = threading.Thread(
@@ -16056,7 +16107,7 @@ Return compliance status for each field.'''
                     daemon=True
                 )
                 compliance_thread.start()
-                
+
                 # Build result object (simplified - no transform_compliance_for_ui)
                 result = build_extraction_result(
                     group, extracted_fields, field_mapping_data, file_name,
@@ -16064,40 +16115,40 @@ Return compliance status for each field.'''
                     extraction_time, quality_result, extraction_model, extraction_temp,
                     file_content_hash
                 )
-                
+
                 # Put result in queue with index for proper ordering
                 results_queue.put((idx, result))
-                
+
                 # Update progress
                 if progress_tracker:
                     progress_tracker.update_field_extraction(current_field=idx, total_fields=len(document_groups))
-                
+
             except Exception as e:
                 logger.error(f"❌ Thread {idx} error: {e}")
                 import traceback
                 logger.error(traceback.format_exc())
                 results_queue.put((idx, None))
-        
+
         # Start all extraction threads
         for idx, group in enumerate(document_groups, 1):
             thread = threading.Thread(target=extract_single_group, args=(idx, group), daemon=False)
             thread.start()
             threads.append(thread)
-        
+
         # Wait for all threads to complete
         for thread in threads:
             thread.join()
-        
+
         # Collect results in correct order
         results_dict = {}
         while not results_queue.empty():
             idx, result = results_queue.get()
             if result:
                 results_dict[idx] = result
-        
+
         # Return results in order
         results = [results_dict[i] for i in sorted(results_dict.keys()) if i in results_dict]
-        
+
         logger.info(f"✅ Parallel extraction complete: {len(results)} document groups processed")
         return results
 
@@ -16113,10 +16164,10 @@ Return compliance status for each field.'''
         mandatory_fields = {}
         optional_fields = {}
         conditional_fields = {}
-        
+
         # Extract coordinate mapping stats before categorization
         coordinate_mapping_stats = extracted_fields.pop('_coordinate_mapping_stats', None)
-        
+
         # Single-pass categorization
         if field_mapping_data:
             # Build field type lookup for O(1) access
@@ -16126,11 +16177,11 @@ Return compliance status for each field.'''
                 field_type = mapping.get('fieldType', 'optional')
                 if entity_name:
                     field_type_map[entity_name] = field_type
-            
+
             # Single loop through extracted fields
             for field_name, field_data in extracted_fields.items():
                 field_type = field_type_map.get(field_name, 'optional')
-                
+
                 if field_type == 'mandatory':
                     mandatory_fields[field_name] = field_data
                 elif field_type == 'conditional':
@@ -16140,11 +16191,11 @@ Return compliance status for each field.'''
         else:
             # No mappings - all optional
             optional_fields = extracted_fields
-        
+
         # Calculate verdict from quality result
         verdict = quality_result.get("verdict", "pre_processing") if quality_result else "pre_processing"
         quality_score = quality_result.get("quality_score", 0.5) if quality_result else 0.5
-        
+
         # Build result
         result = {
             "file_name": file_name,
@@ -16216,30 +16267,30 @@ Return compliance status for each field.'''
             },
             "field_mapping_enhanced": bool(field_mapping_data)
         }
-        
+
         return result
 
     def classify_pages_batch(pages_ocr_data, document_classifier):
         """
         OPTIMIZED: Classify all pages in a single batch API call instead of one-by-one.
         This reduces API calls from N to 1, dramatically improving speed for multi-page documents.
-        
+
         Args:
             pages_ocr_data: List of OCR data for each page
             document_classifier: DocumentClassifier instance
-            
+
         Returns:
             list: Page classifications with document_type, confidence, etc.
         """
         try:
             import json
             import openai
-            
+
             # Build compact page summaries for batch classification
             pages_summary = []
             for page_num, page_data in enumerate(pages_ocr_data, 1):
                 page_text = "\n".join([text['text'] for text in page_data])
-                
+
                 # Skip empty pages
                 if len(page_text.strip()) < 50:
                     pages_summary.append({
@@ -16255,25 +16306,25 @@ Return compliance status for each field.'''
                         'text': truncated_text,
                         'chars': len(page_text)
                     })
-            
+
             # Get available document types by category
             doc_types_by_category = {}
             for cat_id, cat_name in document_classifier.document_categories.items():
                 doc_types_by_category[cat_name] = []
-            
+
             for doc_id, mapping in document_classifier.entity_mappings.items():
                 category_name = mapping.get('documentCategoryName', 'Other')
                 document_name = mapping.get('documentName', doc_id)
                 if category_name in doc_types_by_category:
                     if document_name not in doc_types_by_category[category_name]:
                         doc_types_by_category[category_name].append(document_name)
-            
+
             # Build categorized document list
             category_sections = []
             for category_name in sorted(doc_types_by_category.keys()):
                 if doc_types_by_category[category_name]:
                     category_sections.append(f"**{category_name}:**\n{', '.join(sorted(doc_types_by_category[category_name]))}")
-            
+
             # Build batch classification prompt
             batch_prompt = f"""You are an expert document classifier for international trade and finance documents.
 
@@ -16313,31 +16364,36 @@ Guidelines:
 - Provide concise reasoning for each classification"""
 
             logger.info(f"📤 Sending batch classification request for {len(pages_summary)} pages...")
-            
+
             # Single API call for all pages
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[{"role": "user", "content": batch_prompt}],
                 temperature=0.1,
-                max_tokens=2000  # Increased for multiple pages
+                max_tokens=2000,  # Increased for multiple pages
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
-            
+
             response_text = response.choices[0].message.content.strip()
-            
+
             # Clean up response
             if response_text.startswith('```json'):
                 response_text = response_text.replace('```json', '').replace('```', '')
             elif response_text.startswith('```'):
                 response_text = response_text.replace('```', '')
             response_text = response_text.strip()
-            
+
             # Parse batch response
             batch_result = json.loads(response_text)
             pages_data = batch_result.get('pages', [])
-            
+
             if len(pages_data) != len(pages_ocr_data):
                 logger.warning(f"⚠️ Batch classification returned {len(pages_data)} results but expected {len(pages_ocr_data)}")
-            
+
             # Build page classifications from batch result
             page_classifications = []
             for idx, page_info in enumerate(pages_data):
@@ -16346,7 +16402,7 @@ Guidelines:
                 is_continuation = page_info.get('is_continuation', False)
                 confidence = page_info.get('confidence', 0.8)
                 reasoning = page_info.get('reasoning', '')
-                
+
                 # Get original page text
                 if page_num - 1 < len(pages_ocr_data):
                     page_data = pages_ocr_data[page_num - 1]
@@ -16354,7 +16410,7 @@ Guidelines:
                 else:
                     page_text = ""
                     page_data = []
-                
+
                 # Apply continuation logic
                 if is_continuation and len(page_classifications) > 0:
                     prev_type = page_classifications[-1]['document_type']
@@ -16370,9 +16426,9 @@ Guidelines:
                     final_document_type = document_type
                     final_confidence = confidence * 100 if confidence <= 1.0 else confidence
                     logger.info(f"  Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
-                
+
                 logger.info(f"    ↳ {reasoning}")
-                
+
                 page_classifications.append({
                     'page': page_num,
                     'document_type': final_document_type,
@@ -16381,10 +16437,10 @@ Guidelines:
                     'ocr_data': page_data,
                     'is_continuation': is_continuation
                 })
-            
+
             logger.info(f"✅ Batch classification completed: {len(page_classifications)} pages classified in single API call")
             return page_classifications
-            
+
         except Exception as e:
             logger.error(f"❌ Batch classification failed: {e}")
             import traceback
@@ -16418,7 +16474,7 @@ Guidelines:
 
         # Initialize quality analyzer for parallel processing
         quality_analyzer = DocumentQualityAnalyzer()
-        
+
         temp_file_path = None  # Track temp file for cleanup
         try:
             file_name = uploaded_file.filename
@@ -16446,7 +16502,7 @@ Guidelines:
 
             logger.info(f"SEARCH: STEP 1/5: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
             quality_start = time.time()
-            
+
             # OPTIMIZATION: Use PARALLEL Vision API quality analysis
             # Old: Sequential (3-5s × 13 pages = 40-65s)
             # New: Parallel threading (all pages at once = ~3-5s total!)
@@ -16456,12 +16512,12 @@ Guidelines:
                 progress_tracker
             )
             quality_time = time.time() - quality_start
-            
+
             if quality_result.get("success", False):
                 verdict = quality_result.get("verdict", "pre_processing")
                 quality_score = quality_result.get("quality_score", 0.5)
                 logger.info(f"SUCCESS:PARALLEL quality analysis in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
-                
+
                 if progress_tracker:
                     progress_tracker.quality_complete(verdict, quality_score)
             else:
@@ -16469,7 +16525,7 @@ Guidelines:
                 logger.warning(f"WARNINGS: Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
                 verdict = "pre_processing"  # Default fallback
                 quality_score = 0.5
-                
+
                 if progress_tracker:
                     progress_tracker.quality_complete("fallback", quality_score)
 
@@ -16479,20 +16535,20 @@ Guidelines:
 
             logger.info(f" STEP 2/5: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
             ocr_start = time.time()
-            
+
             # OPTIMIZATION: Estimate page count for timeout calculation
             estimated_pages = quality_result.get("pages_analyzed", 1) if quality_result else 1
-            
+
             # Use optimized OCR with quality-based optimization
             extracted_text_data = extract_text_with_retry_optimized(
-                temp_file_path, 
+                temp_file_path,
                 file_type,
                 quality_verdict=verdict,
                 page_count=estimated_pages
             )
             text_data = extracted_text_data.get("text_data", [])
             ocr_time = time.time() - ocr_start
-            
+
             # Enhanced logging with optimization stats
             if "optimization_stats" in extracted_text_data:
                 stats = extracted_text_data["optimization_stats"]
@@ -16533,7 +16589,7 @@ Guidelines:
             # OPTIMIZATION: Always use batch classification for speed (single API call for all pages)
             logger.info(f"🚀 OPTIMIZATION: Using BATCH classification for {len(pages_ocr_data)} pages (single API call)")
             page_classifications = classify_pages_batch(pages_ocr_data, document_classifier)
-            
+
             # If batch classification fails completely, fall back to simple classification
             if not page_classifications:
                 logger.warning(f"⚠️ Batch classification failed, using simple fallback")
@@ -16569,7 +16625,7 @@ Guidelines:
 
             # === STEP 5: GROUP CONSECUTIVE PAGES BY DOCUMENT TYPE ===
             logger.info(f"STEP 4/5: GROUPING pages by document type")
-            
+
             # Debug: Log all page classifications before grouping
             logger.info("SEARCH: DEBUG: Page classifications before grouping:")
             for i, page_class in enumerate(page_classifications):
@@ -16595,7 +16651,7 @@ Guidelines:
                     if current_group:
                         logger.info(f" Completed group: {current_group['document_type']} (Pages: {current_group['pages']})")
                         document_groups.append(current_group)
-                    
+
                     logger.info(f"Starting new group: {page_class['document_type']} (Page {page_class['page']})")
                     current_group = {
                         'document_type': page_class['document_type'],
@@ -16659,14 +16715,14 @@ Guidelines:
 
             # OPTIMIZATION: Parallel extraction for multiple document groups
             use_parallel_extraction = len(document_groups) > 1  # Use parallel for 2+ groups
-            
+
             if use_parallel_extraction:
                 logger.info(f"🚀 OPTIMIZATION: Using PARALLEL extraction for {len(document_groups)} document groups")
                 results = extract_fields_parallel(
-                    document_groups, 
-                    document_classifier, 
-                    extraction_model, 
-                    extraction_temp, 
+                    document_groups,
+                    document_classifier,
+                    extraction_model,
+                    extraction_temp,
                     extraction_max_tokens,
                     file_name,
                     all_preview_images,
@@ -16679,14 +16735,14 @@ Guidelines:
             else:
                 logger.info(f"📄 Using sequential extraction for {len(document_groups)} document group(s)")
                 results = []
-                
+
                 for idx, group in enumerate(document_groups, 1):
                     logger.info(f"MODE: Extracting fields for {group['document_type']} (Group {idx}/{len(document_groups)})")
-                
+
                 # Progress: Update field extraction progress
                 if progress_tracker:
                     progress_tracker.update_field_extraction(current_field=idx, total_fields=len(document_groups))
-                
+
                 extraction_start = time.time()
 
                 # Build extraction prompt
@@ -16697,7 +16753,7 @@ Guidelines:
                 )
                 logger.info(f"📝 Built extraction prompt ({len(extraction_prompt)} chars)")
                 logger.info(f"📝 Prompt preview (first 1000 chars): {extraction_prompt[:1000]}")
-                
+
                 # Add field mappings
                 field_mapping_data = load_document_field_mappings(group['document_type'])
                 field_mapping_example = None
@@ -16718,7 +16774,7 @@ Guidelines:
                 if enable_parallel and parallel_attempts > 1:
                     # ======= PARALLEL EXTRACTION FOR THIS DOCUMENT =======
                     logger.info(f"🔄 Using parallel extraction: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
-                    
+
                     # Perform parallel extraction
                     extraction_results = extract_entities_parallel(
                         prompt=extraction_prompt,
@@ -16726,40 +16782,45 @@ Guidelines:
                         temperature=extraction_temp,
                         num_attempts=parallel_attempts
                     )
-                    
+
                     # Aggregate results
                     extraction_json = aggregate_extracted_fields(
                         extraction_results=extraction_results,
                         strategy=aggregation_strategy,
                         confidence_threshold=confidence_threshold
                     )
-                    
+
                     extracted_fields = extraction_json.get('extracted_fields', {})
                     if not extracted_fields:
                         logger.error("❌ Parallel extraction aggregation returned no fields")
                     else:
                         logger.info(f"✅ Parallel extraction successful: {len(extracted_fields)} aggregated fields")
-                        
+
                 else:
                     # ======= SINGLE EXTRACTION (Original) =======
                     logger.info(f"📤 Using single extraction call")
-                    
+
                     # Call LLM for extraction
                     extraction_response = openai.ChatCompletion.create(
                         engine=extraction_model,
                         messages=[{"role": "user", "content": extraction_prompt}],
-                        temperature=extraction_temp,
-                        max_tokens=extraction_max_tokens
+                        temperature=0,
+                        max_tokens=extraction_max_tokens,
+                        seed=12345,  # ✅ Reproducibility
+                        top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                        frequency_penalty=0,
+                        presence_penalty=0,
+                        response_format={"type": "json_object"}
                     )
                     extraction_result = extraction_response.choices[0].message.content
-                    
+
                     logger.info(f"✅ Received LLM response ({len(extraction_result)} chars)")
-                    
+
                     # Parse extraction result
                     try:
                         # Log raw response for debugging
                         logger.info(f"🔍 Raw LLM response (first 500 chars): {extraction_result[:500]}")
-                        
+
                         # Try to extract JSON from markdown code blocks if present
                         if '```json' in extraction_result:
                             json_start = extraction_result.find('```json') + 7
@@ -16771,7 +16832,7 @@ Guidelines:
                             json_end = extraction_result.find('```', json_start)
                             extraction_result = extraction_result[json_start:json_end].strip()
                             logger.info("🔍 Extracted content from generic code block")
-                        
+
                         extraction_json = json.loads(extraction_result)
                         extracted_fields = extraction_json.get('extracted_fields', {})
                         logger.info(f"✅ Successfully parsed {len(extracted_fields)} fields from JSON")
@@ -16790,14 +16851,14 @@ Guidelines:
                 # === BACKGROUND COMPLIANCE ANALYSIS ===
                 file_content_hash = hashlib.md5(f"{file_name}_{group['document_type']}_{datetime.now().isoformat()}".encode()).hexdigest()
                 logger.info(f"🚀 Starting background compliance check for {file_content_hash}")
-                
+
                 compliance_thread = threading.Thread(
                     target=run_compliance_check_background,
                     args=(file_content_hash, extracted_fields, group['document_type']),
                     daemon=True
                 )
                 compliance_thread.start()
-                
+
                 logger.info(f"✅ Compliance check running in background (hash: {file_content_hash})")
 
                 # Build result using simplified helper function
@@ -16811,9 +16872,9 @@ Guidelines:
 
             # Mark field extraction complete AFTER all document groups are processed
             if progress_tracker:
-                total_extracted = sum(len(result.get("extraction", {}).get("mandatory", {})) + 
-                                    len(result.get("extraction", {}).get("optional", {})) + 
-                                    len(result.get("extraction", {}).get("conditional", {})) 
+                total_extracted = sum(len(result.get("extraction", {}).get("mandatory", {})) +
+                                    len(result.get("extraction", {}).get("optional", {})) +
+                                    len(result.get("extraction", {}).get("conditional", {}))
                                     for result in results)
                 progress_tracker.field_extraction_complete(extracted_count=total_extracted)
                 logger.info(f"✅ All extractions complete - {total_extracted} total fields extracted from {len(results)} document groups")
@@ -16839,9 +16900,9 @@ Guidelines:
             # Progress: Complete with summary
             if progress_tracker:
                 total_docs = len(results)
-                total_fields = sum(len(result.get("extraction", {}).get("mandatory", {})) + 
-                               len(result.get("extraction", {}).get("optional", {})) + 
-                               len(result.get("extraction", {}).get("conditional", {})) 
+                total_fields = sum(len(result.get("extraction", {}).get("mandatory", {})) +
+                               len(result.get("extraction", {}).get("optional", {})) +
+                               len(result.get("extraction", {}).get("conditional", {}))
                                for result in results)
                 progress_tracker.complete_with_summary(
                     doc_type=f"{total_docs} document types",
@@ -16853,50 +16914,50 @@ Guidelines:
             logger.info(f"SAVE: === STORING OCR DATA FOR COORDINATE SEARCH ===")
             all_ocr_data = []
             ocr_stats = {'total_entries': 0, 'pages': 0, 'text_entries': 0, 'with_bbox': 0}
-            
+
             for group_idx, group in enumerate(document_groups):
                 group_ocr = group.get('ocr_data', [])
                 logger.info(f" Group {group_idx + 1} ({group.get('document_type', 'Unknown')}): {len(group_ocr)} OCR entries")
                 logger.info(f"   Group covers pages: {group.get('pages', 'Unknown')}")
-                
+
                 # Log sample entries from each group with detailed page info
                 if group_ocr:
                     sample_entry = group_ocr[0]
                     logger.info(f"   Sample entry: text='{sample_entry.get('text', '')[:30]}...', bbox={sample_entry.get('bounding_box', [])}, page={sample_entry.get('bounding_page', 'N/A')}")
-                
+
                 # Check page distribution within this group
                 group_page_counts = {}
                 for entry in group_ocr:
                     ocr_stats['total_entries'] += 1
                     page = entry.get('bounding_page', 'unknown')
                     group_page_counts[page] = group_page_counts.get(page, 0) + 1
-                    
+
                     if entry.get('text'):
                         ocr_stats['text_entries'] += 1
                     if entry.get('bounding_box'):
                         ocr_stats['with_bbox'] += 1
-                
+
                 logger.info(f"   Page distribution in group: {dict(sorted(group_page_counts.items()))}")
-                
+
                 all_ocr_data.extend(group_ocr)
                 ocr_stats['pages'] = max(ocr_stats['pages'], group.get('pages', [0])[-1] if group.get('pages') else 0)
-            
+
             # NOTE: OCR data stored in temp file, not session (session cookie size limit)
             # session['current_ocr_data'] = all_ocr_data  # REMOVED - causes cookie overflow
-            
+
             # Store OCR data in a temporary file for coordinate search API
             import tempfile as temp_module
             import pickle
             import uuid
             import glob
-            
+
             # Clean up old OCR temp files (older than 1 hour)
             try:
                 temp_dir = temp_module.gettempdir()
                 old_files = glob.glob(os.path.join(temp_dir, "ocr_data_*.pkl"))
                 current_time = time.time()
                 cleaned_count = 0
-                
+
                 for file_path in old_files:
                     try:
                         file_age = current_time - os.path.getctime(file_path)
@@ -16905,16 +16966,16 @@ Guidelines:
                             cleaned_count += 1
                     except Exception:
                         pass  # Ignore cleanup errors
-                
+
                 if cleaned_count > 0:
                     logger.info(f"Cleaned up {cleaned_count} old OCR temp files")
             except Exception as e:
                 logger.warning(f"Failed to cleanup old OCR temp files: {e}")
-            
+
             # Generate unique session identifier for OCR data
             ocr_session_id = str(uuid.uuid4())
             session['ocr_session_id'] = ocr_session_id
-            
+
             # Store OCR data in temporary file
             ocr_temp_file = os.path.join(temp_module.gettempdir(), f"ocr_data_{ocr_session_id}.pkl")
             try:
@@ -16924,26 +16985,26 @@ Guidelines:
                 logger.info(f" OCR session ID: {ocr_session_id}")
             except Exception as e:
                 logger.error(f"Failed to store OCR data in temp file: {e}")
-            
+
             logger.info(f"OCR DATA STORAGE SUMMARY:")
             logger.info(f"   Total OCR entries stored: {len(all_ocr_data)}")
             logger.info(f"   Entries with text: {ocr_stats['text_entries']}")
             logger.info(f"   Entries with bounding boxes: {ocr_stats['with_bbox']}")
             logger.info(f"   Document pages: {ocr_stats['pages']}")
-            
+
             # Final page distribution check
             final_page_counts = {}
             for entry in all_ocr_data:
                 page = entry.get('bounding_page', 'unknown')
                 final_page_counts[page] = final_page_counts.get(page, 0) + 1
             logger.info(f"   Final page distribution: {dict(sorted(final_page_counts.items()))}")
-            
+
             # Log a few sample entries for debugging
             if all_ocr_data:
                 logger.info(f"PARAMETERS: Sample OCR entries (first 3):")
                 for i, sample in enumerate(all_ocr_data[:3]):
                     logger.info(f"   Entry {i+1}: '{sample.get('text', '')[:50]}...' (page: {sample.get('bounding_page', 'N/A')})")
-            
+
             logger.info(f"SUCCESS:OCR data successfully stored in session for coordinate search API")
 
             return results
@@ -17066,23 +17127,23 @@ Guidelines:
         Returns status and result if completed.
         """
         global compliance_status_tracker
-        
+
         try:
             logger.info(f"📊 Checking compliance status for hash: {file_hash}")
             logger.info(f"📋 Available hashes in tracker: {list(compliance_status_tracker.keys())}")
-            
+
             if file_hash not in compliance_status_tracker:
                 logger.warning(f"❌ Hash {file_hash} not found in tracker")
                 return jsonify({
                     "status": "not_found",
                     "message": "No compliance check found for this file"
                 }), 404
-            
+
             tracker_data = compliance_status_tracker[file_hash]
             status = tracker_data.get('status', 'unknown')
-            
+
             logger.info(f"📊 Status for {file_hash}: {status}")
-            
+
             if status == 'completed':
                 result_data = tracker_data.get('result', {})
                 logger.info(f"✅ Compliance completed for {file_hash} - {len(result_data)} fields")
@@ -17113,7 +17174,7 @@ Guidelines:
                     "status": "unknown",
                     "compliance_ready": False
                 })
-                
+
         except Exception as e:
             logger.error(f"❌ Error checking compliance status: {e}")
             import traceback
@@ -17128,51 +17189,51 @@ Guidelines:
         """Extract text from a specific region of a document image"""
         try:
             data = request.get_json()
-            
+
             # Get parameters
             image_base64 = data.get('image')
             region = data.get('region')  # {x, y, width, height, page}
             document_id = data.get('document_id')
-            
+
             if not image_base64 or not region:
                 return jsonify({
                     'success': False,
                     'error': 'Missing required parameters'
                 }), 400
-            
+
             # Decode base64 image
             image_data = base64.b64decode(image_base64.split(',')[1] if ',' in image_base64 else image_base64)
             image = Image.open(BytesIO(image_data))
-            
+
             # Convert PIL image to numpy array
             img_array = np.array(image)
-            
+
             # Extract region coordinates
             x = int(region['x'])
             y = int(region['y'])
             width = int(region['width'])
             height = int(region['height'])
-            
+
             # Crop the image to the selected region
             cropped = img_array[y:y+height, x:x+width]
-            
+
             # Perform OCR on the cropped region
             try:
                 # Option 1: Use Azure Computer Vision OCR if available
                 # Option 2: Use pytesseract for local OCR
                 # Option 3: Use existing document OCR data if available
-                
+
                 # For now, let's use Azure OpenAI to analyze the cropped region
                 # Convert cropped image back to base64
                 cropped_pil = Image.fromarray(cropped)
                 buffered = BytesIO()
                 cropped_pil.save(buffered, format="PNG")
                 cropped_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-                
+
                 # Use GPT-4 Vision to extract text
                 prompt = """Extract all text visible in this image region. 
                 Return only the extracted text, no additional formatting or explanation."""
-                
+
                 messages = [
                     {
                         "role": "system",
@@ -17186,25 +17247,30 @@ Guidelines:
                         ]
                     }
                 ]
-                
+
                 response = openai.ChatCompletion.create(
                     engine=deployment_name,
                     messages=messages,
                     temperature=0.0,
-                    max_tokens=500
+                    max_tokens=500,
+                    seed=12345,  # ✅ Reproducibility
+                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
                 )
-                
+
                 extracted_text = response.choices[0].message.content.strip()
-                
+
                 return jsonify({
                     'success': True,
                     'extracted_text': extracted_text,
                     'region': region
                 })
-                
+
             except Exception as ocr_error:
                 logger.error(f"OCR extraction error: {str(ocr_error)}")
-                
+
                 # Fallback: return placeholder text
                 return jsonify({
                     'success': True,
@@ -17212,7 +17278,7 @@ Guidelines:
                     'region': region,
                     'warning': 'OCR service unavailable, using placeholder'
                 })
-            
+
         except Exception as e:
             logger.error(f"Error extracting text from region: {str(e)}")
             return jsonify({
@@ -17296,8 +17362,8 @@ Guidelines:
                 'success': False,
                 'error': str(e)
             }), 500
-        
-        
+
+
     def classify_and_check_compliance(uploaded_file, check_compliance=True, product_name=None, function_name=None, document_type=None, progress_tracker=None):
         """Classify document and check compliance with progress tracking"""
         import time
@@ -17743,7 +17809,12 @@ Guidelines:
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.0,
-                max_tokens=1000
+                max_tokens=1000,
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
 
             # Parse response
@@ -17841,15 +17912,15 @@ Guidelines:
             user = UserRepository.get_user_by_id(session["user_id"])
             if not user:
                 return jsonify({"success": False, "message": "User not found"}), 401
-            
+
             # Check if user is allowed
             if user["email"].lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return jsonify({"success": False, "message": "Access denied"}), 403
-            
+
             # Load document types from DOC_LIST directory
             doc_list_path = Path(app.root_path) / "prompts" / "EE" / "DOC_LIST"
             document_types = []
-            
+
             if doc_list_path.exists():
                 for filename in os.listdir(str(doc_list_path)):
                     if filename.endswith(".json"):
@@ -17858,7 +17929,7 @@ Guidelines:
                             doc_type = filename.replace("_OCR_Fields.json", "")
                         else:
                             doc_type = filename.replace(".json", "")
-                        
+
                         # Load fields from file
                         filepath = doc_list_path / filename
                         try:
@@ -17879,16 +17950,16 @@ Guidelines:
                         except Exception as e:
                             logger.error(f"Failed to load function fields from {filename}: {e}")
                             fields = []
-                        
+
                         # Format document type name properly
                         display_name = doc_type.replace("_", " ").title()
-                        
+
                         # Log successful loading
                         if fields:
                             logger.info(f"Loaded {len(fields)} fields for document type: {display_name} from {filename}")
                         else:
                             logger.info(f"No fields found for document type: {display_name} from {filename}")
-                        
+
                         document_types.append({
                             "name": display_name,
                             "original_name": doc_type,
@@ -17896,16 +17967,16 @@ Guidelines:
                             "fields": fields,
                             "field_count": len(fields) if isinstance(fields, list) else 0
                         })
-            
+
             return jsonify({
                 "success": True,
                 "document_types": document_types
             })
-            
+
         except Exception as e:
             logger.error(f"Error getting document types: {str(e)}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/document-types/ocr-fields', methods=['POST'])
     @login_required
     def create_document_type_ocr_fields():
@@ -17915,43 +17986,43 @@ Guidelines:
             user = UserRepository.get_user_by_id(session["user_id"])
             if not user:
                 return jsonify({"success": False, "message": "User not found"}), 401
-            
+
             # Check if user is allowed
             if user["email"].lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return jsonify({"success": False, "message": "Access denied"}), 403
-            
+
             data = request.json
             doc_type_name = data.get("name")
             fields = data.get("fields", [])
-            
+
             if not doc_type_name:
                 return jsonify({"success": False, "message": "Document type name required"}), 400
-            
+
             # Sanitize filename
             filename_base = doc_type_name.replace(" ", "_").replace("-", "_")
             filename = f"{filename_base}_OCR_Fields.json"
-            
+
             doc_list_path = Path(app.root_path) / "prompts" / "EE" / "DOC_LIST"
             filepath = doc_list_path / filename
-            
+
             # Check if already exists
             if filepath.exists():
                 return jsonify({"success": False, "message": "Document type already exists"}), 400
-            
+
             # Create the file with fields
             with open(str(filepath), 'w') as f:
                 json.dump(fields, f, indent=2)
-            
+
             return jsonify({
                 "success": True,
                 "message": f"Document type '{doc_type_name}' created successfully",
                 "filename": filename
             })
-            
+
         except Exception as e:
             logger.error(f"Error creating document type: {str(e)}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/document-types/ocr-fields/<doc_type>', methods=['PUT'])
     @login_required
     def update_document_type_ocr_fields(doc_type):
@@ -17961,17 +18032,17 @@ Guidelines:
             user = UserRepository.get_user_by_id(session["user_id"])
             if not user:
                 return jsonify({"success": False, "message": "User not found"}), 401
-            
+
             # Check if user is allowed
             if user["email"].lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return jsonify({"success": False, "message": "Access denied"}), 403
-            
+
             data = request.json
             fields = data.get("fields", [])
-            
+
             # Find the file
             doc_list_path = Path(app.root_path) / "prompts" / "EE" / "DOC_LIST"
-            
+
             # Try different filename patterns
             # Handle both URL encoded and regular spaces
             doc_type_normalized = doc_type.replace('%20', ' ')
@@ -17985,7 +18056,7 @@ Guidelines:
                 f"{doc_type_normalized.replace(' ', '_')}_OCR_Fields.json",
                 f"{doc_type_normalized.replace(' ', '_')}.json"
             ]
-            
+
             filepath = None
             for possible_file in possible_files:
                 test_path = doc_list_path / possible_file
@@ -17993,15 +18064,15 @@ Guidelines:
                     filepath = test_path
                     logger.info(f"Found file for update: {filepath}")
                     break
-            
+
             if not filepath:
                 logger.error(f"Document type file not found for: {doc_type}")
                 return jsonify({"success": False, "message": "Document type not found"}), 404
-            
+
             # Validate fields structure
             if not isinstance(fields, list):
                 return jsonify({"success": False, "message": "Fields must be a list"}), 400
-            
+
             # Validate each field has required properties
             for field in fields:
                 if not isinstance(field, dict):
@@ -18012,7 +18083,7 @@ Guidelines:
                 field.setdefault('type', 'text')
                 field.setdefault('required', False)
                 field.setdefault('description', '')
-            
+
             # Update the file
             try:
                 with open(str(filepath), 'w') as f:
@@ -18021,24 +18092,24 @@ Guidelines:
             except Exception as e:
                 logger.error(f"Failed to write to {filepath}: {e}")
                 return jsonify({"success": False, "message": f"Failed to save: {str(e)}"}), 500
-            
+
             # Reload document classifier to pick up changes if it exists
             try:
                 global document_classifier
                 document_classifier = DocumentClassifier()
             except:
                 pass  # Document classifier might not be initialized
-            
+
             return jsonify({
                 "success": True,
                 "message": f"Document type '{doc_type}' updated successfully with {len(fields)} fields",
                 "field_count": len(fields)
             })
-            
+
         except Exception as e:
             logger.error(f"Error updating document type: {str(e)}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/document-types/ocr-fields/<doc_type>', methods=['DELETE'])
     @login_required
     def delete_document_type_ocr_fields(doc_type):
@@ -18048,14 +18119,14 @@ Guidelines:
             user = UserRepository.get_user_by_id(session["user_id"])
             if not user:
                 return jsonify({"success": False, "message": "User not found"}), 401
-            
+
             # Check if user is allowed
             if user["email"].lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return jsonify({"success": False, "message": "Access denied"}), 403
-            
+
             # Find the file
             doc_list_path = Path(app.root_path) / "prompts" / "EE" / "DOC_LIST"
-            
+
             # Try different filename patterns
             possible_files = [
                 f"{doc_type}_OCR_Fields.json",
@@ -18063,29 +18134,29 @@ Guidelines:
                 f"{doc_type.replace(' ', '_')}_OCR_Fields.json",
                 f"{doc_type.replace(' ', '_')}.json"
             ]
-            
+
             filepath = None
             for possible_file in possible_files:
                 test_path = doc_list_path / possible_file
                 if test_path.exists():
                     filepath = test_path
                     break
-            
+
             if not filepath:
                 return jsonify({"success": False, "message": "Document type not found"}), 404
-            
+
             # Delete the file
             os.remove(str(filepath))
-            
+
             # Reload document classifier to pick up changes
             global document_classifier
             document_classifier = DocumentClassifier()
-            
+
             return jsonify({
                 "success": True,
                 "message": f"Document type '{doc_type}' deleted successfully"
             })
-            
+
         except Exception as e:
             logger.error(f"Error deleting document type: {str(e)}")
             return jsonify({"success": False, "message": str(e)}), 500
@@ -18096,7 +18167,7 @@ Guidelines:
         """Get all available repositories for a user"""
         try:
             user_id = request.args.get('user_id', 'default_user')
-            
+
             # Return the three specific repositories
             repositories = [
                 {
@@ -18116,7 +18187,7 @@ Guidelines:
                     'status': 'active'
                 },
                 {
-                    'id': 'treasury_repo', 
+                    'id': 'treasury_repo',
                     'name': 'Treasury Repository',
                     'type': 'treasury',
                     'description': 'Repository for treasury operations and FX management',
@@ -18132,7 +18203,7 @@ Guidelines:
                 },
                 {
                     'id': 'cash_mgmt_repo',
-                    'name': 'Cash Management Repository', 
+                    'name': 'Cash Management Repository',
                     'type': 'cash_management',
                     'description': 'Repository for cash management and liquidity optimization',
                     'icon': 'fa-money-bill-wave',
@@ -18146,17 +18217,17 @@ Guidelines:
                     'status': 'active'
                 }
             ]
-            
+
             # Check if user has an active repository
             active_repo = active_user_repositories.get(user_id)
-            
+
             return jsonify({
                 'success': True,
                 'repositories': repositories,
                 'active_repository': active_repo,
                 'user_id': user_id
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error fetching repositories: {e}")
             return jsonify({
@@ -18212,31 +18283,31 @@ Guidelines:
         try:
             data = request.get_json() or {}
             user_id = data.get('user_id', 'default_user')
-            
+
             # Map repository ID to name for the active_user_repositories
             repo_mapping = {
                 'trade_finance_repo': 'Trade Finance Repository',
-                'treasury_repo': 'Treasury Repository', 
+                'treasury_repo': 'Treasury Repository',
                 'cash_mgmt_repo': 'Cash Management Repository'
             }
-            
+
             repo_name = repo_mapping.get(repo_id)
             if not repo_name:
                 return jsonify({
                     'success': False,
                     'error': 'Invalid repository ID'
                 }), 400
-            
+
             # Set as active repository
             active_user_repositories[user_id] = repo_name
             logger.info(f"User {user_id} connected to repository: {repo_name}")
-            
+
             return jsonify({
                 'success': True,
                 'message': f'Connected to {repo_name}',
                 'active_repository': repo_name
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error connecting to repository: {e}")
             return jsonify({
@@ -18250,13 +18321,13 @@ Guidelines:
         try:
             data = request.get_json() or {}
             user_id = data.get('user_id', 'default_user')
-            
+
             # Remove from active repositories
             if user_id in active_user_repositories:
                 repo_name = active_user_repositories[user_id]
                 del active_user_repositories[user_id]
                 logger.info(f"User {user_id} disconnected from repository: {repo_name}")
-                
+
                 return jsonify({
                     'success': True,
                     'message': f'Disconnected from {repo_name}'
@@ -18266,7 +18337,7 @@ Guidelines:
                     'success': True,
                     'message': 'No active repository connection'
                 }), 200
-                
+
         except Exception as e:
             logger.error(f"Error disconnecting from repository: {e}")
             return jsonify({
@@ -18756,7 +18827,12 @@ def enhance_documents_for_discrepancy_analysis(uploaded_documents):
                                                 engine=deployment_name,
                                                 messages=[{"role": "user", "content": extraction_prompt}],
                                                 temperature=0.0,
-                                                max_tokens=3000
+                                                max_tokens=3000,
+                                                seed=12345,  # ✅ Reproducibility
+                                                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                                                frequency_penalty=0,
+                                                presence_penalty=0,
+                                                response_format={"type": "json_object"}
                                             )
 
                                             extraction_result = extraction_response.choices[0].message.content
@@ -18890,7 +18966,12 @@ def enhance_documents_for_discrepancy_analysis(uploaded_documents):
                                     engine=deployment_name,
                                     messages=[{"role": "user", "content": extraction_prompt}],
                                     temperature=0.0,  # Deterministic for better field extraction
-                                    max_tokens=3000
+                                    max_tokens=3000,
+                                    seed=12345,  # ✅ Reproducibility
+                                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                                    frequency_penalty=0,
+                                    presence_penalty=0,
+                                    response_format={"type": "json_object"}
                                 )
                             else:
                                 logger.warning(
@@ -20438,40 +20519,40 @@ def export_analytics_data():
             # Check if user is admin
             user_id = session.get('user_id')
             user = users_collection.find_one({'_id': user_id})
-            
+
             # Check if user is allowed
             email = user.get('email', '') if user else ''
             if email.lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return jsonify({'success': False, 'message': 'Access denied'}), 403
-            
+
             if 'file' not in request.files:
                 return jsonify({'success': False, 'message': 'No file provided'}), 400
-                
+
             file = request.files['file']
             if file.filename == '':
                 return jsonify({'success': False, 'message': 'No file selected'}), 400
-            
+
             # Save the manual to ChromaDB or filesystem
             manual_name = file.filename
             manual_type = request.form.get('type', 'general')
-            
+
             # Create directory for manuals if it doesn't exist
             manuals_dir = os.path.join('app', 'manuals')
             os.makedirs(manuals_dir, exist_ok=True)
-            
+
             # Save file
             file_path = os.path.join(manuals_dir, manual_name)
             file.save(file_path)
-            
+
             # Process and index the manual in ChromaDB if available
             if 'chroma_client' in globals() and chroma_client:
                 try:
                     # Extract text from manual
                     text_data = extract_text_from_file(file_path, mimetypes.guess_type(file_path)[0])
-                    
+
                     # Create or get collection for manuals
                     collection = chroma_client.get_or_create_collection(name="user_manuals")
-                    
+
                     # Add to ChromaDB
                     collection.add(
                         documents=[text_data.get('text_data', '')],
@@ -20483,11 +20564,11 @@ def export_analytics_data():
                         }],
                         ids=[f"manual_{uuid.uuid4().hex}"]
                     )
-                    
+
                     logger.info(f"Manual {manual_name} indexed in ChromaDB")
                 except Exception as e:
                     logger.error(f"Error indexing manual in ChromaDB: {e}")
-            
+
             # Store manual metadata in MongoDB
             db.manuals.insert_one({
                 'name': manual_name,
@@ -20497,7 +20578,7 @@ def export_analytics_data():
                 'uploaded_at': datetime.utcnow(),
                 'is_active': True
             })
-            
+
             return jsonify({
                 'success': True,
                 'message': 'Manual uploaded successfully',
@@ -20506,11 +20587,11 @@ def export_analytics_data():
                     'type': manual_type
                 }
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error uploading manual: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
-    
+
     @app.route('/api/admin/connect-repository', methods=['POST'])
     @login_required
     @timing_aspect
@@ -20520,26 +20601,26 @@ def export_analytics_data():
             # Check if user is admin
             user_id = session.get('user_id')
             user = users_collection.find_one({'_id': user_id})
-            
+
             # Check if user is allowed
             email = user.get('email', '') if user else ''
             if email.lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return jsonify({'success': False, 'message': 'Access denied'}), 403
-            
+
             data = request.get_json()
             repo_type = data.get('type', 'chromadb')
             repo_config = data.get('config', {})
-            
+
             # Connect to repository based on type
             if repo_type == 'chromadb':
                 host = repo_config.get('host', 'localhost')
                 port = repo_config.get('port', 8000)
-                
+
                 # Test connection
                 try:
                     test_client = get_chromadb_client(host=host, port=port)
                     test_client.list_collections()
-                    
+
                     # Save configuration
                     db.repository_config.update_one(
                         {'type': repo_type},
@@ -20554,7 +20635,7 @@ def export_analytics_data():
                         },
                         upsert=True
                     )
-                    
+
                     return jsonify({
                         'success': True,
                         'message': f'Successfully connected to {repo_type} repository',
@@ -20564,23 +20645,23 @@ def export_analytics_data():
                             'port': port
                         }
                     }), 200
-                    
+
                 except Exception as e:
                     return jsonify({
                         'success': False,
                         'message': f'Failed to connect to repository: {str(e)}'
                     }), 400
-                    
+
             else:
                 return jsonify({
                     'success': False,
                     'message': f'Unsupported repository type: {repo_type}'
                 }), 400
-                
+
         except Exception as e:
             logger.error(f"Error connecting repository: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
-    
+
     @app.route('/api/admin/manuals', methods=['GET'])
     @login_required
     @timing_aspect
@@ -20589,28 +20670,28 @@ def export_analytics_data():
         try:
             user_id = session.get('user_id')
             user = users_collection.find_one({'_id': user_id})
-            
+
             # Check if user is allowed to see all manuals or just active ones
             is_allowed = user and user.get('email', '').lower() in [e.lower() for e in ALLOWED_EMAILS]
-            
+
             query = {'is_active': True} if not is_allowed else {}
             manuals = list(db.manuals.find(query, {'_id': 0, 'path': 0}))
-            
+
             # Convert datetime objects to strings
             for manual in manuals:
                 if 'uploaded_at' in manual:
                     manual['uploaded_at'] = manual['uploaded_at'].isoformat()
-            
+
             return jsonify({
                 'success': True,
                 'manuals': manuals,
                 'is_allowed': is_allowed
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error fetching manuals: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
-    
+
     @app.route('/api/repository-status', methods=['GET'])
     @login_required
     @timing_aspect
@@ -20695,7 +20776,7 @@ def export_analytics_data():
         except Exception as e:
             logger.error(f"Error getting document fields: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
-    
+
     @app.route('/api/admin/delete-manual/<manual_name>', methods=['DELETE'])
     @login_required
     @timing_aspect
@@ -20705,18 +20786,18 @@ def export_analytics_data():
             # Check if user is admin
             user_id = session.get('user_id')
             user = users_collection.find_one({'_id': user_id})
-            
+
             # Check if user is allowed
             email = user.get('email', '') if user else ''
             if email.lower() not in [e.lower() for e in ALLOWED_EMAILS]:
                 return jsonify({'success': False, 'message': 'Access denied'}), 403
-            
+
             # Soft delete - just mark as inactive
             result = db.manuals.update_one(
                 {'name': manual_name},
                 {'$set': {'is_active': False, 'deleted_at': datetime.utcnow()}}
             )
-            
+
             if result.modified_count > 0:
                 return jsonify({
                     'success': True,
@@ -20727,17 +20808,17 @@ def export_analytics_data():
                     'success': False,
                     'message': f'Manual {manual_name} not found'
                 }), 404
-                
+
         except Exception as e:
             logger.error(f"Error deleting manual: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
-    
+
     # Debug route to test if routes are being registered
     @app.route('/api/debug/test', methods=['GET'])
     def debug_test():
         """Debug route to test route registration"""
         return jsonify({"success": True, "message": "Debug route working", "routes_registered": True}), 200
-    
+
     # Vetting Rule Engine Routes (Admin Only)
     @app.route('/api/vetting/rules', methods=['GET'])
     @login_required
@@ -20747,24 +20828,24 @@ def export_analytics_data():
         try:
             if not vetting_engine:
                 return jsonify({"success": False, "message": "Vetting engine not initialized"}), 500
-                
+
             # Check if user is admin
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             active_only = request.args.get('active_only', 'false').lower() == 'true'
             rules = vetting_engine.get_all_rules(active_only=active_only)
-            
+
             return jsonify({
                 "success": True,
                 "rules": rules
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error fetching vetting rules: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/vetting/rules', methods=['POST'])
     @login_required
     @timing_aspect
@@ -20775,26 +20856,26 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             rule_data = request.json
             if not rule_data.get("name") or not rule_data.get("value"):
                 return jsonify({
                     "success": False,
                     "message": "Rule name and value are required"
                 }), 400
-            
+
             rule = vetting_engine.create_rule(rule_data, user.get("email"))
-            
+
             return jsonify({
                 "success": True,
                 "rule": rule,
                 "message": "Rule created successfully"
             }), 201
-            
+
         except Exception as e:
             logger.error(f"Error creating vetting rule: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/vetting/rules/<rule_id>', methods=['PUT'])
     @login_required
     @timing_aspect
@@ -20805,10 +20886,10 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             rule_data = request.json
             rule = vetting_engine.update_rule(rule_id, rule_data, user.get("email"))
-            
+
             if rule:
                 return jsonify({
                     "success": True,
@@ -20820,11 +20901,11 @@ def export_analytics_data():
                     "success": False,
                     "message": "Rule not found"
                 }), 404
-                
+
         except Exception as e:
             logger.error(f"Error updating vetting rule: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/vetting/rules/<rule_id>', methods=['DELETE'])
     @login_required
     @timing_aspect
@@ -20835,7 +20916,7 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             if vetting_engine.delete_rule(rule_id):
                 return jsonify({
                     "success": True,
@@ -20846,11 +20927,11 @@ def export_analytics_data():
                     "success": False,
                     "message": "Rule not found"
                 }), 404
-                
+
         except Exception as e:
             logger.error(f"Error deleting vetting rule: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/vetting/test', methods=['POST'])
     @login_required
     @timing_aspect
@@ -20861,17 +20942,17 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             data = request.json
             rule_id = data.get("rule_id")
             test_samples = data.get("test_samples")
-            
+
             if not rule_id:
                 return jsonify({
                     "success": False,
                     "message": "Rule ID is required"
                 }), 400
-            
+
             # If no test samples provided, generate them
             if not test_samples:
                 rule = vetting_engine.get_rule(rule_id)
@@ -20880,7 +20961,7 @@ def export_analytics_data():
                         "success": False,
                         "message": "Rule not found"
                     }), 404
-                
+
                 onerous_sample, non_onerous_sample = vetting_engine.generate_sample_texts(rule)
                 test_samples = [
                     {
@@ -20892,18 +20973,18 @@ def export_analytics_data():
                         "expected_onerous": False
                     }
                 ]
-            
+
             result = vetting_engine.test_rule(rule_id, test_samples)
-            
+
             return jsonify({
                 "success": True,
                 "test_result": result
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error testing vetting rule: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/vetting/generate-samples/<rule_id>', methods=['GET'])
     @login_required
     @timing_aspect
@@ -20914,17 +20995,17 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             rule = vetting_engine.get_rule(rule_id)
             if not rule:
                 return jsonify({
                     "success": False,
                     "message": "Rule not found"
                 }), 404
-            
+
             # Get enhanced samples with LLM
             onerous_sample, non_onerous_sample, metadata = vetting_engine.generate_sample_texts_llm(rule)
-            
+
             return jsonify({
                 "success": True,
                 "samples": [
@@ -20943,11 +21024,11 @@ def export_analytics_data():
                 ],
                 "metadata": metadata
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error generating test samples: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/vetting/check', methods=['POST'])
     @login_required
     @timing_aspect
@@ -20956,24 +21037,24 @@ def export_analytics_data():
         try:
             data = request.json
             guarantee_text = data.get("guarantee_text")
-            
+
             if not guarantee_text:
                 return jsonify({
                     "success": False,
                     "message": "Guarantee text is required"
                 }), 400
-            
+
             result = vetting_engine.vet_guarantee(guarantee_text)
-            
+
             return jsonify({
                 "success": True,
                 "vetting_result": result
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error vetting guarantee: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
-    
+
     @app.route('/api/vetting/history', methods=['GET'])
     @login_required
     @timing_aspect
@@ -20984,15 +21065,15 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             rule_id = request.args.get('rule_id')
             history = vetting_engine.get_test_history(rule_id)
-            
+
             return jsonify({
                 "success": True,
                 "history": history
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error fetching test history: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
@@ -21007,7 +21088,7 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             data = request.json
             rule_config = {
                 "name": data.get("name", "Untitled Rule"),
@@ -21016,20 +21097,20 @@ def export_analytics_data():
                 "value": data.get("value"),
                 "severity": data.get("severity", "medium")
             }
-            
+
             if not rule_config["condition_type"] or not rule_config["value"]:
                 return jsonify({
                     "success": False,
                     "message": "Rule condition type and value are required"
                 }), 400
-            
+
             explanation = vetting_engine.get_rule_explanation(rule_config)
-            
+
             return jsonify({
                 "success": True,
                 "explanation": explanation
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error generating rule explanation: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
@@ -21044,20 +21125,20 @@ def export_analytics_data():
             user = users_collection.find_one({"_id": ObjectId(session.get("user_id"))})
             if not user or user.get("email") not in ALLOWED_EMAILS:
                 return jsonify({"success": False, "message": "Unauthorized"}), 403
-            
+
             effectiveness_data = vetting_engine.get_rule_effectiveness_score(rule_id)
-            
+
             if "error" in effectiveness_data:
                 return jsonify({
                     "success": False,
                     "message": effectiveness_data["error"]
                 }), 400
-            
+
             return jsonify({
                 "success": True,
                 "effectiveness": effectiveness_data
             }), 200
-            
+
         except Exception as e:
             logger.error(f"Error getting rule effectiveness: {e}")
             return jsonify({"success": False, "message": str(e)}), 500
@@ -21341,25 +21422,25 @@ def _save_document_categories(data):
         """Get all custom functions"""
         try:
             functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
-            
+
             if os.path.exists(functions_file):
                 with open(functions_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
             else:
                 data = {'functions': []}
-                
+
             functions = data.get('functions', [])
-            
+
             # Optional filters
             category = request.args.get('category')
             active_only = request.args.get('active', 'false').lower() == 'true'
-            
+
             if category:
                 functions = [f for f in functions if f.get('category') == category]
-            
+
             if active_only:
                 functions = [f for f in functions if f.get('isActive', True)]
-            
+
             return jsonify({'success': True, 'functions': functions}), 200
         except Exception as e:
             logger.error(f"Error getting custom functions: {e}")
@@ -21371,20 +21452,20 @@ def _save_document_categories(data):
         """Get a single custom function by ID"""
         try:
             functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
-            
+
             if os.path.exists(functions_file):
                 with open(functions_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     functions = data.get('functions', [])
                     function = next((f for f in functions if f.get('id') == function_id), None)
-                    
+
                     if function:
                         return jsonify({'success': True, 'function': function}), 200
                     else:
                         return jsonify({'success': False, 'message': 'Function not found'}), 404
             else:
                 return jsonify({'success': False, 'message': 'No functions found'}), 404
-                
+
         except Exception as e:
             logger.error(f"Error getting custom function {function_id}: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
@@ -21392,49 +21473,49 @@ def _save_document_categories(data):
     def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
         """
         Search for text matches in OCR data with different matching strategies
-        
+
         Args:
             field_value: Text to search for
             ocr_data: List of OCR entries with text and coordinates
             search_mode: 'exact', 'fuzzy', or 'contains'
-        
+
         Returns:
             List of matches with coordinates, sorted by confidence
         """
         import re
         from difflib import SequenceMatcher
-        
+
         logger.info(f"SEARCH === STARTING OCR TEXT SEARCH ===")
         logger.info(f"PARAMETERS: Search parameters:")
         logger.info(f"   Field value: '{field_value}'")
         logger.info(f"   Search mode: {search_mode}")
         logger.info(f"   OCR entries to search: {len(ocr_data)}")
-        
+
         matches = []
         field_value_lower = field_value.lower().strip()
         logger.info(f"Normalized field value: '{field_value_lower}'")
-        
+
         # Track search statistics
         exact_matches = 0
         contains_matches = 0
         partial_matches = 0
         fuzzy_matches = 0
         no_matches = 0
-        
+
         logger.info(f"SEARCH Searching in {len(ocr_data)} OCR entries...")
-        
+
         for i, ocr_entry in enumerate(ocr_data):
             ocr_text = ocr_entry.get('text', '').strip()
             if not ocr_text:
                 logger.debug(f"   Entry {i+1}: Skipping empty text")
                 continue
-                
+
             ocr_text_lower = ocr_text.lower()
             match_confidence = 0
             match_type = 'none'
-            
+
             logger.debug(f"   Entry {i+1}: Comparing '{field_value_lower}' with '{ocr_text_lower}'")
-            
+
             # Exact match (highest priority)
             if search_mode in ['exact', 'fuzzy', 'contains']:
                 if field_value_lower == ocr_text_lower:
@@ -21452,7 +21533,7 @@ def _save_document_categories(data):
                     match_type = 'partial'
                     partial_matches += 1
                     logger.debug(f"      SUCCESS:PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
-            
+
             # Fuzzy matching if enabled and no exact match
             if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
                 similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
@@ -21464,11 +21545,11 @@ def _save_document_categories(data):
                         match_type = 'fuzzy'
                         fuzzy_matches += 1
                         logger.debug(f"      SUCCESS:FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
-            
+
             if match_confidence < 80:
                 no_matches += 1
                 logger.debug(f"      ERROR: No sufficient match (confidence: {match_confidence:.1f}%)")
-            
+
             # Only include high-confidence matches
             if match_confidence >= 80:
                 match_data = {
@@ -21482,13 +21563,13 @@ def _save_document_categories(data):
                     'ocr_confidence': ocr_entry.get('confidence', 0)
                 }
                 matches.append(match_data)
-                
+
                 logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
                 logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
-        
+
         # Sort by match confidence (highest first)
         matches.sort(key=lambda x: x['match_confidence'], reverse=True)
-        
+
         # Log search summary
         logger.info(f"ANALYTICS: === SEARCH SUMMARY ===")
         logger.info(f"   Exact matches: {exact_matches}")
@@ -21497,7 +21578,7 @@ def _save_document_categories(data):
         logger.info(f"   Fuzzy matches: {fuzzy_matches}")
         logger.info(f"   No matches: {no_matches}")
         logger.info(f"   Total qualifying matches: {len(matches)}")
-        
+
         if matches:
             best_match = matches[0]
             logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
@@ -21508,11 +21589,11 @@ def _save_document_categories(data):
             logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
             logger.info(f"   - Check if the field value exactly matches the document text")
             logger.info(f"   - Verify the document has been processed and OCR data is available")
-        
+
         logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
         return matches
-    
-# new code added here    
+
+# new code added here
 def generate_mt700_message(lc_data):
     """Generate SWIFT MT700 message from LC data"""
 
@@ -21817,7 +21898,12 @@ Focus on key indicators like document headers, specific terminology, structured 
                 {"role": "user", "content": classification_prompt}
             ],
             temperature=0.1,
-            max_tokens=200
+            max_tokens=200,
+            seed=12345,  # ✅ Reproducibility
+            top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "json_object"}
         )
 
         # Parse response
@@ -22609,7 +22695,12 @@ CRITICAL INSTRUCTIONS:
                     }
                 ],
                 temperature=0.15,  # Slightly higher for creative analysis
-                max_tokens=3000  # Increased for comprehensive analysis
+                max_tokens=3000,  # Increased for comprehensive analysis
+                seed=12345,  # ✅ Reproducibility
+                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                frequency_penalty=0,
+                presence_penalty=0,
+                response_format={"type": "json_object"}
             )
 
             gpt_response = response.choices[0].message.content
@@ -22966,7 +23057,12 @@ IMPORTANT INSTRUCTIONS:
                         }
                     ],
                     temperature=0.1,  # Low temperature for consistency
-                    max_tokens=2500
+                    max_tokens=2500,
+                    seed=12345,  # ✅ Reproducibility
+                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
                 )
             else:
                 # Fallback to standard OpenAI
@@ -22992,7 +23088,12 @@ IMPORTANT INSTRUCTIONS:
                         }
                     ],
                     temperature=0.1,
-                    max_tokens=2500
+                    max_tokens=2500,
+                    seed=12345,  # ✅ Reproducibility
+                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
                 )
         except Exception as api_error:
             logger.error(f"OpenAI API call failed: {api_error}")
@@ -23140,7 +23241,12 @@ Return empty additional_discrepancies array if no significant gaps are found."""
                 }
             ],
             temperature=0.05,  # Very low temperature for careful review
-            max_tokens=2000
+            max_tokens=2000,
+            seed=12345,  # ✅ Reproducibility
+            top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "json_object"}
         )
 
         gpt_response = response.choices[0].message.content
@@ -23868,7 +23974,12 @@ Return JSON format for Field Conflicts display:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=2000
+            max_tokens=2000,
+            seed=12345,  # ✅ Reproducibility
+            top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "json_object"}
         )
 
         gpt_response = response.choices[0].message.content
@@ -23959,7 +24070,12 @@ Return JSON format for Field Conflicts display:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=2000
+            max_tokens=2000,
+            seed=12345,  # ✅ Reproducibility
+            top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "json_object"}
         )
 
         gpt_response = response.choices[0].message.content
@@ -24067,7 +24183,12 @@ If no violation is found, return: {{"violation_found": false}}"""
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=1000
+            max_tokens=1000,
+            seed=12345,  # ✅ Reproducibility
+            top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "json_object"}
         )
 
         gpt_response = response.choices[0].message.content
@@ -24174,7 +24295,12 @@ Return JSON format:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=2000
+            max_tokens=2000,
+            seed=12345,  # ✅ Reproducibility
+            top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "json_object"}
         )
 
         gpt_response = response.choices[0].message.content
@@ -24468,7 +24594,12 @@ Return JSON format:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=1500
+            max_tokens=1500,
+            seed=12345,  # ✅ Reproducibility
+            top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
+            frequency_penalty=0,
+            presence_penalty=0,
+            response_format={"type": "json_object"}
         )
 
         gpt_response = response.choices[0].message.content
