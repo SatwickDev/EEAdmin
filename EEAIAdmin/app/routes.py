@@ -8236,12 +8236,24 @@ Return compliance status for each field.'''
         # Check if field_value looks like a date and normalize it
         field_date_patterns = normalize_date_for_search(field_value)
         is_date_search = len(field_date_patterns) > 0
-
+        
+        # Check if field_value is a LONG numeric identifier (e.g., LC number, transaction ID, reference number)
+        # These should be treated as exact text search, NOT amount search
+        # PRIORITY: Check this BEFORE amount detection to avoid false matches
+        is_numeric_identifier = False
+        if not is_date_search:
+            numeric_value = field_value.strip()
+            # Long numeric strings (>10 digits, no decimals/separators) are identifiers, not amounts
+            # Examples: "1619699496468609" (16 digits), "0153944873" (10+ digits)
+            if numeric_value.isdigit() and len(numeric_value) > 10:
+                is_numeric_identifier = True
+                logger.info(f"🔢 Detected numeric identifier search: '{numeric_value}' ({len(numeric_value)} digits - will match exact text only, not as amount)")
+        
         # Check if field_value is a simple number (e.g., "21" for "Period of presentation")
         # This handles cases where user searches "21" but OCR has "21 Days", "21 DAYS", "21/Days", etc.
         # PRIORITY: Check this BEFORE amount detection since simple numbers like "21" should be treated as periods
         is_numeric_period = False
-        if not is_date_search:
+        if not is_date_search and not is_numeric_identifier:
             # Check if it's just a simple integer (1-3 digits, no decimals or currency)
             numeric_value = field_value.strip()
             if numeric_value.isdigit() and len(numeric_value) <= 3:  # Period values are typically small numbers
@@ -8249,16 +8261,18 @@ Return compliance status for each field.'''
                 logger.info(f"📅 Detected numeric period search: '{numeric_value}' (will match variations like '{numeric_value} Days', '{numeric_value}/DAYS', etc.)")
 
         # Check if field_value looks like an amount and normalize it
-        # Only check for amount if it's not a date or numeric period
+        # Only check for amount if it's not a date, numeric identifier, or numeric period
         field_amount_patterns = []
         is_amount_search = False
-        if not is_date_search and not is_numeric_period:
+        if not is_date_search and not is_numeric_identifier and not is_numeric_period:
             is_amount_search = is_amount_field(field_value)
             if is_amount_search:
                 field_amount_patterns = normalize_amount_for_search(field_value)
 
         if is_date_search:
             logger.info(f"Detected date search. Normalized patterns: {field_date_patterns}")
+        elif is_numeric_identifier:
+            logger.info(f"🔢 Searching for numeric identifier: '{field_value}' (exact/contains match only)")
         elif is_numeric_period:
             logger.info(f"📅 Searching for numeric period: '{field_value}' with day/time variations")
         elif is_amount_search:
@@ -8375,9 +8389,10 @@ Return compliance status for each field.'''
                     match_type = 'numeric_period'
                     numeric_period_matches += 1
                     logger.debug(f"      SUCCESS: 📅 NUMERIC PERIOD MATCH! '{number} Days' pattern found in '{ocr_text}' - Confidence: 100%")
-
-            # Regular exact/contains/partial match (skip if it's a numeric period search to avoid noise)
-            # For numeric period searches, ONLY match the "X Days" pattern above
+            
+            # Regular exact/contains/partial match
+            # For numeric identifiers: allow exact/contains (no word boundary, no partial/fuzzy)
+            # For numeric periods: skip entirely (use "X Days" pattern only)
             if match_confidence < 100 and search_mode in ['exact', 'fuzzy', 'contains'] and not is_numeric_period:
                 if field_value_lower == ocr_text_lower:
                     match_confidence = 100
@@ -8385,11 +8400,17 @@ Return compliance status for each field.'''
                     exact_matches += 1
                     logger.debug("      SUCCESS: EXACT MATCH! Confidence: 100%")
                 elif field_value_lower in ocr_text_lower:
+                    import re  # Import regex module for word boundary checking
+                    # For numeric identifiers: simple contains match (no word boundary checking)
+                    if is_numeric_identifier:
+                        match_confidence = 100
+                        match_type = 'contains'
+                        contains_matches += 1
+                        logger.debug(f"      SUCCESS: 🔢 NUMERIC IDENTIFIER CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 100%")
                     # Use strict word boundary checking for short search terms (≤20 chars)
                     # e.g., "Allowed" should NOT match "Not Allowed" or "Not-Allowed"
                     # "Not-Allowed" should NOT match "Allowed"
-                    import re
-                    if len(field_value_lower) <= 20:
+                    elif len(field_value_lower) <= 20:
                         # STRICT: Search term must be at START of text or preceded ONLY by punctuation (not words)
                         # This ensures "Allowed" doesn't match "Not Allowed" or "Pre-Allowed"
                         # But "Allowed" matches "Allowed", "(Allowed)", "[Allowed Shipment]"
@@ -8419,7 +8440,8 @@ Return compliance status for each field.'''
                         contains_matches += 1
                         contains_info = f"'{field_value_lower}' found in '{ocr_text_lower}'"
                         logger.debug(f"      SUCCESS: CONTAINS MATCH! {contains_info} - Confidence: 90%")
-                elif ocr_text_lower in field_value_lower:
+                elif ocr_text_lower in field_value_lower and not is_numeric_identifier:
+                    # Skip partial matches for numeric identifiers (we only want exact/contains)
                     # Apply same strict word boundary checking for short OCR text in partial matches
                     # e.g., when searching "Not Allowed", don't match OCR text "Allowed"
                     import re
@@ -8450,9 +8472,9 @@ Return compliance status for each field.'''
                         partial_matches += 1
                         partial_info = f"'{ocr_text_lower}' found in '{field_value_lower}'"
                         logger.debug(f"      SUCCESS: PARTIAL MATCH! {partial_info} - Confidence: 85%")
-
-            # Fuzzy matching if enabled and no exact match (skip for numeric period searches)
-            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90 and not is_numeric_period:
+            
+            # Fuzzy matching if enabled and no exact match (skip for numeric period/identifier searches)
+            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90 and not is_numeric_period and not is_numeric_identifier:
                 similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
                 logger.debug(f"Fuzzy similarity: {similarity:.3f}")
                 if similarity >= 0.8:  # High similarity threshold
@@ -8471,6 +8493,7 @@ Return compliance status for each field.'''
             if match_confidence >= 80:
                 # Filter out small partial matches for long search phrases
                 # Use dynamic threshold: longer searches require larger matches
+                # FOR VERY LONG MULTI-LINE: Use relaxed threshold, rely on post-processing spatial filtering
                 if match_type == 'partial':
                     search_length = len(field_value)
                     match_length = len(ocr_text.strip())
@@ -8479,12 +8502,12 @@ Return compliance status for each field.'''
                     # - Short phrases (30-50 chars): skip matches ≤4 chars
                     # - Medium phrases (50-100 chars): skip matches ≤10 chars
                     # - Long phrases (100-200 chars): skip matches ≤20 chars
-                    # - Very long phrases (200+ chars): skip matches ≤30 chars (fixed cap, not percentage)
+                    # - Very long multi-line (200+ chars): skip matches ≤30 chars (balanced to filter isolated phrases while keeping substantial lines)
                     skip_match = False
 
                     if search_length > 200:
-                        # Very long search: use fixed threshold of 30 chars (not percentage-based)
-                        # This ensures we keep substantial multi-line blocks while filtering single words
+                        # Very long multi-line: Filter isolated short phrases (e.g., company names appearing elsewhere)
+                        # Keep substantial content lines (31+ chars) which are more likely to be part of the main block
                         if match_length <= 30:
                             skip_match = True
                             logger.debug(f"Skipping small partial match '{ocr_text[:50]}...' ({match_length} chars ≤30 for {search_length}-char search)")
@@ -8531,7 +8554,96 @@ Return compliance status for each field.'''
 
         # Sort matches by priority score first, then confidence (highest first)
         matches.sort(key=lambda x: (x['priority_score'], x['match_confidence']), reverse=True)
-
+        
+        # For multi-line searches (200+ chars), create encompassing bounding boxes per page
+        if len(field_value) >= 200 and len(matches) >= 2:
+            logger.info(f"📦 MULTI-LINE: Creating encompassing bounding boxes for {len(matches)} matches")
+            
+            # Group matches by page
+            matches_by_page = {}
+            for match in matches:
+                page = match['bounding_page']
+                if page not in matches_by_page:
+                    matches_by_page[page] = []
+                matches_by_page[page].append(match)
+            
+            # Create one encompassing box per page
+            encompassing_matches = []
+            for page, page_matches in matches_by_page.items():
+                if len(page_matches) < 2:
+                    # Single match on this page, keep as is
+                    encompassing_matches.extend(page_matches)
+                    continue
+                
+                # Calculate the encompassing bounding box
+                min_x = float('inf')
+                min_y = float('inf')
+                max_x = float('-inf')
+                max_y = float('-inf')
+                
+                all_texts = []
+                
+                for match in page_matches:
+                    bbox = match['bounding_box']
+                    if not bbox or len(bbox) < 4:
+                        continue
+                    
+                    all_texts.append(match['matched_text'])
+                    
+                    # Extract all coordinate points
+                    if len(bbox) == 8:  # x1,y1,x2,y2,x3,y3,x4,y4
+                        xs = [bbox[0], bbox[2], bbox[4], bbox[6]]
+                        ys = [bbox[1], bbox[3], bbox[5], bbox[7]]
+                    else:  # x1,y1,x2,y2
+                        xs = [bbox[0], bbox[2]]
+                        ys = [bbox[1], bbox[3]]
+                    
+                    # Update min/max
+                    min_x = min(min_x, min(xs))
+                    max_x = max(max_x, max(xs))
+                    min_y = min(min_y, min(ys))
+                    max_y = max(max_y, max(ys))
+                
+                # Add small padding (0.1 inches on each side)
+                padding = 0.1
+                min_x = max(0, min_x - padding)
+                min_y = max(0, min_y - padding)
+                max_x += padding
+                max_y += padding
+                
+                # Create encompassing bounding box (8 coordinates for rectangle)
+                encompassing_bbox = [
+                    min_x, min_y,      # Top-left
+                    max_x, min_y,      # Top-right
+                    max_x, max_y,      # Bottom-right
+                    min_x, max_y       # Bottom-left
+                ]
+                
+                # Create single match representing the entire section
+                combined_text = f"[MULTI-LINE SECTION: {len(page_matches)} lines]"
+                
+                encompassing_match = {
+                    'ocr_index': page_matches[0]['ocr_index'],  # Use first match's index
+                    'matched_text': combined_text,
+                    'field_value': field_value,
+                    'match_confidence': 95.0,  # High confidence for multi-line blocks
+                    'match_type': 'multiline_block',
+                    'priority_score': 100.0,  # Highest priority
+                    'bounding_box': encompassing_bbox,
+                    'bounding_page': page,
+                    'ocr_confidence': 100,
+                    'component_matches': len(page_matches),  # Track how many matches merged
+                    'component_texts': all_texts  # Store original texts for reference
+                }
+                
+                encompassing_matches.append(encompassing_match)
+                logger.info(f"   ✅ Page {page}: Created encompassing box covering {len(page_matches)} matches")
+                logger.info(f"      BBox: [{min_x:.2f}, {min_y:.2f}, {max_x:.2f}, {max_y:.2f}]")
+            
+            # Replace matches with encompassing boxes
+            matches = encompassing_matches
+            logger.info(f"📦 MULTI-LINE: Reduced to {len(matches)} encompassing box(es)")
+        
         # Log search summary
         logger.info(f"ANALYTICS: === SEARCH STATISTICS ===")
         logger.info(f"   Date matches: {date_matches}")
