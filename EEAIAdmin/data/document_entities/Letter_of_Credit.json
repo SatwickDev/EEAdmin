@@ -673,6 +673,20 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory",
       "id": "88482"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "35",
+      "entityName": "Incoterms",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms",
+      "fieldType": "mandatory",
+      "id": "88486"
     }
   ]
 }

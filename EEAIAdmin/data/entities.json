@@ -217,12 +217,13 @@
     {
       "id": "35",
       "name": "Incoterms",
-      "description": "International commercial terms defining responsibilities",
+      "description": "Extract only the official Incoterm code (EXW, FOB, CFR, CIF, DDP). Do not include city names, ports, or countries. Example: if the text says 'CFR, NHAVA SHEVA, INDIA', extract only 'CFR'.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
+
     {
       "id": "36",
       "name": "Partial Shipment Clause",
@@ -2562,15 +2563,16 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-    {
+      {
       "id": "314",
-      "name": "Payment term",
-      "description": "Identification of the terms of payment between the parties to a transaction (generic term)",
+      "name": "Payment Term",
+      "description": "Extract the standard payment term keyword from the document — one of: BY PAYMENT, BY ACCEPTANCE, BY DEF PAYMENT, BY MIXED PYMT, BY NEGOTIATION. These indicate how and when payment is made under a Letter of Credit or trade transaction. Extract only the exact term (e.g., 'BY PAYMENT'), not the surrounding conditions or dates.\n\nReference meanings for clarity:\n\n• BY PAYMENT = 'At Sight' = Immediate payment when compliant documents are presented.\n  Equivalent to: Payment at sight\n  When paid: Upon presentation of documents\n\n• BY ACCEPTANCE = 'Acceptance' = Payment upon acceptance of a time draft.\n  Equivalent to: Usance credit with acceptance\n  When paid: At maturity date after draft acceptance\n\n• BY DEF PAYMENT = 'Deferred Payment' = Payment at a future date without draft.\n  Equivalent to: Deferred payment undertaking\n  When paid: On predetermined future date\n\n• BY NEGOTIATION = 'Negotiation' = Any bank can purchase the beneficiary's documents.\n  Equivalent to: Freely negotiable credit\n  When paid: When the negotiating bank purchases documents\n\n• BY MIXED PYMT = 'Mixed Payment' = Combination of multiple payment methods.\n  Equivalent to: Split payment terms\n  When paid: According to mixed schedule (requires Field 42M)\n\nKey Extraction Rules:\n- 'At Sight' always maps to 'BY PAYMENT'.\n- 'Deferred Payment' maps to 'BY DEF PAYMENT' (requires Field 42P).\n- 'Acceptance' maps to 'BY ACCEPTANCE' (requires draft acceptance).\n- 'Negotiation' maps to 'BY NEGOTIATION' (available with any bank).\n- Mixed terms map to 'BY MIXED PYMT' (requires Field 42M).",
       "mappingFormField": "",
-      "mappingFormDescription": "",
+      "mappingFormDescription": "Identifies the standard payment method under the Letter of Credit — BY PAYMENT, BY ACCEPTANCE, BY DEF PAYMENT, BY MIXED PYMT, or BY NEGOTIATION — as defined in UCP 600 and SWIFT field 42x specifications.",
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
+
     {
       "id": "315",
       "name": "Allowance / Charge",
