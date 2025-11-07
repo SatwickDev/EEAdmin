@@ -11,12 +11,15 @@ from app.utils.app_config import load_dotenv, engine
 from app.utils.common import load_schema
 from app.utils.websocket_handler import init_websocket_handler
 
+# Initialize daily logging system
+from app.utils.daily_logger import setup_application_logging
+
 # Load environment variables
 load_dotenv()
 json_data_cache = {}
 
-# Initialize logging
-logging.basicConfig(level=logging.INFO)
+# Setup application-wide logging to daily files
+app_logger = setup_application_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -37,6 +40,10 @@ def create_app():
     """
     # Validate environment variables
     validate_env_vars()
+
+    from app.utils.daily_logger import log_system
+    log_system("APP_CREATION_START",
+               message="Flask application creation started")
 
     app = Flask(__name__)
 
@@ -130,4 +137,6 @@ def create_app():
     app.config['SOCKETIO'] = socketio
 
     logger.info("Flask application initialized successfully.")
+    log_system("APP_CREATION_COMPLETE",
+               message="Flask application with SocketIO initialized")
     return app, socketio

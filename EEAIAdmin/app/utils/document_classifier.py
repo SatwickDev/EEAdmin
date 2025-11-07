@@ -637,7 +637,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
 
         # Get entity fields for this document type
         entity_info = self.get_enhanced_entity_fields(doc_id)
-        print(f"Entity info for {doc_id}: {entity_info}")
+        logging.info(f"Entity info for {doc_id}: {entity_info}")
 
         # Get document category info using case-insensitive lookup
         doc_category = "Unknown"

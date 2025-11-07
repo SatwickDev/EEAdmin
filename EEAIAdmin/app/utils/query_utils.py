@@ -56,6 +56,13 @@ import chromadb
 matplotlib.use('Agg')
 logger = logging.getLogger(__name__)
 
+# Import daily logging functions
+from app.utils.daily_logger import (
+    log_info, log_error, log_warning, log_debug,
+    log_api, log_database, log_performance, log_system,
+    log_chroma, log_compliance
+)
+
 
 def format_query_results(rows: List[dict], output_format: str = "table") -> dict:
     """Formats the SQL query results into the desired output format."""
@@ -73,7 +80,7 @@ def format_query_results(rows: List[dict], output_format: str = "table") -> dict
 
 chroma_client = chromadb.HttpClient(host="localhost", port=8000)
 user_manual_collection = chroma_client.get_or_create_collection("user_manual")
-logger.info("Connected to ChromaDB successfully")
+log_chroma("CONNECTION", host="localhost", port=8000, status="successful")
 
 # Cache for query embeddings to improve performance
 _embedding_cache = {}
@@ -102,12 +109,15 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
     Returns:
         Dict[str, Any]: Processed query response with intent
     """
-    logger.info(f"Processing user query for user {user_id}, active repository: {active_repository}")
+    log_info("Processing user query", user_id=user_id, 
+             active_repository=active_repository, query_length=len(user_query))
     
     # Early validation
     if not user_query or not isinstance(user_query, str):
+        log_error("Invalid query provided", user_id=user_id, query_type=type(user_query))
         return {"error": "Invalid query provided"}
     if not user_id or not isinstance(user_id, str):
+        log_error("Invalid user ID provided", user_id=user_id, user_id_type=type(user_id))
         return {"error": "Invalid user ID provided"}
     
     # Import the LLM-based intent clas
@@ -150,11 +160,14 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
     try:
         # Ensure user_query is a string and user_id is valid
         if not isinstance(user_query, str) or not user_query.strip():
-            logger.warning("Invalid user query provided for ChromaDB search")
+            log_warning("Invalid user query provided for ChromaDB search", 
+                       user_id=user_id, query_type=type(user_query))
         elif not isinstance(user_id, str) or not user_id.strip():
-            logger.warning("Invalid user_id provided for ChromaDB search")
+            log_warning("Invalid user_id provided for ChromaDB search", 
+                       user_id=user_id, user_id_type=type(user_id))
         else:
-            logger.debug(f"Querying ChromaDB for user {user_id} with query: {user_query[:50]}...")
+            log_chroma("QUERY_START", collection="user_manual", 
+                      user_id=user_id, query_preview=user_query[:50])
 
             # Generate embedding for the query with caching
             query_embedding = _get_cached_embedding(user_query.strip(), user_id)
@@ -166,22 +179,26 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
                 where={"user_id": user_id}
             )
 
-            logger.debug(f"ChromaDB query results type: {type(results)}")
+            log_chroma("QUERY_COMPLETE", collection="user_manual", 
+                      results_type=type(results).__name__)
             retrieved_docs = results.get("documents", [[]])[0] if results.get("documents") else []
 
             if not retrieved_docs:
-                logger.warning(f"No relevant documents found for user {user_id}, query: {user_query}")
+                log_warning("No relevant documents found", user_id=user_id, 
+                           query_preview=user_query[:50])
             else:
                 if not all(isinstance(doc, str) for doc in retrieved_docs):
-                    logger.error(f"Invalid document format in query results: {retrieved_docs}")
+                    log_error("Invalid document format in query results", 
+                             user_id=user_id, results_format=type(retrieved_docs))
                     retrieved_docs = []
                 else:
                     trained_manual_context = "\n".join(
                         [f"Section {i + 1}: {doc}" for i, doc in enumerate(retrieved_docs)])
-                    logger.debug(f"Retrieved {len(retrieved_docs)} documents from trained manual")
+                    log_chroma("DOCUMENTS_RETRIEVED", collection="user_manual", 
+                              user_id=user_id, document_count=len(retrieved_docs))
     except Exception as e:
-        logger.warning(f"Failed to retrieve trained manual context: {str(e)}")
-        logger.debug(f"ChromaDB query error details: {traceback.format_exc()}")
+        log_error("Failed to retrieve trained manual context", user_id=user_id, 
+                 error=str(e), traceback=traceback.format_exc())
 
     # OPTIMIZATION 2: Add repository context to prompt if available
     repository_context = ""
@@ -291,6 +308,7 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
     """
 
     try:
+        start_time = datetime.now()
         response = openai.ChatCompletion.create(
             engine=deployment_name,
             messages=[
@@ -300,9 +318,11 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
             temperature=0.3,
             max_tokens=3000
         )
-
+        
+        api_duration = (datetime.now() - start_time).total_seconds()
         result = response["choices"][0]["message"]["content"].strip()
-        logger.info(f"LLM Response: {result}")
+        log_api("POST", "/openai/chat/completions", 200, duration=api_duration, 
+               user_id=user_id, tokens_used=response.get("usage", {}).get("total_tokens", 0))
 
         # Robust JSON parsing with multiple fallbacks
         parsed_response = None
@@ -319,10 +339,12 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
                     try:
                         parsed_response = json.loads(result[json_start:json_end])
                     except json.JSONDecodeError:
-                        logger.error("Failed to parse LLM response after multiple attempts")
+                        log_error("Failed to parse LLM response after multiple attempts", 
+                                 user_id=user_id, response_length=len(result))
                         return {"error": "Failed to parse assistant response"}
 
         if not parsed_response:
+            log_error("Invalid response format from assistant", user_id=user_id)
             return {"error": "Invalid response format from assistant"}
 
         # Extract fields with defaults
@@ -332,12 +354,12 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
         output_format = parsed_response.get("Output Format")
         follow_up_intent = parsed_response.get("Follow-up Intent")
 
-        logger.info(f"Parsed Intent: {intent}")
-        logger.info(f"Parsed Follow-Up Intent: {follow_up_intent}")
+        log_info("Query intent parsed", user_id=user_id, intent=intent, 
+                follow_up_intent=follow_up_intent, output_format=output_format)
 
         # Handle Creation Transaction intent
         if intent == "Creation Transaction":
-            logger.info("Processing Creation Transaction intent")
+            log_info("Processing Creation Transaction intent", user_id=user_id)
             return {
                 "intent": intent,
                 "follow_up_questions": follow_up_questions,
@@ -348,7 +370,7 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
 
         # Handle Train User Manual intent
         if intent == "Train User Manual":
-            logger.info("Processing Train User Manual intent")
+            log_info("Processing Train User Manual intent", user_id=user_id)
             return {
                 "intent": intent,
                 "follow_up_questions": follow_up_questions,
@@ -369,17 +391,19 @@ def process_user_query(user_query: str, user_id: str, context: Optional[List[Dic
         }
 
     except Exception as e:
-        logger.error(f"Error processing user query: {str(e)}")
+        log_error("Error processing user query", user_id=user_id, 
+                 error=str(e), traceback=traceback.format_exc())
         return {"error": "An error occurred while processing your query"}
 
 def process_llm_response(llm_response, user_id, context, schema=None):
     """
     Processes the LLM response, handling potential errors and extracting relevant information.
     """
-    logger = logging.getLogger(__name__)
-    logger.info(f"LLM Response: {llm_response}")
+    log_info("LLM response processing", user_id=user_id, 
+             response_type=type(llm_response).__name__)
     response_text = llm_response.choices[0].message.content
-    logger.info(f"LLM response is : {response_text}")
+    log_info("LLM response text extracted", user_id=user_id, 
+             response_length=len(response_text))
 
     # Remove leading/trailing whitespace and code blocks
     cleaned_response = response_text.strip().replace("```json", "").replace("```", "")
@@ -398,11 +422,12 @@ def process_llm_response(llm_response, user_id, context, schema=None):
 
     try:
         # Attempt to parse the cleaned response as JSON
-        logger.info(f"Cleaned response before parsing: {cleaned_response}")  # Add this line
+        log_debug("Attempting to parse cleaned LLM response", user_id=user_id, 
+                 cleaned_length=len(cleaned_response))
         response_data = json.loads(cleaned_response)
     except json.JSONDecodeError as e:
-        logger.error(f"Error parsing LLM response after cleanup: {e}")
-        logger.error(f"Failed response: {cleaned_response}")
+        log_error("Error parsing LLM response after cleanup", user_id=user_id, 
+                 error=str(e), failed_response=cleaned_response[:200])
         return {
             "error": "Failed to understand the AI's response. Please try again.",
             "raw_response": cleaned_response,  # Include the raw response for debugging
@@ -414,9 +439,9 @@ def process_llm_response(llm_response, user_id, context, schema=None):
     output_format = response_data.get("Output Format")
 
     # Log the parsed intent
-    logger.info(f"Parsed Intent: {intent}")
-    logger.info(f"Parsed Follow-Up Intent: {response_data.get('Follow-up Intent')}")
-    logger.info(f"Parsed Output Format: {output_format}")
+    log_info("LLM response parsed successfully", user_id=user_id, intent=intent, 
+             follow_up_intent=response_data.get('Follow-up Intent'), 
+             output_format=output_format)
 
     return {
         "intent": intent,
@@ -427,10 +452,12 @@ def process_llm_response(llm_response, user_id, context, schema=None):
 
 def handle_follow_up_request(user_query: str, context: List[Dict[str, str]], follow_up_intent: str,
                              output_format: str = "table") -> Dict[str, Any]:
-    logger.info(f"Handling Follow-Up Request: {follow_up_intent}")
+    log_info("Handling Follow-Up Request", follow_up_intent=follow_up_intent, 
+             output_format=output_format, context_length=len(context) if context else 0)
 
     if not context:
-        logger.warning("No context history found.")
+        log_warning("No context history found for follow-up request", 
+                   follow_up_intent=follow_up_intent)
         return {"response": "No previous data available for refinement.", "error": "Missing context"}
 
     # SUCCESS: Build full conversation
@@ -457,7 +484,8 @@ def handle_follow_up_request(user_query: str, context: List[Dict[str, str]], fol
     # SUCCESS: Check if any table was ever returned before
     if all("No matching records found" in msg or "<table" not in str(msg)
            for msg in assistant_messages):
-        logger.warning("No prior table found — skipping follow-up.")
+        log_warning("No prior table found in conversation history", 
+                   follow_up_intent=follow_up_intent, messages_checked=len(assistant_messages))
         return {"response": "No previous data found to refine.", "error": "No valid table found"}
 
     refined_prompt = f"""
@@ -527,12 +555,14 @@ Based on the refined data, suggest 3-5 relevant follow-up questions that the use
         )
 
         refined_response = response["choices"][0]["message"]["content"].strip()
-        logger.info("Refined response generated.")
+        log_info("Refined response generated", follow_up_intent=follow_up_intent, 
+                response_length=len(refined_response))
 
         return {"response": refined_response, "error": None}
 
     except Exception as e:
-        logger.error(f"Follow-up refinement failed: {e}")
+        log_error("Follow-up refinement failed", follow_up_intent=follow_up_intent, 
+                 error=str(e), error_type=type(e).__name__)
         return {"response": "Error refining request.", "error": str(e)}
 
 def extract_data_from_context(context):
@@ -554,7 +584,8 @@ def extract_data_from_context(context):
             # Check for data reference in context
             if "data_reference" in entry["message"]:
                 data_reference = entry["message"]["data_reference"]
-                logger.info(f"Found data reference: {data_reference}")
+                log_debug("Found data reference in context", 
+                         data_reference=data_reference)
 
                 if os.path.exists(data_reference):
                     try:
@@ -562,19 +593,23 @@ def extract_data_from_context(context):
                             raw_data = file.read()
                             # Replace NaN with None for compatibility
                             data = eval(raw_data.replace("nan", "None"))
-                            logger.info(f"Loaded data from reference: {data_reference}")
+                            log_info("Loaded data from reference file", 
+                                    data_reference=data_reference, data_length=len(str(data)))
                     except Exception as e:
-                        logger.error(f"Error reading data reference file: {e}")
+                        log_error("Error reading data reference file", 
+                                 data_reference=data_reference, error=str(e))
 
             # Check for in-memory data
             elif "data" in entry["message"]:
                 data = entry["message"]["data"]
-                logger.info("Loaded in-memory data from context.")
+                log_info("Loaded in-memory data from context", 
+                        data_length=len(str(data)))
 
             # Check for SQL query in context
             if "sql_query" in entry["message"]:
                 sql_query = entry["message"]["sql_query"]
-                logger.info("Loaded SQL query from context.")
+                log_info("Loaded SQL query from context", 
+                        query_length=len(sql_query))
 
     return data, sql_query
 
@@ -599,7 +634,8 @@ def map_column_names(columns, table_name, schema):
 
 def generate_sql_query(user_query, user_id, schema, context=None):
     """Generate an Oracle SQL query based on user query, schema, and module-based filtering."""
-    logger.info(f"Processing user query for user {user_id}. Context received: {context}")
+    log_info("Processing SQL query generation", user_id=user_id, 
+             query_length=len(user_query), has_context=bool(context))
 
     # Ensure conversation history is valid
     if isinstance(context, list) and all(isinstance(entry, dict) for entry in context):
@@ -609,14 +645,17 @@ def generate_sql_query(user_query, user_id, schema, context=None):
             for entry in context
         )
     else:
-        logger.warning("Invalid or empty conversation context received.")
+        log_warning("Invalid or empty conversation context received", user_id=user_id, 
+                   context_type=type(context), context_length=len(context) if context else 0)
         history_context = ""
 
-    logger.info(f"Conversation history for SQL query generation: {history_context}")
+    log_debug("Conversation history prepared for SQL generation", user_id=user_id, 
+             history_length=len(history_context))
 
     # Enrich schema with sample values if available
     enriched_schema = get_schema_with_values(schema)
-    logger.info(f"Enriched schema for query generation: {enriched_schema}")
+    log_debug("Schema enriched for query generation", user_id=user_id, 
+             schema_tables=list(enriched_schema.keys()) if enriched_schema else [])
 
     current_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -666,9 +705,11 @@ def generate_sql_query(user_query, user_id, schema, context=None):
     ```
     """
 
-    logger.info(f"SQL Prompt Sent to OpenAI:\n{sql_prompt}")
+    log_debug("SQL Prompt prepared for OpenAI", user_id=user_id, 
+             prompt_length=len(sql_prompt))
 
     try:
+        start_time = datetime.now()
         response = openai.ChatCompletion.create(
             engine=deployment_name,
             messages=[{"role": "system", "content": "You are an SQL assistant specialized in Oracle databases."},
@@ -676,48 +717,62 @@ def generate_sql_query(user_query, user_id, schema, context=None):
             temperature=0.00,
             max_tokens=1000,
         )
-
+        
+        api_duration = (datetime.now() - start_time).total_seconds()
         raw_query = response["choices"][0]["message"]["content"].strip()
         raw_query = re.sub(r"```(sql)?", "", raw_query).strip()  # Remove unnecessary backticks
-        logger.info(f"Cleaned SQL Query: {raw_query}")
+        
+        log_api("POST", "/openai/chat/completions", 200, duration=api_duration, 
+               user_id=user_id, tokens_used=response.get("usage", {}).get("total_tokens", 0))
+        log_database("SQL_GENERATION", query_length=len(raw_query), user_id=user_id)
 
         return raw_query
 
     except openai.error.OpenAIError as oe:
-        logger.error(f"OpenAI API error: {oe}")
+        log_error("OpenAI API error during SQL generation", user_id=user_id, error=str(oe))
         raise RuntimeError("Failed to generate SQL query.") from oe
 
 
 def update_transaction_by_ref(c_main_ref: str, updated_data: Dict[str, Any], engine: Engine) -> bool:
     """Updates a transaction in the database using c_main_ref as the identifier."""
-    logger.info(f"Initiating update for c_main_ref: {c_main_ref} with data: {updated_data}")
+    log_database("UPDATE_TRANSACTION", table="transactions", 
+                ref=c_main_ref, data_fields=list(updated_data.keys()) if updated_data else [])
 
     if not c_main_ref or not isinstance(c_main_ref, str):
-        logger.warning(f"Invalid c_main_ref provided: {c_main_ref}")
+        log_warning("Invalid c_main_ref provided", c_main_ref=c_main_ref, 
+                   c_main_ref_type=type(c_main_ref))
         return False
 
     if not updated_data:
-        logger.warning("No update data provided for transaction.")
+        log_warning("No update data provided for transaction", c_main_ref=c_main_ref)
         return False
 
     set_clauses = ", ".join(f"{key} = :{key}" for key in updated_data.keys())
     update_query = f"UPDATE transactions SET {set_clauses} WHERE c_main_ref = :c_main_ref"
     params = {"c_main_ref": c_main_ref, **updated_data}
 
-    logger.info(f"Constructed SQL Query: {update_query} | Params: {params}")
+    log_database("EXECUTE_UPDATE", table="transactions", 
+                query_length=len(update_query), param_count=len(params))
 
     try:
+        start_time = datetime.now()
         with engine.begin() as connection:
             connection.execute(text(update_query), params)
-        logger.info(f"Successfully updated transaction with c_main_ref: {c_main_ref}")
+        
+        execution_time = (datetime.now() - start_time).total_seconds()
+        log_database("UPDATE_SUCCESS", table="transactions", 
+                    ref=c_main_ref, execution_time=execution_time)
+        log_performance("database_update_time", execution_time, unit="s")
         return True
 
     except SQLAlchemyError as e:
-        logger.error(f"Database error while updating c_main_ref {c_main_ref}: {e}")
+        log_error("Database error while updating transaction", 
+                 c_main_ref=c_main_ref, error=str(e), error_type="SQLAlchemyError")
         return False
 
     except Exception as e:
-        logger.error(f"Unexpected error while updating c_main_ref {c_main_ref}: {e}")
+        log_error("Unexpected error while updating transaction", 
+                 c_main_ref=c_main_ref, error=str(e), error_type=type(e).__name__)
         return False
 
 def rewrite_query_with_rownum(query):
@@ -739,10 +794,12 @@ def rewrite_query_with_rownum(query):
             {main_query}
         ) WHERE ROWNUM <= 10
         """
-        logger.info(f"Rewritten query for backward compatibility:\n{rewritten_query}")
+        log_database("QUERY_REWRITE", operation="ROWNUM_compatibility", 
+                    original_length=len(query), rewritten_length=len(rewritten_query))
         return rewritten_query
     except Exception as e:
-        logger.error(f"Error rewriting query for backward compatibility: {e}")
+        log_error("Error rewriting query for backward compatibility", 
+                 error=str(e), error_type=type(e).__name__)
         raise
 
 
@@ -770,13 +827,18 @@ def execute_sql_and_format(sql_query, output_format="table", use_llm=True, user_
                         history_parts.append(f"Assistant: {entry['response']}")
         history_context = "\n\n".join(history_parts)
 
-        logger.info(f"Executing SQL Query: {sql_query}")
+        log_database("EXECUTE_SQL", query_length=len(sql_query), 
+                    output_format=output_format, use_llm=use_llm)
         sql_query = sql_query.rstrip(";")
 
+        start_time = datetime.now()
         with engine.connect() as connection:
             result = connection.execute(text(sql_query))
             rows = result.fetchall()
             raw_columns = result.keys()
+        
+        execution_time = (datetime.now() - start_time).total_seconds()
+        log_performance("sql_execution_time", execution_time, unit="s")
 
         # Extract table name from query for schema mapping
         table_name = extract_table_name(sql_query)  # You'll need to implement this
@@ -817,17 +879,19 @@ def execute_sql_and_format(sql_query, output_format="table", use_llm=True, user_
         # LLM Insights
         if use_llm and user_query:
             insights = generate_llm_insights(df, user_query, context)
-            logger.info(f"insights is : {insights}")
-            logger.info(f"formatted_data is : {formatted_data}")
+            log_info("LLM insights generated", 
+                    insights_length=len(insights), data_length=len(formatted_data))
             return formatted_data, insights
 
         return formatted_data, None
 
     except SQLAlchemyError as e:
-        logger.error(f"Database error: {e}")
+        log_error("Database error during SQL execution", 
+                 error=str(e), error_type="SQLAlchemyError")
         return {"message": "Database error occurred. Please check your query or connection."}, None
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+        log_error("Unexpected error during SQL execution", 
+                 error=str(e), error_type=type(e).__name__)
         return {"message": "An unexpected error occurred while processing your query."}, None
 
 
@@ -850,7 +914,8 @@ def generate_llm_insights(df, user_query, context=None):
                         history_parts.append(f"Assistant: {entry['response']}")
         history_context = "\n\n".join(history_parts)
 
-        logger.info(f"process_user_query conversation history {history_context}")
+        log_info("Generating LLM insights", user_query=user_query, 
+                data_rows=len(df), context_length=len(history_context))
 
         # Serialize only relevant sample
         sample_data = df.head(10).to_json(orient='split')
@@ -898,7 +963,8 @@ def generate_llm_insights(df, user_query, context=None):
         return response["choices"][0]["message"]["content"].strip()
 
     except Exception as e:
-        logger.error(f"Error generating LLM insights: {e}")
+        log_error("Error generating LLM insights", user_query=user_query, 
+                 error=str(e), error_type=type(e).__name__)
         return "Failed to generate insights."
 
 
@@ -920,7 +986,8 @@ def validate_sql_query(sql_query, schema):
                 return True
         return False
     except Exception as e:
-        logger.error(f"Error validating SQL query: {e}")
+        log_error("Error validating SQL query", error=str(e), 
+                 error_type=type(e).__name__)
         return False
 
 
@@ -930,9 +997,11 @@ def default_visualization(data):
         df.plot(kind="bar", x="month", y="collection_count", figsize=(10, 6))
         plt.title("Default Visualization")
         plt.savefig("visualization.png")
+        log_info("Default visualization created", data_rows=len(data))
         return send_file("visualization.png", mimetype="image/png")
     except Exception as e:
-        logger.error(f"Error in default visualization: {e}")
+        log_error("Error in default visualization", 
+                 error=str(e), error_type=type(e).__name__)
         return None
 
 
@@ -989,10 +1058,12 @@ def insert_trx_file_upload(file_index, file_name, bank_group, md5_code):
                 "current_timestamp": current_timestamp
             })
             connection.commit()
-        logger.info(f"Record successfully inserted into TRX_FILE_UPLOAD for file_index: {file_index}")
+        log_database("INSERT", table="TRX_FILE_UPLOAD", 
+                    affected_rows=1, file_index=file_index)
 
     except Exception as e:
-        logger.error(f"Error inserting into TRX_FILE_UPLOAD: {e}")
+        log_error("Error inserting into TRX_FILE_UPLOAD", 
+                 file_index=file_index, error=str(e))
         raise
 
 
@@ -1019,10 +1090,12 @@ def insert_trx_file_detail(file_index, file_name, file_content, file_size):
                 "file_size": file_size
             })
             connection.commit()
-        logger.info(f"Record inserted into TRX_FILE_DETAIL for file_index: {file_index}")
+        log_database("INSERT", table="TRX_FILE_DETAIL", 
+                    affected_rows=1, file_index=file_index)
 
     except Exception as e:
-        logger.error(f"Error inserting into TRX_FILE_DETAIL: {e}")
+        log_error("Error inserting into TRX_FILE_DETAIL", 
+                 file_index=file_index, error=str(e))
         raise
 
 
@@ -1048,9 +1121,11 @@ def insert_trx_sub_files(file_index, sub_file_name, message_set):
                 "file_position": sub_file_name
             })
             connection.commit()
-        logger.info(f"Record successfully inserted into TRX_SUB_FILES for file_index: {file_index}")
+        log_database("INSERT", table="TRX_SUB_FILES", 
+                    affected_rows=1, file_index=file_index)
     except Exception as e:
-        logger.error(f"Error inserting into TRX_SUB_FILES: {e}")
+        log_error("Error inserting into TRX_SUB_FILES", 
+                 file_index=file_index, error=str(e))
         raise
 
 
@@ -2347,7 +2422,7 @@ def load_custom_rules(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"WARNING: Could not load custom rules from {file_path}: {e}")
+        logger.error(f"WARNING: Could not load custom rules from {file_path}: {e}")
         return []
 
 
@@ -2369,7 +2444,7 @@ def load_discrepancy_rules_for_document(document_type):
         rules_file_path = os.path.join(os.path.dirname(__file__), "..", "data", "discrepancy_rules.json")
         
         if not os.path.exists(rules_file_path):
-            print(f"WARNING: Discrepancy rules file not found: {rules_file_path}")
+            logger.warning(f"Discrepancy rules file not found: {rules_file_path}")
             return []
         
         with open(rules_file_path, 'r', encoding='utf-8') as f:
@@ -2381,11 +2456,11 @@ def load_discrepancy_rules_for_document(document_type):
             if rule.get("documentType", "").lower() == document_type.lower():
                 document_rules.append(rule)
         
-        print(f"RULES: Loaded {len(document_rules)} rules for document type: {document_type}")
+        logger.info(f"RULES: Loaded {len(document_rules)} rules for document type: {document_type}")
         return document_rules
         
     except Exception as e:
-        print(f"ERROR: Failed to load discrepancy rules: {e}")
+        logger.error(f"ERROR: Failed to load discrepancy rules: {e}")
         return []
 
 
@@ -2419,7 +2494,7 @@ def analyze_unified_compliance_fast(fields, document_type=None):
         if document_type:
             document_rules = load_discrepancy_rules_for_document(document_type)
         else:
-            print("WARNING: No document type provided, using generic compliance analysis")
+            logger.info("WARNING: No document type provided, using generic compliance analysis")
             document_rules = []
         
         # Prepare fields for analysis
@@ -2459,7 +2534,7 @@ Return JSON only:
 "reason":"Detailed explanation with specific rule reference if violated",
 "rule_code":"<rule_code_if_violated>"}}]}}"""
 
-        print(f"UNIFIED COMPLIANCE: Analyzing {len(field_entries)} fields with {len(document_rules)} rules for {document_type}")
+        logger.info(f"UNIFIED COMPLIANCE: Analyzing {len(field_entries)} fields with {len(document_rules)} rules for {document_type}")
         
         # AI call for unified compliance analysis
         response = openai.ChatCompletion.create(
@@ -2474,7 +2549,7 @@ Return JSON only:
         )
         
         reply = response.choices[0].message["content"].strip()
-        print(f"SUCCESS: Unified compliance reply received: {len(reply)} chars")
+        logger.info(f"SUCCESS: Unified compliance reply received: {len(reply)} chars")
         
         # Clean the response
         if reply.startswith("```json"):
@@ -2521,23 +2596,23 @@ Return JSON only:
             }
         
         processing_time = time.time() - start_time
-        print(f"SUCCESS: UNIFIED COMPLIANCE completed in {processing_time:.2f}s")
-        print(f"RESULTS: {len(unified_compliance_result)} fields analyzed using {len(document_rules)} rules")
+        logger.info(f"SUCCESS: UNIFIED COMPLIANCE completed in {processing_time:.2f}s")
+        logger.info(f"RESULTS: {len(unified_compliance_result)} fields analyzed using {len(document_rules)} rules")
         
         # Return empty UCP600/SWIFT results for backward compatibility
         # The unified result is stored globally and accessed separately
         return {}, {}
         
     except json.JSONDecodeError as e:
-        print(f"ERROR: Unified compliance JSON parse error: {e}")
-        print(f"ERROR: Problematic reply: {reply[:500]}...")
+        logger.error(f"ERROR: Unified compliance JSON parse error: {e}")
+        logger.error(f"ERROR: Problematic reply: {reply[:500]}...")
         
         # Store empty result and return empty UCP600/SWIFT
         unified_compliance_result = {}
         return {}, {}
         
     except Exception as e:
-        print(f"ERROR: Unified compliance error: {e}")
+        logger.error(f"ERROR: Unified compliance error: {e}")
         
         # Store empty result and return empty UCP600/SWIFT
         unified_compliance_result = {}
@@ -2556,7 +2631,7 @@ def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
     try:
         chunk_id = chunk.get("id")
         if not chunk_id:
-            print("ERROR: Missing chunk ID for direct update.")
+            logger.error("ERROR: Missing chunk ID for direct update.")
             return
 
         original_text = chunk["text"]
@@ -2578,15 +2653,15 @@ def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
             embeddings=[updated_embedding],
             ids=[chunk_id]
         )
-        print(f"SUCCESS: Updated UCP chunk {chunk_id} directly with new reason.")
+        logger.info(f"SUCCESS: Updated UCP chunk {chunk_id} directly with new reason.")
     except Exception as e:
-        print(f"ERROR: Failed to update UCP chunk directly: {e}")
+        logger.error(f"ERROR: Failed to update UCP chunk directly: {e}")
 
 def update_swift_compliance_reason_in_chromadb_direct(chunk, reason):
     try:
         chunk_id = chunk.get("id")
         if not chunk_id:
-            print("ERROR: Missing chunk ID for direct update.")
+            logger.error("ERROR: Missing chunk ID for direct update.")
             return
 
         original_text = chunk["text"]
@@ -2607,9 +2682,9 @@ def update_swift_compliance_reason_in_chromadb_direct(chunk, reason):
             embeddings=[updated_embedding],
             ids=[chunk_id]
         )
-        print(f"SUCCESS: Updated SWIFT chunk {chunk_id} directly with new reason.")
+        logger.info(f"SUCCESS: Updated SWIFT chunk {chunk_id} directly with new reason.")
     except Exception as e:
-        print(f"ERROR: Failed to update SWIFT chunk directly: {e}")
+        logger.error(f"ERROR: Failed to update SWIFT chunk directly: {e}")
 
 def build_compliance_prompt(fields, rule_chunks, custom_rules, prior_suggestions=None):
     field_entries = [{"field": label, **data} for label, data in fields.items()]
@@ -2633,7 +2708,7 @@ def build_compliance_prompt(fields, rule_chunks, custom_rules, prior_suggestions
         return "\n".join(summary)
 
     prior_suggestions_text = summarize_prior_suggestions(prior_suggestions)
-    print(f"history is : {prior_suggestions_text}")
+    logger.info(f"history is : {prior_suggestions_text}")
 
     prompt = f"""
     You are a **senior trade finance compliance analyst** specializing in **bank guarantee and trade document vetting**. Your task is to **rigorously analyze** a document consisting of various field-level entries and assess its compliance with applicable **international trade frameworks** and **custom-defined rules**.
@@ -2875,10 +2950,10 @@ def handle_ai_check(data, history):
 
         rule_chunks = retrieve_relevant_chunksRAG(original_text, top_k=5)
         custom_rules = load_custom_rules("app/utils/prompts/custom_combined_rules.json")
-        print(f"history before : {history}")
+        logger.info(f"history before : {history}")
         # ---- Get context-aware prior suggestions for prompt
         prior_suggestions = get_prior_suggestions_from_context(history)
-        print(f"prior_suggestions is: {prior_suggestions}")
+        logger.info(f"prior_suggestions is: {prior_suggestions}")
         prompt = build_compliance_prompt(fields, rule_chunks, custom_rules, prior_suggestions)
 
         # --- LLM Call ---
@@ -2892,19 +2967,17 @@ def handle_ai_check(data, history):
         reply = response.choices[0].message["content"]
 
         # DEBUG PRINTS
-        print("\nINFO: Raw GPT reply:")
-        print(reply)
+        logger.info(f"Raw GPT reply: {reply}")
 
         # Clean markdown-wrapped JSON
         reply_clean = reply.strip().replace("```json", "").replace("```", "").strip()
 
-        print("\n📦 Cleaned JSON:")
-        print(reply_clean)
+        logger.info(f"📦 Cleaned JSON: {reply_clean}")
 
         try:
             parsed = json.loads(reply_clean)
         except json.JSONDecodeError as je:
-            print(f"ERROR: JSON decoding error: {je}")
+            logger.error(f"ERROR: JSON decoding error: {je}")
             return {"error": "Invalid JSON returned from GPT", "raw_reply": reply}, 500
 
         # Validate structure: make sure non-compliant fields have suggestions
@@ -2922,7 +2995,7 @@ def handle_ai_check(data, history):
         }, 200
 
     except Exception as e:
-        print(f"ERROR: AI Compliance Check Error: {e}")
+        logger.error(f"ERROR: AI Compliance Check Error: {e}")
         return {"error": str(e)}, 500
 
 
@@ -3013,8 +3086,7 @@ def handle_guarantee_vetting_check(data, history):
         reply = response.choices[0].message["content"]
 
         # DEBUG PRINTS
-        print("\n🔍 Raw GPT reply (Guarantee Vetting):")
-        print(reply)
+        logger.info(f"🔍 Raw GPT reply (Guarantee Vetting): {reply}")
 
         # Extract JSON from markdown-wrapped response
         reply_clean = reply.strip()
@@ -3046,14 +3118,14 @@ def handle_guarantee_vetting_check(data, history):
             if end_idx > start_idx:
                 reply_clean = reply_clean[start_idx:end_idx].strip()
 
-        print("\n📦 Cleaned JSON (Guarantee Vetting):")
-        print(reply_clean)
+        logger.info("\n📦 Cleaned JSON (Guarantee Vetting):")
+        logger.info(reply_clean)
 
         try:
             parsed = json.loads(reply_clean)
         except json.JSONDecodeError as je:
-            print(f"❌ JSON decoding error: {je}")
-            print(f"❌ Failed to parse JSON from reply: {reply_clean[:500]}...")
+            logger.error(f"❌ JSON decoding error: {je}")
+            logger.error(f"❌ Failed to parse JSON from reply: {reply_clean[:500]}...")
             return {"error": "Invalid JSON returned from GPT", "raw_reply": reply}, 500
 
         # Validate structure and ensure compliance with expected format
@@ -3088,7 +3160,7 @@ def handle_guarantee_vetting_check(data, history):
         return response, 200
 
     except Exception as e:
-        print(f"❌ Guarantee Vetting Check Error: {e}")
+        logger.error(f"❌ Guarantee Vetting Check Error: {e}")
         return {"error": str(e)}, 500
 
 

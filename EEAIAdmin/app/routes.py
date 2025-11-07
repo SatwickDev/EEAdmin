@@ -57,9 +57,13 @@ try:
     from app.utils.realtime_logger import get_realtime_logger, log_request, log_processing_step, log_info, log_error_msg
 
     ENHANCED_FEATURES_AVAILABLE = True
-    print("✅ Enhanced analysis features loaded successfully")
+    from app.utils.daily_logger import log_system
+    log_system("ENHANCED_FEATURES", message="Enhanced analysis features loaded successfully")
 except ImportError as e:
-    print(f"⚠️  Enhanced features not available: {e}")
+    from app.utils.daily_logger import log_error
+    log_error(f"Enhanced features not available: {e}",
+              context="system_startup", 
+              features=["parallel_analyzer", "document_preview", "realtime_logger"])
     ENHANCED_FEATURES_AVAILABLE = False
 
 
@@ -97,9 +101,13 @@ import time
 try:
     import qrcode
     QRCODE_AVAILABLE = True
+    from app.utils.daily_logger import log_system
+    log_system("QR_MODULE", message="QR code generation module loaded successfully")
 except ImportError:
-    print("⚠️  QR code generation not available: 'qrcode' module not installed")
-    print("   Install with: pip install qrcode[pil]")
+    from app.utils.daily_logger import log_error
+    log_error("QR code generation not available: 'qrcode' module not installed",
+              context="system_startup", 
+              solution="Install with: pip install qrcode[pil]")
     QRCODE_AVAILABLE = False
     qrcode = None
 
@@ -1605,19 +1613,33 @@ def setup_auth_routes(app: Flask):
     def login():
         """Handle user login and create a session."""
         try:
+            from app.utils.daily_logger import log_authentication, log_api, log_error
+            log_authentication("LOGIN_ATTEMPT", user_id="unknown", 
+                             ip_address=request.remote_addr)
+            
             data = request.get_json()
             if not data or not data.get("email") or not data.get("password"):
+                log_authentication("LOGIN_FAILED", user_id="unknown", 
+                                 reason="Missing credentials", ip_address=request.remote_addr)
                 return jsonify({"success": False, "message": "Email and password are required"}), 400
 
             user = UserRepository.get_user_by_email(data["email"])
             if not user:
+                log_authentication("LOGIN_FAILED", user_id="unknown", 
+                                 email=data["email"], reason="User not found",
+                                 ip_address=request.remote_addr)
                 return jsonify({"success": False, "message": "Invalid email or password"}), 401
 
             try:
                 # Verify password using bcrypt
                 if not bcrypt.checkpw(data["password"].encode('utf-8'), user["passwordHash"].encode('utf-8')):
+                    log_authentication("LOGIN_FAILED", user_id=user["_id"], 
+                                     email=data["email"], reason="Invalid password",
+                                     ip_address=request.remote_addr)
                     return jsonify({"success": False, "message": "Invalid email or password"}), 401
             except ValueError as e:
+                log_error(f"Invalid password hash for {data.get('email', 'unknown')}: {e}",
+                         context="login", email=data.get('email'))
                 logger.error(f"Invalid password hash for {data.get('email', 'unknown')}: {e}")
                 return jsonify({"success": False, "message": "Invalid password hash. Please reset your password."}), 400
 
@@ -1637,6 +1659,10 @@ def setup_auth_routes(app: Flask):
 
             # Check admin status
             is_admin = user["email"].lower() in [e.lower() for e in ALLOWED_EMAILS]
+            
+            log_authentication("LOGIN_SUCCESS", user_id=user["_id"], 
+                             email=user["email"], is_admin=is_admin,
+                             ip_address=request.remote_addr, session_id=session_id)
             logger.info(f"Login - User: {user['email']}, isAdmin: {is_admin}, ALLOWED_EMAILS: {ALLOWED_EMAILS}")
 
             return jsonify({
@@ -11646,7 +11672,10 @@ Return compliance status for each field.'''
                 active_database=active_database,
                 database_collections=database_collections
             )
-            print(f"rag result message : {result}")
+            from app.utils.daily_logger import log_api
+            log_api("RAG_GENERATION", "completed", 200,
+                   user_id=user_id, query=user_query, output_format="table",
+                   active_repository=active_repository or active_module)
 
             # Check if result is a tuple (error case)
             if isinstance(result, tuple):

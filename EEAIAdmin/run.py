@@ -1,6 +1,7 @@
 from app import create_app
 import os
 import socket
+from app.utils.daily_logger import log_system, log_error
 
 
 def get_local_ip():
@@ -10,12 +11,17 @@ def get_local_ip():
         s.connect(("8.8.8.8", 80))
         local_ip = s.getsockname()[0]
         s.close()
+        log_system("NETWORK_CONFIG", message=f"Local IP detected: {local_ip}")
         return local_ip
-    except Exception:
+    except Exception as e:
+        log_error(f"Failed to detect local IP: {e}",
+                  context="startup", fallback_used=True)
         return "your-local-ip"
 
 
 if __name__ == "__main__":
+    log_system("APPLICATION_STARTUP", message="Application startup initiated")
+    
     app, socketio = create_app()
 
     # Check if SSL certificates exist
@@ -26,6 +32,9 @@ if __name__ == "__main__":
 
     if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
         # HTTPS with SSL certificates
+        log_system("SSL_ENABLED",
+                   message="SSL certificates found, starting HTTPS server",
+                   port=443, cert_path=ssl_cert, key_path=ssl_key)
         print("🔐 SSL certificates found. Starting HTTPS server...")
         print("🌐 Access at: https://localhost:443")
         print(f"🌐 Or from network: https://{local_ip}:443")
@@ -42,6 +51,9 @@ if __name__ == "__main__":
         )
     else:
         # HTTP without SSL
+        log_system("SSL_DISABLED",
+                   message="SSL certificates not found, using HTTP",
+                   port=80, cert_path=ssl_cert, key_path=ssl_key)
         print("⚠️  SSL certificates not found. Running on HTTP...")
         print("📝 To enable HTTPS and camera, run: python generate_cert.py")
         print("🌐 Access at: http://localhost:80")
