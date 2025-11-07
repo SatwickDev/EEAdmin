@@ -45,8 +45,10 @@ const app = createApp({
         v => /.+@.+\..+/.test(v) || 'Email must be valid',
       ],
       passwordRules: [
-        v => !!v || 'Password is required',
-        v => v.length >= 6 || 'Password must be at least 6 characters',
+          v => !!v || 'Password is required',
+          v => v.length >= 6 || 'Password must be at least 6 characters',
+          v => /[A-Z]/.test(v) || 'Password must contain at least one uppercase letter',
+          v => /[!@#$%^&*(),.?":{}|<>]/.test(v) || 'Password must contain at least one special character',
       ],
       nameRules: [
         v => !!v || 'Name is required',
