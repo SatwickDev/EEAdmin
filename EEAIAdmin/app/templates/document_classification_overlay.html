@@ -7973,6 +7973,12 @@ populateFormFields() {
         'Transhipment': 'transhipment',
         'Transhipment (43T)': 'transhipment',
 
+        // 🔹 NEW MAPPINGS FOR FRONTEND FORM FIELDS
+    'Place of Taking in Charge/Dispatch/Receipt': 'placeOfTaking',
+    'Port of Loading/Airport of Departure': 'portOfLoading',
+    'Port of Discharge/Airport of Destination': 'portOfDischarge',
+    'Place of Final Destination / Delivery': 'finalDestination',
+
         // Goods
         'Description of Goods': 'goodsDescription',
         'Invoice Number': 'invoiceNumber',
@@ -8198,7 +8204,7 @@ mapTranshipmentValue(backendValue) {
     console.log(`No mapping found for Transhipment: "${backendValue}"`);
     return backendValue;
 },
-// ENHANCED DEBUG VERSION: Map backend Payment Terms values to frontend dropdown values
+// UPDATED: Map backend Payment Terms values to frontend dropdown values
 mapPaymentTermsValue(backendValue) {
     if (!backendValue) return backendValue;
 
@@ -8208,7 +8214,7 @@ mapPaymentTermsValue(backendValue) {
     console.log(`   Lowercase: "${lowerValue}"`);
 
     // =====================================================
-    // 1. AT SIGHT DETECTION - return "sight" for dropdown
+    // 1. BY PAYMENT DETECTION (At Sight) - return "By payment" for dropdown
     // =====================================================
     if (lowerValue.includes('sight') ||
         lowerValue.includes('at sight') ||
@@ -8216,13 +8222,17 @@ mapPaymentTermsValue(backendValue) {
         lowerValue.includes('payment at sight') ||
         lowerValue.includes('immediate payment') ||
         lowerValue.includes('on presentation') ||
-        lowerValue.includes('upon presentation')) {
-        console.log(`✅ MAPPED: "${backendValue}" -> "sight"`);
-        return 'sight';
+        lowerValue.includes('upon presentation') ||
+        lowerValue.includes('by payment') ||  // Direct mapping to "By Payment"
+        lowerValue.includes('payment by') ||  // Alternative phrasing
+        lowerValue.includes('payable at sight') ||
+        lowerValue.includes('at-sight')) {
+        console.log(`✅ MAPPED: "${backendValue}" -> "By payment"`);
+        return 'By Payment';
     }
 
     // =====================================================
-    // 2. DEFERRED PAYMENT DETECTION - return "deferred" for dropdown
+    // 2. BY DEFERRED PAYMENT DETECTION - return "deferred" for dropdown
     // =====================================================
     // Look for time-based patterns that indicate deferred payment
     const deferredPatterns = [
@@ -8233,7 +8243,9 @@ mapPaymentTermsValue(backendValue) {
         /\bpayment\s*(\d+)\s*days?\s*(after|from)/i,
         /\b(\d+)\s*days?\s*deferred/i,
         /\bdeferred\s*(\d+)\s*days?/i,
-        /\busance\s*(\d+)\s*days?/i
+        /\busance\s*(\d+)\s*days?/i,
+        /\bby\s*def\s*payment/i,  // Added for "By Def Payment"
+        /\bby\s*deferred\s*payment/i  // Added for "By Deferred Payment"
     ];
 
     for (const pattern of deferredPatterns) {
@@ -8247,16 +8259,33 @@ mapPaymentTermsValue(backendValue) {
 
     // Additional deferred payment keywords
     if (lowerValue.includes('deferred') ||
+        lowerValue.includes('def payment') ||
         lowerValue.includes('usance') ||
         lowerValue.includes('time payment') ||
         lowerValue.includes('term payment') ||
+        lowerValue.includes('by def') ||
         (lowerValue.includes('days') && !lowerValue.includes('sight'))) {
         console.log(`✅ MAPPED: "${backendValue}" -> "deferred" (keyword detected)`);
         return 'deferred';
     }
 
     // =====================================================
-    // 3. ACCEPTANCE DETECTION - return "acceptance" for dropdown
+    // 3. BY MIXED PAYMENT DETECTION - return "mixedpayment" for dropdown
+    // =====================================================
+    if (lowerValue.includes('mixed') ||
+        lowerValue.includes('mixed payment') ||
+        lowerValue.includes('part sight part deferred') ||
+        lowerValue.includes('partial sight partial deferred') ||
+        lowerValue.includes('combination') ||
+        lowerValue.includes('combined payment') ||
+        lowerValue.includes('by mixed') ||
+        lowerValue.includes('mixedpayment')) {
+        console.log(`✅ MAPPED: "${backendValue}" -> "mixedpayment"`);
+        return 'mixedpayment';
+    }
+
+    // =====================================================
+    // 4. BY ACCEPTANCE DETECTION - return "acceptance" for dropdown
     // =====================================================
     if (lowerValue.includes('acceptance') ||
         lowerValue.includes('acceptance credit') ||
@@ -8265,13 +8294,14 @@ mapPaymentTermsValue(backendValue) {
         lowerValue.includes('d.a.') ||
         lowerValue.includes('bill of exchange') ||
         lowerValue.includes('time draft') ||
-        lowerValue.includes('usance draft')) {
+        lowerValue.includes('usance draft') ||
+        lowerValue.includes('by acceptance')) {
         console.log(`✅ MAPPED: "${backendValue}" -> "acceptance"`);
         return 'acceptance';
     }
 
     // =====================================================
-    // 4. NEGOTIATION DETECTION - return "negotiation" for dropdown
+    // 5. BY NEGOTIATION DETECTION - return "negotiation" for dropdown
     // =====================================================
     if (lowerValue.includes('negotiation') ||
         lowerValue.includes('negotiation credit') ||

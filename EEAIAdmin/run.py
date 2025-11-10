@@ -1,5 +1,23 @@
-from app import create_app
+import sys
 import os
+
+# Fix Unicode encoding issues when running as Windows service
+if sys.platform == 'win32':
+    # Force UTF-8 encoding for the environment
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    # Set UTF-8 encoding for stdout and stderr
+    try:
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        if hasattr(sys.stderr, 'reconfigure'):
+            sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        # Fallback for older Python versions
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+
+from app import create_app
 import socket
 from app.utils.daily_logger import log_system, log_error
 
@@ -35,10 +53,10 @@ if __name__ == "__main__":
         log_system("SSL_ENABLED",
                    message="SSL certificates found, starting HTTPS server",
                    port=443, cert_path=ssl_cert, key_path=ssl_key)
-        print("🔐 SSL certificates found. Starting HTTPS server...")
-        print("🌐 Access at: https://localhost:443")
-        print(f"🌐 Or from network: https://{local_ip}:443")
-        print("⚠️  If security warning appears, click 'Advanced' -> 'Proceed'")
+        print("[SSL] SSL certificates found. Starting HTTPS server...")
+        print("[WEB] Access at: https://localhost:443")
+        print(f"[WEB] Or from network: https://{local_ip}:443")
+        print("[WARN] If security warning appears, click 'Advanced' -> 'Proceed'")
         print("")
 
         socketio.run(
@@ -54,10 +72,11 @@ if __name__ == "__main__":
         log_system("SSL_DISABLED",
                    message="SSL certificates not found, using HTTP",
                    port=80, cert_path=ssl_cert, key_path=ssl_key)
-        print("⚠️  SSL certificates not found. Running on HTTP...")
-        print("📝 To enable HTTPS and camera, run: python generate_cert.py")
-        print("🌐 Access at: http://localhost:80")
-        print(f"🌐 Or from network: http://{local_ip}:80")
+
+        print("[WARN] SSL certificates not found. Running on HTTP...")
+        print("[INFO] To enable HTTPS and camera, run: python generate_cert.py")
+        print("[WEB] Access at: http://localhost:80")
+        print(f"[WEB] Or from network: http://{local_ip}:80")
         print("")
 
         socketio.run(
