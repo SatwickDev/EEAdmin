@@ -1565,6 +1565,15 @@
             }
         }
 
+        /* Progress animation for loading screen */
+        @keyframes progressFill {
+            0% { width: 20%; }
+            25% { width: 50%; }
+            50% { width: 75%; }
+            75% { width: 90%; }
+            100% { width: 95%; }
+        }
+
     </style>
 </head>
 <body>
@@ -3550,7 +3559,7 @@
                             </button>
 
                             <!-- Documents Checklist Tab -->
-                            <button @click="activeComplianceTab = 'documents'"
+                            <button @click="selectDocumentsTab()"
                                     :class="activeComplianceTab === 'documents' ? 'bg-white text-emerald-600 shadow-lg border-emerald-500' : 'bg-transparent text-gray-600 hover:bg-white/60 hover:text-gray-900 border-transparent'"
                                     class="group relative flex items-center gap-3 px-6 py-3.5 rounded-t-2xl transition-all duration-300 font-semibold whitespace-nowrap border-b-3">
                                 <div :class="activeComplianceTab === 'documents' ? 'bg-emerald-100' : 'bg-gray-100 group-hover:bg-emerald-50'"
@@ -4624,8 +4633,82 @@
                                     </p>
                                 </div>
 
+                                <!-- Loading Screen for Document Parsing -->
+                                <div v-if="loadingRequiredDocuments || parsingRequiredDocuments" class="text-center py-16">
+                                    <!-- Main Loading Container -->
+                                    <div class="max-w-md mx-auto">
+                                        <!-- Animated Icon Container -->
+                                        <div class="relative mb-8">
+                                            <!-- Spinning Border -->
+                                            <div class="w-24 h-24 mx-auto relative">
+                                                <div class="absolute inset-0 border-4 border-emerald-200 rounded-full animate-spin border-t-emerald-600"></div>
+                                                <div class="absolute inset-2 border-2 border-green-100 rounded-full animate-spin border-r-green-500" style="animation-delay: 0.3s; animation-direction: reverse;"></div>
+                                                <!-- Center Icon -->
+                                                <div class="absolute inset-0 flex items-center justify-center">
+                                                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+                                                        <i class="mdi mdi-file-document-outline text-white text-lg"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Loading Text -->
+                                        <div class="space-y-4">
+                                            <h3 class="text-2xl font-bold bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-transparent">
+                                                Analyzing Required Documents
+                                            </h3>
+                                            <p class="text-gray-600 text-lg">
+                                                Our AI is processing your LC terms to identify all required documents...
+                                            </p>
+                                            
+                                            <!-- Progress Indicators -->
+                                            <div class="space-y-3 mt-6">
+                                                <!-- Animated Progress Bar -->
+                                                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                                    <div class="h-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-full animate-pulse"
+                                                         style="width: 100%; animation: progressFill 2s ease-in-out infinite;"></div>
+                                                </div>
+                                                
+                                                <!-- Status Steps -->
+                                                <div class="flex justify-between text-xs text-gray-500 px-2">
+                                                    <span class="flex items-center gap-1">
+                                                        <i class="mdi mdi-check-circle text-emerald-500"></i>
+                                                        Parsing LC Terms
+                                                    </span>
+                                                    <span class="flex items-center gap-1">
+                                                        <i class="mdi mdi-loading mdi-spin text-emerald-500"></i>
+                                                        Extracting Documents
+                                                    </span>
+                                                    <span class="flex items-center gap-1">
+                                                        <i class="mdi mdi-clock-outline text-gray-400"></i>
+                                                        Finalizing
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Helpful Tip -->
+                                            <div class="mt-8 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl">
+                                                <div class="flex items-start gap-3">
+                                                    <div class="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                        <i class="mdi mdi-lightbulb-outline text-emerald-600 text-sm"></i>
+                                                    </div>
+                                                    <div class="text-left">
+                                                        <p class="text-sm text-emerald-800 font-medium">Pro Tip</p>
+                                                        <p class="text-xs text-emerald-700 mt-1">
+                                                            This analysis will help ensure you have all the required documents for LC compliance.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Content (shown when not loading) -->
+                                <div v-else>
+
                                 <!-- Context Banner for LC Form (Not from Document Register) -->
-                                <div v-if="!isFromDocumentRegister && getAllRequiredDocuments().length > 0"
+                                <div v-if="!isFromDocumentRegister && requiredDocuments.length > 0"
                                      class="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 mb-8">
                                     <div class="flex items-start gap-4">
                                         <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -4645,7 +4728,7 @@
                                 </div>
 
                                 <!-- If documents found -->
-                                <div v-if="getAllRequiredDocuments().length > 0" class="space-y-6">
+                                <div v-if="requiredDocuments.length > 0" class="space-y-6">
                                     <!-- Stats Overview - Only show in Document Register context -->
                                     <div v-if="isFromDocumentRegister" class="grid grid-cols-4 gap-6 mb-10">
                                         <!-- Total Documents -->
@@ -4724,7 +4807,7 @@
 
                                     <!-- Documents Grid -->
                                     <div class="grid grid-cols-2 gap-6">
-                                        <div v-for="(doc, index) in getAllRequiredDocuments()" :key="index"
+                                        <div v-for="(doc, index) in requiredDocuments" :key="index"
                                              class="group bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden hover:shadow-xl"
                                              :class="isFromDocumentRegister ? (doc.uploaded ? 'border-emerald-300 bg-emerald-50/30' : 'border-red-300 bg-red-50/30') : 'border-gray-300 bg-gray-50/30'">
                                             <div class="p-6">
@@ -4923,6 +5006,7 @@
                                         Please ensure your LC document contains a "Required Documents" or "Documents Required" section.
                                     </p>
                                 </div>
+                                </div> <!-- End v-else for content (not loading) -->
                             </div>
 
                         </div>
@@ -5368,6 +5452,8 @@
                     discrepancyResults: [], // Results of cross-verification checks
                     loadingDiscrepancies: false, // Loading state for discrepancy analysis
                     requiredDocumentsCache: [], // Cache for required documents from LC context
+                    loadingRequiredDocuments: false, // Loading state for required documents parsing
+                    parsingRequiredDocuments: false, // Flag to prevent simultaneous parsing calls
                     transportDocuments: [],
                     customsDocuments: [],
                     otherDocuments: []
@@ -5418,6 +5504,11 @@
                     if (!this.results || this.results.length === 0) return '0.0';
                     const sum = this.results.reduce((acc, r) => acc + parseFloat(r.processingTime || 0), 0);
                     return sum.toFixed(1);
+                },
+                
+                // Computed property for required documents to avoid function calls in template
+                requiredDocuments() {
+                    return this.getAllRequiredDocuments();
                 }
             },
             methods: {
@@ -6823,6 +6914,48 @@
                     return total > 0 ? Math.round((populated / total) * 100) : 0;
                 },
 
+                // Handle Documents tab selection
+                selectDocumentsTab() {
+                    console.log('📋 Documents tab selected');
+                    this.activeComplianceTab = 'documents';
+                    
+                    // Check if we need to trigger parsing
+                    if (this.lcContext && (!this.requiredDocumentsCache || this.requiredDocumentsCache.length === 0)) {
+                        const lcData = this.lcContext.formData || this.lcContext;
+                        const requiredDocsText = lcData.documentsRequired || lcData.requiredDocuments || '';
+                        
+                        if (requiredDocsText && requiredDocsText.trim() && !this.parsingRequiredDocuments) {
+                            console.log('🔄 Starting background parsing for Documents tab...');
+                            this.loadingRequiredDocuments = true;
+                            this.parsingRequiredDocuments = true;
+                            
+                            // Trigger parsing asynchronously 
+                            this.$nextTick(() => {
+                                this.parseRequiredDocumentsFromLC(requiredDocsText);
+                            });
+                        }
+                    }
+                },
+
+                // Clear and re-parse required documents (for debugging/fixing bad cache)
+                clearAndReparseDocuments() {
+                    console.log('🔄 Clearing cache and re-parsing documents...');
+                    this.requiredDocumentsCache = [];
+                    this.loadingRequiredDocuments = false;
+                    this.parsingRequiredDocuments = false;
+                    
+                    if (this.lcContext) {
+                        const lcData = this.lcContext.formData || this.lcContext;
+                        const requiredDocsText = lcData.documentsRequired || lcData.requiredDocuments || '';
+                        
+                        if (requiredDocsText && requiredDocsText.trim()) {
+                            this.loadingRequiredDocuments = true;
+                            this.parsingRequiredDocuments = true;
+                            this.parseRequiredDocumentsFromLC(requiredDocsText);
+                        }
+                    }
+                },
+
                 // Get all required documents from all results
                 getAllRequiredDocuments() {
                     // PRIORITY 1: Check if LC context exists (works for both LC Form and Document Register)
@@ -6855,12 +6988,20 @@
                         const lcData = this.lcContext.formData || this.lcContext;
                         const requiredDocsText = lcData.documentsRequired || lcData.requiredDocuments || '';
                         
-                        if (requiredDocsText && requiredDocsText.trim()) {
+                        if (requiredDocsText && requiredDocsText.trim() && !this.parsingRequiredDocuments) {
                             console.log('🔄 Parsing LC required documents from context...');
+                            // Set parsing flag to prevent multiple calls
+                            this.parsingRequiredDocuments = true;
+                            this.loadingRequiredDocuments = true;
                             // Parse and store in cache
                             this.parseRequiredDocumentsFromLC(requiredDocsText);
-                        } else {
+                        } else if (!requiredDocsText || !requiredDocsText.trim()) {
                             console.warn('⚠️ No required documents text found in LC context');
+                        }
+                        
+                        // Return empty array while parsing (loading state)
+                        if (this.loadingRequiredDocuments || this.parsingRequiredDocuments) {
+                            return [];
                         }
                         
                         // Return cache with appropriate validation based on context
@@ -6957,19 +7098,88 @@
                 // Parse required documents from LC data
                 parseRequiredDocumentsFromLC(requiredDocsText) {
                     console.log('📝 Parsing required documents from LC:', requiredDocsText);
+                    console.log('📏 Text length:', requiredDocsText.length);
                     
                     // Clear cache first
                     this.requiredDocumentsCache = [];
                     
-                    // Simple parsing as fallback - split by common delimiters
-                    const docs = requiredDocsText.split(/[\n,;]+/).map(d => d.trim()).filter(d => d);
+                    // Smarter parsing as fallback - look for numbered items or major document types
+                    let docs = [];
+                    
+                    // First try to split by numbered items (1. 2. 3. or a) b) c))
+                    const numberedSections = requiredDocsText.split(/(?:\d+\.\s*|\b[a-z]\)\s*)/i);
+                    
+                    // Filter and clean numbered sections
+                    numberedSections.forEach(section => {
+                        let cleanSection = section.trim();
+                        if (cleanSection.length > 10) { // Only consider substantial sections
+                            // Look for document keywords
+                            if (cleanSection.toLowerCase().includes('invoice') ||
+                                cleanSection.toLowerCase().includes('bill of lading') ||
+                                cleanSection.toLowerCase().includes('certificate') ||
+                                cleanSection.toLowerCase().includes('packing list') ||
+                                cleanSection.toLowerCase().includes('policy') ||
+                                cleanSection.toLowerCase().includes('document') ||
+                                cleanSection.toLowerCase().includes('original') ||
+                                cleanSection.toLowerCase().includes('copy') ||
+                                cleanSection.toLowerCase().includes('copies')) {
+                                
+                                // Take only the first sentence/main part to avoid fragments
+                                const mainPart = cleanSection.split(/[.,;](?=\s*[A-Z])/)[0];
+                                if (mainPart && mainPart.length > 15) {
+                                    docs.push(mainPart.trim());
+                                }
+                            }
+                        }
+                    });
+                    
+                    // If numbered parsing didn't work well, try document type keywords
+                    if (docs.length < 3) {
+                        docs = [];
+                        const documentKeywords = [
+                            'commercial invoice', 'invoice',
+                            'bill of lading', 'bills of lading', 'ocean bills',
+                            'certificate of origin', 'origin certificate',
+                            'packing list',
+                            'insurance policy', 'marine insurance', 'insurance certificate',
+                            'certificate of weight',
+                            'beneficiary certificate'
+                        ];
+                        
+                        documentKeywords.forEach(keyword => {
+                            const regex = new RegExp(`[^.]*\\b${keyword}\\b[^.]*\\.?`, 'gi');
+                            const matches = requiredDocsText.match(regex);
+                            if (matches) {
+                                matches.forEach(match => {
+                                    const cleanMatch = match.trim();
+                                    if (cleanMatch.length > 15 && !docs.some(d => d.toLowerCase().includes(keyword))) {
+                                        docs.push(cleanMatch);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    // If still no good matches, fall back to simple splitting but with better filtering
+                    if (docs.length === 0) {
+                        docs = requiredDocsText.split(/[\n]+/).map(d => d.trim()).filter(d => 
+                            d.length > 20 && // Must be substantial text
+                            (d.toLowerCase().includes('document') || 
+                             d.toLowerCase().includes('certificate') || 
+                             d.toLowerCase().includes('invoice') ||
+                             d.toLowerCase().includes('original') ||
+                             d.toLowerCase().includes('copy'))
+                        );
+                    }
+                    
+                    console.log('📋 Fallback parsing found', docs.length, 'documents:', docs);
                     
                     docs.forEach(doc => {
                         // Clean up the document name
                         let cleanDoc = doc.replace(/^[-•\d.]+\s*/, ''); // Remove bullet points and numbers
                         cleanDoc = cleanDoc.replace(/^\s*[a-z]\)\s*/i, ''); // Remove a), b), c) patterns
                         
-                        if (cleanDoc) {
+                        if (cleanDoc && cleanDoc.length > 10) {
                             this.requiredDocumentsCache.push({
                                 name: cleanDoc,
                                 status: 'pending',
@@ -6980,7 +7190,7 @@
                         }
                     });
                     
-                    // ALWAYS parse with LLM for better results (like Smart Capture from LC form)
+                    // ALWAYS try to parse with LLM for better results (like Smart Capture from LC form)
                     console.log('🚀 Triggering LLM parsing for LC required documents...');
                     this.parseRequiredDocumentsWithLLMForLC(requiredDocsText);
                 },
@@ -6988,6 +7198,8 @@
                 async parseRequiredDocumentsWithLLMForLC(requiredDocsText) {
                     try {
                         console.log('🤖 Parsing LC required documents with LLM:', requiredDocsText);
+                        console.log('📏 Text length:', requiredDocsText.length);
+                        console.log('📄 First 500 chars:', requiredDocsText.substring(0, 500));
                         
                         const response = await fetch('/api/parse-required-documents', {
                             method: 'POST',
@@ -7003,6 +7215,8 @@
                         if (response.ok) {
                             const data = await response.json();
                             console.log('✅ LLM parsed documents:', data.documents);
+                            console.log('📊 LLM returned count:', data.documents ? data.documents.length : 0);
+                            console.log('📋 Document names:', data.documents ? data.documents.map(d => d.name) : []);
                             
                             // Update cache with LLM results (replace simple parsing)
                             this.requiredDocumentsCache = data.documents.map(doc => ({
@@ -7018,10 +7232,16 @@
                         } else {
                             const errorData = await response.json();
                             console.error('❌ API request failed:', response.status, errorData);
+                            console.log('⚠️ Keeping fallback parsed documents due to API error');
                         }
                     } catch (error) {
                         console.error('❌ Error parsing LC required documents with LLM:', error);
-                        // Keep the simple parsed results on error
+                        console.log('⚠️ Keeping fallback parsed documents due to LLM error');
+                        // Keep the smart parsed results on error (don't clear cache)
+                    } finally {
+                        // Clear loading states
+                        this.loadingRequiredDocuments = false;
+                        this.parsingRequiredDocuments = false;
                     }
                 },
 
@@ -7069,6 +7289,10 @@
                     } catch (error) {
                         console.error('❌ Error parsing required documents with LLM:', error);
                         // Fallback is already handled in getAllRequiredDocuments
+                    } finally {
+                        // Clear loading states
+                        this.loadingRequiredDocuments = false;
+                        this.parsingRequiredDocuments = false;
                     }
                 },
 

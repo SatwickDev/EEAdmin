@@ -917,6 +917,86 @@ Return ONLY valid JSON (no markdown, no commentary):
         
         return prompt
 
+    def build_extraction_prompt_for_entities(self, field_list: List[str], 
+                                            field_definitions: Dict[str, str],
+                                            ocr_text: str, page_number: int, 
+                                            chunk_id: int) -> str:
+        """
+        Build extraction prompt for a specific subset of entities (chunk-based extraction).
+        
+        Args:
+            field_list: List of field names to extract
+            field_definitions: Dictionary mapping field names to their definitions
+            ocr_text: OCR text to extract from
+            page_number: Page number for context
+            chunk_id: Chunk identifier for logging
+            
+        Returns:
+            String prompt for LLM
+        """
+        logging.info(f"Building chunk {chunk_id} extraction prompt for {len(field_list)} entities")
+        
+        # Get extraction config
+        extraction_config = self.prompt_config.get('extraction', {})
+        system_prompt = extraction_config.get('system_prompt',
+            'You are an expert data extraction system for trade finance documents.')
+
+        # Build fields section for this chunk
+        fields_text = ""
+        for field_name in field_list:
+            field_def = field_definitions.get(field_name, f"{field_name} - No description available")
+            fields_text += f"- **{field_def}**\n"
+
+        # Build chunk-specific prompt
+        prompt = f"""
+{system_prompt}
+
+### Extraction Task - Chunk {chunk_id}
+You are processing a subset of entities for efficient parallel extraction.
+
+### Critical Instructions:
+1. Extract ONLY the fields listed below - do not extract any other fields
+2. Focus on accuracy and precision for these specific fields
+3. Use the field descriptions as your guide for identification
+4. Include ALL fields in response, even if empty (use "" with confidence 0)
+
+### Fields to Extract in This Chunk ({len(field_list)} fields):
+
+{fields_text}
+
+### Formatting Rules:
+1. **Dates**: Convert to YYYY-MM-DD format
+2. **Amounts**: Include currency code (e.g., "USD 60,465.00")
+3. **Bounding Boxes**: Use [0, 0, 0, 0] if no OCR coordinates available
+4. **Empty Fields**: Use empty string "" with confidence 0 if not found
+
+### OCR Text (Page {page_number}):
+{ocr_text[:16000]}
+
+### Required JSON Response:
+Return ONLY valid JSON (no markdown, no commentary):
+
+{{
+  "page_number": {page_number},
+  "chunk_id": {chunk_id},
+  "extracted_fields": {{
+    "<Field_Name>": {{
+      "value": "<extracted value or empty string>",
+      "confidence": <0-100>,
+      "bounding_box": [<x1>, <y1>, <x2>, <y2>],
+      "bounding_page": {page_number}
+    }}
+  }},
+  "fields_processed": {len(field_list)},
+  "chunk_confidence": <overall 0-100>
+}}
+
+IMPORTANT: Extract ONLY the {len(field_list)} fields listed above. Do not include any other fields.
+"""
+        
+        logging.info(f"Generated chunk {chunk_id} prompt: {len(prompt)} chars for {len(field_list)} fields")
+        return prompt
+
     def check_compliance(self, document_type: str, extracted_fields: Dict) -> Dict:
         """Check compliance of extracted fields against mandatory requirements."""
         # Normalize document type

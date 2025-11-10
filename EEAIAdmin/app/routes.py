@@ -6107,45 +6107,35 @@ Provide a structured summary with your findings.""",
             logger.info(f"📄 Parsing required documents for {document_type}")
             logger.info(f"📝 Raw text: {required_documents_text[:200]}...")
 
-            # Get Azure OpenAI config
+            # Use global Azure OpenAI configuration from app_config.py
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+            
+            logger.info(f"🔧 Using global Azure OpenAI configuration - Deployment: {deployment_name}")
 
             # Comprehensive prompt to handle any format
-            prompt = f"""You are a trade finance document expert. Parse the following required documents text into a JSON array.
+            prompt = f"""You are a trade finance document expert. Parse the following required documents text and return a JSON object with a "documents" array.
 
-The text may be in ANY format:
-- Numbered list (1. 2. 3.)
-- Bullet points (-, *, •)
-- Newline separated
-- Comma or semicolon separated
-- Paragraph form
-- Mixed format
-
-Your task:
-1. Carefully read through ALL the text
-2. Identify EACH DISTINCT document type mentioned (typically 5-15 documents in an LC)
-3. Extract EVERY document - do not skip any
-4. For EACH document, provide:
-   - name: Clear, standardized document name
-   - description: Key requirements in 10-15 words
-   - priority: "Mandatory" (default) or "Optional" if explicitly stated
-   - category: "trade" (invoices, packing lists), "financial" (insurance), "certification" (certificates, attestations), "shipping" (B/L, vessel docs), "other"
-
-Common document types to look for:
-- Commercial Invoice
-- Bill of Lading (B/L, Ocean B/L, Shipped B/L)
-- Certificate of Origin (C/O)
-- Packing List
-- Insurance Policy/Certificate
-- Inspection Certificate
-- Certificate of Weight
-- Certificate of Quality
-- Vessel/Shipping Certificates
-- Beneficiary Certificates
-- Bank Certificates
-
-Required Documents Text:
+TEXT TO PARSE:
 {required_documents_text}
+
+INSTRUCTIONS:
+1. Extract EVERY distinct document mentioned in the text
+2. Each document should be a JSON object with these exact fields:
+   - "name": Document type (e.g., "Commercial Invoice", "Bill of Lading")
+   - "description": Brief requirements (10-15 words)
+   - "priority": "Mandatory" or "Optional" 
+   - "category": "trade", "financial", "certification", "shipping", or "other"
+
+RESPONSE FORMAT:
+Return a JSON object with this structure:
+{{
+  "documents": [
+    {{"name": "Commercial Invoice", "description": "Signed original, attested, legalized", "priority": "Mandatory", "category": "trade"}},
+    {{"name": "Bill of Lading", "description": "Clean shipped on board, full set", "priority": "Mandatory", "category": "shipping"}}
+  ]
+}}
+
+Extract ALL documents mentioned - typically 5-15 documents in an LC.
 
 CRITICAL INSTRUCTIONS:
 - Extract ALL documents mentioned in the text above
@@ -6168,7 +6158,7 @@ Output format:
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
-                    {"role": "system", "content": "You are a meticulous trade finance expert. Extract EVERY SINGLE document from the text, no matter the format. Count how many distinct documents are mentioned and extract all of them. Return only valid JSON array."},
+                    {"role": "system", "content": "You are a trade finance expert. Extract ALL documents from the text and return a JSON object with a 'documents' array. Each document must have 'name', 'description', 'priority', and 'category' fields."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
@@ -6183,17 +6173,50 @@ Output format:
             response_text = response["choices"][0]["message"]["content"].strip()
             logger.info(f"🤖 LLM Response: {response_text[:500]}...")
 
-            # Extract JSON
-            if '```json' in response_text:
-                response_text = response_text.split('```json')[1].split('```')[0].strip()
-            elif '```' in response_text:
-                response_text = response_text.split('```')[1].split('```')[0].strip()
-
-            json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
-            if json_match:
-                response_text = json_match.group(0)
-
-            parsed_documents = json.loads(response_text)
+            # Parse the JSON response
+            try:
+                parsed_response = json.loads(response_text)
+                
+                # Handle different response formats
+                if isinstance(parsed_response, list):
+                    # Response is already an array of documents
+                    parsed_documents = parsed_response
+                elif isinstance(parsed_response, dict):
+                    # Response is an object, look for documents array
+                    if 'documents' in parsed_response:
+                        parsed_documents = parsed_response['documents']
+                    elif 'required_documents' in parsed_response:
+                        parsed_documents = parsed_response['required_documents']
+                    elif 'items' in parsed_response:
+                        parsed_documents = parsed_response['items']
+                    else:
+                        # Treat the object as a single document
+                        parsed_documents = [parsed_response]
+                else:
+                    logger.error(f"❌ Unexpected response format: {type(parsed_response)}")
+                    parsed_documents = []
+                    
+                logger.info(f"📋 Extracted {len(parsed_documents)} documents from LLM response")
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ Failed to parse JSON response: {e}")
+                logger.error(f"📄 Raw response: {response_text}")
+                
+                # Fallback: try to extract JSON array or object from text
+                json_match = re.search(r'[\[{].*[\]}]', response_text, re.DOTALL)
+                if json_match:
+                    try:
+                        fallback_response = json.loads(json_match.group(0))
+                        if isinstance(fallback_response, list):
+                            parsed_documents = fallback_response
+                        elif isinstance(fallback_response, dict):
+                            parsed_documents = [fallback_response]
+                        else:
+                            parsed_documents = []
+                    except:
+                        parsed_documents = []
+                else:
+                    parsed_documents = []
 
             # Clean up
             cleaned_documents = []
@@ -6245,8 +6268,10 @@ Output format:
             logger.info(f"📄 Parsing additional conditions for LC: {lc_number}")
             logger.info(f"📝 Raw text: {additional_conditions_text[:200]}...")
 
-            # Get Azure OpenAI config
+            # Use global Azure OpenAI configuration from app_config.py
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+
+            logger.info(f"🔧 Using global Azure OpenAI configuration - Deployment: {deployment_name}")
 
             # Comprehensive prompt to extract validation rules
             prompt = f"""You are a trade finance compliance expert. Parse the following LC Additional Conditions into structured validation rules.
@@ -11762,9 +11787,9 @@ Return compliance status for each field.'''
     def analyze_page_with_gpt(page_number, page_ocr_data, userQuery, annotations, productName, functionName):
         page_text = " ".join([entry["text"] for entry in page_ocr_data])
         token_count = count_tokens(page_text)
-        if token_count > 8000:
+        if token_count > 16000:
             logging.warning(f"Page {page_number} exceeds token limit. Truncating.")
-            page_text = page_text[:10000]
+            page_text = page_text[:20000]
 
         result = analyze_document_with_gpt(
             extracted_text=page_text,
@@ -12851,6 +12876,229 @@ Return compliance status for each field.'''
         logger.info(f"✅ Aggregation complete: {total_fields} fields, avg confidence: {aggregated['confidence_score']:.1f}")
         return aggregated
 
+    def filter_extracted_fields_by_type(extracted_fields: Dict, entity_info: Dict) -> Dict:
+        """
+        Filter extracted fields based on field type:
+        - Mandatory fields: Always include (even if empty)
+        - Optional/Conditional fields: Only include if they have actual values
+        
+        Args:
+            extracted_fields: Dictionary of extracted field data
+            entity_info: Dictionary with mandatory_fields, optional_fields, conditional_fields
+            
+        Returns:
+            Filtered dictionary of extracted fields
+        """
+        if not extracted_fields or not entity_info:
+            return extracted_fields
+            
+        # Create sets of field names by type for efficient lookup
+        mandatory_field_names = {field['entityName'].lower() for field in entity_info.get('mandatory_fields', [])}
+        optional_field_names = {field['entityName'].lower() for field in entity_info.get('optional_fields', [])}
+        conditional_field_names = {field['entityName'].lower() for field in entity_info.get('conditional_fields', [])}
+        
+        filtered_fields = {}
+        
+        for field_name, field_data in extracted_fields.items():
+            field_name_lower = field_name.lower()
+            field_value = field_data.get('value', '') if isinstance(field_data, dict) else str(field_data)
+            
+            # Check if field has actual content (not empty/null/whitespace)
+            has_value = field_value and str(field_value).strip() and str(field_value).strip() not in ['', 'null', 'None', 'N/A', '-']
+            
+            # Always include mandatory fields (even if empty)
+            if field_name_lower in mandatory_field_names:
+                filtered_fields[field_name] = field_data
+                
+            # Only include optional/conditional fields if they have values
+            elif (field_name_lower in optional_field_names or field_name_lower in conditional_field_names):
+                if has_value:
+                    filtered_fields[field_name] = field_data
+                else:
+                    logger.debug(f"🚫 Filtered out empty optional/conditional field: {field_name}")
+                    
+            # Include unmatched fields if they have values (fallback)
+            else:
+                if has_value:
+                    filtered_fields[field_name] = field_data
+                    
+        logger.info(f"📋 Field filtering: {len(extracted_fields)} → {len(filtered_fields)} fields (removed {len(extracted_fields) - len(filtered_fields)} empty optional fields)")
+        return filtered_fields
+
+    def extract_entities_in_chunks(entity_info: Dict, ocr_text: str, model: str, page_number: int) -> List[Dict]:
+        """
+        Extract entities by dividing them into logical chunks for parallel processing.
+        This ensures consistent results by processing specific entity groups in parallel.
+
+        Args:
+            entity_info: Dictionary with mandatory_fields, optional_fields, conditional_fields
+            ocr_text: OCR text to extract from
+            model: LLM model/engine to use
+            page_number: Page number for logging
+
+        Returns:
+            List of extraction results from all chunks
+        """
+        logger.info(f"🧩 Starting chunk-based entity extraction for page {page_number}")
+
+        # Calculate total entities
+        all_entities = entity_info['mandatory_fields'] + entity_info['optional_fields'] + entity_info['conditional_fields']
+        total_entities = len(all_entities)
+        logger.info(f"📋 Total entities to extract: {total_entities} (Mandatory: {len(entity_info['mandatory_fields'])}, Optional: {len(entity_info['optional_fields'])}, Conditional: {len(entity_info['conditional_fields'])})")
+
+        # Determine optimal number of chunks (3-5 chunks based on entity count)
+        if total_entities <= 10:
+            num_chunks = 2
+        elif total_entities <= 20:
+            num_chunks = 3
+        elif total_entities <= 30:
+            num_chunks = 4
+        else:
+            num_chunks = 5
+
+        # Always prioritize mandatory fields first, then optional, then conditional
+        chunk_size = max(1, total_entities // num_chunks)
+        entity_chunks = []
+        
+        current_chunk = []
+        current_chunk_priority = []
+        
+        # Process entities in priority order
+        for entity in entity_info['mandatory_fields']:
+            current_chunk.append(entity)
+            current_chunk_priority.append('Mandatory')
+            if len(current_chunk) >= chunk_size and len(entity_chunks) < num_chunks - 1:
+                entity_chunks.append({
+                    'entities': current_chunk.copy(),
+                    'priorities': current_chunk_priority.copy(),
+                    'chunk_id': len(entity_chunks) + 1
+                })
+                current_chunk = []
+                current_chunk_priority = []
+
+        for entity in entity_info['optional_fields']:
+            current_chunk.append(entity)
+            current_chunk_priority.append('Optional')
+            if len(current_chunk) >= chunk_size and len(entity_chunks) < num_chunks - 1:
+                entity_chunks.append({
+                    'entities': current_chunk.copy(),
+                    'priorities': current_chunk_priority.copy(),
+                    'chunk_id': len(entity_chunks) + 1
+                })
+                current_chunk = []
+                current_chunk_priority = []
+
+        for entity in entity_info['conditional_fields']:
+            current_chunk.append(entity)
+            current_chunk_priority.append('Conditional')
+            if len(current_chunk) >= chunk_size and len(entity_chunks) < num_chunks - 1:
+                entity_chunks.append({
+                    'entities': current_chunk.copy(),
+                    'priorities': current_chunk_priority.copy(),
+                    'chunk_id': len(entity_chunks) + 1
+                })
+                current_chunk = []
+                current_chunk_priority = []
+
+        # Add remaining entities to the last chunk
+        if current_chunk:
+            entity_chunks.append({
+                'entities': current_chunk,
+                'priorities': current_chunk_priority,
+                'chunk_id': len(entity_chunks) + 1
+            })
+
+        logger.info(f"📦 Created {len(entity_chunks)} entity chunks:")
+        for i, chunk in enumerate(entity_chunks):
+            mandatory_count = sum(1 for p in chunk['priorities'] if p == 'Mandatory')
+            optional_count = sum(1 for p in chunk['priorities'] if p == 'Optional')
+            conditional_count = sum(1 for p in chunk['priorities'] if p == 'Conditional')
+            logger.info(f"   Chunk {i+1}: {len(chunk['entities'])} entities (M:{mandatory_count}, O:{optional_count}, C:{conditional_count})")
+
+        def extract_chunk(chunk_info: Dict) -> Dict:
+            """Extract entities for a specific chunk."""
+            chunk_id = chunk_info['chunk_id']
+            entities = chunk_info['entities']
+            priorities = chunk_info['priorities']
+            
+            try:
+                logger.info(f"   📤 Chunk {chunk_id}: Processing {len(entities)} entities")
+                
+                # Build field list for this chunk
+                field_list = []
+                field_definitions = {}
+                
+                for entity, priority in zip(entities, priorities):
+                    field_name = entity['entityName']
+                    field_desc = entity.get('description', '')
+                    field_list.append(field_name)
+                    
+                    if field_desc:
+                        field_definitions[field_name] = f"{field_name} ({priority}) - {field_desc}"
+                    else:
+                        field_definitions[field_name] = f"{field_name} ({priority})"
+
+                # Build extraction prompt for this chunk
+                chunk_prompt = document_classifier.build_extraction_prompt_for_entities(
+                    field_list=field_list,
+                    field_definitions=field_definitions,
+                    ocr_text=ocr_text,
+                    page_number=page_number,
+                    chunk_id=chunk_id
+                )
+
+                # Make LLM call for this chunk
+                response = openai.ChatCompletion.create(
+                    engine=model,
+                    messages=[{"role": "user", "content": chunk_prompt}],
+                    temperature=0,
+                    seed=12345 + chunk_id,  # Different seed per chunk for reproducibility
+                    top_p=0.1,
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                    response_format={"type": "json_object"}
+                )
+
+                result = response["choices"][0]["message"]["content"].strip()
+                parsed_json = parse_json_from_llm_response(result)
+
+                if parsed_json and 'extracted_fields' in parsed_json:
+                    field_count = len(parsed_json.get('extracted_fields', {}))
+                    logger.info(f"   ✅ Chunk {chunk_id}: Extracted {field_count}/{len(entities)} fields")
+                else:
+                    logger.warning(f"   ⚠️  Chunk {chunk_id}: Failed to parse response")
+
+                return parsed_json if parsed_json else {}
+
+            except Exception as e:
+                logger.error(f"   ❌ Chunk {chunk_id}: Error - {str(e)}")
+                return {}
+
+        # Execute parallel chunk extraction
+        results = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(entity_chunks)) as executor:
+            # Submit all chunk tasks
+            future_to_chunk = {
+                executor.submit(extract_chunk, chunk): chunk['chunk_id']
+                for chunk in entity_chunks
+            }
+
+            # Collect results as they complete
+            for future in concurrent.futures.as_completed(future_to_chunk):
+                chunk_id = future_to_chunk[future]
+                try:
+                    result = future.result()
+                    results.append(result)
+                except Exception as e:
+                    logger.error(f"   ❌ Chunk {chunk_id}: Exception - {str(e)}")
+                    results.append({})
+
+        successful_count = sum(1 for r in results if r and 'extracted_fields' in r)
+        total_extracted = sum(len(r.get('extracted_fields', {})) for r in results if r)
+        logger.info(f"🏁 Chunk extraction complete: {successful_count}/{len(entity_chunks)} chunks successful, {total_extracted} total fields extracted")
+
+        return results
+
     def extract_entities_parallel(prompt: str, model: str, temperature: float, num_attempts: int = 3) -> List[Dict]:
         """
         Perform parallel entity extraction with multiple concurrent LLM calls.
@@ -12936,9 +13184,9 @@ Return compliance status for each field.'''
         token_count = calculate_text_token_count(page_text)
         logger.info(f"Page {page_number} token count: {token_count}")
 
-        # if token_count > 8000:
+        # if token_count > 16000:
         #     logging.warning(f"Page {page_number} exceeds token limit. Truncating.")
-        #     page_text = page_text[:10000]
+        #     page_text = page_text[:20000]
 
         ocr_text = format_ocr_data_for_llm_prompt(page_ocr_data)
 
@@ -13099,29 +13347,51 @@ Return compliance status for each field.'''
             confidence_threshold = extraction_config.get('confidence_threshold', 70)
 
             if enable_parallel and parallel_attempts > 1:
-                # ======= PARALLEL EXTRACTION MODE =======
-                logger.info(f"🔄 Parallel extraction ENABLED: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
+                # ======= NEW: CHUNK-BASED EXTRACTION MODE =======
+                logger.info(f"🧩 Chunk-based extraction ENABLED: Processing entities in logical chunks")
 
-                # Perform parallel extraction
-                extraction_results = extract_entities_parallel(
-                    prompt=prompt,
+                # Use new chunk-based extraction instead of redundant parallel calls
+                extraction_results = extract_entities_in_chunks(
+                    entity_info=entity_info,
+                    ocr_text=page_text,
                     model=model if model else deployment_name,
-                    temperature=temperature,
-                    num_attempts=parallel_attempts
+                    page_number=page_number
                 )
 
-                # Aggregate results
-                parsed_json = aggregate_extracted_fields(
-                    extraction_results=extraction_results,
-                    strategy=aggregation_strategy,
-                    confidence_threshold=confidence_threshold
+                # Merge results from all chunks
+                merged_results = {"extracted_fields": {}}
+                total_fields_extracted = 0
+                
+                for result in extraction_results:
+                    if result and 'extracted_fields' in result:
+                        merged_results["extracted_fields"].update(result["extracted_fields"])
+                        total_fields_extracted += len(result["extracted_fields"])
+
+                # ======= FILTER FIELDS BY TYPE: Keep mandatory always, optional/conditional only if they have values =======
+                filtered_fields = filter_extracted_fields_by_type(
+                    extracted_fields=merged_results["extracted_fields"],
+                    entity_info=entity_info
                 )
+                merged_results["extracted_fields"] = filtered_fields
+
+                # Set merged result as final parsed_json
+                parsed_json = merged_results
+                parsed_json["page_number"] = page_number
+                parsed_json["confidence_score"] = 85  # Default confidence for chunk-based extraction
+                
+                # Add statistics (updated after filtering)
+                parsed_json["mandatory_fields_found"] = sum(1 for field_name in parsed_json["extracted_fields"].keys() 
+                                                         if any(field_name.lower() == mf['entityName'].lower() 
+                                                               for mf in entity_info['mandatory_fields']))
+                parsed_json["total_mandatory_fields"] = len(entity_info['mandatory_fields'])
+                parsed_json["total_fields_extracted"] = len(filtered_fields)  # Updated count after filtering
+                parsed_json["extraction_method"] = "chunk_based"
+
+                logger.info(f"✅ Chunk-based extraction successful: {len(filtered_fields)} filtered fields from {len(extraction_results)} chunks (was {total_fields_extracted} before filtering)")
 
                 if not parsed_json or 'extracted_fields' not in parsed_json:
-                    logger.error("❌ Parallel extraction aggregation failed, no valid results")
-                    return {"page_number": page_number, "error": "Parallel extraction failed"}
-
-                logger.info(f"✅ Parallel extraction successful: {len(parsed_json.get('extracted_fields', {}))} total fields aggregated")
+                    logger.error("❌ Chunk-based extraction failed, no valid results")
+                    return {"page_number": page_number, "error": "Chunk-based extraction failed"}
 
             else:
                 # ======= SINGLE EXTRACTION MODE (Original) =======
@@ -13145,6 +13415,15 @@ Return compliance status for each field.'''
                 parsed_json = parse_json_from_llm_response(result)
                 if not parsed_json:
                     return {"page_number": page_number, "error": "Invalid LLM response format"}
+
+                # ======= FILTER FIELDS BY TYPE (Single Extraction) =======
+                if parsed_json.get('extracted_fields') and entity_info:
+                    filtered_fields = filter_extracted_fields_by_type(
+                        extracted_fields=parsed_json["extracted_fields"],
+                        entity_info=entity_info
+                    )
+                    parsed_json["extracted_fields"] = filtered_fields
+                    logger.info(f"📋 Single extraction: Applied field filtering (mandatory always shown, optional/conditional only if populated)")
 
             # Ensure compliance results are included for all document types
             # No need to remove compliance results anymore
@@ -13964,7 +14243,7 @@ Return compliance status for each field.'''
 
             # Use more document content for better context
             content_length = len(document_text)
-            content_to_use = document_text[:8000] if content_length > 8000 else document_text
+            content_to_use = document_text[:16000] if content_length > 16000 else document_text
 
             # Add logging to debug content
             logger.info(f"Testing question: '{question}' against document with {content_length} characters")
@@ -13976,7 +14255,7 @@ Return compliance status for each field.'''
 
             DOCUMENT CONTENT ({content_length} total characters, showing first {len(content_to_use)}):
             {content_to_use}
-            {"..." if content_length > 8000 else ""}
+            {"..." if content_length > 16000 else ""}
 
             USER QUESTION: {question}
 
@@ -17147,28 +17426,52 @@ Guidelines:
                     confidence_threshold = extraction_config.get('confidence_threshold', 70)
 
                     if enable_parallel and parallel_attempts > 1:
-                        # PARALLEL EXTRACTION FOR THIS DOCUMENT
-                        logger.info(
-                            f"🔄 Using parallel extraction: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
+                        # ======= NEW: CHUNK-BASED EXTRACTION FOR REVALIDATE-ENTITIES =======
+                        logger.info(f"🧩 Chunk-based extraction ENABLED for revalidate-entities: Processing entities in logical chunks")
 
-                        extraction_results = extract_entities_parallel(
-                            prompt=extraction_prompt,
-                            model=extraction_model,
-                            temperature=extraction_temp,
-                            num_attempts=parallel_attempts
-                        )
+                        # Get entity information for chunk-based processing
+                        doc_type_normalized = group['document_type'].replace(' ', '_').lower()
+                        entity_info = document_classifier.get_enhanced_entity_fields(doc_type_normalized)
+                        
+                        if entity_info and entity_info.get('mandatory_fields'):
+                            logger.info(f"📋 Entity info loaded for {group['document_type']}: {len(entity_info['mandatory_fields'])} mandatory, {len(entity_info['optional_fields'])} optional")
+                            
+                            # Use new chunk-based extraction instead of redundant parallel calls
+                            extraction_results = extract_entities_in_chunks(
+                                entity_info=entity_info,
+                                ocr_text=group['text'],
+                                model=extraction_model,
+                                page_number=group['pages'][0]  # Use first page number
+                            )
 
-                        extraction_json = aggregate_extracted_fields(
-                            extraction_results=extraction_results,
-                            strategy=aggregation_strategy,
-                            confidence_threshold=confidence_threshold
-                        )
+                            # Merge results from all chunks
+                            extracted_fields = {}
+                            total_fields_extracted = 0
+                            
+                            for result in extraction_results:
+                                if result and 'extracted_fields' in result:
+                                    extracted_fields.update(result["extracted_fields"])
+                                    total_fields_extracted += len(result["extracted_fields"])
 
-                        extracted_fields = extraction_json.get('extracted_fields', {})
-                        if not extracted_fields:
-                            logger.error("❌ Parallel extraction returned no fields")
+                            # ======= FILTER FIELDS BY TYPE: Keep mandatory always, optional/conditional only if they have values =======
+                            filtered_fields = filter_extracted_fields_by_type(
+                                extracted_fields=extracted_fields,
+                                entity_info=entity_info
+                            )
+
+                            # Create extraction_json in expected format
+                            extraction_json = {
+                                "extracted_fields": filtered_fields,
+                                "confidence_score": 85,  # Default confidence for chunk-based extraction
+                                "extraction_method": "chunk_based"
+                            }
+
+                            logger.info(f"✅ Chunk-based extraction successful: {len(filtered_fields)} filtered fields from {len(extraction_results)} chunks (was {total_fields_extracted} before filtering)")
+                            
                         else:
-                            logger.info(f"✅ Parallel extraction: {len(extracted_fields)} fields")
+                            logger.error(f"❌ Could not load entity info for document type: {group['document_type']}")
+                            # Fallback to single extraction
+                            enable_parallel = False
 
                     else:
                         # SINGLE EXTRACTION (Original)
@@ -17215,6 +17518,18 @@ Guidelines:
                         except Exception as e:
                             logger.error(f"❌ Unexpected error: {e}")
                             extracted_fields = {}
+
+                    # ======= FILTER FIELDS BY TYPE (Single Extraction in Revalidate) =======
+                    doc_type_normalized = group['document_type'].replace(' ', '_').lower()
+                    entity_info_for_filtering = document_classifier.get_enhanced_entity_fields(doc_type_normalized)
+                    
+                    if entity_info_for_filtering and extracted_fields:
+                        filtered_fields = filter_extracted_fields_by_type(
+                            extracted_fields=extracted_fields,
+                            entity_info=entity_info_for_filtering
+                        )
+                        extracted_fields = filtered_fields
+                        logger.info(f"📋 Single extraction (revalidate): Applied field filtering (mandatory always shown, optional/conditional only if populated)")
 
                     extraction_time = time.time() - extraction_start
                     logger.info(f"✅ Extraction completed in {extraction_time:.2f}s - {len(extracted_fields)} fields")
