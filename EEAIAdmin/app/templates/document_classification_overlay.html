@@ -20,6 +20,31 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/global-components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/professional-loader.css') }}">
     <style>
+        .custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #818cf8, #a78bfa);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #f3f4f6;
+}
+
+.z-\[200\] {
+  z-index: 200;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
         * {
             margin: 0;
             padding: 0;
@@ -1539,6 +1564,7 @@
                 font-size: 20px !important;
             }
         }
+
     </style>
 </head>
 <body>
@@ -2008,6 +2034,316 @@
                     </div>
                 </div>
 
+{% raw %}
+<!-- === Smart Document Review Modal === -->
+                <div
+  v-if="showReviewModal"
+  class="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in"
+  @click.self="showReviewModal = false"
+>
+  <div
+    class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl border border-gray-100 flex flex-col overflow-hidden animate-slide-up"
+    style="max-height: 90vh;"
+  >
+    <!-- Header -->
+    <div
+      class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 px-8 py-5 flex items-center justify-between text-white"
+    >
+      <div>
+        <h2 class="text-2xl font-bold flex items-center gap-3">
+          <i class="mdi mdi-file-document-multiple-outline text-3xl"></i>
+          Smart Document Review
+        </h2>
+        <p class="text-indigo-100 text-sm mt-1">Review and confirm detected document types</p>
+      </div>
+      <button
+        @click="showReviewModal = false"
+        class="text-white/70 hover:text-white hover:bg-white/10 transition rounded-full p-2"
+      >
+        <i class="mdi mdi-close text-2xl"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div
+      class="p-8 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-gray-100"
+    >
+      <div class="bg-blue-50 border-l-4 border-indigo-500 p-4 rounded-lg mb-6">
+        <div class="flex items-start gap-3">
+          <i class="mdi mdi-information-outline text-indigo-600 text-xl mt-0.5"></i>
+          <div>
+            <p class="text-sm font-medium text-indigo-900">Review Detected Documents</p>
+            <p class="text-sm text-indigo-700 mt-1">
+              Verify the document types below. You can change any selection using the dropdown menu.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="border border-gray-200 rounded-2xl bg-white overflow-hidden shadow-sm">
+        <div class="grid grid-cols-2 bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 font-semibold text-gray-700 text-sm border-b border-gray-200">
+          <div class="flex items-center gap-2">
+            <i class="mdi mdi-file-outline text-indigo-600"></i>
+            Page Range
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="mdi mdi-tag-outline text-purple-600"></i>
+            Document Type
+          </div>
+        </div>
+
+        <div>
+          <div
+            v-for="(doc, idx) in groupedDocuments"
+            :key="idx"
+            class="grid grid-cols-2 border-b border-gray-100 hover:bg-indigo-50/30 transition-all duration-200 group"
+          >
+            <!-- Page Info -->
+            <div class="px-6 py-5 flex items-center gap-4">
+              <div
+                class="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl text-white shadow-md group-hover:shadow-lg transition-shadow"
+              >
+                <i class="mdi mdi-file-document-outline text-xl"></i>
+              </div>
+              <div>
+                <div class="font-semibold text-gray-900 text-base">{{ doc.page_range }}</div>
+                <div class="flex items-center gap-2 mt-1">
+                  <div class="flex items-center gap-1 text-xs text-gray-500">
+                    <i class="mdi mdi-chart-line text-indigo-500"></i>
+                    <span>Confidence:</span>
+                  </div>
+                  <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                    {{ doc.confidence }}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modern Dropdown with Proper Overlay -->
+            <!-- Replace your dropdown with this working version: -->
+<div class="px-6 py-5 flex items-center">
+  <div class="dropdown-container relative w-full">
+    <!-- Dropdown Trigger Button -->
+    <button
+      @click.stop="toggleDropdown(doc.page_range)"
+      class="block w-full text-left text-sm font-medium text-gray-800 bg-white border-2 border-gray-300 rounded-xl px-4 py-3 pr-10 shadow-sm hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 cursor-pointer"
+      :class="{ 'border-indigo-500 ring-2 ring-indigo-500': openDropdown === doc.page_range }"
+    >
+      {{ selectedDocTypes[doc.page_range] || doc.document_type }}
+    </button>
+
+    <!-- Dropdown Icon -->
+    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-indigo-600">
+      <i
+        class="mdi mdi-chevron-down text-xl transition-transform duration-200"
+        :class="{ 'rotate-180': openDropdown === doc.page_range }"
+      ></i>
+    </div>
+
+    <!-- Dropdown Menu -->
+    <div
+      v-show="openDropdown === doc.page_range"
+      @click.stop
+      class="bg-white border-2 border-indigo-300 rounded-xl shadow-2xl overflow-hidden"
+      style="transition: none !important;"
+      :style="{
+        position: 'fixed',
+        top: dropdownStyle.top,
+        left: dropdownStyle.left,
+        width: dropdownStyle.width,
+        zIndex: 9999,
+        maxHeight: '250px'
+      }"
+    >
+      <div class="overflow-y-auto custom-scrollbar" style="max-height: 200px;">
+        <!-- Current Selection (if not in list) -->
+        <div
+          @click="selectDocTypeForDropdown(doc.page_range, doc.document_type)"
+          class="px-4 py-2.5 hover:bg-indigo-50 cursor-pointer transition-colors text-sm font-medium text-gray-800 border-b border-gray-200 bg-indigo-50/50"
+        >
+          {{ doc.document_type }}
+        </div>
+
+        <!-- Trade Finance Group -->
+        <div class="border-b border-gray-200">
+          <div class="px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+            Trade Finance
+          </div>
+          <div
+            v-for="item in tradeFinanceDocuments"
+            :key="item.code"
+            @click="selectDocTypeForDropdown(doc.page_range, item.name)"
+            class="px-4 py-2.5 hover:bg-indigo-50 cursor-pointer transition-colors text-sm text-gray-700"
+            :class="{ 'bg-indigo-100 font-medium': selectedDocTypes[doc.page_range] === item.name }"
+          >
+            {{ item.name }}
+          </div>
+        </div>
+
+        <!-- Transport Group -->
+        <div class="border-b border-gray-200">
+          <div class="px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+            Transport
+          </div>
+          <div
+            v-for="item in transportDocuments"
+            :key="item.code"
+            @click="selectDocTypeForDropdown(doc.page_range, item.name)"
+            class="px-4 py-2.5 hover:bg-indigo-50 cursor-pointer transition-colors text-sm text-gray-700"
+            :class="{ 'bg-indigo-100 font-medium': selectedDocTypes[doc.page_range] === item.name }"
+          >
+            {{ item.name }}
+          </div>
+        </div>
+
+        <!-- Customs Group -->
+        <div class="border-b border-gray-200">
+          <div class="px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+            Customs
+          </div>
+          <div
+            v-for="item in customsDocuments"
+            :key="item.code"
+            @click="selectDocTypeForDropdown(doc.page_range, item.name)"
+            class="px-4 py-2.5 hover:bg-indigo-50 cursor-pointer transition-colors text-sm text-gray-700"
+            :class="{ 'bg-indigo-100 font-medium': selectedDocTypes[doc.page_range] === item.name }"
+          >
+            {{ item.name }}
+          </div>
+        </div>
+
+        <!-- Other Group -->
+        <div>
+          <div class="px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+            Other
+          </div>
+          <div
+            v-for="item in otherDocuments"
+            :key="item.code"
+            @click="selectDocTypeForDropdown(doc.page_range, item.name)"
+            class="px-4 py-2.5 hover:bg-indigo-50 cursor-pointer transition-colors text-sm text-gray-700"
+            :class="{ 'bg-indigo-100 font-medium': selectedDocTypes[doc.page_range] === item.name }"
+          >
+            {{ item.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="flex justify-between items-center gap-4 bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-5 border-t border-gray-200"
+    >
+      <div class="text-sm text-gray-600 flex items-center gap-2">
+        <i class="mdi mdi-information-outline text-indigo-600"></i>
+        <span>{{ groupedDocuments.length }} document(s) detected</span>
+      </div>
+      <div class="flex gap-3">
+        <button
+          @click="showReviewModal = false"
+          class="px-6 py-2.5 rounded-xl bg-white border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 flex items-center gap-2"
+        >
+          <i class="mdi mdi-close-circle-outline text-lg"></i>
+          Cancel
+        </button>
+        <button
+          @click="confirmAndRevalidate"
+          class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-2"
+        >
+          <i class="mdi mdi-check-circle text-lg"></i>
+          Confirm & Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- In your modal, replace the entire select div with this: -->
+<!--               <style scoped>-->
+
+<!--/* Smooth Animations */-->
+<!--@keyframes fade-in {-->
+<!--  from {-->
+<!--    opacity: 0;-->
+<!--  }-->
+<!--  to {-->
+<!--    opacity: 1;-->
+<!--  }-->
+<!--}-->
+
+<!--@keyframes slide-up {-->
+<!--  from {-->
+<!--    opacity: 0;-->
+<!--    transform: translateY(30px);-->
+<!--  }-->
+<!--  to {-->
+<!--    opacity: 1;-->
+<!--    transform: translateY(0);-->
+<!--  }-->
+<!--}-->
+
+<!--.animate-fade-in {-->
+<!--  animation: fade-in 0.2s ease-out;-->
+<!--}-->
+
+<!--.animate-slide-up {-->
+<!--  animation: slide-up 0.3s ease-out;-->
+<!--}-->
+
+<!--/* Custom Scrollbar */-->
+<!--.scrollbar-thin {-->
+<!--  scrollbar-width: thin;-->
+<!--  scrollbar-color: #a78bfa #f3f4f6;-->
+<!--}-->
+
+<!--.scrollbar-thin::-webkit-scrollbar {-->
+<!--  width: 8px;-->
+<!--}-->
+
+<!--.scrollbar-thin::-webkit-scrollbar-thumb {-->
+<!--  background: linear-gradient(to bottom, #818cf8, #a78bfa);-->
+<!--  border-radius: 10px;-->
+<!--  border: 2px solid transparent;-->
+<!--  background-clip: padding-box;-->
+<!--}-->
+
+<!--.scrollbar-thin::-webkit-scrollbar-track {-->
+<!--  background-color: #f3f4f6;-->
+<!--  border-radius: 10px;-->
+<!--}-->
+
+<!--.scrollbar-thin::-webkit-scrollbar-thumb:hover {-->
+<!--  background: linear-gradient(to bottom, #6366f1, #9333ea);-->
+<!--}-->
+
+
+
+<!--/* Row hover effect */-->
+<!--.group:hover .mdi-file-document-outline {-->
+<!--  transform: scale(1.1);-->
+<!--  transition: transform 0.2s ease;-->
+<!--}-->
+
+<!--</style>-->
+{% endraw %}
+
+
+
+
+
+
+
+
+
+
+
                 <!-- Results Section -->
                 <div v-if="results" class="space-y-6 animate-slide-in">
                     <div class="glass-card p-8">
@@ -2017,8 +2353,8 @@
                                 <p class="text-gray-600">Successfully analyzed {% raw %}{{ results.length }}{% endraw %} document{% raw %}{{ results.length > 1 ? 's' : '' }}{% endraw %}</p>
                             </div>
                             <div class="flex items-center gap-3">
-                            <button 
-                                @click="viewAllCompliance()" 
+                            <button
+                                @click="viewAllCompliance()"
                                 class="compliance-btn text-sm px-4 py-4 group"
                                 :disabled="!results.every(r => isComplianceReady(r))"
                                 :class="{'opacity-50 cursor-not-allowed': !results.every(r => isComplianceReady(r))}"
@@ -2092,7 +2428,7 @@
                                                     <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">AI Enhanced</span>
                                                 </div>
                                             </h4>
-                                            
+
                                             <!-- Enhanced Image Quality Metrics - Full Width Premium Tile -->
                                             <div class="mb-8">
                                                 <div class="glass-card p-8 bg-gradient-to-br from-white via-indigo-50 to-purple-50 border border-indigo-200 shadow-xl">
@@ -2108,14 +2444,14 @@
                                                             <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium">Real-time</span>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- Advanced Chart Layout -->
                                                     <div class="grid grid-cols-12 gap-6">
                                                         <!-- Main Quality Chart - 8 columns -->
                                                         <div class="col-span-8">
                                                             <div class="relative h-80 bg-gradient-to-br from-white via-gray-50 to-indigo-50 rounded-xl p-6 shadow-inner border border-indigo-100">
                                                                 <canvas :id="'advancedQualityChart-' + index" class="w-full h-full"></canvas>
-                                                                
+
                                                                 <!-- Advanced Chart Legend -->
                                                                 <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-indigo-100">
                                                                     <div class="text-xs font-semibold text-gray-700 mb-2">Quality Metrics</div>
@@ -2159,7 +2495,7 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <!-- Quality Score Cards - 4 columns -->
                                                         <div class="col-span-4 space-y-4">
                                                             <!-- Overall Quality Score -->
@@ -2170,7 +2506,7 @@
                                                                 <div class="text-sm text-indigo-700 font-medium">Overall Quality</div>
                                                                 <div class="text-xs text-gray-500 mt-1">AI Assessment</div>
                                                             </div>
-                                                            
+
                                                             <!-- Individual Metric Cards -->
                                                             <div class="grid grid-cols-2 gap-3">
                                                                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-center">
@@ -2201,17 +2537,17 @@
 
                                             <!-- Reorganized 3-Column Layout -->
                                             <div class="grid grid-cols-3 gap-8">
-                                                
+
                                                 <!-- Left Column: Processing Performance -->
                                                 <div class="space-y-6">
-                                                    
+
                                                     <!-- Real-Time Processing Performance -->
                                                     <div class="glass-card p-6 bg-gradient-to-br from-white to-blue-50 border border-blue-100">
                                                         <h5 class="font-semibold text-gray-700 mb-4 flex items-center">
                                                             <i class="mdi mdi-speedometer mr-2 text-blue-500"></i>
                                                             Processing Performance
                                                         </h5>
-                                                        
+
                                                         <!-- Real Performance Metrics with Dynamic Calculations -->
                                                         <div class="space-y-4">
                                                             <div class="flex items-center justify-between">
@@ -2232,7 +2568,7 @@
                                                                 </div>
                                                                 <span class="text-sm font-bold text-emerald-600">{% raw %}{{ parseFloat(result.qualityTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.qualityTime || 0) * 3)) }}{% endraw %}%</span>
                                                             </div>
-                                                            
+
                                                             <div class="flex items-center justify-between">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="relative w-12 h-12">
@@ -2251,7 +2587,7 @@
                                                                 </div>
                                                                 <span class="text-sm font-bold text-orange-600">{% raw %}{{ parseFloat(result.ocrTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.ocrTime || 0) * 2)) }}{% endraw %}%</span>
                                                             </div>
-                                                            
+
                                                             <div class="flex items-center justify-between">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="relative w-12 h-12">
@@ -2270,7 +2606,7 @@
                                                                 </div>
                                                                 <span class="text-sm font-bold text-blue-600">{% raw %}{{ parseFloat(result.classificationTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.classificationTime || 0) * 2.5)) }}{% endraw %}%</span>
                                                             </div>
-                                                            
+
                                                             <div class="flex items-center justify-between">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="relative w-12 h-12">
@@ -2289,7 +2625,7 @@
                                                                 </div>
                                                                 <span class="text-sm font-bold text-purple-600">{% raw %}{{ parseFloat(result.llmTime || 0) === 0 ? 0 : Math.max(0, 100 - (parseFloat(result.llmTime || 0) * 2)) }}{% endraw %}%</span>
                                                             </div>
-                                                            
+
                                                             <div class="flex items-center justify-between">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="relative w-12 h-12">
@@ -2317,10 +2653,10 @@
                                                             <i class="mdi mdi-timeline-clock mr-2 text-orange-500"></i>
                                                             Processing Timeline
                                                         </h5>
-                                                        
+
                                                         <div class="relative">
                                                             <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-green-400"></div>
-                                                            
+
                                                             <div class="space-y-3">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center z-10">
@@ -2331,7 +2667,7 @@
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.qualityTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                
+
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center z-10">
                                                                         <i class="mdi mdi-eye text-white text-xs"></i>
@@ -2341,7 +2677,7 @@
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.ocrTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                
+
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center z-10">
                                                                         <i class="mdi mdi-brain text-white text-xs"></i>
@@ -2351,7 +2687,7 @@
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.classificationTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                
+
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center z-10">
                                                                         <i class="mdi mdi-check text-white text-xs"></i>
@@ -2361,7 +2697,7 @@
                                                                         <p class="text-xs text-gray-500">{% raw %}{{ result.llmTime || '0.0' }}{% endraw %}s</p>
                                                                     </div>
                                                                 </div>
-                                                                
+
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center z-10">
                                                                         <i class="mdi mdi-shield-check text-white text-xs"></i>
@@ -2375,7 +2711,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Center: Document Intelligence -->
                                                 <div class="space-y-6">
                                                     <div class="glass-card p-6 bg-gradient-to-br from-white to-purple-50 border border-purple-100">
@@ -2383,7 +2719,7 @@
                                                             <i class="mdi mdi-file-document-outline mr-2 text-purple-500"></i>
                                                             Document Profile
                                                         </h5>
-                                                        
+
                                                         <div class="space-y-4">
                                                             <div class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
                                                                 <div class="flex items-center space-x-3">
@@ -2397,7 +2733,7 @@
                                                                 </div>
                                                                 <span class="text-sm font-bold text-blue-600">{% raw %}{{ result.documentType }}{% endraw %}</span>
                                                             </div>
-                                                            
+
                                                             <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -2410,7 +2746,7 @@
                                                                 </div>
                                                                 <span class="text-sm font-bold text-green-600">{% raw %}{{ result.confidence }}{% endraw %}%</span>
                                                             </div>
-                                                            
+
                                                             <div class="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
                                                                 <div class="flex items-center space-x-3">
                                                                     <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
@@ -2425,7 +2761,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- Overall Score Card - Centered for Perfect Alignment -->
                                                     <div class="glass-card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
                                                         <div class="text-center">
@@ -2440,7 +2776,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Right: Advanced Analytics -->
                                                 <div class="space-y-6">
                                                     <div class="glass-card p-6 bg-gradient-to-br from-white to-indigo-50 border border-indigo-100">
@@ -2448,7 +2784,7 @@
                                                             <i class="mdi mdi-chart-box-outline mr-2 text-indigo-500"></i>
                                                             Performance Analytics
                                                         </h5>
-                                                        
+
                                                         <div class="space-y-4">
                                                             <!-- Processing Speed Gauge -->
                                                             <div class="text-center">
@@ -2472,7 +2808,7 @@
                                                                 </div>
                                                                 <p class="text-sm font-medium text-gray-600">Processing Efficiency</p>
                                                             </div>
-                                                            
+
                                                             <!-- Key Metrics -->
                                                             <div class="space-y-3">
                                                                 <div class="flex justify-between items-center">
@@ -2482,10 +2818,10 @@
                                                                 <div class="flex justify-between items-center">
                                                                     <span class="text-sm text-gray-600">Fastest Stage</span>
                                                                     <span class="text-sm font-bold text-green-600">{% raw %}{{ [
-                                                                        {name: 'Quality', time: parseFloat(result.qualityTime || 0)}, 
-                                                                        {name: 'OCR', time: parseFloat(result.ocrTime || 0)}, 
-                                                                        {name: 'Classification', time: parseFloat(result.classificationTime || 0)}, 
-                                                                        {name: 'Entity Extract', time: parseFloat(result.llmTime || 0)}, 
+                                                                        {name: 'Quality', time: parseFloat(result.qualityTime || 0)},
+                                                                        {name: 'OCR', time: parseFloat(result.ocrTime || 0)},
+                                                                        {name: 'Classification', time: parseFloat(result.classificationTime || 0)},
+                                                                        {name: 'Entity Extract', time: parseFloat(result.llmTime || 0)},
                                                                         {name: 'Compliance', time: parseFloat(result.complianceTime || 0)}
                                                                     ].filter(s => s.time > 0).sort((a, b) => a.time - b.time)[0]?.name || 'N/A' }}{% endraw %}</span>
                                                                 </div>
@@ -2502,80 +2838,80 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- AI Recommendations -->
                                                     <div class="glass-card p-4 bg-gradient-to-br from-white via-yellow-50 to-amber-50 border border-yellow-100 shadow-lg">
                                                         <h5 class="font-semibold text-gray-800 mb-3 flex items-center">
                                                             <i class="mdi mdi-lightbulb-outline mr-2 text-yellow-500"></i>
                                                             AI Recommendations
                                                         </h5>
-                                                        
+
                                                         <div class="space-y-3">
                                                             <!-- Image Quality Recommendation -->
-                                                            <div class="flex items-start space-x-3 p-3 rounded-lg" 
-                                                                 :class="(result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ? 
-                                                                         'bg-green-50 border-l-4 border-green-400' : 
-                                                                         (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ? 
-                                                                         'bg-blue-50 border-l-4 border-blue-400' : 
+                                                            <div class="flex items-start space-x-3 p-3 rounded-lg"
+                                                                 :class="(result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ?
+                                                                         'bg-green-50 border-l-4 border-green-400' :
+                                                                         (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ?
+                                                                         'bg-blue-50 border-l-4 border-blue-400' :
                                                                          'bg-orange-50 border-l-4 border-orange-400'">
-                                                                <i :class="(result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ? 
-                                                                           'mdi mdi-check-circle text-green-600' : 
-                                                                           (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ? 
-                                                                           'mdi mdi-information text-blue-600' : 
+                                                                <i :class="(result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ?
+                                                                           'mdi mdi-check-circle text-green-600' :
+                                                                           (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ?
+                                                                           'mdi mdi-information text-blue-600' :
                                                                            'mdi mdi-alert text-orange-600'" class="text-lg mt-0.5"></i>
                                                                 <p class="text-sm text-gray-700 leading-relaxed">
-                                                                    {% raw %}{{ (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ? 
-                                                                        'Document scan quality is excellent. Continue using current scanning settings for optimal results.' : 
-                                                                        (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ? 
-                                                                        'Good image quality detected. Consider adjusting brightness or contrast for enhanced accuracy.' : 
+                                                                    {% raw %}{{ (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 90 ?
+                                                                        'Document scan quality is excellent. Continue using current scanning settings for optimal results.' :
+                                                                        (result._rawResult?.quality_analysis?.average_metrics?.brightness_score?.percentage || 85) >= 80 ?
+                                                                        'Good image quality detected. Consider adjusting brightness or contrast for enhanced accuracy.' :
                                                                         'Image quality could be improved. Try rescanning with better lighting or higher resolution.' }}{% endraw %}
                                                                 </p>
                                                             </div>
-                                                            
+
                                                             <!-- Processing Performance Recommendation -->
                                                             <div class="flex items-start space-x-3 p-3 rounded-lg"
-                                                                 :class="parseFloat(result.processingTime || 0) <= 3 ? 
-                                                                         'bg-green-50 border-l-4 border-green-400' : 
-                                                                         parseFloat(result.processingTime || 0) <= 8 ? 
-                                                                         'bg-yellow-50 border-l-4 border-yellow-400' : 
+                                                                 :class="parseFloat(result.processingTime || 0) <= 3 ?
+                                                                         'bg-green-50 border-l-4 border-green-400' :
+                                                                         parseFloat(result.processingTime || 0) <= 8 ?
+                                                                         'bg-yellow-50 border-l-4 border-yellow-400' :
                                                                          'bg-red-50 border-l-4 border-red-400'">
-                                                                <i :class="parseFloat(result.processingTime || 0) <= 3 ? 
-                                                                           'mdi mdi-rocket text-green-600' : 
-                                                                           parseFloat(result.processingTime || 0) <= 8 ? 
-                                                                           'mdi mdi-clock text-yellow-600' : 
+                                                                <i :class="parseFloat(result.processingTime || 0) <= 3 ?
+                                                                           'mdi mdi-rocket text-green-600' :
+                                                                           parseFloat(result.processingTime || 0) <= 8 ?
+                                                                           'mdi mdi-clock text-yellow-600' :
                                                                            'mdi mdi-timer-alert text-red-600'" class="text-lg mt-0.5"></i>
                                                                 <p class="text-sm text-gray-700 leading-relaxed">
-                                                                    {% raw %}{{ parseFloat(result.processingTime || 0) <= 3 ? 
-                                                                        'Excellent processing speed achieved. Your system is well-optimized for document analysis.' : 
-                                                                        parseFloat(result.processingTime || 0) <= 8 ? 
-                                                                        'Processing time is acceptable. Consider compressing images or upgrading hardware for faster results.' : 
+                                                                    {% raw %}{{ parseFloat(result.processingTime || 0) <= 3 ?
+                                                                        'Excellent processing speed achieved. Your system is well-optimized for document analysis.' :
+                                                                        parseFloat(result.processingTime || 0) <= 8 ?
+                                                                        'Processing time is acceptable. Consider compressing images or upgrading hardware for faster results.' :
                                                                         'Processing is slower than expected. Check image size, system resources, or network connectivity.' }}{% endraw %}
                                                                 </p>
                                                             </div>
-                                                            
+
                                                             <!-- Classification Accuracy Recommendation -->
                                                             <div class="flex items-start space-x-3 p-3 rounded-lg"
-                                                                 :class="result.confidence >= 95 ? 
-                                                                         'bg-purple-50 border-l-4 border-purple-400' : 
-                                                                         result.confidence >= 85 ? 
-                                                                         'bg-blue-50 border-l-4 border-blue-400' : 
-                                                                         result.confidence >= 75 ? 
-                                                                         'bg-yellow-50 border-l-4 border-yellow-400' : 
+                                                                 :class="result.confidence >= 95 ?
+                                                                         'bg-purple-50 border-l-4 border-purple-400' :
+                                                                         result.confidence >= 85 ?
+                                                                         'bg-blue-50 border-l-4 border-blue-400' :
+                                                                         result.confidence >= 75 ?
+                                                                         'bg-yellow-50 border-l-4 border-yellow-400' :
                                                                          'bg-red-50 border-l-4 border-red-400'">
-                                                                <i :class="result.confidence >= 95 ? 
-                                                                           'mdi mdi-star text-purple-600' : 
-                                                                           result.confidence >= 85 ? 
-                                                                           'mdi mdi-thumb-up text-blue-600' : 
-                                                                           result.confidence >= 75 ? 
-                                                                           'mdi mdi-help-circle text-yellow-600' : 
+                                                                <i :class="result.confidence >= 95 ?
+                                                                           'mdi mdi-star text-purple-600' :
+                                                                           result.confidence >= 85 ?
+                                                                           'mdi mdi-thumb-up text-blue-600' :
+                                                                           result.confidence >= 75 ?
+                                                                           'mdi mdi-help-circle text-yellow-600' :
                                                                            'mdi mdi-alert-circle text-red-600'" class="text-lg mt-0.5"></i>
                                                                 <p class="text-sm text-gray-700 leading-relaxed">
-                                                                    {% raw %}{{ result.confidence >= 95 ? 
-                                                                        'Outstanding classification accuracy! The AI has identified the document type with high confidence.' : 
-                                                                        result.confidence >= 85 ? 
-                                                                        'Good classification results. The document structure and content are clearly recognized.' : 
-                                                                        result.confidence >= 75 ? 
-                                                                        'Moderate classification confidence. Consider manual review to verify document type accuracy.' : 
+                                                                    {% raw %}{{ result.confidence >= 95 ?
+                                                                        'Outstanding classification accuracy! The AI has identified the document type with high confidence.' :
+                                                                        result.confidence >= 85 ?
+                                                                        'Good classification results. The document structure and content are clearly recognized.' :
+                                                                        result.confidence >= 75 ?
+                                                                        'Moderate classification confidence. Consider manual review to verify document type accuracy.' :
                                                                         'Low classification confidence detected. Manual verification is strongly recommended before processing.' }}{% endraw %}
                                                                 </p>
                                                             </div>
@@ -2598,14 +2934,14 @@
                                                             <!-- Removed old fake metric indicators -->
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- Chart Container with Premium Styling -->
                                                     <div class="relative h-80 bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-inner border border-gray-100">
                                                         <canvas :id="'qualityChart-' + index" class="w-full h-full"></canvas>
-                                                        
+
                                                         <!-- Removed old fake performance indicators -->
                                                     </div>
-                                                    
+
                                                     <!-- Removed old fake metrics tiles -->
                                                 </div>
                                             </div>
@@ -2726,11 +3062,11 @@
                                     <p class="text-indigo-100 text-xs">{% raw %}{{ selectedResult?.fileName }}{% endraw %}</p>
                                 </div>
                             </div>
-                            
+
                             <!-- Compact Controls -->
                             <div class="flex items-center gap-3">
                                 <!-- Page Navigation -->
-                                <div v-if="selectedResult?.previewImages && selectedResult.previewImages.length > 0" 
+                                <div v-if="selectedResult?.previewImages && selectedResult.previewImages.length > 0"
                                      class="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1">
                                     <button @click="prevPage" :disabled="currentPage === 0"
                                             class="w-6 h-6 rounded flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
@@ -2765,20 +3101,20 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Right: Actions + Close -->
                         <div class="flex items-center gap-2">
-                            <button @click="exportJSON" 
+                            <button @click="exportJSON"
                                     class="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all flex items-center gap-1">
                                 <i class="mdi mdi-code-json text-sm"></i>
                                 <span class="text-xs font-semibold">Export</span>
                             </button>
-                            <button @click="populateFormFields" 
+                            <button @click="populateFormFields"
                                     class="px-3 py-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all flex items-center gap-1">
                                 <i class="mdi mdi-check-circle text-sm"></i>
                                 <span class="text-xs font-semibold">Submit</span>
                             </button>
-                            <button @click="closeDetailsModal" 
+                            <button @click="closeDetailsModal"
                                     class="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all flex items-center justify-center">
                                 <i class="mdi mdi-close text-lg"></i>
                             </button>
@@ -2805,7 +3141,7 @@
 
                         <!-- Document Image Viewer - 2 Pages Side by Side (Book Layout) -->
                         <div class="flex-1 flex gap-4 p-4">
-                            
+
                             <!-- First Page (Current Page) - Independent Scrollable Container -->
                             <div class="flex-1 overflow-auto"
                                  v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage]"
@@ -2892,7 +3228,7 @@
                             </div>
 
                             <!-- Empty State -->
-                            <div v-if="!selectedResult?.previewImages || selectedResult.previewImages.length === 0" 
+                            <div v-if="!selectedResult?.previewImages || selectedResult.previewImages.length === 0"
                                  class="flex-1 flex items-center justify-center text-center">
                                 <div>
                                     <i class="mdi mdi-file-document-outline text-6xl text-gray-400 mb-4"></i>
@@ -2904,7 +3240,7 @@
 
                     <!-- Right Panel - Enhanced Details -->
                     <div class="w-3/5 bg-gradient-to-br from-gray-50 to-slate-100 overflow-y-auto border-l border-gray-200">
-                        
+
                         <!-- Enhanced Document Classification Header -->
                         <div class="p-6 bg-white border-b border-gray-200 shadow-sm">
                             <div class="flex items-center gap-4 mb-4">
@@ -2916,7 +3252,7 @@
                                     <p class="text-sm text-gray-600">Classification and extracted information</p>
                                 </div>
                             </div>
-                            
+
                             <!-- Enhanced Classification Cards -->
                             <div class="grid grid-cols-1 gap-4">
                                 <!-- Main Document Type -->
@@ -2933,12 +3269,12 @@
                                     <h4 class="text-lg font-bold text-indigo-800 mb-1">
                                         {% raw %}{{ formatDocumentType(selectedResult?.documentType) }}{% endraw %}
                                     </h4>
-                                    <p v-if="selectedResult?.analysisResult?.document_subtype || getMainSubtype()" 
+                                    <p v-if="selectedResult?.analysisResult?.document_subtype || getMainSubtype()"
                                        class="text-sm text-indigo-600">
                                         {% raw %}{{ selectedResult?.analysisResult?.document_subtype || getMainSubtype() }}{% endraw %}
                                     </p>
                                 </div>
-                                
+
                                 <!-- Per-Page Classification -->
                                 <div v-if="selectedResult?.analysisResult?.per_page && selectedResult.analysisResult.per_page[currentPage]"
                                      class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
@@ -2957,17 +3293,17 @@
                             </div>
                         </div>
 
-                        
+
                         <!-- Fields Content Area -->
                         <div class="flex-1 overflow-y-auto">
-                            
+
                             <!-- Enhanced Fields Display -->
                             <div class="p-6">
                                 <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="space-y-6">
                                     <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
                                          :key="fieldKey"
                                          class="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer"
-                                         :class="{ 
+                                         :class="{
                                              'ring-2 ring-blue-500 shadow-lg border-blue-300': activeFieldIndex === index && fieldData?.value && !manuallyEditedFields[fieldKey],
                                              'ring-2 ring-yellow-400 shadow-lg border-yellow-300': activeFieldIndex === index && manuallyEditedFields[fieldKey],
                                              'ring-2 ring-red-400 bg-red-50 border-red-300': !fieldData?.value
@@ -2989,35 +3325,35 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Enhanced Action Buttons -->
                                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value)"
                                                         :disabled="!fieldData?.value || searchingField === fieldKey"
                                                         class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
-                                                        :class="{ 
+                                                        :class="{
                                                             'bg-indigo-500 text-white': searchingField === fieldKey,
-                                                            'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600': searchingField !== fieldKey 
+                                                            'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600': searchingField !== fieldKey
                                                         }"
                                                         title="Find in document">
                                                     <i :class="searchingField === fieldKey ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-magnify'" class="text-lg"></i>
                                                 </button>
-                                                
+
                                                 <button @click.stop="startFieldTextSelection(fieldKey)"
                                                         class="w-10 h-10 bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
                                                         title="Select text from document">
                                                     <i class="mdi mdi-cursor-text text-lg"></i>
                                                 </button>
-                                                
-                                                <button v-if="!editingField || editingField !== fieldKey" 
+
+                                                <button v-if="!editingField || editingField !== fieldKey"
                                                         @click.stop="startFieldEdit(fieldKey, fieldData?.value)"
                                                         class="w-10 h-10 bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-600 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
                                                         title="Edit field value">
                                                     <i class="mdi mdi-pencil text-lg"></i>
                                                 </button>
-                                                
+
                                                 <!-- Location Status -->
-                                                <div v-if="fieldData?.bounding_box" 
+                                                <div v-if="fieldData?.bounding_box"
                                                      class="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
                                                     <i class="mdi mdi-map-marker-check text-sm"></i>
                                                     <span>Located</span>
@@ -3030,14 +3366,14 @@
                                             <div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200">
                                                 <div class="flex items-center justify-between mb-2">
                                                     <label class="text-sm font-semibold text-gray-700">Extracted Value</label>
-                                                    <div v-if="fieldData?.confidence && !manuallyEditedFields[fieldKey]" 
+                                                    <div v-if="fieldData?.confidence && !manuallyEditedFields[fieldKey]"
                                                          class="px-3 py-1 rounded-full text-xs font-bold"
                                                          :class="getConfidenceClass(fieldData.confidence)">
                                                         <i class="mdi mdi-chart-donut mr-1"></i>
                                                         {% raw %}{{ Math.round(fieldData.confidence) }}{% endraw %}% confidence
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Editable Field Value -->
                                                 <div v-if="editingField === fieldKey" class="relative">
                                                     <textarea v-model="editedFields[fieldKey]"
@@ -3056,8 +3392,8 @@
                                                         </button>
                                                     </div>
                                                 </div>
-                                                
-                                                <div v-else @click="startFieldEdit(fieldKey, fieldData?.value)" 
+
+                                                <div v-else @click="startFieldEdit(fieldKey, fieldData?.value)"
                                                      class="min-h-[60px] text-gray-900 bg-white rounded-lg px-4 py-3 border border-gray-200 hover:border-indigo-300 cursor-text transition-all">
                                                     <div v-if="fieldData?.value" class="whitespace-pre-wrap font-medium">
                                                         {% raw %}{{ fieldData.value }}{% endraw %}
@@ -3071,7 +3407,7 @@
                                         </div>
 
                                         <!-- Simplified Field Metadata -->
-                                        <div v-if="fieldData?.page !== undefined || fieldData?.method" 
+                                        <div v-if="fieldData?.page !== undefined || fieldData?.method"
                                              class="flex items-center gap-4 text-sm text-gray-500">
                                             <span v-if="fieldData?.page !== undefined" class="flex items-center gap-1">
                                                 <i class="mdi mdi-file-document-outline"></i>
@@ -3084,7 +3420,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Enhanced No Fields State -->
                                 <div v-else class="text-center py-16">
                                     <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -3106,20 +3442,20 @@
         <!-- Premium Compliance Analysis Modal -->
         <div v-if="showDiscrepancyModal" class="fixed inset-0 bg-gradient-to-br from-indigo-950/95 via-slate-900/95 to-purple-950/95 backdrop-blur-xl flex items-center justify-center z-50 p-5">
             <div class="bg-white rounded-2xl shadow-2xl w-full h-full max-h-[92vh] overflow-hidden relative border border-indigo-100/20" style="box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.25);">
-                
+
                 <!-- Premium Gradient Header with Glass Effect -->
                 <div class="relative overflow-hidden">
                     <!-- Animated Gradient Background -->
                     <div class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"></div>
                     <div class="absolute inset-0 bg-gradient-to-r from-blue-600/50 via-indigo-600/50 to-violet-600/50 animate-gradient-shift"></div>
-                    
+
                     <!-- Glass Overlay -->
                     <div class="absolute inset-0 bg-white/5 backdrop-blur-sm"></div>
-                    
+
                     <!-- Decorative Shapes -->
                     <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
                     <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-pink-400/20 rounded-full blur-2xl"></div>
-                    
+
                     <!-- Content -->
                     <div class="relative px-8 py-6">
                         <div class="flex items-center justify-between">
@@ -3131,7 +3467,7 @@
                                         <i class="mdi mdi-shield-check-outline text-white text-3xl"></i>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Title -->
                                 <div>
                                     <h1 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -3145,9 +3481,9 @@
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <!-- Premium Close Button -->
-                            <button @click="closeDiscrepancyModal()" 
+                            <button @click="closeDiscrepancyModal()"
                                     class="group relative w-11 h-11 bg-white/20 hover:bg-white/30 backdrop-blur-xl rounded-xl flex items-center justify-center border border-white/30 transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105">
                                 <i class="mdi mdi-close text-white text-xl group-hover:rotate-90 transition-transform duration-300"></i>
                             </button>
@@ -3160,10 +3496,10 @@
                     <div class="px-8 pt-5 pb-0">
                         <div class="flex items-center space-x-1 overflow-x-auto">
                             <!-- Compliance Tab -->
-                            <button @click="activeComplianceTab = 'compliance'" 
+                            <button @click="activeComplianceTab = 'compliance'"
                                     :class="activeComplianceTab === 'compliance' ? 'bg-white text-indigo-600 shadow-lg border-indigo-500' : 'bg-transparent text-gray-600 hover:bg-white/60 hover:text-gray-900 border-transparent'"
                                     class="group relative flex items-center gap-3 px-6 py-3.5 rounded-t-2xl transition-all duration-300 font-semibold whitespace-nowrap border-b-3">
-                                <div :class="activeComplianceTab === 'compliance' ? 'bg-indigo-100' : 'bg-gray-100 group-hover:bg-indigo-50'" 
+                                <div :class="activeComplianceTab === 'compliance' ? 'bg-indigo-100' : 'bg-gray-100 group-hover:bg-indigo-50'"
                                      class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300">
                                     <i class="mdi mdi-shield-check text-lg"></i>
                                 </div>
@@ -3179,10 +3515,10 @@
                             </button>
 
                             <!-- Missing Values Tab -->
-                            <button @click="activeComplianceTab = 'missing'" 
+                            <button @click="activeComplianceTab = 'missing'"
                                     :class="activeComplianceTab === 'missing' ? 'bg-white text-amber-600 shadow-lg border-amber-500' : 'bg-transparent text-gray-600 hover:bg-white/60 hover:text-gray-900 border-transparent'"
                                     class="group relative flex items-center gap-3 px-6 py-3.5 rounded-t-2xl transition-all duration-300 font-semibold whitespace-nowrap border-b-3">
-                                <div :class="activeComplianceTab === 'missing' ? 'bg-amber-100' : 'bg-gray-100 group-hover:bg-amber-50'" 
+                                <div :class="activeComplianceTab === 'missing' ? 'bg-amber-100' : 'bg-gray-100 group-hover:bg-amber-50'"
                                      class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300">
                                     <i class="mdi mdi-alert-circle text-lg"></i>
                                 </div>
@@ -3197,10 +3533,10 @@
                             </button>
 
                             <!-- Discrepancies Tab -->
-                            <button @click="activeComplianceTab = 'discrepancies'" 
+                            <button @click="activeComplianceTab = 'discrepancies'"
                                     :class="activeComplianceTab === 'discrepancies' ? 'bg-white text-rose-600 shadow-lg border-rose-500' : 'bg-transparent text-gray-600 hover:bg-white/60 hover:text-gray-900 border-transparent'"
                                     class="group relative flex items-center gap-3 px-6 py-3.5 rounded-t-2xl transition-all duration-300 font-semibold whitespace-nowrap border-b-3">
-                                <div :class="activeComplianceTab === 'discrepancies' ? 'bg-rose-100' : 'bg-gray-100 group-hover:bg-rose-50'" 
+                                <div :class="activeComplianceTab === 'discrepancies' ? 'bg-rose-100' : 'bg-gray-100 group-hover:bg-rose-50'"
                                      class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300">
                                     <i class="mdi mdi-file-alert text-lg"></i>
                                 </div>
@@ -3214,10 +3550,10 @@
                             </button>
 
                             <!-- Documents Checklist Tab -->
-                            <button @click="activeComplianceTab = 'documents'" 
+                            <button @click="activeComplianceTab = 'documents'"
                                     :class="activeComplianceTab === 'documents' ? 'bg-white text-emerald-600 shadow-lg border-emerald-500' : 'bg-transparent text-gray-600 hover:bg-white/60 hover:text-gray-900 border-transparent'"
                                     class="group relative flex items-center gap-3 px-6 py-3.5 rounded-t-2xl transition-all duration-300 font-semibold whitespace-nowrap border-b-3">
-                                <div :class="activeComplianceTab === 'documents' ? 'bg-emerald-100' : 'bg-gray-100 group-hover:bg-emerald-50'" 
+                                <div :class="activeComplianceTab === 'documents' ? 'bg-emerald-100' : 'bg-gray-100 group-hover:bg-emerald-50'"
                                      class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300">
                                     <i class="mdi mdi-file-check text-lg"></i>
                                 </div>
@@ -3237,10 +3573,10 @@
                 <!-- Main Content Area -->
                 <div class="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-slate-50" style="height: calc(100% - 195px);">
                         <div class="p-8">
-                            
+
                             <!-- Compliance Tab Content -->
                             <div v-show="activeComplianceTab === 'compliance'" class="animate-fade-in">
-                                
+
                                 <!-- Document Type Selection View -->
                                 <div v-if="!selectedComplianceDocType">
                                     <div class="mb-8">
@@ -3249,16 +3585,16 @@
                                         </h2>
                                         <p class="text-gray-600 text-lg">Select a document type to view detailed compliance analysis</p>
                                     </div>
-                                    
+
                                     <!-- Document Type Cards Grid -->
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         <div v-for="(result, index) in results" :key="index"
                                              @click="selectComplianceDocument(result)"
                                              class="group relative bg-white rounded-2xl border-2 border-gray-200 hover:border-indigo-400 p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-100 hover:-translate-y-1">
-                                            
+
                                             <!-- Card Background Gradient -->
                                             <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            
+
                                             <!-- Content -->
                                             <div class="relative">
                                                 <!-- Header -->
@@ -3276,7 +3612,7 @@
                                                     </div>
                                                     <i class="mdi mdi-chevron-right text-2xl text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all duration-300"></i>
                                                 </div>
-                                                
+
                                                 <!-- Stats Grid -->
                                                 <div class="grid grid-cols-2 gap-3 mb-4">
                                                     <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200">
@@ -3298,7 +3634,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Progress Bar -->
                                                 <div class="mb-3">
                                                     <div class="flex items-center justify-between mb-2">
@@ -3313,7 +3649,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <!-- Footer -->
                                                 <div class="flex items-center justify-between pt-3 border-t border-gray-200">
                                                     <span class="text-xs text-gray-500">
@@ -3328,7 +3664,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Detailed Compliance View -->
                                 <div v-else class="animate-fade-in">
                                     <!-- Back Button & Header -->
@@ -3338,7 +3674,7 @@
                                             <i class="mdi mdi-arrow-left text-xl group-hover:-translate-x-1 transition-transform"></i>
                                             Back to Document Types
                                         </button>
-                                        
+
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <h2 class="text-3xl font-bold text-gray-900 mb-2">
@@ -3346,7 +3682,7 @@
                                                 </h2>
                                                 <p class="text-gray-600">{% raw %}{{ selectedComplianceDocType.fileName }}{% endraw %}</p>
                                             </div>
-                                            
+
                                             <!-- Summary Stats -->
                                             <div class="flex items-center gap-4">
                                                 <div class="text-center px-6 py-3 bg-green-50 rounded-xl border border-green-200">
@@ -3370,7 +3706,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Fields List with Filters -->
                                     <div class="bg-white rounded-2xl border border-gray-200 p-6">
                                         <!-- Filter Buttons -->
@@ -3394,16 +3730,16 @@
                                             </div>
                                             <div class="flex items-center gap-2">
                                                 <i class="mdi mdi-magnify text-gray-400"></i>
-                                                <input type="text" v-model="complianceSearchQuery" placeholder="Search fields..." 
+                                                <input type="text" v-model="complianceSearchQuery" placeholder="Search fields..."
                                                        class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Fields Table -->
                                         <div v-if="getFilteredComplianceFields().length > 0" class="space-y-2">
                                             <div v-for="(field, index) in getFilteredComplianceFields()" :key="index"
                                                  class="group relative bg-gray-50 hover:bg-white border border-gray-200 hover:border-indigo-300 rounded-xl p-4 transition-all duration-200 hover:shadow-lg">
-                                                
+
                                                 <div class="flex items-start gap-4">
                                                     <!-- Status Icon -->
                                                     <div :class="field.status === 'compliant' ? 'bg-green-100' : 'bg-red-100'"
@@ -3411,7 +3747,7 @@
                                                         <i :class="field.status === 'compliant' ? 'mdi-check-circle text-green-600' : 'mdi-alert-circle text-red-600'"
                                                            class="mdi text-xl"></i>
                                                     </div>
-                                                    
+
                                                     <!-- Field Info -->
                                                     <div class="flex-1 min-w-0">
                                                         <div class="flex items-center gap-2 mb-2">
@@ -3425,7 +3761,7 @@
                                                                 {% raw %}{{ field.rule_code }}{% endraw %}
                                                             </span>
                                                         </div>
-                                                        
+
                                                         <div class="grid grid-cols-2 gap-4 mb-3">
                                                             <div>
                                                                 <span class="text-xs font-semibold text-gray-500 block mb-1">Field Value</span>
@@ -3440,7 +3776,7 @@
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <!-- Expandable Details -->
                                                         <div class="flex items-center gap-4 text-xs text-gray-500">
                                                             <span><i class="mdi mdi-gavel text-indigo-500"></i> {% raw %}{{ field.basis || 'Standard Practice' }}{% endraw %}</span>
@@ -3449,7 +3785,7 @@
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- Action Button -->
                                                     <button @click="selectedComplianceField = field; showFieldDetailsModal = true"
                                                             class="opacity-0 group-hover:opacity-100 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-all">
@@ -3458,7 +3794,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Empty State -->
                                         <div v-else class="text-center py-12">
                                             <i class="mdi mdi-filter-off text-6xl text-gray-300 mb-4"></i>
@@ -3483,7 +3819,7 @@
                                     </h2>
                                     <p class="text-gray-500 text-lg">Track field population status across all documents</p>
                                 </div>
-                                
+
                                 <!-- Stats Dashboard - Spacious and Clean -->
                                 <div class="grid grid-cols-3 gap-8 mb-12">
                                     <!-- Populated Card -->
@@ -3499,7 +3835,7 @@
                                             <p class="text-green-600 text-sm font-medium">Fields with valid data</p>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Missing Card -->
                                     <div class="group relative bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-amber-400 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-100 hover:-translate-y-1">
                                         <div class="absolute top-6 right-6">
@@ -3513,7 +3849,7 @@
                                             <p class="text-amber-600 text-sm font-medium">Requires attention</p>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Completeness Card -->
                                     <div class="group relative bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-300 hover:-translate-y-1">
                                         <div class="absolute top-6 right-6">
@@ -3528,12 +3864,12 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Document Cards - One per Row, Spacious -->
                                 <div class="space-y-8">
                                     <div v-for="(result, index) in results" :key="index"
                                          class="bg-white rounded-3xl border-2 border-gray-200 overflow-hidden hover:border-amber-300 hover:shadow-2xl transition-all duration-300">
-                                        
+
                                         <!-- Document Header - Clean and Minimal -->
                                         <div class="px-10 py-6 border-b border-gray-200 flex items-center justify-between">
                                             <div class="flex items-center gap-5">
@@ -3545,7 +3881,7 @@
                                                     <p class="text-gray-500 text-sm">{% raw %}{{ result.fileName }}{% endraw %}</p>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Completion Badge -->
                                             <div class="flex items-center gap-6">
                                                 <div class="text-right">
@@ -3556,18 +3892,18 @@
                                                     <!-- Circular Progress -->
                                                     <svg class="transform -rotate-90 w-24 h-24">
                                                         <circle cx="48" cy="48" r="40" stroke="#e5e7eb" stroke-width="8" fill="none" />
-                                                        <circle cx="48" cy="48" r="40" 
+                                                        <circle cx="48" cy="48" r="40"
                                                                 :stroke-dasharray="251.2"
                                                                 :stroke-dashoffset="251.2 - (251.2 * getDocumentCompleteness(result) / 100)"
                                                                 :class="getDocumentCompleteness(result) >= 80 ? 'stroke-green-500' : getDocumentCompleteness(result) >= 50 ? 'stroke-amber-500' : 'stroke-red-500'"
-                                                                stroke-width="8" 
-                                                                fill="none" 
+                                                                stroke-width="8"
+                                                                fill="none"
                                                                 class="transition-all duration-1000" />
                                                     </svg>
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Fields Grid - Side by Side with Space -->
                                         <div class="grid grid-cols-2 divide-x divide-gray-200">
                                             <!-- Populated Section -->
@@ -3581,7 +3917,7 @@
                                                     </h4>
                                                     <span class="text-2xl font-bold text-green-600">{% raw %}{{ getDocumentPopulatedFields(result).length }}{% endraw %}</span>
                                                 </div>
-                                                
+
                                                 <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
                                                     <div v-for="field in getDocumentPopulatedFields(result)" :key="field.field_name"
                                                          class="group p-4 bg-green-50 rounded-xl border border-green-200 hover:bg-green-100 hover:border-green-300 transition-all cursor-pointer">
@@ -3595,14 +3931,14 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div v-if="getDocumentPopulatedFields(result).length === 0" class="text-center py-12">
                                                         <i class="mdi mdi-information-outline text-gray-300 text-5xl mb-3"></i>
                                                         <p class="text-gray-400 font-medium">No populated fields found</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Missing Section -->
                                             <div class="p-10 bg-gray-50">
                                                 <div class="flex items-center justify-between mb-6">
@@ -3614,7 +3950,7 @@
                                                     </h4>
                                                     <span class="text-2xl font-bold text-amber-600">{% raw %}{{ getDocumentMissingFields(result).length }}{% endraw %}</span>
                                                 </div>
-                                                
+
                                                 <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
                                                     <div v-for="field in getDocumentMissingFields(result)" :key="field.field_name"
                                                          class="group p-4 bg-white rounded-xl border border-amber-200 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer">
@@ -3630,7 +3966,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div v-if="getDocumentMissingFields(result).length === 0" class="text-center py-12">
                                                         <i class="mdi mdi-check-all text-green-400 text-5xl mb-3"></i>
                                                         <p class="text-green-600 font-semibold">All fields populated!</p>
@@ -3640,7 +3976,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Information Notice - If Missing Values Exist -->
                                 <div v-if="getMissingValueStats().missing > 0" class="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border-2 border-blue-200">
                                     <div class="flex items-start gap-6">
@@ -3650,7 +3986,7 @@
                                         <div class="flex-1">
                                             <h3 class="text-2xl font-bold text-gray-900 mb-3">Missing Information Detected</h3>
                                             <p class="text-gray-700 text-lg leading-relaxed">
-                                                <span class="font-bold text-blue-600">{% raw %}{{ getMissingValueStats().missing }}{% endraw %} fields</span> could not be extracted from your documents. 
+                                                <span class="font-bold text-blue-600">{% raw %}{{ getMissingValueStats().missing }}{% endraw %} fields</span> could not be extracted from your documents.
                                                 This is informational only - the system has identified which data points are unavailable in the source documents.
                                             </p>
                                         </div>
@@ -3664,7 +4000,7 @@
                                 <div class="mb-6">
                                     <div class="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl p-2 border-2 border-gray-200">
                                         <!-- Standard Rules Tab -->
-                                        <button @click="activeDiscrepancyTab = 'standard'" 
+                                        <button @click="activeDiscrepancyTab = 'standard'"
                                                 :class="activeDiscrepancyTab === 'standard' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' : 'bg-transparent text-gray-600 hover:bg-gray-100'"
                                                 class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-300 relative group">
                                             <div class="flex items-center justify-center gap-2">
@@ -3675,13 +4011,13 @@
                                         </button>
 
                                         <!-- LC Conditions Tab -->
-                                        <button @click="activeDiscrepancyTab = 'lc_conditions'; parseAdditionalConditions()" 
+                                        <button @click="activeDiscrepancyTab = 'lc_conditions'; parseAdditionalConditions()"
                                                 :class="activeDiscrepancyTab === 'lc_conditions' ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg' : 'bg-transparent text-gray-600 hover:bg-gray-100'"
                                                 class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-300 relative group">
                                             <div class="flex items-center justify-center gap-2">
                                                 <i class="mdi mdi-file-document-edit text-lg"></i>
                                                 <span>LC Conditions</span>
-                                                <span v-if="lcConditionsResults && lcConditionsResults.length > 0" 
+                                                <span v-if="lcConditionsResults && lcConditionsResults.length > 0"
                                                       class="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-bold"
                                                       v-text="lcConditionsResults.length">
                                                 </span>
@@ -3700,7 +4036,7 @@
                                         <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                                         <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-400 to-purple-500 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
                                     </div>
-                                    
+
                                     <!-- Content -->
                                     <div class="relative p-16">
                                         <!-- Icon Section -->
@@ -3716,17 +4052,17 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Text Content -->
                                         <div class="text-center max-w-3xl mx-auto space-y-6">
                                             <h2 class="text-4xl font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent mb-4">
                                                 Discrepancies Analysis
                                             </h2>
-                                            
+
                                             <p class="text-xl text-gray-700 leading-relaxed font-medium">
                                                 Discrepancy detection will be activated once you upload and register your documents
                                             </p>
-                                            
+
                                             <div class="pt-8 pb-4">
                                                 <div class="inline-block bg-white/80 backdrop-blur rounded-2xl px-8 py-6 shadow-lg border border-purple-200">
                                                     <div class="flex items-center gap-4">
@@ -3740,7 +4076,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Feature Preview Cards -->
                                             <div class="pt-8 grid grid-cols-3 gap-6">
                                                 <!-- Card 1 -->
@@ -3751,7 +4087,7 @@
                                                     <h3 class="font-bold text-gray-900 mb-2">Field Validation</h3>
                                                     <p class="text-sm text-gray-600">Cross-check document fields against compliance rules</p>
                                                 </div>
-                                                
+
                                                 <!-- Card 2 -->
                                                 <div class="bg-white/60 backdrop-blur rounded-2xl p-6 border border-indigo-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
                                                     <div class="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -3760,7 +4096,7 @@
                                                     <h3 class="font-bold text-gray-900 mb-2">Issue Detection</h3>
                                                     <p class="text-sm text-gray-600">Identify non-compliant fields requiring correction</p>
                                                 </div>
-                                                
+
                                                 <!-- Card 3 -->
                                                 <div class="bg-white/60 backdrop-blur rounded-2xl p-6 border border-blue-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
                                                     <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -3804,7 +4140,7 @@
                                                     <i class="mdi mdi-shield-search text-blue-500 text-3xl"></i>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="bg-green-50 rounded-xl p-4 border border-green-200">
                                                 <div class="flex items-center justify-between">
                                                     <div>
@@ -3814,7 +4150,7 @@
                                                     <i class="mdi mdi-check-circle text-green-500 text-3xl"></i>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="bg-red-50 rounded-xl p-4 border border-red-200">
                                                 <div class="flex items-center justify-between">
                                                     <div>
@@ -3824,7 +4160,7 @@
                                                     <i class="mdi mdi-alert-circle text-red-500 text-3xl"></i>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="bg-orange-50 rounded-xl p-4 border border-orange-200">
                                                 <div class="flex items-center justify-between">
                                                     <div>
@@ -3837,7 +4173,7 @@
                                         </div>
 
                                         <!-- Discrepancy Cards -->
-                                        <div v-for="(discrepancy, index) in getDiscrepancies()" :key="index" 
+                                        <div v-for="(discrepancy, index) in getDiscrepancies()" :key="index"
                                              :class="[
                                                  'bg-white rounded-xl p-6 hover:shadow-lg transition-shadow',
                                                  discrepancy.isCompliant ? 'border-2 border-green-200' : 'border-2 border-red-200'
@@ -3919,7 +4255,7 @@
                                             <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
                                             <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-pink-400 to-purple-500 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
                                         </div>
-                                        
+
                                         <!-- Content -->
                                         <div class="relative p-16">
                                             <!-- Icon Section -->
@@ -3935,17 +4271,17 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Text Content -->
                                             <div class="text-center max-w-3xl mx-auto space-y-6">
                                                 <h2 class="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 bg-clip-text text-transparent mb-4">
                                                     LC Additional Conditions
                                                 </h2>
-                                                
+
                                                 <p class="text-xl text-gray-700 leading-relaxed font-medium">
                                                     LC-specific conditions validation will be available once you upload and register your documents
                                                 </p>
-                                                
+
                                                 <div class="pt-8 pb-4">
                                                     <div class="inline-block bg-white/80 backdrop-blur rounded-2xl px-8 py-6 shadow-lg border border-purple-200">
                                                         <div class="flex items-center gap-4">
@@ -3993,7 +4329,7 @@
                                                         <i class="mdi mdi-file-document-edit text-purple-500 text-3xl"></i>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="bg-green-50 rounded-xl p-4 border border-green-200">
                                                     <div class="flex items-center justify-between">
                                                         <div>
@@ -4003,7 +4339,7 @@
                                                         <i class="mdi mdi-check-circle text-green-500 text-3xl"></i>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="bg-red-50 rounded-xl p-4 border border-red-200">
                                                     <div class="flex items-center justify-between">
                                                         <div>
@@ -4013,7 +4349,7 @@
                                                         <i class="mdi mdi-alert-circle text-red-500 text-3xl"></i>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
                                                     <div class="flex items-center justify-between">
                                                         <div>
@@ -4026,11 +4362,11 @@
                                             </div>
 
                                             <!-- LC Condition Cards -->
-                                            <div v-for="(condition, index) in getLCConditionsResults()" :key="index" 
+                                            <div v-for="(condition, index) in getLCConditionsResults()" :key="index"
                                                  :class="[
                                                      'bg-white rounded-xl p-6 hover:shadow-lg transition-shadow',
-                                                     condition.isCompliant === true ? 'border-2 border-green-200' : 
-                                                     condition.isCompliant === false ? 'border-2 border-red-200' : 
+                                                     condition.isCompliant === true ? 'border-2 border-green-200' :
+                                                     condition.isCompliant === false ? 'border-2 border-red-200' :
                                                      'border-2 border-blue-200'
                                                  ]">
                                                 <!-- Header -->
@@ -4038,14 +4374,14 @@
                                                     <div class="flex items-center gap-3">
                                                         <div :class="[
                                                             'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
-                                                            condition.isCompliant === true ? 'bg-green-100' : 
-                                                            condition.isCompliant === false ? 'bg-red-100' : 
+                                                            condition.isCompliant === true ? 'bg-green-100' :
+                                                            condition.isCompliant === false ? 'bg-red-100' :
                                                             'bg-blue-100'
                                                         ]">
                                                             <i :class="[
                                                                 'text-xl',
-                                                                condition.isCompliant === true ? 'mdi mdi-check-circle text-green-600' : 
-                                                                condition.isCompliant === false ? 'mdi mdi-alert-circle text-red-600' : 
+                                                                condition.isCompliant === true ? 'mdi mdi-check-circle text-green-600' :
+                                                                condition.isCompliant === false ? 'mdi mdi-alert-circle text-red-600' :
                                                                 'mdi mdi-information text-blue-600'
                                                             ]"></i>
                                                         </div>
@@ -4057,12 +4393,12 @@
                                                     <div class="flex flex-col items-end gap-2">
                                                         <span :class="[
                                                             'px-3 py-1 rounded-full text-xs font-semibold uppercase',
-                                                            condition.isCompliant === true ? 'bg-green-100 text-green-700' : 
-                                                            condition.isCompliant === false ? 'bg-red-100 text-red-700' : 
+                                                            condition.isCompliant === true ? 'bg-green-100 text-green-700' :
+                                                            condition.isCompliant === false ? 'bg-red-100 text-red-700' :
                                                             'bg-blue-100 text-blue-700'
                                                         ]">
-                                                            {% raw %}{{ condition.isCompliant === true ? 'COMPLIANT' : 
-                                                               condition.isCompliant === false ? condition.severity + ' SEVERITY' : 
+                                                            {% raw %}{{ condition.isCompliant === true ? 'COMPLIANT' :
+                                                               condition.isCompliant === false ? condition.severity + ' SEVERITY' :
                                                                'MANUAL REVIEW' }}{% endraw %}
                                                         </span>
                                                         <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-semibold uppercase">
@@ -4074,14 +4410,14 @@
                                                 <!-- Validation Result -->
                                                 <div :class="[
                                                     'rounded-lg p-4 mb-4',
-                                                    condition.isCompliant === true ? 'bg-green-50' : 
-                                                    condition.isCompliant === false ? 'bg-red-50' : 
+                                                    condition.isCompliant === true ? 'bg-green-50' :
+                                                    condition.isCompliant === false ? 'bg-red-50' :
                                                     'bg-blue-50'
                                                 ]">
                                                     <p :class="[
                                                         'font-medium',
-                                                        condition.isCompliant === true ? 'text-green-800' : 
-                                                        condition.isCompliant === false ? 'text-red-800' : 
+                                                        condition.isCompliant === true ? 'text-green-800' :
+                                                        condition.isCompliant === false ? 'text-red-800' :
                                                         'text-blue-800'
                                                     ]">{% raw %}{{ condition.message }}{% endraw %}</p>
                                                     <p v-if="condition.note" class="text-xs text-gray-600 mt-2 italic">
@@ -4116,9 +4452,9 @@
                                                 </div>
 
                                                 <!-- ENHANCED Validation Details Section -->
-                                                <div v-if="condition.details && (condition.details.compliant || condition.details.nonCompliant || Array.isArray(condition.details))" 
+                                                <div v-if="condition.details && (condition.details.compliant || condition.details.nonCompliant || Array.isArray(condition.details))"
                                                      class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200">
-                                                    
+
                                                     <!-- Section Header with Icon -->
                                                     <div class="flex items-center gap-2 mb-4">
                                                         <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -4126,21 +4462,21 @@
                                                         </div>
                                                         <p class="text-sm font-bold text-gray-800 uppercase tracking-wide">Document Validation Details</p>
                                                     </div>
-                                                    
+
                                                     <!-- For compliant/non-compliant arrays with ENHANCED details -->
                                                     <div v-if="condition.details.compliant || condition.details.nonCompliant" class="space-y-4">
-                                                        
+
                                                         <!-- COMPLIANT DOCUMENTS Section -->
-                                                        <div v-if="condition.details.compliant && condition.details.compliant.length > 0" 
+                                                        <div v-if="condition.details.compliant && condition.details.compliant.length > 0"
                                                              class="bg-white rounded-lg p-4 border-l-4 border-green-500 shadow-sm">
                                                             <div class="flex items-center gap-2 mb-3">
                                                                 <i class="mdi mdi-check-circle text-green-600 text-xl"></i>
                                                                 <span class="font-bold text-green-800 text-sm">✓ COMPLIANT DOCUMENTS ({% raw %}{{ condition.details.compliant.length }}{% endraw %})</span>
                                                             </div>
-                                                            
+
                                                             <!-- List compliant documents with file info -->
                                                             <div class="space-y-2">
-                                                                <div v-for="(doc, idx) in condition.details.compliant" :key="'comp-'+idx" 
+                                                                <div v-for="(doc, idx) in condition.details.compliant" :key="'comp-'+idx"
                                                                      class="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition-colors">
                                                                     <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
                                                                         <i class="mdi mdi-file-document text-white text-lg"></i>
@@ -4160,7 +4496,7 @@
                                                                                     <i class="mdi mdi-file-document-outline"></i> {% raw %}{{ doc.pages }}{% endraw %}
                                                                                 </span>
                                                                             </div>
-                                                                            
+
                                                                             <!-- VALUE COMPARISON - COMPLIANT -->
                                                                             <div v-if="doc.actualValue || doc.expectedValue" class="grid grid-cols-2 gap-2 mt-2 p-2 bg-white rounded border border-green-300">
                                                                                 <div v-if="doc.expectedValue" class="text-xs">
@@ -4172,7 +4508,7 @@
                                                                                     <p class="text-gray-700 mt-1 break-words">{% raw %}{{ doc.actualValue }}{% endraw %}</p>
                                                                                 </div>
                                                                             </div>
-                                                                            
+
                                                                             <div v-if="doc.reason" class="flex items-start gap-1 mt-1">
                                                                                 <i class="mdi mdi-information-outline text-green-600 text-sm mt-0.5"></i>
                                                                                 <span class="text-xs text-green-700">{% raw %}{{ doc.reason }}{% endraw %}</span>
@@ -4185,18 +4521,18 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <!-- NON-COMPLIANT DOCUMENTS Section -->
-                                                        <div v-if="condition.details.nonCompliant && condition.details.nonCompliant.length > 0" 
+                                                        <div v-if="condition.details.nonCompliant && condition.details.nonCompliant.length > 0"
                                                              class="bg-white rounded-lg p-4 border-l-4 border-red-500 shadow-sm">
                                                             <div class="flex items-center gap-2 mb-3">
                                                                 <i class="mdi mdi-alert-circle text-red-600 text-xl"></i>
                                                                 <span class="font-bold text-red-800 text-sm">✗ NON-COMPLIANT DOCUMENTS ({% raw %}{{ condition.details.nonCompliant.length }}{% endraw %})</span>
                                                             </div>
-                                                            
+
                                                             <!-- List non-compliant documents with file info and reasons -->
                                                             <div class="space-y-2">
-                                                                <div v-for="(doc, idx) in condition.details.nonCompliant" :key="'noncomp-'+idx" 
+                                                                <div v-for="(doc, idx) in condition.details.nonCompliant" :key="'noncomp-'+idx"
                                                                      class="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">
                                                                     <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
                                                                         <i class="mdi mdi-file-alert text-white text-lg"></i>
@@ -4216,7 +4552,7 @@
                                                                                     <i class="mdi mdi-file-document-outline"></i> {% raw %}{{ doc.pages }}{% endraw %}
                                                                                 </span>
                                                                             </div>
-                                                                            
+
                                                                             <!-- VALUE COMPARISON - NON-COMPLIANT -->
                                                                             <div v-if="doc.actualValue || doc.expectedValue" class="grid grid-cols-2 gap-2 mt-2 p-2 bg-white rounded border border-red-300">
                                                                                 <div v-if="doc.expectedValue" class="text-xs">
@@ -4228,7 +4564,7 @@
                                                                                     <p class="text-gray-700 mt-1 break-words">{% raw %}{{ doc.actualValue }}{% endraw %}</p>
                                                                                 </div>
                                                                             </div>
-                                                                            
+
                                                                             <div v-if="doc.reason" class="flex items-start gap-1 mt-2 p-2 bg-red-100 rounded">
                                                                                 <i class="mdi mdi-alert-outline text-red-600 text-sm mt-0.5"></i>
                                                                                 <span class="text-xs text-red-800 font-medium">{% raw %}{{ doc.reason }}{% endraw %}</span>
@@ -4242,18 +4578,18 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- For array of details -->
                                                     <div v-else-if="Array.isArray(condition.details)" class="space-y-2">
-                                                        <div v-for="(detail, dIdx) in condition.details" :key="dIdx" 
+                                                        <div v-for="(detail, dIdx) in condition.details" :key="dIdx"
                                                              class="flex items-start gap-2 p-3 bg-white rounded-lg border border-gray-200">
                                                             <i class="mdi mdi-file-document-outline text-gray-500 text-lg mt-0.5"></i>
                                                             <span class="text-sm text-gray-700">{% raw %}{{ detail.document || detail.prohibited || JSON.stringify(detail) }}{% endraw %}</span>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- Summary Footer -->
-                                                    <div v-if="condition.details.compliant || condition.details.nonCompliant" 
+                                                    <div v-if="condition.details.compliant || condition.details.nonCompliant"
                                                          class="mt-4 pt-4 border-t border-gray-300 flex items-center justify-between">
                                                         <div class="flex items-center gap-4 text-xs">
                                                             <span class="text-gray-600">
@@ -4289,7 +4625,7 @@
                                 </div>
 
                                 <!-- Context Banner for LC Form (Not from Document Register) -->
-                                <div v-if="!isFromDocumentRegister && getAllRequiredDocuments().length > 0" 
+                                <div v-if="!isFromDocumentRegister && getAllRequiredDocuments().length > 0"
                                      class="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 mb-8">
                                     <div class="flex items-start gap-4">
                                         <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -4298,7 +4634,7 @@
                                         <div class="flex-1">
                                             <h4 class="text-lg font-bold text-amber-900 mb-2">📋 Required Documents List</h4>
                                             <p class="text-sm text-amber-800 mb-2">
-                                                These are the documents required based on your LC terms. 
+                                                These are the documents required based on your LC terms.
                                             </p>
                                             <div class="flex items-center gap-2 text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-2">
                                                 <i class="mdi mdi-arrow-right-bold text-amber-600"></i>
@@ -4366,7 +4702,7 @@
                                     </div>
 
                                     <!-- Info Banner for Multi-Page PDF Classification - Only in Document Register -->
-                                    <div v-if="isFromDocumentRegister && getRequiredDocumentsStats().totalMatchedSections > getRequiredDocumentsStats().uploaded" 
+                                    <div v-if="isFromDocumentRegister && getRequiredDocumentsStats().totalMatchedSections > getRequiredDocumentsStats().uploaded"
                                          class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 mb-8">
                                         <div class="flex items-start gap-4">
                                             <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -4375,7 +4711,7 @@
                                             <div class="flex-1">
                                                 <h4 class="text-lg font-bold text-blue-900 mb-2">Multi-Page PDF Classification Detected</h4>
                                                 <p class="text-sm text-blue-800 mb-3">
-                                                    Your uploaded PDF has been intelligently split into <span class="font-bold">{% raw %}{{ getRequiredDocumentsStats().totalMatchedSections }}{% endraw %} document sections</span> 
+                                                    Your uploaded PDF has been intelligently split into <span class="font-bold">{% raw %}{{ getRequiredDocumentsStats().totalMatchedSections }}{% endraw %} document sections</span>
                                                     matching <span class="font-bold">{% raw %}{{ getRequiredDocumentsStats().uploaded }}{% endraw %} required document types</span>.
                                                 </p>
                                                 <div class="flex items-center gap-2 text-xs text-blue-700">
@@ -4397,16 +4733,16 @@
                                                     <!-- Icon -->
                                                     <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300"
                                                          :class="doc.uploaded ? 'bg-gradient-to-br from-emerald-100 to-green-100 group-hover:from-emerald-400 group-hover:to-green-500' : 'bg-gradient-to-br from-red-100 to-rose-100 group-hover:from-red-400 group-hover:to-rose-500'">
-                                                        <i :class="getDocumentIcon(doc.name)" 
+                                                        <i :class="getDocumentIcon(doc.name)"
                                                            class="text-2xl transition-colors duration-300"
                                                            :class="doc.uploaded ? 'text-emerald-600 group-hover:text-white' : 'text-red-600 group-hover:text-white'"></i>
                                                     </div>
-                                                    
+
                                                     <!-- Document Info -->
                                                     <div class="flex-1 min-w-0">
                                                         <h3 class="text-lg font-bold text-gray-900 mb-1">{% raw %}{{ doc.name }}{% endraw %}</h3>
                                                         <p v-if="doc.description" class="text-sm text-gray-600 mb-2">{% raw %}{{ doc.description }}{% endraw %}</p>
-                                                        
+
                                                         <!-- Status Tags -->
                                                         <div class="flex items-center gap-2 flex-wrap">
                                                             <!-- Upload Status - Only show validation if from Document Register -->
@@ -4423,26 +4759,26 @@
                                                                 <i class="mdi mdi-clock-outline text-sm"></i>
                                                                 Pending Upload
                                                             </span>
-                                                            
+
                                                             <!-- Multiple Sections Badge - Only in Document Register context -->
-                                                            <span v-if="isFromDocumentRegister && doc.uploaded && doc.matchedDocuments && doc.matchedDocuments.length > 1" 
+                                                            <span v-if="isFromDocumentRegister && doc.uploaded && doc.matchedDocuments && doc.matchedDocuments.length > 1"
                                                                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
                                                                 <i class="mdi mdi-file-multiple text-sm"></i>
                                                                 {% raw %}{{ doc.matchedDocuments.length }}{% endraw %} Sections
                                                             </span>
-                                                            
+
                                                             <!-- Priority Badge -->
                                                             <span v-if="doc.priority" :class="doc.priority.toLowerCase() === 'mandatory' ? 'bg-red-100 text-red-700 border-red-300' : 'bg-gray-100 text-gray-700 border-gray-300'"
                                                                   class="px-3 py-1 rounded-full text-xs font-semibold border">
                                                                 {% raw %}{{ doc.priority }}{% endraw %}
                                                             </span>
-                                                            
+
                                                             <!-- Category Badge -->
                                                             <span v-if="doc.category && doc.category !== 'general'" class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 border border-indigo-300">
                                                                 {% raw %}{{ doc.category }}{% endraw %}
                                                             </span>
                                                         </div>
-                                                        
+
                                                         <!-- LC Form Context: Show informational message -->
                                                         <div v-if="!isFromDocumentRegister && doc.message" class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                                             <div class="flex items-start gap-2">
@@ -4450,7 +4786,7 @@
                                                                 <p class="text-xs text-amber-700 font-medium">{% raw %}{{ doc.message }}{% endraw %}</p>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <!-- Matched File Info (if uploaded) - Only show in Document Register context -->
                                                         <div v-if="isFromDocumentRegister && doc.uploaded && doc.matchedDocuments && doc.matchedDocuments.length > 0" class="mt-3">
                                                             <!-- Single Match -->
@@ -4480,7 +4816,7 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            
+
                                                             <!-- Multiple Matches -->
                                                             <div v-else class="space-y-2">
                                                                 <div class="flex items-center gap-2 text-sm font-semibold text-emerald-700 mb-2">
@@ -4554,7 +4890,7 @@
                                             <div class="flex-1">
                                                 <h3 class="text-2xl font-bold text-gray-900 mb-3">Next Steps</h3>
                                                 <p class="text-gray-700 text-lg leading-relaxed mb-4">
-                                                    These documents will be automatically validated when you upload them in the <span class="font-bold text-emerald-600">Register Document</span> screen. 
+                                                    These documents will be automatically validated when you upload them in the <span class="font-bold text-emerald-600">Register Document</span> screen.
                                                     The system will verify each document against this checklist and ensure all mandatory documents are present.
                                                 </p>
                                                 <div class="flex items-center gap-4 mt-6">
@@ -4583,7 +4919,7 @@
                                     </div>
                                     <h3 class="text-2xl font-bold text-gray-900 mb-3">No Required Documents Found</h3>
                                     <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-                                        The system could not identify any specific document requirements from the LC. 
+                                        The system could not identify any specific document requirements from the LC.
                                         Please ensure your LC document contains a "Required Documents" or "Documents Required" section.
                                     </p>
                                 </div>
@@ -4605,7 +4941,7 @@
                                 <span>Print Analysis</span>
                             </button>
                         </div>
-                        <button @click="closeDiscrepancyModal()" 
+                        <button @click="closeDiscrepancyModal()"
                                 class="px-6 py-2 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all flex items-center space-x-2 text-sm font-medium">
                             <i class="mdi mdi-close text-sm"></i>
                             <span>Close</span>
@@ -4636,7 +4972,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Modal Body -->
                 <div v-if="selectedComplianceField" class="flex-1 overflow-y-auto p-6">
                     <!-- Status Banner -->
@@ -4663,7 +4999,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Field Information Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                         <!-- Field Value -->
@@ -4676,8 +5012,8 @@
                                 {% raw %}{{ selectedComplianceField.field_value || 'No value detected' }}{% endraw %}
                             </p>
                         </div>
-                        
-                        <!-- Rule Code -->
+
+                        <!-- Rule Cocde de -->
                         <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                             <div class="flex items-center gap-2 mb-2">
                                 <i class="mdi mdi-tag text-purple-600 text-lg"></i>
@@ -4688,7 +5024,7 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <!-- Compliance Reason -->
                     <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200 mb-5">
                         <div class="flex items-center gap-2 mb-2">
@@ -4699,7 +5035,7 @@
                             {% raw %}{{ selectedComplianceField.reason }}{% endraw %}
                         </p>
                     </div>
-                    
+
                     <!-- Additional Details -->
                     <div class="space-y-3">
                         <!-- Basis -->
@@ -4712,12 +5048,12 @@
                                 <p class="text-gray-700 text-sm break-words">{% raw %}{{ selectedComplianceField.basis || 'Standard Practice' }}{% endraw %}</p>
                             </div>
                         </div>
-                        
+
                         <!-- Severity -->
                         <div v-if="selectedComplianceField.severity" class="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200">
                             <div :class="selectedComplianceField.severity === 'high' ? 'bg-red-100' : selectedComplianceField.severity === 'medium' ? 'bg-amber-100' : 'bg-gray-100'"
                                  class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <i class="mdi mdi-alert text-lg" 
+                                <i class="mdi mdi-alert text-lg"
                                    :class="selectedComplianceField.severity === 'high' ? 'text-red-600' : selectedComplianceField.severity === 'medium' ? 'text-amber-600' : 'text-gray-600'"></i>
                             </div>
                             <div class="flex-1 min-w-0">
@@ -4729,7 +5065,7 @@
                                 </p>
                             </div>
                         </div>
-                        
+
                         <!-- Suggestion -->
                         <div v-if="selectedComplianceField.suggestion" class="flex items-start gap-3 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
                             <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -4740,7 +5076,7 @@
                                 <p class="text-gray-700 text-sm break-words">{% raw %}{{ selectedComplianceField.suggestion }}{% endraw %}</p>
                             </div>
                         </div>
-                        
+
                         <!-- Category -->
                         <div v-if="selectedComplianceField.category" class="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200">
                             <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -4753,7 +5089,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Modal Footer -->
                 <div class="border-t border-gray-200 bg-gray-50 px-6 py-3.5 flex-shrink-0">
                     <div class="flex justify-end">
@@ -4925,6 +5261,17 @@
         createApp({
             data() {
                 return {
+                    dropdownStyle: {
+                      top: '0px',
+                      left: '0px',
+                      width: 'auto'
+                    },
+                    showReviewModal: false,   // 👈 NEW: modal visibility
+                    groupedDocuments: [],     // 👈 from /api/document/classify-initial
+                    selectedDocTypes: {},     // 👈 track user’s dropdown selections
+                    openDropdown: null,       // 👈 active dropdown page range
+                    ocrSessionId: null,       // 👈 returned from backend step 1
+                    confirmedGroups: [],      // 👈 payload for /api/document/revalidate_entities
                     isDragging: false,
                     selectedFiles: [],
                     processing: false,
@@ -5032,6 +5379,7 @@
                     const sum = this.results.reduce((acc, r) => acc + r.confidence, 0);
                     return Math.round(sum / this.results.length);
                 },
+
                 totalFields() {
                     if (!this.results) return 0;
                     return this.results.reduce((acc, r) => acc + r.fieldsExtracted, 0);
@@ -5073,6 +5421,42 @@
                 }
             },
             methods: {
+                closeDropdownOnScroll(event) {
+                    // Don't close if scrolling inside the dropdown itself
+                  if (event.target.closest('.dropdown-container')) {
+                    return;
+                  }
+                    if (this.openDropdown) {
+                      this.openDropdown = null;
+                      this.$forceUpdate();
+                    }
+                  },
+                toggleDropdown(pageRange) {
+                    this.$nextTick(() => {
+                    const button = event.currentTarget;
+                    const rect = button.getBoundingClientRect();
+
+                    this.dropdownStyle = {
+                      top: `${rect.bottom + 8}px`,
+                      left: `${rect.left}px`,
+                      width: `${rect.width}px`
+                    };
+                  });
+                  this.openDropdown = this.openDropdown === pageRange ? null : pageRange;
+                },
+
+              selectDocTypeForDropdown(pageRange, docType) {
+                  this.selectedDocTypes[pageRange] = docType;
+
+                  console.log('AFTER:', this.selectedDocTypes);
+                  this.openDropdown = null;
+              },
+
+              closeDropdownOnClickOutside(event) {
+                if (this.openDropdown && !event.target.closest('.dropdown-container')) {
+                  this.openDropdown = null;
+                }
+              },
                 // Helper methods for absolute page numbering
                 getAbsolutePageNumber(relativePageIndex) {
                     // Convert relative page index (0-based) to absolute page number
@@ -5329,260 +5713,273 @@
                     }
                 },
                 async processFiles() {
-                    if (this.selectedFiles.length === 0) return;
+                  if (this.selectedFiles.length === 0) return;
 
-                    this.processing = true;
-                    this.currentStep = 0;
-                    const startTime = Date.now();
+                  this.processing = true;
+                  this.currentStep = 0;
+                  const startTime = Date.now();
 
-                    // Show WebSocket-based progress loader
-                    if (window.progressLoader) {
-                        window.progressLoader.show();
-                        console.log('🔄 WebSocket progress loader shown');
-                    }
+                  // show overlay
+                  if (window.progressLoader) window.progressLoader.show();
 
-                    // Get WebSocket client ID for progress tracking
-                    const clientId = window.aiWebSocket ? window.aiWebSocket.getClientId() : null;
-                    console.log('🔌 WebSocket Client ID:', clientId);
+                  const clientId = window.aiWebSocket ? window.aiWebSocket.getClientId() : null;
+                  this.clientId = clientId;
 
-                    // Connect to WebSocket for real progress updates
-                    if (window.aiWebSocket && window.aiWebSocket.isConnected()) {
-                        // Listen for progress updates
-                        window.aiWebSocket.on('progress_update', (data) => {
-                            console.log('Overlay Vue modal received progress update:', data);
-                            this.updateStepFromProgress(data.stage, data.message);
-                        });
-                    }
+                // 🔌 WebSocket listener (this is where you paste)
+                  if (window.aiWebSocket && window.aiWebSocket.isConnected()) {
+                    window.aiWebSocket.on('progress_update', (data) => {
+                      console.log('Overlay Vue modal received progress update:', data);
 
-                    // Prepare form data
-                    const formData = new FormData();
-                    this.selectedFiles.forEach(file => {
-                        formData.append('files', file);
+                      if (data.stage === 'paused') {
+                        console.log('🛑 Process paused for user review.');
+                        if (window.progressLoader) window.progressLoader.hide();
+                        this.processingStatus = 'Awaiting User Confirmation';
+                        this.showReviewModal = true;
+                        return;
+                      }
+
+                      this.updateStepFromProgress(data.stage, data.message);
                     });
-                    formData.append('checkCompliance', 'true');
+                  }
+                  const formData = new FormData();
+                  this.selectedFiles.forEach(f => formData.append('files', f));
+                  formData.append('checkCompliance', 'true');
+                  if (clientId) formData.append('client_id', clientId);
+                  formData.append('page_by_page', 'true');
 
-                    // Add client ID for WebSocket progress updates
-                    if (clientId) {
-                        formData.append('client_id', clientId);
-                    }
+                  const urlParams = new URLSearchParams(window.location.search);
+                  const functionName = urlParams.get('functionName');
+                  const productName = urlParams.get('productName');
+                  this.functionName = functionName;
+                  this.productName = productName;
+                  if (functionName) formData.append('functionName', functionName);
+                  if (productName) formData.append('productName', productName);
 
-                    // Get context from URL parameters (passed by parent form)
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const functionName = urlParams.get('functionName');
-                    const productName = urlParams.get('productName');
+                  try {
+                    // 🚀 STEP 1: Initial classification (no extraction)
+                    const response = await fetch('/api/document/classify-initial', {
+                      method: 'POST',
+                      body: formData
+                    });
+                    const data = await response.json();
 
-                    // Add context parameters for enhanced classification
-                    if (functionName) {
-                        formData.append('functionName', functionName);
-                        console.log('📋 Sending functionName:', functionName);
-                    }
-                    if (productName) {
-                        formData.append('productName', productName);
-                        console.log('📋 Sending productName:', productName);
-                    }
+                    if (!response.ok || !data.success) throw new Error('Classification failed');
 
-                    // Add document type if selected
-                    if (this.selectedTradeDocumentType) {
-                        formData.append('documentType', this.selectedTradeDocumentType);
-                        console.log('📋 Sending documentType:', this.selectedTradeDocumentType);
-                    }
+                    // store session + grouped docs
+                    this.ocrSessionId = data.ocr_session_id;
+                    this.groupedDocuments = data.document_groups || [];
+                    this.groupedDocuments.forEach(doc => {
+                      this.selectedDocTypes[doc.page_range] = doc.document_type;
+                    });
 
-                    // Add processing mode
-                    const isPageByPage = this.processingMode === 'page_by_page';
-                    formData.append('page_by_page', isPageByPage ? 'true' : 'false');
-                    console.log('📄 Processing mode:', isPageByPage ? 'Page-by-Page' : 'Single Document');
+                    console.log('📄 Grouped Documents:', this.groupedDocuments);
+                    console.log('🎯 Preselected Doc Types:', this.selectedDocTypes);
+
+                    // hide loader temporarily
+                    this.processing = false;
+                    if (window.progressLoader) window.progressLoader.hide();
+
+                    // show modal for review
+                    this.showReviewModal = true;
+                  } catch (err) {
+                    console.error('Error:', err);
+                    this.showError('Classification failed');
+                    if (window.progressLoader) window.progressLoader.hide();
+                  }
+                },
+                async confirmAndRevalidate() {
+                    // Build confirmedGroups payload
+                    this.confirmedGroups = this.groupedDocuments.map((doc) => ({
+                        document_type: this.selectedDocTypes[doc.page_range] || doc.document_type,
+                        pages: doc.pages,
+                        page_range: doc.page_range,
+                        confidence: doc.confidence,
+                        user_modified: this.selectedDocTypes[doc.page_range] !== doc.document_type
+                    }));
+
+                    this.showReviewModal = false;
+                    this.processing = true;
+                    if (window.progressLoader) window.progressLoader.show();
 
                     try {
-                        // Use enhanced API with config-based prompts and field mappings
-                        const response = await fetch('/api/document/classify-enhanced', {
+                        const response = await fetch('/api/document/revalidate-entities', {
                             method: 'POST',
-                            body: formData
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                ocr_session_id: this.ocrSessionId,
+                                confirmed_groups: this.confirmedGroups,
+                                client_id: this.clientId,
+                                function_name: this.functionName,
+                                product_name: this.productName
+                            })
                         });
 
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.success) {
-                                // Process results with support for both new YAML format and legacy format
-                                this.results = data.results.map((result, idx) => {
-                                    console.log(`=== Processing result ${idx} ===`);
-                                    console.log('Raw result:', result);
+                        const data = await response.json();
 
-                                    // Detect if this is the new YAML-compliant format
-                                    const isNewFormat = result.classification && result.extraction && result.compliance;
-                                    console.log('Using format:', isNewFormat ? 'New YAML-compliant' : 'Legacy');
+                        if (response.ok && data.success) {
+                            // ✅ PROCESS RESULTS (Same as Document 9)
+                            this.results = data.results.map((result, idx) => {
+                                console.log(`=== Processing result ${idx} ===`);
+                                console.log('Raw result:', result);
 
-                                    let processedResult;
+                                // Detect format
+                                const isNewFormat = result.classification && result.extraction && result.compliance;
+                                console.log('Using format:', isNewFormat ? 'New YAML-compliant' : 'Legacy');
 
-                                    if (isNewFormat) {
-                                        // New YAML-compliant format
-                                        const classification = result.classification || {};
-                                        const extraction = result.extraction || {};
-                                        const compliance = result.compliance || {};
+                                let processedResult;
 
-                                        // Combine all extracted fields from different categories
-                                        const extractedFields = {
-                                            ...extraction.mandatory || {},
-                                            ...extraction.optional || {},
-                                            ...extraction.conditional || {}
-                                        };
+                                if (isNewFormat) {
+                                    // ✅ NEW YAML-COMPLIANT FORMAT
+                                    const classification = result.classification || {};
+                                    const extraction = result.extraction || {};
+                                    const compliance = result.compliance || {};
 
-                                        // Use compliance score from backend (already calculated correctly)
-                                        const complianceScore = result.complianceScore || 85;
+                                    // Combine all extracted fields from different categories
+                                    const extractedFields = {
+                                        ...extraction.mandatory || {},
+                                        ...extraction.optional || {},
+                                        ...extraction.conditional || {}
+                                    };
 
-                                        processedResult = {
-                                            fileName: result.file_name,
-                                            documentType: classification.document_type,
-                                            confidence: classification.confidence,
-                                            fieldsExtracted: Object.keys(extractedFields).length,
-                                            complianceScore: complianceScore,
-                                            processingTime: result.processing_time?.total || '0.0',
-                                            qualityTime: result.processing_time?.quality_analysis || '0.0', // Quality analysis time
-                                            classificationTime: result.processing_time?.classification || '0.0', // Document classification time
-                                            ocrTime: result.processing_time?.ocr || '0.0', // OCR text extraction time
-                                            llmTime: result.processing_time?.extraction || '0.0',
-                                            complianceTime: result.complianceTime || '0.0', // Add compliance time from backend
-                                            extractedFields: extractedFields,
-                                            previewImages: result.preview_images || [],
-                                            // New format compliance data
-                                            compliance: {
-                                                compliant: compliance.compliant,
-                                                missing_mandatory: compliance.missing_mandatory || [],
-                                                warnings: compliance.warnings || [],
-                                                recommendations: compliance.recommendations || [],
-                                                severity: compliance.severity || 'info',
-                                                completeness: compliance.completeness || '0%'
-                                            },
-                                            // New format metadata
-                                            extraction: extraction,
-                                            classification: classification,
-                                            pages: result.ocr_data?.pages || [],
-                                            pageRange: result.ocr_data?.page_range || '',
-                                            individualPages: result.ocr_data?.individual_pages || [],  // Add individual page data for tabs
-                                            enhanced_mode: result.enhanced_mode || false,
-                                            page_by_page_mode: result.page_by_page_mode || false,
-                                            insightsExpanded: false, // Initialize insights expanded state
-                                            // Compliance tracking
-                                            compliance_hash: result.compliance_hash,
-                                            compliance_status: result.compliance_status || 'processing',
-                                            compliance_ready: false,
-                                            // Keep raw data for debugging
-                                            _rawResult: result
-                                        };
-                                        
-                                        // Start polling for compliance status if hash provided
-                                        if (result.compliance_hash) {
-                                            this.startCompliancePolling(result.compliance_hash, idx);
-                                        }
-                                    } else {
-                                        // Legacy format processing (existing logic)
-                                        let swiftData = null;
-                                        let ucp600Data = null;
+                                    // Use compliance score from backend
+                                    const complianceScore = result.complianceScore || 85;
 
-                                        // Try to find SWIFT data (legacy)
-                                        if (result.swift_result) {
-                                            swiftData = result.swift_result;
-                                        } else if (result.analysis_result?.swift_result) {
-                                            swiftData = result.analysis_result.swift_result;
-                                        } else if (result.compliance?.swift) {
-                                            swiftData = result.compliance.swift;
-                                        }
+                                    processedResult = {
+                                        fileName: result.file_name,
+                                        documentType: classification.document_type,
+                                        confidence: classification.confidence,
+                                        fieldsExtracted: Object.keys(extractedFields).length,
+                                        complianceScore: complianceScore,
+                                        processingTime: result.processing_time?.total || '0.0',
+                                        qualityTime: result.processing_time?.quality_analysis || '0.0',
+                                        classificationTime: result.processing_time?.classification || '0.0',
+                                        ocrTime: result.processing_time?.ocr || '0.0',
+                                        llmTime: result.processing_time?.extraction || '0.0',
+                                        complianceTime: result.complianceTime || '0.0',
+                                        extractedFields: extractedFields,
+                                        previewImages: result.preview_images || [],
+                                        // Compliance data
+                                        compliance: {
+                                            compliant: compliance.compliant,
+                                            missing_mandatory: compliance.missing_mandatory || [],
+                                            warnings: compliance.warnings || [],
+                                            recommendations: compliance.recommendations || [],
+                                            severity: compliance.severity || 'info',
+                                            completeness: compliance.completeness || '0%'
+                                        },
+                                        // Metadata
+                                        extraction: extraction,
+                                        classification: classification,
+                                        pages: result.ocr_data?.pages || [],
+                                        pageRange: result.ocr_data?.page_range || '',
+                                        individualPages: result.ocr_data?.individual_pages || [],
+                                        enhanced_mode: result.enhanced_mode || false,
+                                        page_by_page_mode: result.page_by_page_mode || false,
+                                        insightsExpanded: false,
+                                        // Compliance tracking
+                                        compliance_hash: result.compliance_hash,
+                                        compliance_status: result.compliance_status || 'processing',
+                                        compliance_ready: false,
+                                        // Keep raw data
+                                        _rawResult: result
+                                    };
 
-                                        // Try to find UCP600 data (legacy)
-                                        if (result.ucp600_result) {
-                                            ucp600Data = result.ucp600_result;
-                                        } else if (result.analysis_result?.ucp600_result) {
-                                            ucp600Data = result.analysis_result.ucp600_result;
-                                        } else if (result.compliance?.ucp600) {
-                                            ucp600Data = result.compliance.ucp600;
-                                        }
+                                    // Start polling for compliance status if hash provided
+                                    if (result.compliance_hash) {
+                                        this.startCompliancePolling(result.compliance_hash, idx);
+                                    }
+                                } else {
+                                    // ✅ LEGACY FORMAT PROCESSING
+                                    let swiftData = null;
+                                    let ucp600Data = null;
 
-                                        const legacyCompliance = {
-                                            swift: swiftData,
-                                            ucp600: ucp600Data
-                                        };
-
-                                        // Extract fields (legacy)
-                                        let extractedFields = {};
-                                        if (result.extracted_fields && Object.keys(result.extracted_fields).length > 0) {
-                                            extractedFields = result.extracted_fields;
-                                        } else if (result.analysis_result?.combined_fields) {
-                                            extractedFields = result.analysis_result.combined_fields;
-                                        } else if (result.fields) {
-                                            extractedFields = result.fields;
-                                        }
-
-                                        processedResult = {
-                                            fileName: result.file_name,
-                                            documentType: result.document_type,
-                                            confidence: result.confidence,
-                                            fieldsExtracted: Object.keys(extractedFields).length,
-                                            complianceScore: result.complianceScore || 85,
-                                            processingTime: result.processing_time?.total || '0.0',
-                                            classificationTime: result.processing_time?.classification || '0.0',
-                                            ocrTime: result.processing_time?.ocr || '0.0',
-                                            llmTime: result.processing_time?.llm_analysis || '0.0',
-                                            complianceTime: result.complianceTime || '0.0', // Add compliance time from backend
-                                            extractedFields: extractedFields,
-                                            previewImages: result.preview_images || [],
-                                            compliance: legacyCompliance,
-                                            analysisResult: result.analysis_result || {},
-                                            enhanced_mode: false,
-                                            page_by_page_mode: false,
-                                            insightsExpanded: false, // Initialize insights expanded state
-                                            // Keep raw data for debugging
-                                            _rawResult: result
-                                        };
+                                    // Try to find SWIFT data
+                                    if (result.swift_result) {
+                                        swiftData = result.swift_result;
+                                    } else if (result.analysis_result?.swift_result) {
+                                        swiftData = result.analysis_result.swift_result;
+                                    } else if (result.compliance?.swift) {
+                                        swiftData = result.compliance.swift;
                                     }
 
-                                    console.log('Processed result:', processedResult);
-                                    return processedResult;
-                                });
-                                
-                                // Trigger discrepancy check if from document register
-                                if (this.isFromDocumentRegister && this.lcContext) {
-                                    console.log('🔍 Triggering discrepancy check after document processing');
-                                    this.$nextTick(() => {
-                                        this.performDiscrepancyCheck();
-                                    });
-                                }
-                            } else {
-                                console.error('Classification failed:', data.error);
-                                this.showError(data.error || 'Classification failed');
+                                    // Try to find UCP600 data
+                                    if (result.ucp600_result) {
+                                        ucp600Data = result.ucp600_result;
+                                    } else if (result.analysis_result?.ucp600_result) {
+                                        ucp600Data = result.analysis_result.ucp600_result;
+                                    } else if (result.compliance?.ucp600) {
+                                        ucp600Data = result.compliance.ucp600;
+                                    }
 
-                                // Hide progress loader on error
-                                if (window.progressLoader) {
-                                    window.progressLoader.hide();
+                                    const legacyCompliance = {
+                                        swift: swiftData,
+                                        ucp600: ucp600Data
+                                    };
+
+                                    // Extract fields
+                                    let extractedFields = {};
+                                    if (result.extracted_fields && Object.keys(result.extracted_fields).length > 0) {
+                                        extractedFields = result.extracted_fields;
+                                    } else if (result.analysis_result?.combined_fields) {
+                                        extractedFields = result.analysis_result.combined_fields;
+                                    } else if (result.fields) {
+                                        extractedFields = result.fields;
+                                    }
+
+                                    processedResult = {
+                                        fileName: result.file_name,
+                                        documentType: result.document_type,
+                                        confidence: result.confidence,
+                                        fieldsExtracted: Object.keys(extractedFields).length,
+                                        complianceScore: result.complianceScore || 85,
+                                        processingTime: result.processing_time?.total || '0.0',
+                                        classificationTime: result.processing_time?.classification || '0.0',
+                                        ocrTime: result.processing_time?.ocr || '0.0',
+                                        llmTime: result.processing_time?.llm_analysis || '0.0',
+                                        complianceTime: result.complianceTime || '0.0',
+                                        extractedFields: extractedFields,
+                                        previewImages: result.preview_images || [],
+                                        compliance: legacyCompliance,
+                                        analysisResult: result.analysis_result || {},
+                                        enhanced_mode: false,
+                                        page_by_page_mode: false,
+                                        insightsExpanded: false,
+                                        _rawResult: result
+                                    };
                                 }
+
+                                console.log('Processed result:', processedResult);
+                                return processedResult;
+                            });
+
+                            console.log('✅ Final extraction results:', this.results);
+
+                            // Trigger discrepancy check if from document register
+                            if (this.isFromDocumentRegister && this.lcContext) {
+                                console.log('🔍 Triggering discrepancy check after revalidation');
+                                this.$nextTick(() => {
+                                    this.performDiscrepancyCheck();
+                                });
                             }
                         } else {
-                            console.error('API request failed');
-                            this.showError('Failed to process documents');
-
-                            // Hide progress loader on error
-                            if (window.progressLoader) {
-                                window.progressLoader.hide();
-                            }
+                            throw new Error(data.error || 'Revalidation failed');
                         }
-                    } catch (error) {
-                        console.error('Error processing files:', error);
-                        this.showError('An error occurred while processing documents');
-
-                        // Hide progress loader on error
-                        if (window.progressLoader) {
-                            window.progressLoader.hide();
-                        }
+                    } catch (err) {
+                        console.error('Error during revalidation:', err);
+                        this.showError('Revalidation failed');
+                    } finally {
+                        this.processing = false;
+                        if (window.progressLoader) window.progressLoader.hide();
                     }
-
-                    // Note: Backend now provides actual timing data via computed property totalTime()
-                    this.processing = false;
-
-                    // Note: Progress loader will auto-hide on success via WebSocket 'completed' event
                 },
                 getDocumentType() {
                     const types = ['Letter of Credit', 'Bank Guarantee', 'Invoice', 'Bill of Lading'];
                     return types[Math.floor(Math.random() * types.length)];
                 },
                 getFileIcon(fileName) {
+                    if (!fileName || typeof fileName !== 'string') {
+                        return 'mdi mdi-file'; // fallback icon if name missing
+                    }
                     const ext = fileName.toLowerCase().split('.').pop();
                     const icons = {
                         'pdf': 'mdi mdi-file-pdf-box',
@@ -9912,6 +10309,7 @@ splitCurrencyAndAmount(combinedValue) {
 
                 selectDocType(docType) {
                     // Create a deep copy to avoid direct mutation
+
                     this.selectedDocType = JSON.parse(JSON.stringify(docType));
                     // Ensure fields array exists
                     if (!this.selectedDocType.fields) {
@@ -10125,6 +10523,9 @@ splitCurrencyAndAmount(combinedValue) {
                 }
             },
             mounted() {
+               document.addEventListener('scroll', this.closeDropdownOnScroll, true);
+
+                document.addEventListener('click', this.closeDropdownOnClickOutside);
                 this.fetchCurrentUser();
                 this.fetchTradeDocuments();
                 
@@ -10188,6 +10589,18 @@ splitCurrencyAndAmount(combinedValue) {
                         this.loadCrossVerificationRules();
                     }
                 });
+
+                this._boundOutsideClick = (event) => this.handleOutsideClick(event);
+                document.addEventListener('click', this._boundOutsideClick);
+            },
+            beforeUnmount() {
+                document.removeEventListener('scroll', this.closeDropdownOnScroll, true);
+
+                document.removeEventListener('click', this.closeDropdownOnClickOutside);
+
+                if (this._boundOutsideClick) {
+                    document.removeEventListener('click', this._boundOutsideClick);
+                }
             }
         }).mount('#app');
 
@@ -11030,7 +11443,7 @@ splitCurrencyAndAmount(combinedValue) {
                 console.error('Error creating advanced quality chart:', error);
             }
         };
-        
+
         // Initialize loader when processing starts
         document.addEventListener('DOMContentLoaded', function() {
             // Watch for loader element to be added to DOM by Vue

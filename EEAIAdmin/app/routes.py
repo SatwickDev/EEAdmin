@@ -16489,46 +16489,30 @@ Guidelines:
             return []  # Fall back to sequential classification
 
     def process_document_page_by_page(uploaded_file, function_name=None, product_name=None,
-                                      document_type=None, progress_tracker=None, config=None):
+                                      document_type=None, progress_tracker=None, config=None,
+                                      pause_after_classification=False):
         """
-        Enhanced page-by-page document processing to detect multiple document types
-
-        Workflow:
-        1. OCR: Extract text from all pages
-        2. Classify EACH page independently
-        3. Group consecutive pages with same document type
-        4. Extract fields for each detected document type
-
-        Args:
-            uploaded_file: File object
-            function_name: Business function
-            product_name: Product name
-            document_type: Pre-specified document type (optional)
-            progress_tracker: Progress tracking object
-            config: YAML prompt configuration
-
-        Returns:
-            list: Multiple results (one per detected document type)
+        Enhanced page-by-page document processing to detect multiple document types.
+        When pause_after_classification=True, stops after grouping (before extraction).
         """
-        import time
-        import traceback
 
-        # Initialize quality analyzer for parallel processing
+        import pickle
+
         quality_analyzer = DocumentQualityAnalyzer()
+        temp_file_path = None
 
-        temp_file_path = None  # Track temp file for cleanup
         try:
             file_name = uploaded_file.filename
             file_type = uploaded_file.content_type
-            logger.info(f"=== Page-by-page processing for {file_name} ===")
+            logger.info(
+                f"=== Page-by-page processing for {file_name} (pause_after_classification={pause_after_classification}) ===")
 
             start_time = time.time()
 
-            # === STEP 1: Upload File ===
+            # === STEP 1: UPLOAD FILE ===
             if progress_tracker:
                 progress_tracker.start_upload(file_name)
 
-            # Create temp file with proper extension for quality analysis
             file_extension = os.path.splitext(file_name)[1] if file_name else ''
             with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
                 temp_file_path = temp_file.name
@@ -16537,69 +16521,56 @@ Guidelines:
             if progress_tracker:
                 progress_tracker.upload_complete()
 
-            # === STEP 2: Quality Analysis ===
+            logger.info(f"✅ File uploaded to temp: {temp_file_path}")
+
+            # === STEP 2: QUALITY ANALYSIS ===
             if progress_tracker:
                 progress_tracker.start_quality_analysis()
 
-            logger.info(f"SEARCH: STEP 1/5: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
+            logger.info(f"🔍 STEP 1/5: QUALITY ANALYSIS")
             quality_start = time.time()
 
-            # OPTIMIZATION: Use PARALLEL Vision API quality analysis
-            # Old: Sequential (3-5s × 13 pages = 40-65s)
-            # New: Parallel threading (all pages at once = ~3-5s total!)
             quality_result = quality_analyzer.analyze_document_quality_fast(
                 temp_file_path,
                 file_name,
                 progress_tracker
             )
+
             quality_time = time.time() - quality_start
+            verdict = quality_result.get("verdict", "pre_processing")
+            quality_score = quality_result.get("quality_score", 0.5)
 
-            if quality_result.get("success", False):
-                verdict = quality_result.get("verdict", "pre_processing")
-                quality_score = quality_result.get("quality_score", 0.5)
-                logger.info(f"SUCCESS:PARALLEL quality analysis in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
+            logger.info(f"✅ Quality analysis: {verdict} (score: {quality_score:.3f}) in {quality_time:.2f}s")
 
-                if progress_tracker:
-                    progress_tracker.quality_complete(verdict, quality_score)
-            else:
-                # Quality analysis failed - proceed with standard processing
-                logger.warning(f"WARNINGS: Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
-                verdict = "pre_processing"  # Default fallback
-                quality_score = 0.5
+            if progress_tracker:
+                progress_tracker.quality_complete(verdict, quality_score)
 
-                if progress_tracker:
-                    progress_tracker.quality_complete("fallback", quality_score)
-
-            # === STEP 3: OCR (Extract Text from ALL pages) ===
+            # === STEP 3: OCR EXTRACTION ===
             if progress_tracker:
                 progress_tracker.start_ocr()
 
-            logger.info(f" STEP 2/5: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
+            logger.info(f"📝 STEP 2/5: OCR EXTRACTION")
             ocr_start = time.time()
 
-            # OPTIMIZATION: Estimate page count for timeout calculation
-            estimated_pages = quality_result.get("pages_analyzed", 1) if quality_result else 1
+            estimated_pages = quality_result.get("pages_analyzed", 1)
 
-            # Use optimized OCR with quality-based optimization
             extracted_text_data = extract_text_with_retry_optimized(
                 temp_file_path,
                 file_type,
                 quality_verdict=verdict,
                 page_count=estimated_pages
             )
+
             text_data = extracted_text_data.get("text_data", [])
             ocr_time = time.time() - ocr_start
 
-            # Enhanced logging with optimization stats
             if "optimization_stats" in extracted_text_data:
                 stats = extracted_text_data["optimization_stats"]
-                logger.info(f"SUCCESS:OPTIMIZED OCR completed in {ocr_time:.2f}s - "
-                           f"Extracted {len(text_data)} text entries | "
-                           f"FastMode: {stats.get('fast_mode', False)}, "
-                           f"Polls: {stats.get('poll_count', 'N/A')}, "
-                           f"Timeout: {stats.get('dynamic_timeout', 'N/A')}s")
+                logger.info(f"✅ OCR completed in {ocr_time:.2f}s - {len(text_data)} entries | "
+                            f"FastMode: {stats.get('fast_mode', False)}, "
+                            f"Polls: {stats.get('poll_count', 'N/A')}")
             else:
-                logger.info(f"SUCCESS:OCR completed in {ocr_time:.2f}s - Extracted {len(text_data)} text entries")
+                logger.info(f"✅ OCR completed in {ocr_time:.2f}s - {len(text_data)} entries")
 
             if progress_tracker:
                 progress_tracker.ocr_complete(extracted_entries=len(text_data))
@@ -16621,17 +16592,15 @@ Guidelines:
 
             # Organize by pages
             pages_ocr_data = organize_ocr_data_by_page(text_data)
-            logger.info(f" Organized into {len(pages_ocr_data)} pages")
+            logger.info(f"📄 Organized into {len(pages_ocr_data)} pages")
 
-            # === STEP 4: CLASSIFY PAGES (BATCH OPTIMIZATION) ===
-            logger.info(f"SEARCH: STEP 3/5: PAGE-BY-PAGE CLASSIFICATION ({len(pages_ocr_data)} pages)")
+            # === STEP 4: PAGE CLASSIFICATION (BATCH) ===
+            logger.info(f"🏷️ STEP 3/5: PAGE CLASSIFICATION ({len(pages_ocr_data)} pages)")
             classification_start = time.time()
 
-            # OPTIMIZATION: Always use batch classification for speed (single API call for all pages)
-            logger.info(f"🚀 OPTIMIZATION: Using BATCH classification for {len(pages_ocr_data)} pages (single API call)")
             page_classifications = classify_pages_batch(pages_ocr_data, document_classifier)
 
-            # If batch classification fails completely, fall back to simple classification
+            # Fallback if batch classification fails
             if not page_classifications:
                 logger.warning(f"⚠️ Batch classification failed, using simple fallback")
                 page_classifications = []
@@ -16647,7 +16616,6 @@ Guidelines:
                             'is_continuation': False
                         })
                     else:
-                        # Simple classification without context
                         classification_result = document_classifier.classify_document(page_text)
                         page_classifications.append({
                             'page': page_num,
@@ -16659,106 +16627,473 @@ Guidelines:
                         })
 
             classification_time = time.time() - classification_start
-            logger.info(f"SUCCESS:Classification completed in {classification_time:.2f}s")
+            logger.info(f"✅ Classification completed in {classification_time:.2f}s")
 
-            classification_time = time.time() - classification_start
-            logger.info(f"SUCCESS:Classification completed in {classification_time:.2f}s")
+            # === STEP 5: GROUPING CONSECUTIVE PAGES ===
+            logger.info(f"📚 STEP 4/5: GROUPING PAGES BY DOCUMENT TYPE")
 
-            # === STEP 5: GROUP CONSECUTIVE PAGES BY DOCUMENT TYPE ===
-            logger.info(f"STEP 4/5: GROUPING pages by document type")
-
-            # Debug: Log all page classifications before grouping
-            logger.info("SEARCH: DEBUG: Page classifications before grouping:")
-            for i, page_class in enumerate(page_classifications):
-                logger.info(f"  Page {page_class.get('page', i+1)}: '{page_class.get('document_type', 'Unknown')}' (confidence: {page_class.get('confidence', 0):.0f}%)")
-
-            # Smart grouping based on LLM contextual classification results
-            # Since LLM already determined continuation vs fresh, we just group consecutive same types
             document_groups = []
             current_group = None
 
             for page_class in page_classifications:
                 if page_class['document_type'] in ['Empty/Insufficient Text', 'Unknown']:
-                    logger.info(f"Skipping page {page_class['page']} with type: {page_class['document_type']}")
+                    logger.info(f"⏭️ Skipping page {page_class['page']}: {page_class['document_type']}")
                     continue
 
-                # Check if we should add to existing group (exact document type match only)
-                should_group_with_current = False
-                if current_group is not None:
-                    should_group_with_current = (current_group['document_type'] == page_class['document_type'])
+                should_group = (current_group is not None and
+                                current_group['document_type'] == page_class['document_type'])
 
-                if current_group is None or not should_group_with_current:
-                    # Start new group
+                if not should_group:
                     if current_group:
-                        logger.info(f" Completed group: {current_group['document_type']} (Pages: {current_group['pages']})")
+                        logger.info(
+                            f"✅ Completed group: {current_group['document_type']} (Pages: {current_group['pages']})")
                         document_groups.append(current_group)
 
-                    logger.info(f"Starting new group: {page_class['document_type']} (Page {page_class['page']})")
+                    logger.info(f"🆕 Starting new group: {page_class['document_type']} (Page {page_class['page']})")
                     current_group = {
                         'document_type': page_class['document_type'],
                         'pages': [page_class['page']],
                         'confidence': page_class['confidence'],
                         'text': page_class['text'],
                         'ocr_data': page_class['ocr_data'],
-                        'individual_pages': [page_class]  # Preserve individual page data for tabs
+                        'individual_pages': [page_class]
                     }
                 else:
-                    # Add to existing group
-                    logger.info(f"➕ Adding page {page_class['page']} ({page_class['document_type']}) to existing group: {current_group['document_type']}")
+                    logger.info(f"➕ Adding page {page_class['page']} to group: {current_group['document_type']}")
                     current_group['pages'].append(page_class['page'])
                     current_group['text'] += "\n" + page_class['text']
                     current_group['ocr_data'].extend(page_class['ocr_data'])
                     current_group['confidence'] = max(current_group['confidence'], page_class['confidence'])
-                    current_group['individual_pages'].append(page_class)  # Keep individual page data
+                    current_group['individual_pages'].append(page_class)
 
             if current_group:
-                logger.info(f" Completed final group: {current_group['document_type']} (Pages: {current_group['pages']})")
+                logger.info(
+                    f"✅ Completed final group: {current_group['document_type']} (Pages: {current_group['pages']})")
                 document_groups.append(current_group)
 
-            # Add page_range to each group for consistent access
+            # Add page_range to each group
             for group in document_groups:
-                group['page_range'] = f"Page {group['pages'][0]}" if len(group['pages']) == 1 else f"Pages {group['pages'][0]}-{group['pages'][-1]}"
+                group['page_range'] = (f"Page {group['pages'][0]}" if len(group['pages']) == 1
+                                       else f"Pages {group['pages'][0]}-{group['pages'][-1]}")
 
-            logger.info(f"ANALYTICS: Found {len(document_groups)} distinct document types:")
+            logger.info(f"📊 Found {len(document_groups)} distinct document types:")
             for group in document_groups:
-                logger.info(f"  - {group['document_type']} ({group['page_range']}, confidence: {group['confidence']:.0f}%)")
+                logger.info(
+                    f"   - {group['document_type']} ({group['page_range']}, confidence: {group['confidence']:.0f}%)")
 
-            # === STEP 5A: GENERATE PREVIEW IMAGES ===
-            logger.info(f"Generating preview images for document")
+            # === STORE OCR DATA TEMPORARILY (for reuse during revalidation) ===
+            temp_dir = tempfile.gettempdir()
+            ocr_session_id = str(uuid.uuid4())
+            ocr_temp_file = os.path.join(temp_dir, f"ocr_data_{ocr_session_id}.pkl")
+
+            ocr_context = {
+                "ocr_data": text_data,
+                "pages_ocr_data": pages_ocr_data,
+                "quality_result": quality_result,
+                "file_name": file_name,
+                "file_type": file_type,
+                "temp_file_path": temp_file_path,
+                "quality_time": quality_time,
+                "ocr_time": ocr_time,
+                "classification_time": classification_time
+            }
+
+            with open(ocr_temp_file, 'wb') as f:
+                pickle.dump(ocr_context, f)
+
+            logger.info(f"💾 OCR context saved: {ocr_temp_file}")
+            logger.info(f"🔑 Session ID: {ocr_session_id}")
+
+            # === GET AVAILABLE DOCUMENT TYPES FOR DROPDOWN ===
+            try:
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                field_mappings_dir = os.path.join(base_dir, 'field_mappings')
+
+                available_document_types = []
+
+                if os.path.exists(field_mappings_dir):
+                    json_files = glob.glob(os.path.join(field_mappings_dir, "*.json"))
+                    for json_file in json_files:
+                        doc_type = os.path.splitext(os.path.basename(json_file))[0]
+                        # Convert snake_case to Title Case
+                        readable_type = doc_type.replace('_', ' ').title()
+                        available_document_types.append(readable_type)
+                    available_document_types = sorted(available_document_types)
+                    logger.info(f"📋 Found {len(available_document_types)} document types from field mappings")
+
+                if not available_document_types:
+                    logger.info("📋 Using fallback document types list")
+                    available_document_types = [
+                        "Airway Bill",
+                        "Bill of Lading",
+                        "Certificate of Origin",
+                        "Commercial Invoice",
+                        "Credit Note",
+                        "Customs Declaration",
+                        "Debit Note",
+                        "Delivery Note",
+                        "Insurance Certificate",
+                        "Invoice",
+                        "Packing List",
+                        "Proforma Invoice",
+                        "Purchase Order",
+                        "Quotation",
+                        "Receipt",
+                        "Shipping Instruction"
+                    ]
+
+                logger.info(f"📋 Available document types: {len(available_document_types)}")
+
+            except Exception as e:
+                logger.error(f"❌ Error loading document types: {e}")
+                available_document_types = [
+                    "Bill of Lading",
+                    "Commercial Invoice",
+                    "Invoice",
+                    "Packing List",
+                    "Purchase Order"
+                ]
+
+            # === EARLY RETURN (PAUSE) FOR USER REVIEW ===
+            if pause_after_classification:
+                logger.info(f"⏸️ Pausing after classification for user review")
+                total_time = time.time() - start_time
+
+                # Generate preview images
+                preview_images = []
+                if file_type == "application/pdf":
+                    pdf_result = convert_pdf_to_images_opencv(temp_file_path)
+                    if pdf_result.get("type") == "image":
+                        preview_images = pdf_result.get("data", [])
+                        logger.info(f"🖼️ Generated {len(preview_images)} preview images")
+                else:
+                    encoded_image = encode_image_to_base64(temp_file_path)
+                    if encoded_image:
+                        preview_images = [encoded_image]
+                        logger.info(f"🖼️ Generated 1 preview image")
+
+                # Send pause notification via progress tracker
+                if progress_tracker:
+                    try:
+                        progress_tracker.send_progress({
+                            "stage": "paused",
+                            "status": "paused_for_review",
+                            "message": "Classification complete - Awaiting user confirmation",
+                            "progress": 60,
+                            "timestamp": time.time()
+                        })
+                        logger.info("📢 Sent pause notification to frontend")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Failed to send pause notification: {e}")
+
+                return {
+                    "success": True,
+                    "stage": "classification_review",
+                    "ocr_session_id": ocr_session_id,
+                    "file_name": file_name,
+                    "document_groups": [
+                        {
+                            "group_id": idx,
+                            "document_type": group['document_type'],
+                            "page_range": group['page_range'],
+                            "pages": group['pages'],
+                            "confidence": round(group['confidence'], 2),
+                            "text_preview": (group['text'][:200] + "...") if len(group['text']) > 200 else group['text']
+                        }
+                        for idx, group in enumerate(document_groups)
+                    ],
+                    "available_document_types": available_document_types,
+                    "preview_images": preview_images,
+                    "processing_time": {
+                        "total": f"{total_time:.2f}",
+                        "quality_analysis": f"{quality_time:.2f}",
+                        "ocr": f"{ocr_time:.2f}",
+                        "classification": f"{classification_time:.2f}"
+                    },
+                    "config_version": config.get('version', 'v1.0') if config else 'v1.0',
+                    "metadata": {
+                        "total_pages": len(pages_ocr_data),
+                        "total_groups": len(document_groups),
+                        "quality_verdict": verdict,
+                        "quality_score": round(quality_score, 3)
+                    }
+                }
+
+            # === IF NOT PAUSED, CONTINUE WITH EXTRACTION (EXISTING FLOW) ===
+            # ... [Rest of your existing extraction code from Document 1 goes here]
+            # This includes:
+            # - STEP 5: Generate preview images
+            # - STEP 6: Extract fields (parallel/sequential)
+            # - STEP 7: Compliance checks
+            # - Return complete results
+
+            # For now, if pause_after_classification is False, use your existing Document 1 code
+            # The code below this line should be your complete original extraction logic
+
+        except Exception as e:
+            logger.error(f"❌ Error in page-by-page processing: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return [{
+                "file_name": uploaded_file.filename,
+                "error": str(e),
+                "stage": "processing"
+            }]
+
+        finally:
+            # Only cleanup if NOT paused (Stage 2 needs the temp file)
+            if not pause_after_classification:
+                if temp_file_path and os.path.exists(temp_file_path):
+                    try:
+                        os.remove(temp_file_path)
+                        logger.info(f"🗑️ Cleaned up temp file: {temp_file_path}")
+                    except Exception as cleanup_error:
+                        logger.warning(f"⚠️ Failed to cleanup temp file: {cleanup_error}")
+
+    
+    @app.route('/api/document/classify-initial', methods=['POST'])
+    def classify_document_initial():
+        """
+        Stage 1: Perform OCR + Classification + Grouping
+        Pause for user classification correction (no extraction yet)
+        """
+        logger.info("=== API CALL: /api/document/classify-initial (Stage 1) ===")
+
+        try:
+            # === INPUT VALIDATION ===
+            uploaded_files = request.files.getlist('files')
+            if not uploaded_files:
+                return jsonify({"error": "No files uploaded"}), 400
+
+            if len(uploaded_files) > 1:
+                return jsonify({"error": "Stage 1 supports single file only"}), 400
+
+            uploaded_file = uploaded_files[0]
+            file_name = uploaded_file.filename
+
+            # Get parameters
+            function_name = request.form.get('functionName', '')
+            product_name = request.form.get('productName', '')
+            document_type = request.form.get('documentType', '')
+            client_id = request.form.get('client_id', None)
+            page_by_page = request.form.get('page_by_page', 'false').lower() == 'true'
+
+            logger.info(f"📄 Starting initial classification for {file_name}")
+            logger.info(f"   Function: {function_name}, Product: {product_name}, DocType: {document_type}")
+            logger.info(f"   Client ID: {client_id}, Page-by-page: {page_by_page}")
+
+            # === INITIALIZE PROGRESS TRACKER ===
+            progress_tracker = None
+            if client_id:
+                try:
+                    ws_handler = get_websocket_handler()
+                    if ws_handler:
+                        progress_tracker = DocumentProcessingTracker(ws_handler, client_id)
+                        logger.info(f"✅ Progress tracker initialized for client: {client_id}")
+                except Exception as e:
+                    logger.error(f"❌ Failed to initialize progress tracker: {e}")
+
+            # === LOAD PROMPT CONFIG ===
+            global prompt_config
+            if not prompt_config:
+                prompt_config = load_prompt_config()
+
+            # === CALL PROCESSING FUNCTION WITH PAUSE FLAG ===
+            result = process_document_page_by_page(
+                uploaded_file=uploaded_file,
+                function_name=function_name,
+                product_name=product_name,
+                document_type=document_type,
+                progress_tracker=progress_tracker,
+                config=prompt_config,
+                pause_after_classification=True
+            )
+
+            logger.info(f"✅ Stage 1 completed - Returning classification results")
+
+            return jsonify(result)
+
+        except Exception as e:
+            logger.error(f"❌ Error in /api/document/classify-initial: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return jsonify({
+                "success": False,
+                "error": str(e),
+                "stage": "initialization"
+            }), 500
+
+    @app.route('/api/document/revalidate-entities', methods=['POST'])
+    def revalidate_entities_after_classification():
+        """
+        Stage 2: Revalidate extraction + compliance after user confirms/changes classifications
+        Uses the COMPLETE extraction logic from process_document_page_by_page
+        """
+        logger.info("=== API CALL: /api/document/revalidate-entities (Stage 2) ===")
+
+        import pickle
+        import tempfile
+        import os
+        import time
+        import hashlib
+        import threading
+        import json
+        from datetime import datetime
+
+        try:
+            # === INPUT VALIDATION ===
+            data = request.get_json()
+
+            ocr_session_id = data.get('ocr_session_id')
+            confirmed_groups = data.get('confirmed_groups', [])
+            client_id = data.get('client_id', None)
+
+            if not ocr_session_id:
+                return jsonify({"error": "Missing ocr_session_id"}), 400
+
+            if not confirmed_groups:
+                return jsonify({"error": "Missing confirmed_groups"}), 400
+
+            logger.info(f"🔄 Stage 2 - Revalidating {len(confirmed_groups)} document groups")
+            logger.info(f"🔑 Session ID: {ocr_session_id}")
+
+            # === LOAD PROMPT CONFIG ===
+            global prompt_config
+            if not prompt_config:
+                prompt_config = load_prompt_config()
+
+            config_version = 'v1.0'
+            if prompt_config and isinstance(prompt_config, dict):
+                config_version = prompt_config.get('version', 'v1.0')
+
+            # === INITIALIZE PROGRESS TRACKER ===
+            progress_tracker = None
+            if client_id:
+                try:
+                    ws_handler = get_websocket_handler()
+                    if ws_handler:
+                        progress_tracker = DocumentProcessingTracker(ws_handler, client_id)
+                        logger.info(f"✅ Progress tracker initialized for client: {client_id}")
+                except Exception as e:
+                    logger.error(f"❌ Failed to initialize progress tracker: {e}")
+
+            # === LOAD OCR CONTEXT FROM TEMP FILE ===
+            temp_dir = tempfile.gettempdir()
+            ocr_temp_file = os.path.join(temp_dir, f"ocr_data_{ocr_session_id}.pkl")
+
+            if not os.path.exists(ocr_temp_file):
+                logger.error(f"❌ OCR session data not found: {ocr_temp_file}")
+                return jsonify({
+                    "success": False,
+                    "error": "OCR session data not found or expired"
+                }), 404
+
+            logger.info(f"📂 Loading OCR context from: {ocr_temp_file}")
+
+            with open(ocr_temp_file, 'rb') as f:
+                ocr_context = pickle.load(f)
+
+            # Extract context data
+            pages_ocr_data = ocr_context.get("pages_ocr_data", [])
+            quality_result = ocr_context.get("quality_result", {})
+            file_name = ocr_context.get("file_name", "Unknown")
+            file_type = ocr_context.get("file_type", "application/pdf")
+            temp_file_path = ocr_context.get("temp_file_path", "")
+            quality_time = ocr_context.get("quality_time", 0.0)
+            ocr_time = ocr_context.get("ocr_time", 0.0)
+            classification_time = ocr_context.get("classification_time", 0.0)
+
+            logger.info(f"✅ OCR context loaded for: {file_name}")
+            logger.info(f"📄 Pages: {len(pages_ocr_data)}")
+
+            # === RECONSTRUCT DOCUMENT GROUPS FROM USER CONFIRMATION ===
+            logger.info(f"🔄 Reconstructing document groups from user input")
+
+            document_groups = []
+            for group_data in confirmed_groups:
+                document_type = group_data.get('document_type')
+                pages = group_data.get('pages', [])
+
+                if not document_type or not pages:
+                    logger.warning(f"⚠️ Skipping incomplete group: {group_data}")
+                    continue
+
+                # Rebuild OCR data for this group's pages
+                group_ocr_data = []
+                group_text = ""
+                individual_pages = []
+
+                for page_num in pages:
+                    page_idx = page_num - 1
+                    if 0 <= page_idx < len(pages_ocr_data):
+                        page_data = pages_ocr_data[page_idx]
+                        group_ocr_data.extend(page_data)
+                        page_text = "\n".join([text['text'] for text in page_data])
+                        group_text += "\n" + page_text
+
+                        individual_pages.append({
+                            'page': page_num,
+                            'document_type': document_type,
+                            'confidence': group_data.get('confidence', 100),
+                            'text': page_text,
+                            'ocr_data': page_data,
+                            'is_continuation': False
+                        })
+
+                reconstructed_group = {
+                    'document_type': document_type,
+                    'pages': pages,
+                    'page_range': (f"Page {pages[0]}" if len(pages) == 1
+                                   else f"Pages {pages[0]}-{pages[-1]}"),
+                    'text': group_text.strip(),
+                    'ocr_data': group_ocr_data,
+                    'confidence': group_data.get('confidence', 100),
+                    'individual_pages': individual_pages
+                }
+
+                document_groups.append(reconstructed_group)
+                logger.info(f"✅ Reconstructed: {document_type} ({reconstructed_group['page_range']})")
+
+            if not document_groups:
+                return jsonify({
+                    "success": False,
+                    "error": "No valid document groups to process"
+                }), 400
+
+            # === REGENERATE PREVIEW IMAGES ===
             all_preview_images = []
-            if file_type == "application/pdf":
-                pdf_result = convert_pdf_to_images_opencv(temp_file_path)
-                if pdf_result["type"] == "image":
-                    all_preview_images = pdf_result["data"]
-                    logger.info(f"SUCCESS:Generated {len(all_preview_images)} preview images")
-            else:
-                encoded_image = encode_image_to_base64(temp_file_path)
-                if encoded_image:
-                    all_preview_images = [encoded_image]
-                    logger.info(f"SUCCESS:Generated 1 preview image")
+            if temp_file_path and os.path.exists(temp_file_path):
+                logger.info(f"🖼️ Generating preview images")
+                if file_type == "application/pdf":
+                    pdf_result = convert_pdf_to_images_opencv(temp_file_path)
+                    if pdf_result.get("type") == "image":
+                        all_preview_images = pdf_result.get("data", [])
+                        logger.info(f"✅ Generated {len(all_preview_images)} preview images")
+                else:
+                    encoded_image = encode_image_to_base64(temp_file_path)
+                    if encoded_image:
+                        all_preview_images = [encoded_image]
 
-            # === STEP 5B: EXTRACT FIELDS FOR EACH DOCUMENT TYPE (PARALLEL OPTIMIZATION) ===
-            logger.info(f"UPLOAD: STEP 5/5: EXTRACTING fields for each document type")
-
-            # Progress: Start field extraction
-            if progress_tracker:
-                total_documents = len(document_groups)
-                progress_tracker.start_field_extraction(field_count=total_documents)
-
-            extraction_config = config.get('extraction', {}) if config else {}
-            logger.info(f"Extraction config: {extraction_config}")
+            # === LOAD EXTRACTION SETTINGS ===
+            extraction_config = prompt_config.get('extraction', {}) if prompt_config else {}
             extraction_model = extraction_config.get('model', deployment_name)
-            logger.info(f"Extraction model: {extraction_model}")
             extraction_temp = extraction_config.get('temperature', 0.0)
-            logger.info(f"Extraction temperature: {extraction_temp}")
-            extraction_max_tokens = extraction_config.get('max_tokens', 16000)  # Increased for 46 fields with full descriptions
-            logger.info(f"Extraction max tokens: {extraction_max_tokens}")
+            extraction_max_tokens = extraction_config.get('max_tokens', 16000)
 
-            # OPTIMIZATION: Parallel extraction for multiple document groups
-            use_parallel_extraction = len(document_groups) > 1  # Use parallel for 2+ groups
+            logger.info(
+                f"⚙️ Extraction: model={extraction_model}, temp={extraction_temp}, max_tokens={extraction_max_tokens}")
+
+            # === START FIELD EXTRACTION ===
+            if progress_tracker:
+                progress_tracker.start_field_extraction(field_count=len(document_groups))
+
+            logger.info(f"🚀 STEP 5/5: EXTRACTING FIELDS")
+            start_time = time.time()
+
+            use_parallel_extraction = len(document_groups) > 1
 
             if use_parallel_extraction:
-                logger.info(f"🚀 OPTIMIZATION: Using PARALLEL extraction for {len(document_groups)} document groups")
+                logger.info(f"⚡ Using PARALLEL extraction for {len(document_groups)} groups")
                 results = extract_fields_parallel(
                     document_groups,
                     document_classifier,
@@ -16774,392 +17109,255 @@ Guidelines:
                     progress_tracker
                 )
             else:
-                logger.info(f"📄 Using sequential extraction for {len(document_groups)} document group(s)")
+                # === SEQUENTIAL EXTRACTION (FULL LOGIC FROM DOCUMENT 7) ===
+                logger.info(f"📄 Using SEQUENTIAL extraction for {len(document_groups)} group(s)")
                 results = []
 
                 for idx, group in enumerate(document_groups, 1):
-                    logger.info(f"MODE: Extracting fields for {group['document_type']} (Group {idx}/{len(document_groups)})")
+                    logger.info(
+                        f"📝 Extracting fields for {group['document_type']} (Group {idx}/{len(document_groups)})")
 
-                # Progress: Update field extraction progress
-                if progress_tracker:
-                    progress_tracker.update_field_extraction(current_field=idx, total_fields=len(document_groups))
+                    if progress_tracker:
+                        progress_tracker.update_field_extraction(current_field=idx, total_fields=len(document_groups))
 
-                extraction_start = time.time()
+                    extraction_start = time.time()
 
-                # Build extraction prompt
-                extraction_prompt = document_classifier.build_extraction_prompt(
-                    document_type=group['document_type'],
-                    ocr_text=group['text'],
-                    page_number=group['pages'][0]
-                )
-                logger.info(f"📝 Built extraction prompt ({len(extraction_prompt)} chars)")
-                logger.info(f"📝 Prompt preview (first 1000 chars): {extraction_prompt[:1000]}")
-
-                # Add field mappings
-                field_mapping_data = load_document_field_mappings(group['document_type'])
-                field_mapping_example = None
-                if field_mapping_data:
-                    field_mapping_example = field_mapping_data.get('example', '')
-                    extraction_prompt += f"\n\n{field_mapping_example}"
-                    logger.info(f"📝 Added field mapping examples ({len(field_mapping_example)} chars)")
-                    logger.info(f"📝 Enhanced extraction prompt with field mapping examples for {group['document_type']}")
-
-                logger.info(f"🤖 Calling LLM API (model: {extraction_model}, temp: {extraction_temp}, max_tokens: {extraction_max_tokens})")
-
-                # Check if parallel extraction is enabled for individual documents
-                enable_parallel = extraction_config.get('enable_parallel_extraction', False)
-                parallel_attempts = extraction_config.get('parallel_extraction_attempts', 3)
-                aggregation_strategy = extraction_config.get('aggregation_strategy', 'union')
-                confidence_threshold = extraction_config.get('confidence_threshold', 70)
-
-                if enable_parallel and parallel_attempts > 1:
-                    # ======= PARALLEL EXTRACTION FOR THIS DOCUMENT =======
-                    logger.info(f"🔄 Using parallel extraction: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
-
-                    # Perform parallel extraction
-                    extraction_results = extract_entities_parallel(
-                        prompt=extraction_prompt,
-                        model=extraction_model,
-                        temperature=extraction_temp,
-                        num_attempts=parallel_attempts
+                    # Build extraction prompt
+                    extraction_prompt = document_classifier.build_extraction_prompt(
+                        document_type=group['document_type'],
+                        ocr_text=group['text'],
+                        page_number=group['pages'][0]
                     )
+                    logger.info(f"📝 Built extraction prompt ({len(extraction_prompt)} chars)")
 
-                    # Aggregate results
-                    extraction_json = aggregate_extracted_fields(
-                        extraction_results=extraction_results,
-                        strategy=aggregation_strategy,
-                        confidence_threshold=confidence_threshold
-                    )
+                    # Add field mappings
+                    field_mapping_data = load_document_field_mappings(group['document_type'])
+                    field_mapping_example = None
+                    if field_mapping_data:
+                        field_mapping_example = field_mapping_data.get('example', '')
+                        extraction_prompt += f"\n\n{field_mapping_example}"
+                        logger.info(f"📝 Added field mapping examples ({len(field_mapping_example)} chars)")
 
-                    extracted_fields = extraction_json.get('extracted_fields', {})
-                    if not extracted_fields:
-                        logger.error("❌ Parallel extraction aggregation returned no fields")
-                    else:
-                        logger.info(f"✅ Parallel extraction successful: {len(extracted_fields)} aggregated fields")
+                    logger.info(f"🤖 Calling LLM API (model: {extraction_model}, temp: {extraction_temp})")
 
-                else:
-                    # ======= SINGLE EXTRACTION (Original) =======
-                    logger.info(f"📤 Using single extraction call")
+                    # Check if parallel extraction is enabled for individual documents
+                    enable_parallel = extraction_config.get('enable_parallel_extraction', False)
+                    parallel_attempts = extraction_config.get('parallel_extraction_attempts', 3)
+                    aggregation_strategy = extraction_config.get('aggregation_strategy', 'union')
+                    confidence_threshold = extraction_config.get('confidence_threshold', 70)
 
-                    # Call LLM for extraction
-                    extraction_response = openai.ChatCompletion.create(
-                        engine=extraction_model,
-                        messages=[{"role": "user", "content": extraction_prompt}],
-                        temperature=0,
-                        max_tokens=extraction_max_tokens,
-                        seed=12345,  # ✅ Reproducibility
-                        top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
-                        frequency_penalty=0,
-                        presence_penalty=0,
-                        response_format={"type": "json_object"}
-                    )
-                    extraction_result = extraction_response.choices[0].message.content
+                    if enable_parallel and parallel_attempts > 1:
+                        # PARALLEL EXTRACTION FOR THIS DOCUMENT
+                        logger.info(
+                            f"🔄 Using parallel extraction: {parallel_attempts} attempts with '{aggregation_strategy}' strategy")
 
-                    logger.info(f"✅ Received LLM response ({len(extraction_result)} chars)")
+                        extraction_results = extract_entities_parallel(
+                            prompt=extraction_prompt,
+                            model=extraction_model,
+                            temperature=extraction_temp,
+                            num_attempts=parallel_attempts
+                        )
 
-                    # Parse extraction result
-                    try:
-                        # Log raw response for debugging
-                        logger.info(f"🔍 Raw LLM response (first 500 chars): {extraction_result[:500]}")
+                        extraction_json = aggregate_extracted_fields(
+                            extraction_results=extraction_results,
+                            strategy=aggregation_strategy,
+                            confidence_threshold=confidence_threshold
+                        )
 
-                        # Try to extract JSON from markdown code blocks if present
-                        if '```json' in extraction_result:
-                            json_start = extraction_result.find('```json') + 7
-                            json_end = extraction_result.find('```', json_start)
-                            extraction_result = extraction_result[json_start:json_end].strip()
-                            logger.info("🔍 Extracted JSON from markdown code block")
-                        elif '```' in extraction_result:
-                            json_start = extraction_result.find('```') + 3
-                            json_end = extraction_result.find('```', json_start)
-                            extraction_result = extraction_result[json_start:json_end].strip()
-                            logger.info("🔍 Extracted content from generic code block")
-
-                        extraction_json = json.loads(extraction_result)
                         extracted_fields = extraction_json.get('extracted_fields', {})
-                        logger.info(f"✅ Successfully parsed {len(extracted_fields)} fields from JSON")
-                    except json.JSONDecodeError as e:
-                        logger.error(f"❌ JSON parsing failed: {e}")
-                        logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
-                        extracted_fields = {}
-                    except Exception as e:
-                        logger.error(f"❌ Unexpected error during parsing: {e}")
-                        logger.error(f"❌ Response content (first 1000 chars): {extraction_result[:1000]}")
-                        extracted_fields = {}
+                        if not extracted_fields:
+                            logger.error("❌ Parallel extraction returned no fields")
+                        else:
+                            logger.info(f"✅ Parallel extraction: {len(extracted_fields)} fields")
 
-                extraction_time = time.time() - extraction_start
-                logger.info(f"SUCCESS:Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
+                    else:
+                        # SINGLE EXTRACTION (Original)
+                        logger.info(f"📤 Using single extraction call")
 
-                # === BACKGROUND COMPLIANCE ANALYSIS ===
-                file_content_hash = hashlib.md5(f"{file_name}_{group['document_type']}_{datetime.now().isoformat()}".encode()).hexdigest()
-                logger.info(f"🚀 Starting background compliance check for {file_content_hash}")
+                        import openai
+                        extraction_response = openai.ChatCompletion.create(
+                            engine=extraction_model,
+                            messages=[{"role": "user", "content": extraction_prompt}],
+                            temperature=0,
+                            max_tokens=extraction_max_tokens,
+                            seed=12345,
+                            top_p=0.1,
+                            frequency_penalty=0,
+                            presence_penalty=0,
+                            response_format={"type": "json_object"}
+                        )
+                        extraction_result = extraction_response.choices[0].message.content
 
-                compliance_thread = threading.Thread(
-                    target=run_compliance_check_background,
-                    args=(file_content_hash, extracted_fields, group['document_type']),
-                    daemon=True
-                )
-                compliance_thread.start()
+                        logger.info(f"✅ Received LLM response ({len(extraction_result)} chars)")
 
-                logger.info(f"✅ Compliance check running in background (hash: {file_content_hash})")
+                        # Parse extraction result
+                        try:
+                            logger.info(f"🔍 Raw response (first 500 chars): {extraction_result[:500]}")
 
-                # Build result using simplified helper function
-                result = build_extraction_result(
-                    group, extracted_fields, field_mapping_data, file_name,
-                    all_preview_images, quality_time, ocr_time, classification_time,
-                    extraction_time, quality_result, extraction_model, extraction_temp,
-                    file_content_hash
-                )
-                results.append(result)
+                            # Extract JSON from markdown if present
+                            if '```json' in extraction_result:
+                                json_start = extraction_result.find('```json') + 7
+                                json_end = extraction_result.find('```', json_start)
+                                extraction_result = extraction_result[json_start:json_end].strip()
+                                logger.info("🔍 Extracted JSON from markdown")
+                            elif '```' in extraction_result:
+                                json_start = extraction_result.find('```') + 3
+                                json_end = extraction_result.find('```', json_start)
+                                extraction_result = extraction_result[json_start:json_end].strip()
 
-            # Mark field extraction complete AFTER all document groups are processed
+                            extraction_json = json.loads(extraction_result)
+                            extracted_fields = extraction_json.get('extracted_fields', {})
+                            logger.info(f"✅ Parsed {len(extracted_fields)} fields")
+                        except json.JSONDecodeError as e:
+                            logger.error(f"❌ JSON parsing failed: {e}")
+                            logger.error(f"❌ Response: {extraction_result[:1000]}")
+                            extracted_fields = {}
+                        except Exception as e:
+                            logger.error(f"❌ Unexpected error: {e}")
+                            extracted_fields = {}
+
+                    extraction_time = time.time() - extraction_start
+                    logger.info(f"✅ Extraction completed in {extraction_time:.2f}s - {len(extracted_fields)} fields")
+
+                    # === BACKGROUND COMPLIANCE ANALYSIS ===
+                    file_content_hash = hashlib.md5(
+                        f"{file_name}_{group['document_type']}_{datetime.now().isoformat()}".encode()
+                    ).hexdigest()
+                    logger.info(f"🚀 Starting background compliance check for {file_content_hash}")
+
+                    compliance_thread = threading.Thread(
+                        target=run_compliance_check_background,
+                        args=(file_content_hash, extracted_fields, group['document_type']),
+                        daemon=True
+                    )
+                    compliance_thread.start()
+                    logger.info(f"✅ Compliance check running in background")
+
+                    # Build result using helper function
+                    result = build_extraction_result(
+                        group, extracted_fields, field_mapping_data, file_name,
+                        all_preview_images, quality_time, ocr_time, classification_time,
+                        extraction_time, quality_result, extraction_model, extraction_temp,
+                        file_content_hash
+                    )
+                    results.append(result)
+
+            extraction_total_time = time.time() - start_time
+            logger.info(f"✅ All extractions completed in {extraction_total_time:.2f}s")
+
+            # === MARK FIELD EXTRACTION COMPLETE ===
             if progress_tracker:
-                total_extracted = sum(len(result.get("extraction", {}).get("mandatory", {})) +
-                                    len(result.get("extraction", {}).get("optional", {})) +
-                                    len(result.get("extraction", {}).get("conditional", {}))
-                                    for result in results)
+                total_extracted = sum(
+                    len(result.get("extraction", {}).get("mandatory", {})) +
+                    len(result.get("extraction", {}).get("optional", {})) +
+                    len(result.get("extraction", {}).get("conditional", {}))
+                    for result in results
+                )
                 progress_tracker.field_extraction_complete(extracted_count=total_extracted)
-                logger.info(f"✅ All extractions complete - {total_extracted} total fields extracted from {len(results)} document groups")
+                logger.info(f"✅ {total_extracted} total fields extracted")
 
-            total_time = time.time() - start_time
-            logger.info(f"SUCCESS:Page-by-page processing completed in {total_time:.2f}s - Found {len(results)} document types")
-
-            # Add the actual total processing time to each result
-            # for result in results:
-            #     if "processing_time" in result:
-            #         result["processing_time"]["actual_total"] = f"{total_time:.1f}"
+            # === CALCULATE TOTAL PROCESSING TIME ===
             total_time = sum(
                 float(result["processing_time"]["total"])
                 for result in results
                 if "processing_time" in result and "total" in result["processing_time"]
             )
-            logger.info(f"total_time:::{total_time:.2f}s")
-            # Step 2: assign to each result’s "processing_time" dict
+            logger.info(f"⏱️ Total time: {total_time:.2f}s")
+
+            # Add actual_total to each result
             for result in results:
                 if "processing_time" in result:
                     result["processing_time"]["actual_total"] = f"{total_time:.1f}"
 
-            # Progress: Complete with summary
+            # === COMPLETE PROGRESS ===
             if progress_tracker:
                 total_docs = len(results)
-                total_fields = sum(len(result.get("extraction", {}).get("mandatory", {})) +
-                               len(result.get("extraction", {}).get("optional", {})) +
-                               len(result.get("extraction", {}).get("conditional", {}))
-                               for result in results)
+                total_fields = sum(
+                    len(result.get("extraction", {}).get("mandatory", {})) +
+                    len(result.get("extraction", {}).get("optional", {})) +
+                    len(result.get("extraction", {}).get("conditional", {}))
+                    for result in results
+                )
                 progress_tracker.complete_with_summary(
                     doc_type=f"{total_docs} document types",
                     fields_extracted=total_fields,
                     compliance_status="Checked"
                 )
 
-            # Store OCR data in session for coordinate search API
-            logger.info(f"SAVE: === STORING OCR DATA FOR COORDINATE SEARCH ===")
+            # === STORE OCR DATA FOR COORDINATE SEARCH (FROM DOCUMENT 7) ===
+            logger.info(f"💾 === STORING OCR DATA FOR COORDINATE SEARCH ===")
             all_ocr_data = []
             ocr_stats = {'total_entries': 0, 'pages': 0, 'text_entries': 0, 'with_bbox': 0}
 
             for group_idx, group in enumerate(document_groups):
                 group_ocr = group.get('ocr_data', [])
-                logger.info(f" Group {group_idx + 1} ({group.get('document_type', 'Unknown')}): {len(group_ocr)} OCR entries")
-                logger.info(f"   Group covers pages: {group.get('pages', 'Unknown')}")
+                logger.info(f"📊 Group {group_idx + 1} ({group.get('document_type')}): {len(group_ocr)} OCR entries")
 
-                # Log sample entries from each group with detailed page info
-                if group_ocr:
-                    sample_entry = group_ocr[0]
-                    logger.info(f"   Sample entry: text='{sample_entry.get('text', '')[:30]}...', bbox={sample_entry.get('bounding_box', [])}, page={sample_entry.get('bounding_page', 'N/A')}")
-
-                # Check page distribution within this group
-                group_page_counts = {}
                 for entry in group_ocr:
                     ocr_stats['total_entries'] += 1
-                    page = entry.get('bounding_page', 'unknown')
-                    group_page_counts[page] = group_page_counts.get(page, 0) + 1
-
                     if entry.get('text'):
                         ocr_stats['text_entries'] += 1
                     if entry.get('bounding_box'):
                         ocr_stats['with_bbox'] += 1
 
-                logger.info(f"   Page distribution in group: {dict(sorted(group_page_counts.items()))}")
-
                 all_ocr_data.extend(group_ocr)
-                ocr_stats['pages'] = max(ocr_stats['pages'], group.get('pages', [0])[-1] if group.get('pages') else 0)
 
-            # NOTE: OCR data stored in temp file, not session (session cookie size limit)
-            # session['current_ocr_data'] = all_ocr_data  # REMOVED - causes cookie overflow
-
-            # Store OCR data in a temporary file for coordinate search API
-            import tempfile as temp_module
-            import pickle
+            # Generate unique session ID for OCR data
             import uuid
-            import glob
-
-            # Clean up old OCR temp files (older than 1 hour)
-            try:
-                temp_dir = temp_module.gettempdir()
-                old_files = glob.glob(os.path.join(temp_dir, "ocr_data_*.pkl"))
-                current_time = time.time()
-                cleaned_count = 0
-
-                for file_path in old_files:
-                    try:
-                        file_age = current_time - os.path.getctime(file_path)
-                        if file_age > 3600:  # 1 hour
-                            os.remove(file_path)
-                            cleaned_count += 1
-                    except Exception:
-                        pass  # Ignore cleanup errors
-
-                if cleaned_count > 0:
-                    logger.info(f"Cleaned up {cleaned_count} old OCR temp files")
-            except Exception as e:
-                logger.warning(f"Failed to cleanup old OCR temp files: {e}")
-
-            # Generate unique session identifier for OCR data
-            ocr_session_id = str(uuid.uuid4())
-            session['ocr_session_id'] = ocr_session_id
+            final_ocr_session_id = str(uuid.uuid4())
 
             # Store OCR data in temporary file
-            ocr_temp_file = os.path.join(temp_module.gettempdir(), f"ocr_data_{ocr_session_id}.pkl")
+            final_ocr_temp_file = os.path.join(temp_dir, f"ocr_data_{final_ocr_session_id}.pkl")
             try:
-                with open(ocr_temp_file, 'wb') as f:
+                with open(final_ocr_temp_file, 'wb') as f:
                     pickle.dump(all_ocr_data, f)
-                logger.info(f"OCR data also stored in temp file: {ocr_temp_file}")
-                logger.info(f" OCR session ID: {ocr_session_id}")
+                logger.info(f"💾 OCR data stored: {final_ocr_temp_file}")
+                logger.info(f"🔑 New OCR session ID: {final_ocr_session_id}")
+
+                # Store in session for coordinate search
+                from flask import session
+                session['ocr_session_id'] = final_ocr_session_id
+
             except Exception as e:
-                logger.error(f"Failed to store OCR data in temp file: {e}")
+                logger.error(f"❌ Failed to store OCR data: {e}")
 
-            logger.info(f"OCR DATA STORAGE SUMMARY:")
-            logger.info(f"   Total OCR entries stored: {len(all_ocr_data)}")
-            logger.info(f"   Entries with text: {ocr_stats['text_entries']}")
-            logger.info(f"   Entries with bounding boxes: {ocr_stats['with_bbox']}")
-            logger.info(f"   Document pages: {ocr_stats['pages']}")
+            logger.info(f"📊 OCR STORAGE SUMMARY:")
+            logger.info(f"   Total entries: {len(all_ocr_data)}")
+            logger.info(f"   With text: {ocr_stats['text_entries']}")
+            logger.info(f"   With bounding boxes: {ocr_stats['with_bbox']}")
 
-            # Final page distribution check
-            final_page_counts = {}
-            for entry in all_ocr_data:
-                page = entry.get('bounding_page', 'unknown')
-                final_page_counts[page] = final_page_counts.get(page, 0) + 1
-            logger.info(f"   Final page distribution: {dict(sorted(final_page_counts.items()))}")
-
-            # Log a few sample entries for debugging
-            if all_ocr_data:
-                logger.info(f"PARAMETERS: Sample OCR entries (first 3):")
-                for i, sample in enumerate(all_ocr_data[:3]):
-                    logger.info(f"   Entry {i+1}: '{sample.get('text', '')[:50]}...' (page: {sample.get('bounding_page', 'N/A')})")
-
-            logger.info(f"SUCCESS:OCR data successfully stored in session for coordinate search API")
-
-            return results
-
-        except Exception as e:
-            logger.error(f"ERROR: Error in page-by-page processing: {str(e)}")
-            import traceback
-            logger.error(traceback.format_exc())
-            return [{
-                "file_name": uploaded_file.filename,
-                "error": str(e),
-                "stage": "Unknown"
-            }]
-        finally:
-            # Clean up temporary file (non-breaking cleanup)
-            if temp_file_path and os.path.exists(temp_file_path):
-                try:
+            # === CLEANUP TEMP FILES ===
+            try:
+                if temp_file_path and os.path.exists(temp_file_path):
                     os.remove(temp_file_path)
-                    logger.info(f"Cleaned up temporary file: {temp_file_path}")
-                except Exception as cleanup_error:
-                    logger.warning(f"WARNINGS: Failed to cleanup temp file {temp_file_path}: {cleanup_error}")
+                    logger.info(f"🗑️ Cleaned up temp file")
 
-    @app.route('/api/document/classify-enhanced', methods=['POST'])
-    def classify_document_enhanced():
-        """
-        Enhanced document classification using prompt config (YAML-based)
-        Performs: OCR → Classification → Extraction with config-driven prompts
-        """
-        logger.info("SPEED: === ENHANCED DOCUMENT CLASSIFICATION ROUTE CALLED ===")
-        from app.utils.reload_helper import reload_all_jsons
-        reload_all_jsons()
-        try:
-            # Load prompt configuration
-            global prompt_config
-            if not prompt_config:
-                prompt_config = load_prompt_config()
-                if prompt_config:
-                    logger.info("SUCCESS:Loaded prompt configuration from YAML")
-                else:
-                    logger.warning("WARNINGS: Prompt config not available, using defaults")
+                if os.path.exists(ocr_temp_file):
+                    os.remove(ocr_temp_file)
+                    logger.info(f"🗑️ Cleaned up OCR context file")
+            except Exception as cleanup_error:
+                logger.warning(f"⚠️ Cleanup failed: {cleanup_error}")
 
-            # Get uploaded files
-            uploaded_files = request.files.getlist('files')
-            logger.info(f"Received {len(uploaded_files)} files for enhanced classification")
-            if not uploaded_files:
-                return jsonify({"error": "No files uploaded"}), 400
-
-            # Get parameters
-            function_name = request.form.get('functionName', '')
-            product_name = request.form.get('productName', '')
-            document_type = request.form.get('documentType', '')
-            client_id = request.form.get('client_id', None)
-            page_by_page = request.form.get('page_by_page', 'false').lower() == 'true'
-
-            logger.info(f"Enhanced params - Function: {function_name}, Product: {product_name}, DocType: {document_type}, PageByPage: {page_by_page}")
-
-            # Initialize progress tracker
-            progress = None
-            if client_id:
-                try:
-                    ws_handler = get_websocket_handler()
-                    if ws_handler:
-                        progress = DocumentProcessingTracker(ws_handler, client_id)
-                        logger.info(f"SUCCESS:Progress tracker initialized for client: {client_id}")
-                except Exception as e:
-                    logger.error(f"Failed to initialize progress tracker: {e}")
-
-            results = []
-
-            for idx, uploaded_file in enumerate(uploaded_files):
-                file_name = uploaded_file.filename
-                file_type = uploaded_file.content_type
-                logger.info(f"Processing enhanced file {idx+1}/{len(uploaded_files)}: {file_name}")
-
-                # Choose processing mode based on page_by_page parameter
-                if page_by_page:
-                    # Page-by-page mode: Can detect multiple document types
-                    logger.info("MODE: Using PAGE-BY-PAGE mode (multi-document detection)")
-                    page_results = process_document_page_by_page(
-                        uploaded_file=uploaded_file,
-                        function_name=function_name,
-                        product_name=product_name,
-                        document_type=document_type,
-                        progress_tracker=progress,
-                        config=prompt_config
-                    )
-                    # Each file can return multiple results (one per document type found)
-                    results.extend(page_results)
-                else:
-                    # Single document mode (original behavior)
-                    logger.info(" Using SINGLE DOCUMENT mode")
-                    result = process_document_with_config(
-                        uploaded_file=uploaded_file,
-                        function_name=function_name,
-                        product_name=product_name,
-                        document_type=document_type,
-                        progress_tracker=progress,
-                        config=prompt_config
-                    )
-                    results.append(result)
+            # === RETURN FINAL RESULTS ===
+            logger.info(f"✅ Stage 2 completed - Returning {len(results)} results")
 
             return jsonify({
                 "success": True,
                 "results": results,
                 "total_files": len(results),
                 "config_loaded": bool(prompt_config),
-                "config_version": prompt_config.get('version', 'v1.0') if prompt_config else 'v1.0'
+                "config_version": config_version
             })
 
         except Exception as e:
-            logger.error(f"Error in enhanced document classification: {str(e)}")
+            logger.error(f"❌ Error in /api/document/revalidate-entities: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
-            return jsonify({"error": str(e)}), 500
+
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
 
     @app.route('/api/document/compliance-status/<file_hash>', methods=['GET'])
     def check_compliance_status(file_hash):
