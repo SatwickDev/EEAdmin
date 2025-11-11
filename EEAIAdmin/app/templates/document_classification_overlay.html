@@ -4506,19 +4506,27 @@
                                                                                 </span>
                                                                             </div>
 
-                                                                            <!-- VALUE COMPARISON - COMPLIANT -->
-                                                                            <div v-if="doc.actualValue || doc.expectedValue" class="grid grid-cols-2 gap-2 mt-2 p-2 bg-white rounded border border-green-300">
-                                                                                <div v-if="doc.expectedValue" class="text-xs">
-                                                                                    <span class="font-semibold text-green-700">Expected:</span>
-                                                                                    <p class="text-gray-700 mt-1 break-words">{% raw %}{{ doc.expectedValue }}{% endraw %}</p>
-                                                                                </div>
-                                                                                <div v-if="doc.actualValue" class="text-xs">
-                                                                                    <span class="font-semibold text-green-700">Actual:</span>
-                                                                                    <p class="text-gray-700 mt-1 break-words">{% raw %}{{ doc.actualValue }}{% endraw %}</p>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <div v-if="doc.reason" class="flex items-start gap-1 mt-1">
+                                                            <!-- VALUE COMPARISON - COMPLIANT -->
+                                                            <div v-if="doc.fieldValue || doc.fieldName || doc.expectedValue" class="grid grid-cols-1 gap-2 mt-2 p-3 bg-white rounded border border-green-300">
+                                                                <div v-if="doc.fieldName" class="text-xs">
+                                                                    <span class="font-semibold text-green-700">Field Checked:</span>
+                                                                    <span class="text-gray-700 ml-1 font-medium">{% raw %}{{ doc.fieldName }}{% endraw %}</span>
+                                                                </div>
+                                                                <div class="grid grid-cols-2 gap-2" v-if="doc.fieldValue || doc.expectedValue">
+                                                                    <div v-if="doc.expectedValue" class="text-xs">
+                                                                        <span class="font-semibold text-green-700">Expected:</span>
+                                                                        <p class="text-gray-700 mt-1 break-words bg-gray-50 p-2 rounded">{% raw %}{{ doc.expectedValue }}{% endraw %}</p>
+                                                                    </div>
+                                                                    <div v-if="doc.fieldValue" class="text-xs">
+                                                                        <span class="font-semibold text-green-700">Found Value:</span>
+                                                                        <p class="text-green-700 mt-1 break-words bg-green-50 p-2 rounded font-medium">{% raw %}{{ doc.fieldValue }}{% endraw %}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div v-if="doc.reason" class="text-xs pt-2 border-t border-green-200">
+                                                                    <span class="font-semibold text-green-700">Why Compliant:</span>
+                                                                    <p class="text-gray-700 mt-1">{% raw %}{{ doc.reason }}{% endraw %}</p>
+                                                                </div>
+                                                            </div>                                                                            <div v-if="doc.reason" class="flex items-start gap-1 mt-1">
                                                                                 <i class="mdi mdi-information-outline text-green-600 text-sm mt-0.5"></i>
                                                                                 <span class="text-xs text-green-700">{% raw %}{{ doc.reason }}{% endraw %}</span>
                                                                             </div>
@@ -4563,20 +4571,25 @@
                                                                             </div>
 
                                                                             <!-- VALUE COMPARISON - NON-COMPLIANT -->
-                                                                            <div v-if="doc.actualValue || doc.expectedValue" class="grid grid-cols-2 gap-2 mt-2 p-2 bg-white rounded border border-red-300">
-                                                                                <div v-if="doc.expectedValue" class="text-xs">
-                                                                                    <span class="font-semibold text-red-700">Expected:</span>
-                                                                                    <p class="text-gray-700 mt-1 break-words">{% raw %}{{ doc.expectedValue }}{% endraw %}</p>
+                                                                            <div v-if="doc.fieldValue || doc.fieldName || doc.expectedValue" class="grid grid-cols-1 gap-2 mt-2 p-3 bg-white rounded border border-red-300">
+                                                                                <div v-if="doc.fieldName" class="text-xs">
+                                                                                    <span class="font-semibold text-red-700">Field Checked:</span>
+                                                                                    <span class="text-gray-700 ml-1 font-medium">{% raw %}{{ doc.fieldName }}{% endraw %}</span>
                                                                                 </div>
-                                                                                <div v-if="doc.actualValue" class="text-xs">
-                                                                                    <span class="font-semibold text-red-700">Actual:</span>
-                                                                                    <p class="text-gray-700 mt-1 break-words">{% raw %}{{ doc.actualValue }}{% endraw %}</p>
+                                                                                <div class="grid grid-cols-2 gap-2" v-if="doc.fieldValue || doc.expectedValue">
+                                                                                    <div v-if="doc.expectedValue" class="text-xs">
+                                                                                        <span class="font-semibold text-red-700">Expected:</span>
+                                                                                        <p class="text-gray-700 mt-1 break-words bg-gray-50 p-2 rounded">{% raw %}{{ doc.expectedValue }}{% endraw %}</p>
+                                                                                    </div>
+                                                                                    <div v-if="doc.fieldValue" class="text-xs">
+                                                                                        <span class="font-semibold text-red-700">Found Value:</span>
+                                                                                        <p class="text-red-700 mt-1 break-words bg-red-50 p-2 rounded font-medium">{% raw %}{{ doc.fieldValue }}{% endraw %}</p>
+                                                                                    </div>
                                                                                 </div>
-                                                                            </div>
-
-                                                                            <div v-if="doc.reason" class="flex items-start gap-1 mt-2 p-2 bg-red-100 rounded">
-                                                                                <i class="mdi mdi-alert-outline text-red-600 text-sm mt-0.5"></i>
-                                                                                <span class="text-xs text-red-800 font-medium">{% raw %}{{ doc.reason }}{% endraw %}</span>
+                                                                                <div v-if="doc.reason" class="text-xs pt-2 border-t border-red-200">
+                                                                                    <span class="font-semibold text-red-700">Why Non-Compliant:</span>
+                                                                                    <p class="text-gray-700 mt-1">{% raw %}{{ doc.reason }}{% endraw %}</p>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -7769,21 +7782,63 @@
                     }
                     
                     // DEBUG: Print entire LC context to see what fields are available
-                    console.log('🔍 DEBUGGING LC CONTEXT:');
+                    console.log('🔍 =================================================');
+                    console.log('🔍 DEBUGGING ADDITIONAL CONDITIONS PARSING');
+                    console.log('🔍 =================================================');
                     console.log('Full lcContext:', JSON.stringify(this.lcContext, null, 2));
                     
                     const lcData = this.lcContext.formData || this.lcContext;
                     console.log('🔍 lcData after formData check:', JSON.stringify(lcData, null, 2));
                     console.log('🔍 Available keys in lcData:', Object.keys(lcData));
                     
+                    // Also check this.results for additional conditions in extracted fields
+                    if (this.results && this.results.length > 0) {
+                        console.log('🔍 Checking extracted fields from results...');
+                        this.results.forEach((result, index) => {
+                            console.log(`📄 Document ${index} (${result.documentType}):`);
+                            console.log('   Extracted fields keys:', Object.keys(result.extractedFields || {}));
+                            
+                            // Look for additional conditions in extracted fields
+                            const extractedFields = result.extractedFields || {};
+                            Object.keys(extractedFields).forEach(key => {
+                                if (key.toLowerCase().includes('condition') || key.toLowerCase().includes('additional')) {
+                                    console.log(`   🎯 Found potential additional conditions field: ${key}`);
+                                    console.log(`   📝 Value: ${extractedFields[key]?.value || extractedFields[key]}`);
+                                }
+                            });
+                        });
+                    }
+                    
                     // Try multiple possible field names for additional conditions
-                    const additionalConditionsText = lcData.additionalConditions || 
+                    let additionalConditionsText = lcData.additionalConditions || 
                                                     lcData.additional_conditions || 
                                                     lcData.documentsRequired || 
                                                     lcData.documents_required ||
                                                     lcData.specialConditions ||
                                                     lcData.special_conditions ||
                                                     '';
+                    
+                    // ===== FALLBACK: Check extracted fields if not found in LC context =====
+                    if (!additionalConditionsText && this.results && this.results.length > 0) {
+                        console.log('🔄 Additional conditions not found in LC context, checking extracted fields...');
+                        
+                        for (const result of this.results) {
+                            const extractedFields = result.extractedFields || {};
+                            
+                            // Look for additional conditions in extracted fields
+                            const conditionsField = extractedFields['Additional Conditions'] || 
+                                                  extractedFields['additional_conditions'] ||
+                                                  extractedFields['AdditionalConditions'] ||
+                                                  extractedFields['Special Conditions'] ||
+                                                  extractedFields['special_conditions'];
+                            
+                            if (conditionsField) {
+                                additionalConditionsText = conditionsField.value || conditionsField;
+                                console.log(`✅ Found additional conditions in extracted fields: ${Object.keys(extractedFields).find(k => k.toLowerCase().includes('condition'))}`);
+                                break;
+                            }
+                        }
+                    }
                     
                     console.log('🔍 additionalConditionsText found:', additionalConditionsText ? 'YES' : 'NO');
                     if (additionalConditionsText) {
@@ -7940,6 +7995,34 @@
                             console.log(`✅ Received ${data.validation_results.length} validation results from LLM`);
                             console.log(`✅ ==========================================`);
                             console.log('🔍 Validation results:', data.validation_results);
+                            
+                            // ===== VALIDATE RESPONSE STRUCTURE =====
+                            if (data.validation_results.length > 0) {
+                                const sample = data.validation_results[0];
+                                const requiredFields = ['rule', 'isCompliant', 'message', 'category', 'severity', 'documentType'];
+                                const missingFields = requiredFields.filter(field => !(field in sample));
+                                
+                                if (missingFields.length > 0) {
+                                    console.error('❌ RESPONSE FORMAT ISSUE: Missing fields:', missingFields);
+                                    console.error('📝 Sample response structure:', Object.keys(sample));
+                                    console.error('📄 Full sample:', sample);
+                                } else {
+                                    console.log('✅ Response format validation passed - all required fields present');
+                                }
+                                
+                                // Check rule sub-object
+                                if (sample.rule) {
+                                    if (!sample.rule.code || !sample.rule.description) {
+                                        console.error('❌ RULE OBJECT ISSUE: Missing code or description');
+                                        console.error('🔍 Rule object:', sample.rule);
+                                    } else {
+                                        console.log('✅ Rule object format validation passed');
+                                    }
+                                } else {
+                                    console.error('❌ CRITICAL: Missing rule object in response');
+                                }
+                            }
+                            
                             return data.validation_results;
                         } else {
                             throw new Error(data.error || 'LLM validation failed');

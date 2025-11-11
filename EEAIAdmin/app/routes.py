@@ -6267,83 +6267,122 @@ Output format:
 
             logger.info(f"📄 Parsing additional conditions for LC: {lc_number}")
             logger.info(f"📝 Raw text: {additional_conditions_text[:200]}...")
+            
+            # ===== COMPREHENSIVE LOGGING FOR DEBUGGING =====
+            logger.info(f"📋 =======================================================")
+            logger.info(f"📋 COMPLETE ADDITIONAL CONDITIONS TEXT ANALYSIS")
+            logger.info(f"📋 =======================================================")
+            logger.info(f"📋 LC Number: {lc_number}")
+            logger.info(f"📋 Text Length: {len(additional_conditions_text)} characters")
+            logger.info(f"📋 Text Lines: {len(additional_conditions_text.splitlines())} lines")
+            logger.info(f"📋 FULL TEXT START:")
+            logger.info(f"📋 {'-'*60}")
+            logger.info(additional_conditions_text)
+            logger.info(f"📋 {'-'*60}")
+            logger.info(f"📋 FULL TEXT END")
+            logger.info(f"📋 =======================================================")
+            
+            # Analyze text structure
+            lines = additional_conditions_text.splitlines()
+            for i, line in enumerate(lines, 1):
+                if line.strip():
+                    logger.info(f"📋 Line {i:2d}: {line.strip()}")
+            
+            logger.info(f"📋 Expected rules from this text: Minimum 3-6 individual validation rules")
+            logger.info(f"📋 =======================================================")
 
             # Use global Azure OpenAI configuration from app_config.py
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
 
             logger.info(f"🔧 Using global Azure OpenAI configuration - Deployment: {deployment_name}")
 
-            # Comprehensive prompt to extract validation rules
-            prompt = f"""You are a trade finance compliance expert. Parse the following LC Additional Conditions into structured validation rules.
+            # Comprehensive prompt to extract validation rules - Using few-shot learning
+            prompt = """You are a trade finance compliance expert. I will show you an example of how to extract multiple validation rules from LC Additional Conditions, then you do the same for the actual text.
 
-LC Number: {lc_number}
+EXAMPLE INPUT:
+"1. ALL DOCUMENTS MUST BE DATED, PREPARED IN ENGLISH ONLY AND MUST BEAR OUR L/C NUMBER DULY SIGNED BY ISSUER."
 
-Additional Conditions Text:
-{additional_conditions_text}
-
-Your task is to extract EVERY validation rule from the text and structure them as JSON objects.
-
-For EACH condition, create a rule with:
-- id: Unique identifier (e.g., "lc-cond-001", "lc-cond-002")
-- code: Rule code (e.g., "LC-COND-001")
-- category: One of ["language", "reference_number", "date_validation", "signature", "document_type", "shipping", "presentation", "formatting", "general"]
-- description: Clear description of what is required/prohibited
-- field_affected: Which field/document this applies to (e.g., "all_documents", "invoice", "bill_of_lading", "document_date", "lc_number_reference")
-- validation_type: Type of validation needed (e.g., "language_check", "contains_lc_number", "date_comparison", "signature_required", "format_check", "prohibited_content")
-- expected_value: What value is expected (if applicable)
-- severity: "high" (mandatory), "medium" (important), or "low" (optional)
-- actionable: true if this can be automatically validated, false if it's informational only
-
-Common validation types:
-- "language_check": Document must be in specific language
-- "contains_lc_number": Document must reference LC number
-- "date_comparison": Date validations (e.g., not before LC date, within 21 days)
-- "signature_required": Document must be signed/attested
-- "prohibited_content": Certain clauses/content not acceptable
-- "format_check": Specific format requirements
-- "consignor_check": Consignor must match beneficiary
-- "courier_receipt": Postal receipt must be submitted
-- "document_copies": Number of copies required
-- "presentation_method": How documents must be presented
-
-Output ONLY valid JSON array, no extra text:
-
+EXAMPLE OUTPUT (notice how ONE sentence becomes FOUR separate rules):
 [
   {{
     "id": "lc-cond-001",
-    "code": "LC-COND-001",
-    "category": "language",
-    "description": "All documents must be prepared in English only",
+    "code": "LC-COND-001", 
+    "category": "date_validation",
+    "description": "All documents must be dated",
     "field_affected": "all_documents",
-    "validation_type": "language_check",
-    "expected_value": "English",
+    "validation_type": "date_required",
+    "expected_value": "valid_date",
     "severity": "high",
     "actionable": true
   }},
   {{
     "id": "lc-cond-002",
     "code": "LC-COND-002",
+    "category": "language", 
+    "description": "All documents must be prepared in English only",
+    "field_affected": "all_documents",
+    "validation_type": "language_check", 
+    "expected_value": "English",
+    "severity": "high",
+    "actionable": true
+  }},
+  {{
+    "id": "lc-cond-003", 
+    "code": "LC-COND-003",
     "category": "reference_number",
     "description": "All documents must bear LC number {lc_number}",
-    "field_affected": "all_documents",
+    "field_affected": "all_documents", 
     "validation_type": "contains_lc_number",
     "expected_value": "{lc_number}",
     "severity": "high",
     "actionable": true
+  }},
+  {{
+    "id": "lc-cond-004",
+    "code": "LC-COND-004", 
+    "category": "signature",
+    "description": "All documents must be duly signed by issuer",
+    "field_affected": "all_documents",
+    "validation_type": "signature_required", 
+    "expected_value": "signed",
+    "severity": "high", 
+    "actionable": true
   }}
 ]
 
-Extract ALL conditions from the text above."""
+NOW YOUR TURN - Parse this actual LC text into multiple separate validation rules:
+
+LC Number: {lc_number}
+Additional Conditions Text:
+{additional_conditions_text}
+
+Return JSON array with multiple rules (minimum 3-6 rules). Break down every requirement into separate rules.""".format(
+                lc_number=lc_number,
+                additional_conditions_text=additional_conditions_text
+            )
+
+            # ===== LOG COMPLETE PROMPT BEING SENT TO LLM =====
+            logger.info(f"🤖 =======================================================")
+            logger.info(f"🤖 COMPLETE PROMPT BEING SENT TO LLM")
+            logger.info(f"🤖 =======================================================")
+            logger.info(f"🤖 Prompt Length: {len(prompt)} characters")
+            logger.info(f"🤖 FULL PROMPT START:")
+            logger.info(f"🤖 {'-'*60}")
+            logger.info(prompt)
+            logger.info(f"🤖 {'-'*60}")
+            logger.info(f"🤖 FULL PROMPT END")
+            logger.info(f"🤖 =======================================================")
 
             # Call OpenAI
+            logger.info(f"🚀 Sending request to LLM with {len(prompt)} character prompt...")
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
-                    {"role": "system", "content": "You are a meticulous LC compliance expert. Extract EVERY condition as a validation rule. Return only valid JSON array."},
+                    {"role": "system", "content": "You are an expert who ALWAYS extracts multiple separate rules from compound conditions. NEVER return a single rule. Follow the example pattern exactly. Always return a JSON ARRAY with 3+ rules minimum."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_tokens=3000,
+                max_tokens=10000,  # Increased for multiple rules
                 seed=12345,  # ✅ Reproducibility
                 top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                 frequency_penalty=0,
@@ -6360,17 +6399,48 @@ Extract ALL conditions from the text above."""
             elif '```' in response_text:
                 response_text = response_text.split('```')[1].split('```')[0].strip()
 
+            # ===== FIX: Handle both array and single object responses =====
             json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(0)
+                logger.info("🔍 Found JSON array in response")
+            else:
+                # Check for single object and wrap it in array
+                object_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if object_match:
+                    response_text = '[' + object_match.group(0) + ']'
+                    logger.info("🔍 Found single JSON object, wrapping in array")
+                else:
+                    logger.error(f"❌ No valid JSON found in response: {response_text}")
 
-            parsed_rules = json.loads(response_text)
+            logger.info(f"🔍 Final JSON to parse: {response_text[:200]}...")
+            
+            try:
+                parsed_rules = json.loads(response_text)
+                logger.info(f"📊 Parsed rules type: {type(parsed_rules)}, length: {len(parsed_rules) if isinstance(parsed_rules, list) else 'N/A'}")
+                
+                # Ensure it's a list
+                if not isinstance(parsed_rules, list):
+                    logger.warning(f"⚠️ Expected list, got {type(parsed_rules)}. Converting to list.")
+                    parsed_rules = [parsed_rules] if isinstance(parsed_rules, dict) else []
+                    
+            except json.JSONDecodeError as e:
+                logger.error(f"❌ JSON parsing failed: {e}")
+                logger.error(f"❌ Response text: {response_text}")
+                return jsonify({
+                    'success': False, 
+                    'error': f'Failed to parse LLM response as JSON: {str(e)}',
+                    'raw_response': response_text[:500]
+                }), 500
 
             # Clean up
             cleaned_rules = []
+            logger.info(f"🧹 Starting to clean {len(parsed_rules)} raw rules...")
+            
             for idx, rule in enumerate(parsed_rules):
+                logger.info(f"🔍 Processing rule {idx + 1}: {type(rule)}")
                 if isinstance(rule, dict):
-                    cleaned_rules.append({
+                    cleaned_rule = {
                         'id': rule.get('id', f'lc-cond-{idx+1:03d}'),
                         'code': rule.get('code', f'LC-COND-{idx+1:03d}'),
                         'category': rule.get('category', 'general'),
@@ -6382,9 +6452,13 @@ Extract ALL conditions from the text above."""
                         'actionable': rule.get('actionable', True),
                         'source': 'lc_conditions',
                         'lc_number': lc_number
-                    })
+                    }
+                    cleaned_rules.append(cleaned_rule)
+                    logger.info(f"✅ Rule {idx + 1} cleaned: {cleaned_rule['code']} - {cleaned_rule['description'][:50]}...")
+                else:
+                    logger.warning(f"⚠️ Skipping non-dict rule {idx + 1}: {type(rule)}")
 
-            logger.info(f"✅ Successfully parsed {len(cleaned_rules)} LC condition rules")
+            logger.info(f"✅ Successfully parsed and cleaned {len(cleaned_rules)} LC condition rules")
 
             return jsonify({
                 'success': True,
@@ -6454,14 +6528,42 @@ OUTPUT FORMAT (JSON array only, no markdown):
     "severity": "high",
     "category": "category_name",
     "details": {{
-      "compliant": [{{"document": "Type", "fileName": "name", "pages": "Pages X", "reason": "why"}}],
-      "nonCompliant": [],
-      "requiresManualReview": []
+      "compliant": [{{
+        "document": "Type", 
+        "fileName": "name", 
+        "pages": "Pages X", 
+        "reason": "why compliant",
+        "fieldValue": "actual value found that made it compliant",
+        "fieldName": "name of field checked"
+      }}],
+      "nonCompliant": [{{
+        "document": "Type", 
+        "fileName": "name", 
+        "pages": "Pages X", 
+        "reason": "why non-compliant",
+        "fieldValue": "actual problematic value found",
+        "expectedValue": "what was expected",
+        "fieldName": "name of field checked"
+      }}],
+      "requiresManualReview": [{{
+        "document": "Type", 
+        "fileName": "name", 
+        "pages": "Pages X", 
+        "reason": "why manual review needed",
+        "fieldValue": "actual value found (if any)",
+        "fieldName": "name of field checked"
+      }}]
     }}
   }}
 ]
 
-Return results for all {len(batch_rules)} rules. Check every document."""
+CRITICAL: Always include actual field values that were checked. For example:
+- fieldValue: "Deutsche Bank AG" (for language check - non-compliant because German)
+- fieldValue: "ILCAE00221000098" (for LC number check - compliant)  
+- fieldValue: "15-Nov-2024" (for date check - compliant/non-compliant based on requirements)
+- fieldValue: "" or "Not found" (for missing required fields)
+
+Return results for all {len(batch_rules)} rules. Check every document and show actual values."""
 
                 request_params = {
                     'engine': deployment_name,
@@ -6498,8 +6600,41 @@ Return results for all {len(batch_rules)} rules. Check every document."""
                     response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
                     batch_results = json.loads(response_text)
 
-                logger.info(f"✅ Batch {batch_num}: Generated {len(batch_results)} validation results")
-                return batch_results
+                # ======= ENSURE FRONTEND COMPATIBILITY: Add missing fields =======
+                cleaned_batch_results = []
+                for result in batch_results:
+                    if isinstance(result, dict):
+                        # Ensure all required frontend fields are present
+                        cleaned_result = {
+                            'rule': result.get('rule', {}),
+                            'status': result.get('status', 'manual_review'),
+                            'isCompliant': result.get('isCompliant'),
+                            'message': result.get('message', 'No message provided'),
+                            'severity': result.get('severity', 'high'),
+                            'category': result.get('category', 'general'),
+                            'documentType': 'All Documents',  # Frontend expects this
+                            'note': result.get('note', ''),
+                            'details': result.get('details', {}),
+                            'validation_type': result.get('rule', {}).get('validation_type', 'general_check')
+                        }
+                        
+                        # Ensure rule object has required fields
+                        if 'rule' not in cleaned_result or not cleaned_result['rule']:
+                            # Extract from batch_rules if rule is missing
+                            if batch_rules:
+                                rule_ref = batch_rules[0]  # Use first rule as reference
+                                cleaned_result['rule'] = {
+                                    'code': rule_ref.get('code', 'LC-COND-???'),
+                                    'description': rule_ref.get('description', 'Unknown condition'),
+                                    'validation_type': rule_ref.get('validation_type', 'general_check')
+                                }
+                        
+                        cleaned_batch_results.append(cleaned_result)
+                        
+                logger.info(f"✅ Batch {batch_num}: Generated {len(cleaned_batch_results)} cleaned validation results")
+                logger.info(f"🔍 Sample cleaned result: {cleaned_batch_results[0] if cleaned_batch_results else 'No results'}")
+                
+                return cleaned_batch_results
 
             except Exception as e:
                 logger.error(f"❌ Batch {batch_num} failed: {e}")
@@ -6552,6 +6687,19 @@ Return results for all {len(batch_rules)} rules. Check every document."""
                         logger.error(f"❌ Batch {batch_idx + 1} failed: {e}")
 
             logger.info(f"✅ All batches complete. Total validation results: {len(all_results)}")
+            
+            # ======= FINAL VALIDATION: Ensure response format is correct =======
+            logger.info(f"🔍 Sample validation result structure: {all_results[0] if all_results else 'No results'}")
+            
+            # Log field counts for debugging
+            if all_results:
+                sample = all_results[0]
+                required_fields = ['rule', 'isCompliant', 'message', 'category', 'severity', 'documentType']
+                missing_fields = [field for field in required_fields if field not in sample]
+                if missing_fields:
+                    logger.warning(f"⚠️ Missing frontend fields in response: {missing_fields}")
+                else:
+                    logger.info(f"✅ All required frontend fields present")
 
             return jsonify({
                 'success': True,
