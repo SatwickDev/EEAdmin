@@ -984,7 +984,7 @@
     {
       "id": "129",
       "name": "Description of Goods",
-      "description": "Plain language description of the nature of a goods item sufficient to identify it for customs, statistical or transport purposes.",
+      "description": "Extract COMPLETE description of goods including ALL shipping terms and incoterms. MUST INCLUDE: CIF, EXW, FOB, CFR, DDP, and ANY other incoterms. Also extract variations like 'INCOTERMS: CFR, JEBEL ALI PORT, UAE' or 'INCOTERMS: CIF ANY SEAPORT IN ABU DHABI,UAE'. Capture ALL text including terms that appear after page breaks, in next lines, or in different formats. DO NOT MISS any shipping/incoterm information regardless of formatting, page breaks, or positioning. Extract 100% of goods description with ALL incoterm details.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
