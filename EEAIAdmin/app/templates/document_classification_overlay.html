@@ -8653,6 +8653,12 @@ populateFormFields() {
         'Terms of Payment': 'paymentTerms',
         'Payment Terms': 'paymentTerms',
 
+         // 🔹 ADD TOLERANCE MAPPING HERE
+        'Percentage Credit Amount Tolerance': 'tolerancePercent',
+        'Credit Amount Tolerance': 'tolerancePercent',
+        'Tolerance Percentage': 'tolerancePercent',
+        'Amount Tolerance': 'tolerancePercent',
+
         // Shipment Details
         'Original Loading Location': 'portOfLoading',
         'Baseport Unloading Location': 'portOfDischarge',
@@ -8776,7 +8782,11 @@ populateFormFields() {
                             console.log(`Mapping Payment Terms: "${value}" -> "${this.mapPaymentTermsValue(value)}"`);
                             value = this.mapPaymentTermsValue(value);
                         }
-
+                           // ⭐⭐⭐ MAP TOLERANCE PERCENT VALUES ⭐⭐⭐
+                        if (formFieldName === 'tolerancePercent') {
+                            console.log(`Mapping Tolerance Percent: "${value}" -> "${this.mapTolerancePercentValue(value)}"`);
+                            value = this.mapTolerancePercentValue(value);
+                        }
                         // Handle amount field splitting
                         if (key === 'Documentary credit amount') {
                             const { currency, amount } = this.splitCurrencyAndAmount(value);
@@ -8906,6 +8916,21 @@ mapTranshipmentValue(backendValue) {
     // If no match found, return the original value
     console.log(`No mapping found for Transhipment: "${backendValue}"`);
     return backendValue;
+},
+
+// Add this mapping method after your existing mapping methods
+mapTolerancePercentValue(backendValue) {
+    if (!backendValue) return backendValue;
+
+    console.log(`🔍 TOLERANCE PERCENT MAPPING DEBUG:`);
+    console.log(`   Original: "${backendValue}"`);
+
+    // Remove percentage symbol and any non-numeric characters except decimal point
+    const cleanedValue = backendValue.toString().replace(/[^\d.]/g, '');
+
+    console.log(`   Cleaned: "${cleanedValue}"`);
+
+    return cleanedValue;
 },
 // UPDATED: Map backend Payment Terms values to frontend dropdown values
 mapPaymentTermsValue(backendValue) {
