@@ -649,34 +649,6 @@
     {
       "documentId": "Letter_of_Credit",
       "documentName": "Letter of Credit",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "483",
-      "entityName": "Currency",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts/charges/percentages",
-      "fieldType": "mandatory",
-      "id": "88481"
-    },
-    {
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "484",
-      "entityName": "Applicant Address",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory",
-      "id": "88482"
-    },
-    {
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "35",
@@ -687,6 +659,34 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory",
       "id": "88486"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "499",
+      "entityName": "Currency",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages",
+      "fieldType": "mandatory",
+      "id": "88487"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "500",
+      "entityName": "Applicant Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory",
+      "id": "88488"
     }
   ]
 }

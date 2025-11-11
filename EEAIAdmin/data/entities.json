@@ -54,7 +54,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
     },
-
     {
       "id": "8",
       "name": "Shipping Order Number",
@@ -82,7 +81,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
     },
-
     {
       "id": "12",
       "name": "Bank Guarantee Number",
@@ -110,7 +108,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
     },
-
     {
       "id": "16",
       "name": "Shipment Date",
@@ -129,7 +126,6 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-
     {
       "id": "19",
       "name": "Document Presentation Date",
@@ -139,7 +135,6 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-
     {
       "id": "24",
       "name": "Notify Party",
@@ -158,7 +153,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "27",
       "name": "Advising Bank",
@@ -213,7 +207,6 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-
     {
       "id": "35",
       "name": "Incoterms",
@@ -223,7 +216,6 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
-
     {
       "id": "36",
       "name": "Partial Shipment Clause",
@@ -269,7 +261,6 @@
       "dataCategoryId": "5",
       "dataCategoryValue": "Clauses/conditions/instructions"
     },
-
     {
       "id": "43",
       "name": "Insurance Amount",
@@ -333,7 +324,6 @@
       "dataCategoryId": "7",
       "dataCategoryValue": "Amounts/charges/percentages"
     },
-
     {
       "id": "51",
       "name": "Net Weight",
@@ -388,7 +378,6 @@
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods"
     },
-
     {
       "id": "58",
       "name": "HS Code",
@@ -596,7 +585,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
     },
-
     {
       "id": "82",
       "name": "Applicant Name",
@@ -984,7 +972,6 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-
     {
       "id": "128",
       "name": "Product Identifier",
@@ -1111,7 +1098,7 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-        {
+    {
       "id": "142",
       "name": "Documentary Credit Identifier",
       "description": "Extract the MUR (Message User Reference) number from the Letter of Credit application. The MUR number uniquely identifies the transaction reference used in SWIFT messages or LC documentation. Do not extract the LC number or any other reference numbers.",
@@ -1219,7 +1206,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "155",
       "name": "Transport service buyer",
@@ -1328,7 +1314,6 @@
       "dataCategoryId": "12",
       "dataCategoryValue": "Others"
     },
-
     {
       "id": "168",
       "name": "Party performing inspection",
@@ -1347,7 +1332,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "171",
       "name": "Buyer's agent",
@@ -1438,7 +1422,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "182",
       "name": "Manufacturer's agent",
@@ -1448,7 +1431,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "184",
       "name": "Packer",
@@ -1458,7 +1440,6 @@
       "dataCategoryId": "12",
       "dataCategoryValue": "Others"
     },
-
     {
       "id": "186",
       "name": "Despatch party",
@@ -1486,7 +1467,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "190",
       "name": "Importer's agent",
@@ -1514,7 +1494,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "194",
       "name": "Notify party 2",
@@ -1587,7 +1566,6 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-
     {
       "id": "203",
       "name": "Postcode identification",
@@ -1651,7 +1629,7 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-  {
+    {
       "id": "210",
       "name": "Document/message number",
       "description": "Document/message number",
@@ -1705,7 +1683,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
     {
       "id": "217",
       "name": "Available with bank",
@@ -1823,7 +1800,6 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-
     {
       "id": "231",
       "name": "Amendment date",
@@ -2004,7 +1980,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
     },
-
     {
       "id": "252",
       "name": "Number of copies",
@@ -2563,7 +2538,7 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-      {
+    {
       "id": "314",
       "name": "Payment Term",
       "description": "Extract the standard payment term keyword from the document — one of: BY PAYMENT, BY ACCEPTANCE, BY DEF PAYMENT, BY MIXED PYMT, BY NEGOTIATION. These indicate how and when payment is made under a Letter of Credit or trade transaction. Extract only the exact term (e.g., 'BY PAYMENT'), not the surrounding conditions or dates.\n\nReference meanings for clarity:\n\n• BY PAYMENT = 'At Sight' = Immediate payment when compliant documents are presented.\n  Equivalent to: Payment at sight\n  When paid: Upon presentation of documents\n\n• BY ACCEPTANCE = 'Acceptance' = Payment upon acceptance of a time draft.\n  Equivalent to: Usance credit with acceptance\n  When paid: At maturity date after draft acceptance\n\n• BY DEF PAYMENT = 'Deferred Payment' = Payment at a future date without draft.\n  Equivalent to: Deferred payment undertaking\n  When paid: On predetermined future date\n\n• BY NEGOTIATION = 'Negotiation' = Any bank can purchase the beneficiary's documents.\n  Equivalent to: Freely negotiable credit\n  When paid: When the negotiating bank purchases documents\n\n• BY MIXED PYMT = 'Mixed Payment' = Combination of multiple payment methods.\n  Equivalent to: Split payment terms\n  When paid: According to mixed schedule (requires Field 42M)\n\nKey Extraction Rules:\n- 'At Sight' always maps to 'BY PAYMENT'.\n- 'Deferred Payment' maps to 'BY DEF PAYMENT' (requires Field 42P).\n- 'Acceptance' maps to 'BY ACCEPTANCE' (requires draft acceptance).\n- 'Negotiation' maps to 'BY NEGOTIATION' (available with any bank).\n- Mixed terms map to 'BY MIXED PYMT' (requires Field 42M).",
@@ -2572,7 +2547,6 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
-
     {
       "id": "315",
       "name": "Allowance / Charge",
@@ -2707,7 +2681,7 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-        {
+    {
       "id": "330",
       "name": "Despatch",
       "description": "lace, from or at which despatch is to take place",
@@ -3346,7 +3320,7 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
-	    {
+    {
       "id": "401",
       "name": "Shipper DG Declaration Information",
       "description": "Shipper declaration information, expressed as text, for transported dangerous goods",
@@ -3822,356 +3796,365 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-
-
     {
-    "id": "455",
-    "name": "Form of Documentary Credit",
-    "description": "Form of Documentary Credit",
-    "mappingFormField": "Tag 40A",
-    "mappingFormDescription": "Form of Documentary Credit",
-    "dataCategoryId": "6",
-    "dataCategoryValue": "Terms"
-  },
-  {
-    "id": "456",
-    "name": "Applicable Rules",
-    "description": "Applicable Rules",
-    "mappingFormField": "Tag 40E",
-    "mappingFormDescription": "Applicable Rules",
-    "dataCategoryId": "6",
-    "dataCategoryValue": "Terms"
-  },
-  {
-    "id": "457",
-    "name": "Reference to Pre-Advice",
-    "description": "Reference to Pre-Advice",
-    "mappingFormField": "Tag 23",
-    "mappingFormDescription": "Reference to Pre-Advice",
-    "dataCategoryId": "1",
-    "dataCategoryValue": "References"
-  },
-  {
-    "id": "458",
-    "name": "Applicant Bank/Issuing Bank",
-    "description": "Applicant Bank",
-    "mappingFormField": "Tag 51A",
-    "mappingFormDescription": "Applicant Bank",
-    "dataCategoryId": "3",
-    "dataCategoryValue": "Parties"
-  },
-  {
-    "id": "459",
-    "name": "Percentage Credit Amount Tolerance",
-    "description": "Percentage Credit Amount Tolerance",
-    "mappingFormField": "Tag 39A",
-    "mappingFormDescription": "Percentage Credit Amount Tolerance",
-    "dataCategoryId": "7",
-    "dataCategoryValue": "Amounts"
-  },
-  {
-    "id": "460",
-    "name": "Additional Amounts Covered",
-    "description": "Additional Amounts Covered",
-    "mappingFormField": "Tag 39C",
-    "mappingFormDescription": "Additional Amounts Covered",
-    "dataCategoryId": "7",
-    "dataCategoryValue": "Amounts"
-  },
-  {
-    "id": "461",
-    "name": "Mixed Payment Details",
-    "description": "Mixed Payment Details",
-    "mappingFormField": "Tag 42M",
-    "mappingFormDescription": "Mixed Payment Details",
-    "dataCategoryId": "6",
-    "dataCategoryValue": "Terms"
-  },
-  {
-    "id": "462",
-    "name": "Negotiation/Deferred Payment Details",
-    "description": "Negotiation/Deferred Payment Details",
-    "mappingFormField": "Tag 42P",
-    "mappingFormDescription": "Negotiation/Deferred Payment Details",
-    "dataCategoryId": "6",
-    "dataCategoryValue": "Terms"
-  },
-
-  {
-    "id": "465",
-    "name": "Place of Taking in Charge/Dispatch/Receipt",
-    "description": "Place of Taking in Charge/Dispatch/Receipt",
-    "mappingFormField": "Tag 44A",
-    "mappingFormDescription": "Place of Taking in Charge / Dispatch / Receipt",
-    "dataCategoryId": "4",
-    "dataCategoryValue": "Locations"
-  },
-
-  {
-    "id": "468",
-    "name": "Place of Final Destination / Delivery",
-    "description": "Place of Final Destination / Delivery",
-    "mappingFormField": "Tag 44B",
-    "mappingFormDescription": "Place of Final Destination / Delivery",
-    "dataCategoryId": "4",
-    "dataCategoryValue": "Locations"
-  },
-
-  {
-    "id": "470",
-    "name": "Documents Required",
-    "description": "Documents Required - Extract the COMPLETE list of required documents exactly as stated. This field contains detailed document requirements and can be very lengthy spanning multiple lines and paragraphs. Capture EVERYTHING regardless of character count or number of lines. Include all document names, specifications, quantities (originals/copies), conditions, and special instructions. Do not truncate, summarize, or omit any portion.",
-    "mappingFormField": "Tag 46A",
-    "mappingFormDescription": "Documents Required",
-    "dataCategoryId": "9",
-    "dataCategoryValue": "Documents"
-  },
-  {
-    "id": "471",
-    "name": "Additional Conditions",
-    "description": "Additional Conditions - Extract the COMPLETE text of all additional conditions and instructions. This field can be very lengthy spanning multiple lines and paragraphs. Include EVERYTHING regardless of character count. Do not truncate, summarize, or omit any portion of the conditions, special instructions, or requirements.",
-    "mappingFormField": "Tag 47A",
-    "mappingFormDescription": "Additional Conditions",
-    "dataCategoryId": "9",
-    "dataCategoryValue": "Documents"
-  },
-  {
-    "id": "472",
-    "name": "Special Payment Conditions for Beneficiary",
-    "description": "Special Payment Conditions for Beneficiary",
-    "mappingFormField": "Tag 49G",
-    "mappingFormDescription": "Special Payment Conditions for Beneficiary",
-    "dataCategoryId": "7",
-    "dataCategoryValue": "Amounts"
-  },
-  {
-    "id": "473",
-    "name": "Special Payment Conditions for Receiving Bank",
-    "description": "Special Payment Conditions for Receiving Bank",
-    "mappingFormField": "Tag 49H",
-    "mappingFormDescription": "Special Payment Conditions for Receiving Bank",
-    "dataCategoryId": "7",
-    "dataCategoryValue": "Amounts"
-  },
-  {
-    "id": "474",
-    "name": "Charges",
-    "description": "Charges",
-    "mappingFormField": "Tag 71D",
-    "mappingFormDescription": "Charges (6*35z)",
-    "dataCategoryId": "7",
-    "dataCategoryValue": "Amounts"
-  },
-  {
-    "id": "475",
-    "name": "Period for Presentation",
-    "description": "Period for Presentation - Extract ONLY the numeric value representing the number of days. Return just the number (e.g., '21' not '21 days', 'within 21 days', or 'twenty-one days'). If multiple numbers appear, extract the one representing the presentation period in days. Ignore any descriptive text.",
-    "mappingFormField": "Tag 48",
-    "mappingFormDescription": "Period for Presentation in Days",
-    "dataCategoryId": "2",
-    "dataCategoryValue": "Dates"
-  },
-  {
-    "id": "476",
-    "name": "Requested Confirmation Party",
-    "description": "Requested Confirmation Party",
-    "mappingFormField": "Tag 58A",
-    "mappingFormDescription": "Requested Confirmation Party",
-    "dataCategoryId": "3",
-    "dataCategoryValue": "Parties"
-  },
-  {
-    "id": "477",
-    "name": "Instructions to Paying/Accepting/Negotiating Bank",
-    "description": "Instructions to Paying/Accepting/Negotiating Bank",
-    "mappingFormField": "Tag 78",
-    "mappingFormDescription": "Instructions to the Paying/Accepting/Negotiating Bank",
-    "dataCategoryId": "9",
-    "dataCategoryValue": "Instructions"
-  },
-  {
-    "id": "478",
-    "name": "Advise Through Bank",
-    "description": "Advise Through Bank",
-    "mappingFormField": "Tag 57A",
-    "mappingFormDescription": "'Advise Through' Bank",
-    "dataCategoryId": "3",
-    "dataCategoryValue": "Parties"
-  },
-  {
-    "id": "479",
-    "name": "Sequence of Total",
-    "description": "Sequence of Total",
-    "mappingFormField": "Tag 27",
-    "mappingFormDescription": "Sender to Receiver Information",
-    "dataCategoryId": "9",
-    "dataCategoryValue": "Instructions"
-  },
-
-  {
-    "id": "481",
-    "name": "Shipment Period",
-    "description": "Shipment Period",
-    "mappingFormField": "doc_index",
-    "mappingFormDescription": "",
-    "dataCategoryId": "6",
-    "dataCategoryValue": "Terms"
-  },
-  {
-    "id": "482",
-    "name": "Confirmation Instructions",
-    "description": "Confirmation Instructions",
-    "mappingFormField": "",
-    "mappingFormDescription": "",
-    "dataCategoryId": "5",
-    "dataCategoryValue": "Clauses/conditions/instructions"
-  }
-  ,
-  {
-  "id": "483",
-  "name": "To (Receiver Bank)",
-  "description": "Name and address of the Advising / Confirming / Negotiating Bank",
-  "mappingFormField": "",
-  "mappingFormDescription": "To (Receiver Bank)",
-  "dataCategoryId": "3",
-  "dataCategoryValue": "Parties"
-},
-{
-  "id": "484",
-  "name": "From (Issuing Bank)",
-  "description": "Name and address of the Issuing or Transmitting Bank / Branch",
-  "mappingFormField": "",
-  "mappingFormDescription": "From (Issuing Bank)",
-  "dataCategoryId": "3",
-  "dataCategoryValue": "Parties"
-},
-{
-  "id": "485",
-  "name": "Through",
-  "description": "Intermediary or Reimbursing Bank (if applicable)",
-  "mappingFormField": "",
-  "mappingFormDescription": "Through (Intermediary or Reimbursing Bank)",
-  "dataCategoryId": "3",
-  "dataCategoryValue": "Parties"
-},
-{
-  "id": "486",
-  "name": "Mode of Dispatch",
-  "description": "Specifies how the covering schedule or LC documents are transmitted (e.g., SWIFT, Courier, Registered Mail, Email)",
-  "mappingFormField": "",
-  "mappingFormDescription": "Mode of Dispatch",
-  "dataCategoryId": "6",
-  "dataCategoryValue": "Terms"
-},
-{
-  "id": "487",
-  "name": "Subject",
-  "description": "Letter of Credit No. ____ issued in favour of ____",
-  "mappingFormField": "",
-  "mappingFormDescription": "",
-  "dataCategoryId": "5",
-  "dataCategoryValue": "Clauses/conditions/instructions"
-},
-{
-  "id": "488",
-  "name": "Type of Credit",
-  "description": "Irrevocable / Confirmed / Transferable, etc.",
-  "mappingFormField": "",
-  "mappingFormDescription": "",
-  "dataCategoryId": "6",
-  "dataCategoryValue": "Terms"
-},
-{
-  "id": "489",
-  "name": "Documents Enclosed",
-  "description": "Checklist of LC-related documents enclosed",
-  "mappingFormField": "",
-  "mappingFormDescription": "",
-  "dataCategoryId": "8",
-  "dataCategoryValue": "Documents"
-},
-{
-  "id": "490",
-  "name": "Special Instructions",
-  "description": "e.g., Advise LC without adding confirmation",
-  "mappingFormField": "",
-  "mappingFormDescription": "",
-  "dataCategoryId": "5",
-  "dataCategoryValue": "Clauses/conditions/instructions"
-},
-{
-  "id": "491",
-  "name": "Handling Instructions",
-  "description": "Return documents after expiry, etc.",
-  "mappingFormField": "",
-  "mappingFormDescription": "",
-  "dataCategoryId": "5",
-  "dataCategoryValue": "Clauses/conditions/instructions"
-}
-,
-{
-  "id": "492",
-  "name": "Remarks / Notes",
-  "description": "Additional remarks or notes",
-  "mappingFormField": "",
-  "mappingFormDescription": "",
-  "dataCategoryId": "5",
-  "dataCategoryValue": "Clauses/conditions/instructions"
-},
- {
-    "id": "493",
-    "name": "Prepared By",
-    "description": "Officer name and designation",
-    "mappingFormField": "",
-    "mappingFormDescription": "",
-    "dataCategoryId": "3",
-    "dataCategoryValue": "Parties"
-  },
-  {
-    "id": "494",
-    "name": "Checked By",
-    "description": "Officer name and designation",
-    "mappingFormField": "",
-    "mappingFormDescription": "",
-    "dataCategoryId": "3",
-    "dataCategoryValue": "Parties"
-  },
-  {
-    "id": "495",
-    "name": "Authorized Signatory",
-    "description": "Manager / Officer signing the schedule",
-    "mappingFormField": "",
-    "mappingFormDescription": "",
-    "dataCategoryId": "3",
-    "dataCategoryValue": "Parties"
-  },
-  {
-    "id": "496",
-    "name": "Bank Seal / Stamp",
-    "description": "Physical or digital seal",
-    "mappingFormField": "",
-    "mappingFormDescription": "",
-    "dataCategoryId": "3",
-    "dataCategoryValue": "Parties"
-  },
-  {
-    "id": "497",
-    "name": "Signature Date",
-    "description": "Date of authorization",
-    "mappingFormField": "",
-    "mappingFormDescription": "",
-    "dataCategoryId": "2",
-    "dataCategoryValue": "Dates"
-  },
-{
-  "id": "498",
-  "name": "Document Title",
-  "description": "COVERING SCHEDULE FOR LETTER OF CREDIT",
-  "mappingFormField": "",
-  "mappingFormDescription": "",
-  "dataCategoryId": "1",
-  "dataCategoryValue": "References"
-}
-
+      "id": "455",
+      "name": "Form of Documentary Credit",
+      "description": "Form of Documentary Credit",
+      "mappingFormField": "Tag 40A",
+      "mappingFormDescription": "Form of Documentary Credit",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "456",
+      "name": "Applicable Rules",
+      "description": "Applicable Rules",
+      "mappingFormField": "Tag 40E",
+      "mappingFormDescription": "Applicable Rules",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "457",
+      "name": "Reference to Pre-Advice",
+      "description": "Reference to Pre-Advice",
+      "mappingFormField": "Tag 23",
+      "mappingFormDescription": "Reference to Pre-Advice",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "458",
+      "name": "Applicant Bank/Issuing Bank",
+      "description": "Applicant Bank",
+      "mappingFormField": "Tag 51A",
+      "mappingFormDescription": "Applicant Bank",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "459",
+      "name": "Percentage Credit Amount Tolerance",
+      "description": "Percentage Credit Amount Tolerance",
+      "mappingFormField": "Tag 39A",
+      "mappingFormDescription": "Percentage Credit Amount Tolerance",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "460",
+      "name": "Additional Amounts Covered",
+      "description": "Additional Amounts Covered",
+      "mappingFormField": "Tag 39C",
+      "mappingFormDescription": "Additional Amounts Covered",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "461",
+      "name": "Mixed Payment Details",
+      "description": "Mixed Payment Details",
+      "mappingFormField": "Tag 42M",
+      "mappingFormDescription": "Mixed Payment Details",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "462",
+      "name": "Negotiation/Deferred Payment Details",
+      "description": "Negotiation/Deferred Payment Details",
+      "mappingFormField": "Tag 42P",
+      "mappingFormDescription": "Negotiation/Deferred Payment Details",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "465",
+      "name": "Place of Taking in Charge/Dispatch/Receipt",
+      "description": "Place of Taking in Charge/Dispatch/Receipt",
+      "mappingFormField": "Tag 44A",
+      "mappingFormDescription": "Place of Taking in Charge / Dispatch / Receipt",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "468",
+      "name": "Place of Final Destination / Delivery",
+      "description": "Place of Final Destination / Delivery",
+      "mappingFormField": "Tag 44B",
+      "mappingFormDescription": "Place of Final Destination / Delivery",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "470",
+      "name": "Documents Required",
+      "description": "Documents Required - Extract the COMPLETE list of required documents exactly as stated. This field contains detailed document requirements and can be very lengthy spanning multiple lines and paragraphs. Capture EVERYTHING regardless of character count or number of lines. Include all document names, specifications, quantities (originals/copies), conditions, and special instructions. Do not truncate, summarize, or omit any portion.",
+      "mappingFormField": "Tag 46A",
+      "mappingFormDescription": "Documents Required",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Documents"
+    },
+    {
+      "id": "471",
+      "name": "Additional Conditions",
+      "description": "Additional Conditions - Extract the COMPLETE text of all additional conditions and instructions. This field can be very lengthy spanning multiple lines and paragraphs. Include EVERYTHING regardless of character count. Do not truncate, summarize, or omit any portion of the conditions, special instructions, or requirements.",
+      "mappingFormField": "Tag 47A",
+      "mappingFormDescription": "Additional Conditions",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Documents"
+    },
+    {
+      "id": "472",
+      "name": "Special Payment Conditions for Beneficiary",
+      "description": "Special Payment Conditions for Beneficiary",
+      "mappingFormField": "Tag 49G",
+      "mappingFormDescription": "Special Payment Conditions for Beneficiary",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "473",
+      "name": "Special Payment Conditions for Receiving Bank",
+      "description": "Special Payment Conditions for Receiving Bank",
+      "mappingFormField": "Tag 49H",
+      "mappingFormDescription": "Special Payment Conditions for Receiving Bank",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "474",
+      "name": "Charges",
+      "description": "Charges",
+      "mappingFormField": "Tag 71D",
+      "mappingFormDescription": "Charges (6*35z)",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "475",
+      "name": "Period for Presentation",
+      "description": "Period for Presentation - Extract ONLY the numeric value representing the number of days. Return just the number (e.g., '21' not '21 days', 'within 21 days', or 'twenty-one days'). If multiple numbers appear, extract the one representing the presentation period in days. Ignore any descriptive text.",
+      "mappingFormField": "Tag 48",
+      "mappingFormDescription": "Period for Presentation in Days",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "476",
+      "name": "Requested Confirmation Party",
+      "description": "Requested Confirmation Party",
+      "mappingFormField": "Tag 58A",
+      "mappingFormDescription": "Requested Confirmation Party",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "477",
+      "name": "Instructions to Paying/Accepting/Negotiating Bank",
+      "description": "Instructions to Paying/Accepting/Negotiating Bank",
+      "mappingFormField": "Tag 78",
+      "mappingFormDescription": "Instructions to the Paying/Accepting/Negotiating Bank",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Instructions"
+    },
+    {
+      "id": "478",
+      "name": "Advise Through Bank",
+      "description": "Advise Through Bank",
+      "mappingFormField": "Tag 57A",
+      "mappingFormDescription": "'Advise Through' Bank",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "479",
+      "name": "Sequence of Total",
+      "description": "Sequence of Total",
+      "mappingFormField": "Tag 27",
+      "mappingFormDescription": "Sender to Receiver Information",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Instructions"
+    },
+    {
+      "id": "481",
+      "name": "Shipment Period",
+      "description": "Shipment Period",
+      "mappingFormField": "doc_index",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "482",
+      "name": "Confirmation Instructions",
+      "description": "Confirmation Instructions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "483",
+      "name": "To (Receiver Bank)",
+      "description": "Name and address of the Advising / Confirming / Negotiating Bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "To (Receiver Bank)",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "484",
+      "name": "From (Issuing Bank)",
+      "description": "Name and address of the Issuing or Transmitting Bank / Branch",
+      "mappingFormField": "",
+      "mappingFormDescription": "From (Issuing Bank)",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "485",
+      "name": "Through",
+      "description": "Intermediary or Reimbursing Bank (if applicable)",
+      "mappingFormField": "",
+      "mappingFormDescription": "Through (Intermediary or Reimbursing Bank)",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "486",
+      "name": "Mode of Dispatch",
+      "description": "Specifies how the covering schedule or LC documents are transmitted (e.g., SWIFT, Courier, Registered Mail, Email)",
+      "mappingFormField": "",
+      "mappingFormDescription": "Mode of Dispatch",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "487",
+      "name": "Subject",
+      "description": "Letter of Credit No. ____ issued in favour of ____",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "488",
+      "name": "Type of Credit",
+      "description": "Irrevocable / Confirmed / Transferable, etc.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "489",
+      "name": "Documents Enclosed",
+      "description": "Checklist of LC-related documents enclosed",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Documents"
+    },
+    {
+      "id": "490",
+      "name": "Special Instructions",
+      "description": "e.g., Advise LC without adding confirmation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "491",
+      "name": "Handling Instructions",
+      "description": "Return documents after expiry, etc.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "492",
+      "name": "Remarks / Notes",
+      "description": "Additional remarks or notes",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "493",
+      "name": "Prepared By",
+      "description": "Officer name and designation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "494",
+      "name": "Checked By",
+      "description": "Officer name and designation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "495",
+      "name": "Authorized Signatory",
+      "description": "Manager / Officer signing the schedule",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "496",
+      "name": "Bank Seal / Stamp",
+      "description": "Physical or digital seal",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "497",
+      "name": "Signature Date",
+      "description": "Date of authorization",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "498",
+      "name": "Document Title",
+      "description": "COVERING SCHEDULE FOR LETTER OF CREDIT",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "499",
+      "name": "Currency",
+      "description": "Three-letter currency code (ISO 4217)\n",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": ""
+    },
+    {
+      "id": "500",
+      "name": "Applicant Address",
+      "description": "Applicant Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Locations"
+    }
   ]
 }

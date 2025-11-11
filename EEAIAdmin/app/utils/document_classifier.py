@@ -825,6 +825,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
     "extracted_fields": {{
         "<Field_Name>": {{
         "value": "<extracted value or empty string>",
+        "exact_text":"exact value that is present in the txt i sent u without anychages in space etc",
         "confidence": <0-100>,
         "bounding_box": [<x1>, <y1>, <x2>, <y2>],
         "bounding_page": {page_number},
@@ -899,6 +900,7 @@ Return ONLY valid JSON (no markdown, no commentary):
   "extracted_fields": {{
     "<Field_Name>": {{
       "value": "<extracted value or empty string>",
+      "exact_text":"exact value that is present in the txt i sent u without anychages in space etc",
       "confidence": <0-100>,
       "bounding_box": [<x1>, <y1>, <x2>, <y2>],
       "bounding_page": {page_number}
@@ -982,6 +984,7 @@ Return ONLY valid JSON (no markdown, no commentary):
   "extracted_fields": {{
     "<Field_Name>": {{
       "value": "<extracted value or empty string>",
+      "exact_text":"exact value that is present in the txt i sent u without anychages in space etc",
       "confidence": <0-100>,
       "bounding_box": [<x1>, <y1>, <x2>, <y2>],
       "bounding_page": {page_number}

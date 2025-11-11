@@ -14965,6 +14965,34 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory",
       "id": "88481"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "499",
+      "entityName": "Currency",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages",
+      "fieldType": "mandatory",
+      "id": "88482"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "500",
+      "entityName": "Applicant Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory",
+      "id": "88483"
     }
   ],
   "documentName": "Letter of Credit"

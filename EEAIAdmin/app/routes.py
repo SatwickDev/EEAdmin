@@ -15,7 +15,9 @@ import math
 from decimal import Decimal
 import hashlib
 import concurrent.futures
-
+from difflib import SequenceMatcher
+LINE_HEIGHT_THRESHOLD = 0.5  # More lenient for same-line check
+MAX_LINE_LENGTH = 80  # Skip refinement if any line > 80 chars
 import bcrypt
 import chromadb
 
@@ -7842,7 +7844,7 @@ Return compliance status for each field.'''
             logger.error(f"Error reloading prompt config: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
 
-    # ==================== Helper Functions ====================
+     # ==================== Helper Functions ====================
     def normalize_date_for_search(text):
         """
         Normalize different date formats to a common format for comparison
@@ -8791,19 +8793,622 @@ Return compliance status for each field.'''
             'timestamp': str(time.time())
         })
 
+    # ============================================
+    # UTILITIES
+    # ============================================
+
+    def fuzzy_match(str1: str, str2: str) -> float:
+        """Calculate similarity ratio"""
+        return SequenceMatcher(None, str1.lower(), str2.lower()).ratio()
+
+
+    def merge_bboxes(bboxes: List[List[float]], padding: float = 0.01) -> List[float]:
+        """Merge multiple bboxes"""
+        if not bboxes:
+            return []
+        
+        all_x, all_y = [], []
+        for bbox in bboxes:
+            if bbox and len(bbox) >= 8:
+                all_x.extend([bbox[0], bbox[2], bbox[4], bbox[6]])
+                all_y.extend([bbox[1], bbox[3], bbox[5], bbox[7]])
+        
+        if not all_x or not all_y:
+            return []
+        
+        xmin, ymin = min(all_x) - padding, min(all_y) - padding
+        xmax, ymax = max(all_x) + padding, max(all_y) + padding
+        
+        return [xmin, ymin, xmax, ymin, xmax, ymax, xmin, ymax]
+
+
+    def get_bbox_center(bbox: List[float]) -> Tuple[float, float]:
+        """Get center point of bbox"""
+        if not bbox or len(bbox) < 8:
+            return (0, 0)
+        x = (bbox[0] + bbox[2] + bbox[4] + bbox[6]) / 4
+        y = (bbox[1] + bbox[3] + bbox[5] + bbox[7]) / 4
+        return (x, y)
+
+
+    def calculate_distance(bbox1: List[float], bbox2: List[float]) -> float:
+        """Calculate Euclidean distance between two bboxes"""
+        x1, y1 = get_bbox_center(bbox1)
+        x2, y2 = get_bbox_center(bbox2)
+        return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+
+    def are_words_on_same_line(words: List[Dict], y_tolerance: float = 0.2) -> bool:
+        """Check if words are on same horizontal line"""
+        if not words or len(words) < 2:
+            return True
+        
+        y_positions = []
+        for word in words:
+            bbox = word.get('bounding_box', [])
+            if len(bbox) >= 8:
+                y_center = (bbox[1] + bbox[3] + bbox[5] + bbox[7]) / 4
+                y_positions.append(y_center)
+        
+        if not y_positions:
+            return True
+        
+        return (max(y_positions) - min(y_positions)) <= y_tolerance
+
+
+    def sort_words_left_to_right(words: List[Dict]) -> List[Dict]:
+        """Sort words left to right (by X position)"""
+        return sorted(words, key=lambda w: (w['bounding_box'][0] + w['bounding_box'][2]) / 2)
+
+
+    def sort_words_reading_order(words: List[Dict]) -> List[Dict]:
+        """Sort words in reading order (top to bottom, left to right)"""
+        return sorted(words, key=lambda w: (
+            (w['bounding_box'][1] + w['bounding_box'][5]) / 2,  # Y
+            (w['bounding_box'][0] + w['bounding_box'][2]) / 2   # X
+        ))
+
+
+    # ============================================
+    # FIND ALL CANDIDATES FOR EACH LINE
+    # ============================================
+
+    def find_all_candidates_for_line(line_text: str, word_pool: List[Dict], 
+                                    fuzzy_threshold: float = 0.80) -> List[Dict]:
+        """
+        Find ALL possible word matches for a line_text in word_pool
+        Returns list of candidate matches with their metadata
+        """
+        
+        tokens = line_text.split()
+        if not tokens:
+            return []
+        
+        logger.debug(f"Finding candidates for: '{line_text}' ({len(tokens)} tokens)")
+        
+        # For each position in word_pool, try to match the line
+        candidates = []
+        
+        for start_idx in range(len(word_pool)):
+            # Try to match all tokens starting from this position
+            matched_words = []
+            used_indices = set()
+            
+            for token in tokens:
+                best_match = None
+                best_similarity = 0
+                best_idx = -1
+                
+                # Search forward from current position
+                for idx in range(start_idx, min(start_idx + 50, len(word_pool))):  # Look ahead 50 words max
+                    if idx in used_indices:
+                        continue
+                    
+                    word = word_pool[idx]
+                    word_text = word.get('text', '').strip()
+                    if not word_text:
+                        continue
+                    
+                    similarity = fuzzy_match(token, word_text)
+                    
+                    if similarity >= fuzzy_threshold and similarity > best_similarity:
+                        best_match = word
+                        best_similarity = similarity
+                        best_idx = idx
+                
+                if best_match:
+                    matched_words.append(best_match)
+                    used_indices.add(best_idx)
+                else:
+                    break  # Token not found, this candidate fails
+            
+            # Check if we matched all tokens
+            if len(matched_words) == len(tokens):
+                # Check if on same line (more lenient for single words)
+                y_tolerance = 0.3 if len(matched_words) == 1 else 0.2
+                
+                if are_words_on_same_line(matched_words, y_tolerance=y_tolerance):
+                    # Sort left to right
+                    matched_words_sorted = sort_words_left_to_right(matched_words)
+                    
+                    # Build match info
+                    matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
+                    line_bbox = merge_bboxes([w['bounding_box'] for w in matched_words_sorted], padding=0.01)
+                    
+                    if line_bbox:
+                        avg_confidence = sum(w.get('confidence', 0) for w in matched_words_sorted) / len(matched_words_sorted)
+                        similarity = fuzzy_match(line_text, matched_text)
+                        
+                        candidate = {
+                            'matched_text': matched_text,
+                            'field_value': line_text,
+                            'bounding_box': line_bbox,
+                            'bounding_page': matched_words_sorted[0].get('bounding_page', 1),
+                            'match_confidence': similarity * 100,
+                            'coordinate_confidence': similarity * 100,
+                            'match_type': 'word_refined',
+                            'ocr_confidence': avg_confidence,
+                            'word_count': len(matched_words_sorted),
+                            'start_idx': start_idx,
+                            'words': matched_words_sorted
+                        }
+                        
+                        candidates.append(candidate)
+        
+        logger.info(f"Found {len(candidates)} candidates for '{line_text}'")
+        return candidates
+
+
+    # ============================================
+    # SPATIAL CLUSTERING - FIND BEST GROUP
+    # ============================================
+
+    def find_best_spatial_cluster(expected_lines: List[str], word_pool: List[Dict], 
+                                fuzzy_threshold: float = 0.80) -> List[Dict]:
+        """
+        Find the best spatial cluster of lines
+        
+        Strategy:
+        1. Find ALL candidates for each expected line
+        2. Try different combinations of candidates
+        3. Score based on: spatial proximity, completeness, match quality
+        4. Return the best cluster
+        """
+        
+        logger.info(f"Finding best spatial cluster for {len(expected_lines)} lines")
+        
+        # Step 1: Find all candidates for each line
+        all_candidates = {}
+        
+        for line_text in expected_lines:
+            candidates = find_all_candidates_for_line(line_text, word_pool, fuzzy_threshold)
+            
+            if not candidates:
+                logger.warning(f"No candidates found for: '{line_text}'")
+                return []
+            
+            all_candidates[line_text] = candidates
+            logger.info(f"  '{line_text}': {len(candidates)} candidates")
+        
+        # Step 2: Try to find best combination
+        # For each candidate of first line, try to build a cluster
+        
+        best_cluster = None
+        best_score = -1
+        
+        first_line = expected_lines[0]
+        
+        for first_candidate in all_candidates[first_line]:
+            # Try to build cluster starting from this candidate
+            cluster = [first_candidate]
+            
+            # For remaining lines, find closest candidate to current cluster
+            for line_text in expected_lines[1:]:
+                candidates = all_candidates.get(line_text, [])
+                
+                if not candidates:
+                    break  # Can't complete cluster
+                
+                # Find candidate closest to current cluster
+                best_candidate = None
+                best_distance = float('inf')
+                
+                for candidate in candidates:
+                    # Calculate average distance to all items in cluster
+                    distances = [calculate_distance(candidate['bounding_box'], item['bounding_box']) 
+                            for item in cluster]
+                    avg_distance = sum(distances) / len(distances)
+                    
+                    if avg_distance < best_distance:
+                        best_distance = avg_distance
+                        best_candidate = candidate
+                
+                if best_candidate:
+                    cluster.append(best_candidate)
+                else:
+                    break  # Can't find close candidate
+            
+            # Check if cluster is complete
+            if len(cluster) == len(expected_lines):
+                # Score this cluster
+                score = score_cluster(cluster, expected_lines)
+                
+                logger.debug(f"Cluster score: {score:.2f} (size: {len(cluster)})")
+                
+                if score > best_score:
+                    best_score = score
+                    best_cluster = cluster
+        
+        if best_cluster:
+            logger.info(f"✓ Found best cluster with score {best_score:.2f}")
+            return best_cluster
+        else:
+            logger.warning("No complete cluster found")
+            return []
+
+
+    def score_cluster(cluster: List[Dict], expected_lines: List[str]) -> float:
+        """
+        Score a cluster based on:
+        1. Spatial compactness (how close together are the bboxes)
+        2. Match quality (average confidence)
+        3. Completeness (did we find all lines)
+        """
+        
+        if not cluster:
+            return 0
+        
+        # 1. Spatial compactness score
+        # Calculate bounding box of entire cluster
+        all_bboxes = [item['bounding_box'] for item in cluster]
+        merged = merge_bboxes(all_bboxes, padding=0)
+        
+        if not merged or len(merged) < 8:
+            return 0
+        
+        # Area of merged bbox (smaller = more compact = better)
+        width = max(merged[2], merged[4]) - min(merged[0], merged[6])
+        height = max(merged[5], merged[7]) - min(merged[1], merged[3])
+        area = width * height
+        
+        # Normalize: prefer smaller areas (inverse score)
+        # Typical page is 8.5 x 11 inches, so area of ~93
+        # Good clusters should be much smaller
+        compactness_score = max(0, 100 - (area * 10))  # Smaller area = higher score
+        
+        # 2. Match quality score
+        avg_confidence = sum(item['match_confidence'] for item in cluster) / len(cluster)
+        
+        # 3. Completeness score
+        completeness_score = (len(cluster) / len(expected_lines)) * 100
+        
+        # Combined score (weighted)
+        total_score = (
+            compactness_score * 0.5 +  # 50% weight on spatial proximity
+            avg_confidence * 0.3 +      # 30% weight on match quality
+            completeness_score * 0.2    # 20% weight on completeness
+        )
+        
+        return total_score
+
+
+    # ============================================
+    # FALLBACK STRATEGIES
+    # ============================================
+
+    def strip_punctuation(text: str) -> str:
+        """Remove leading/trailing punctuation and special chars"""
+        import string
+        return text.strip(string.punctuation + string.whitespace)
+
+
+    def fallback_fuzzy_search(expected_lines: List[str], word_pool: List[Dict], 
+                            fuzzy_threshold: float = 0.75) -> List[Dict]:
+        """
+        Fallback strategy 1: Fuzzy search with punctuation stripping
+        More lenient matching for edge cases
+        """
+        logger.info("FALLBACK 1: Trying fuzzy search with punctuation stripping")
+        
+        result_lines = []
+        search_start_idx = 0
+        
+        for line_text in expected_lines:
+            # Strip punctuation for better matching
+            clean_line = strip_punctuation(line_text)
+            
+            if not clean_line:
+                # Line is just punctuation, search original
+                clean_line = line_text
+            
+            logger.debug(f"Searching for cleaned line: '{clean_line}' (original: '{line_text}')")
+            
+            # Try to find this line starting from search_start_idx
+            best_match = None
+            best_score = 0
+            best_end_idx = search_start_idx
+            
+            for start_idx in range(search_start_idx, len(word_pool)):
+                tokens = clean_line.split()
+                if not tokens:
+                    continue
+                
+                # Try to match all tokens from this position
+                matched_words = []
+                current_idx = start_idx
+                
+                for token in tokens:
+                    found = False
+                    
+                    # Look ahead up to 20 words
+                    for look_idx in range(current_idx, min(current_idx + 20, len(word_pool))):
+                        word = word_pool[look_idx]
+                        word_text = strip_punctuation(word.get('text', ''))
+                        
+                        if fuzzy_match(token, word_text) >= fuzzy_threshold:
+                            matched_words.append(word)
+                            current_idx = look_idx + 1
+                            found = True
+                            break
+                    
+                    if not found:
+                        break
+                
+                # Check if we matched all tokens
+                if len(matched_words) == len(tokens):
+                    # Check if on same line
+                    y_tolerance = 0.35  # More lenient
+                    if are_words_on_same_line(matched_words, y_tolerance=y_tolerance):
+                        # Calculate score
+                        matched_words_sorted = sort_words_left_to_right(matched_words)
+                        matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
+                        score = fuzzy_match(clean_line, matched_text)
+                        
+                        if score > best_score:
+                            best_score = score
+                            best_match = matched_words_sorted
+                            best_end_idx = current_idx
+            
+            if best_match:
+                # Build result
+                matched_text = ' '.join([w.get('text', '') for w in best_match])
+                line_bbox = merge_bboxes([w['bounding_box'] for w in best_match], padding=0.01)
+                
+                if line_bbox:
+                    avg_confidence = sum(w.get('confidence', 0) for w in best_match) / len(best_match)
+                    
+                    result = {
+                        'matched_text': matched_text,
+                        'field_value': line_text,
+                        'bounding_box': line_bbox,
+                        'bounding_page': best_match[0].get('bounding_page', 1),
+                        'match_confidence': best_score * 100,
+                        'coordinate_confidence': best_score * 100,
+                        'match_type': 'word_refined_fallback',
+                        'ocr_confidence': avg_confidence,
+                        'word_count': len(best_match)
+                    }
+                    
+                    result_lines.append(result)
+                    search_start_idx = best_end_idx
+                    logger.info(f"✓ Fallback found: '{line_text}' → '{matched_text}'")
+        
+        return result_lines
+
+
+    def fallback_expand_existing_match(best_match: Dict, expected_lines: List[str], 
+                                    word_pool: List[Dict]) -> List[Dict]:
+        """
+        Fallback strategy 2: Expand around existing partial match
+        Find nearby words that match the expected text
+        """
+        logger.info("FALLBACK 2: Trying to expand existing partial match")
+        
+        if not best_match or 'bounding_box' not in best_match:
+            return []
+        
+        match_bbox = best_match['bounding_box']
+        match_page = best_match.get('bounding_page', 1)
+        
+        # Find words near the existing match (wider search area)
+        nearby_words = []
+        
+        for word in word_pool:
+            if word.get('bounding_page') != match_page:
+                continue
+            
+            word_bbox = word.get('bounding_box', [])
+            if not word_bbox or len(word_bbox) < 8:
+                continue
+            
+            # Calculate distance from match
+            distance = calculate_distance(match_bbox, word_bbox)
+            
+            # Include words within reasonable distance (1.0 units)
+            if distance <= 1.0:
+                nearby_words.append(word)
+        
+        if not nearby_words:
+            logger.warning("No nearby words found")
+            return []
+        
+        # Sort nearby words in reading order
+        sorted_nearby = sort_words_reading_order(nearby_words)
+        
+        logger.info(f"Found {len(sorted_nearby)} nearby words, trying to match lines")
+        
+        # Try fuzzy search within these nearby words
+        return fallback_fuzzy_search(expected_lines, sorted_nearby, fuzzy_threshold=0.70)
+
+
+    # ============================================
+    # MAIN REFINER - WITH SPATIAL CLUSTERING
+    # ============================================
+
+    def refine_coordinate_response(field_value: str, matches: List[Dict], 
+                                best_match: Optional[Dict], 
+                                word_ocr_data: List[Dict]) -> Dict:
+        """
+        Main refiner function with SPATIAL CLUSTERING
+        
+        Steps:
+        1. Parse field_value into lines
+        2. Find ALL candidates for each line
+        3. Find best spatial cluster (lines close together)
+        4. Build result with individual lines + merged bbox
+        """
+        
+        logger.info("=" * 60)
+        logger.info("OCR REFINER - Starting (Spatial Clustering)")
+        logger.info(f"Field value: '{field_value}'")
+        logger.info(f"Matches: {len(matches)}")
+        logger.info("=" * 60)
+        
+        if not word_ocr_data:
+            logger.error("No word_ocr_data!")
+            return {'best_match': best_match, 'matches': matches}
+        
+        # Parse lines
+        expected_lines = [line.strip() for line in field_value.split('\n') if line.strip()]
+        
+        # Skip if any line is too long (>80 chars)
+        if any(len(line) > 80 for line in expected_lines):
+            logger.info("Line(s) too long (>80 chars) - skipping refinement")
+            return {'best_match': best_match, 'matches': matches}
+        
+        logger.info(f"Processing {len(expected_lines)} lines")
+        
+        # Get anchor page from best_match
+        anchor_page = best_match.get('bounding_page', 1) if best_match else None
+        
+        # Filter word data to anchor page only (if we have one)
+        if anchor_page:
+            word_pool = [w for w in word_ocr_data if w.get('bounding_page') == anchor_page]
+            logger.info(f"Using {len(word_pool)} words from page {anchor_page}")
+        else:
+            word_pool = word_ocr_data
+        
+        # Sort word pool in reading order
+        sorted_word_pool = sort_words_reading_order(word_pool)
+        logger.info(f"Sorted {len(sorted_word_pool)} words in reading order")
+        
+        # Find best spatial cluster (PRIMARY METHOD)
+        result_lines = find_best_spatial_cluster(expected_lines, sorted_word_pool, fuzzy_threshold=0.80)
+        
+        # FALLBACK LOGIC - Only if spatial clustering fails
+        if not result_lines:
+            logger.warning("❌ Spatial clustering failed - trying fallback strategies")
+            
+            # Fallback 1: Try fuzzy search with punctuation stripping
+            result_lines = fallback_fuzzy_search(expected_lines, sorted_word_pool, fuzzy_threshold=0.75)
+            
+            # Fallback 2: If still no results, try expanding around existing partial match
+            if not result_lines and best_match:
+                logger.warning("❌ Fallback 1 failed - trying to expand existing match")
+                result_lines = fallback_expand_existing_match(best_match, expected_lines, sorted_word_pool)
+            
+            # If all fallbacks fail, return original
+            if not result_lines:
+                logger.error("❌ ALL FALLBACKS FAILED - returning original")
+                return {'best_match': best_match, 'matches': matches}
+        
+        # Build final result
+        if len(result_lines) == 1:
+            # Single line
+            refined_best_match = result_lines[0]
+        else:
+            # Multi-line: merge
+            all_bboxes = [line['bounding_box'] for line in result_lines]
+            merged_bbox = merge_bboxes(all_bboxes, padding=0.02)
+            
+            combined_text = '\n'.join([line['matched_text'] for line in result_lines])
+            avg_confidence = sum(line['ocr_confidence'] for line in result_lines) / len(result_lines)
+            page = result_lines[0]['bounding_page']
+            
+            refined_best_match = {
+                'matched_text': combined_text,
+                'field_value': field_value,
+                'bounding_box': merged_bbox,
+                'bounding_page': page,
+                'match_confidence': 85,
+                'coordinate_confidence': 85,
+                'match_type': 'word_refined_multiline',
+                'ocr_confidence': avg_confidence,
+                'line_count': len(result_lines),
+                'lines': result_lines
+            }
+        
+        logger.info("=" * 60)
+        logger.info(f"✅ SUCCESS - {len(result_lines)}/{len(expected_lines)} lines found")
+        logger.info(f"Result: '{refined_best_match.get('matched_text', '')[:100]}...'")
+        logger.info("=" * 60)
+        
+        return {
+            'best_match': refined_best_match,
+            'matches': result_lines
+        }
+
+
+    # ============================================
+    # WRAPPER FOR API RESPONSE
+    # ============================================
+
+    def process_coordinate_response(response_data: Dict, word_ocr_data: List[Dict]) -> Dict:
+        """Process full API response"""
+        
+        if not response_data.get('success'):
+            return response_data
+        
+        field_value = response_data.get('field_value', '')
+        matches = response_data.get('matches', [])
+        best_match = response_data.get('best_match')
+        
+        if not field_value or not word_ocr_data:
+            return response_data
+        
+        try:
+            refined = refine_coordinate_response(field_value, matches, best_match, word_ocr_data)
+            
+            response_data['best_match'] = refined['best_match']
+            response_data['matches'] = refined['matches']
+            response_data['total_matches'] = len(refined['matches'])
+            response_data['message'] = f"Refined match for \"{field_value[:50]}...\""
+            
+            logger.info("✅ Response refined successfully")
+        
+        except Exception as e:
+            logger.error(f"Refinement error: {e}", exc_info=True)
+        
+        return response_data
     @app.route('/api/search_field_coordinates', methods=['POST'])
     @timing_aspect
     def search_field_coordinates():
         """Search for field coordinates in existing OCR data with absolute accuracy"""
         try:
             logger.info("SEARCH: === COORDINATE SEARCH API CALLED ===")
-
+            import os
+            import json
+            import pickle
+            import tempfile
+            import time
+            
             data = request.get_json()
-            field_value = data.get('field_value', '').strip()
+            field_value = data.get('exact_text')
+            if not field_value:  
+                field_value = data.get('field_value', '').strip()
             search_mode = data.get('search_mode', 'exact').lower()
-            current_page = data.get('current_page', None)  # Add page filtering support
+            bounding_page = data.get('boundingpage', None)
 
-            logger.info(f" Received search request for: '{field_value}' (mode: {search_mode})")
+            logger.info(f" Payload bounding_page: {bounding_page}")
+            logger.info(f"data payload: {data}")
+
+            # ✅ FIX: Normalize current_page always to a list of ints
+            if bounding_page is None:
+                current_page = []
+            elif isinstance(bounding_page, list):
+                current_page = [int(p) for p in bounding_page if isinstance(p, (int, str)) and str(p).isdigit()]
+            else:
+                current_page = [int(bounding_page)] if str(bounding_page).isdigit() else []
             if current_page:
                 logger.info(f" Page-specific search requested: Page {current_page}")
             else:
@@ -8824,13 +9429,6 @@ Return compliance status for each field.'''
                     page = entry.get('bounding_page', 'unknown')
                     page_counts[page] = page_counts.get(page, 0) + 1
                 logger.info(f"ANALYTICS: OCR data page distribution: {dict(sorted(page_counts.items()))}")
-
-            # Filter OCR data by page if requested
-            if current_page and ocr_data:
-                original_count = len(ocr_data)
-                ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
-                logger.info(f"SEARCH: Page filtering: {original_count} -> {len(ocr_data)} entries (Page {current_page})")
-
             if not ocr_data:
                 # Try alternative session keys
                 alt_ocr_data = session.get('ocr_data', [])
@@ -8855,11 +9453,6 @@ Return compliance status for each field.'''
                                     ocr_data = pickle.load(f)
                                 logger.info(f"SUCCESS:Loaded OCR data from temp file: {len(ocr_data)} entries")
 
-                                # Apply page filtering if requested
-                                if current_page:
-                                    original_count = len(ocr_data)
-                                    ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
-                                    logger.info(f"SEARCH: Page filtering (from temp file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
                             else:
                                 logger.warning(f"ERROR: OCR temp file not found: {ocr_temp_file}")
                         except Exception as e:
@@ -8889,11 +9482,6 @@ Return compliance status for each field.'''
                                         ocr_data = pickle.load(f)
                                     logger.info(f"SUCCESS:Loaded OCR data from recent temp file: {len(ocr_data)} entries")
 
-                                    # Apply page filtering if requested
-                                    if current_page:
-                                        original_count = len(ocr_data)
-                                        ocr_data = [entry for entry in ocr_data if entry.get('bounding_page', 1) == current_page]
-                                        logger.info(f"SEARCH: Page filtering (from recent file): {original_count} -> {len(ocr_data)} entries (Page {current_page})")
                                 else:
                                     logger.warning(f"ERROR: Most recent OCR file is too old: {file_age:.1f}s")
                             else:
@@ -8917,14 +9505,61 @@ Return compliance status for each field.'''
                         }), 400
 
             # Use the search_text_in_ocr helper function
+            # Run search
+            if current_page and ocr_data:
+                original_count = len(ocr_data)
+                ocr_data = [
+                    entry for entry in ocr_data
+                    if int(entry.get('bounding_page', 0)) in current_page
+                ]
+                logger.info(f"SEARCH: Page filtering: {original_count} -> {len(ocr_data)} entries (Pages {current_page})")
             matches = search_text_in_ocr(field_value, ocr_data, search_mode)
-
             logger.info(f"SAVE: Search complete: Found {len(matches)} matches")
-
             # Prepare response in format expected by frontend
             best_match = matches[0] if matches else None
 
-            return jsonify({
+            # Load word data
+            word_ocr_data = session.get('word_ocr_data', [])
+            if not word_ocr_data:
+                ocr_session_id = session.get('ocr_session_id')
+                temp_dir = tempfile.gettempdir()
+
+                if ocr_session_id:
+                    word_temp_file = os.path.join(temp_dir, f"word_data_{ocr_session_id}.pkl")
+                    if os.path.exists(word_temp_file):
+                        try:
+                            with open(word_temp_file, 'rb') as f:
+                                word_ocr_data = pickle.load(f)
+                            logger.info(f"Loaded words: {len(word_ocr_data)}")
+                        except Exception as e:
+                            logger.error(f"Load words error: {e}")
+
+                if not word_ocr_data:
+                    try:
+                        word_files = [f for f in os.listdir(temp_dir) if f.startswith("word_data_") and f.endswith(".pkl")]
+                        if word_files:
+                            word_files = [os.path.join(temp_dir, f) for f in word_files]
+                            word_files.sort(key=os.path.getctime, reverse=True)
+                            recent_file = word_files[0]
+                            if time.time() - os.path.getctime(recent_file) < 600:
+                                with open(recent_file, 'rb') as f:
+                                    word_ocr_data = pickle.load(f)
+                                logger.info(f"Loaded recent words: {len(word_ocr_data)}")
+                    except Exception as e:
+                        logger.error(f"Load recent words error: {e}")
+            
+
+             # ✅ Apply page filtering for word_data (just like OCR)
+            if current_page and word_ocr_data:
+                original_word_count = len(word_ocr_data)
+                word_ocr_data = [
+                    entry for entry in word_ocr_data
+                    if int(entry.get('bounding_page', 0)) in current_page
+                ]
+                logger.info(f"SEARCH: Page filtering (word_ocr_data): {original_word_count} -> {len(word_ocr_data)} entries (Pages {current_page})")
+            
+              
+            response =  {
                 'success': True,
                 'message': f'Found {len(matches)} matches for "{field_value}"',
                 'field_value': field_value,
@@ -8933,8 +9568,20 @@ Return compliance status for each field.'''
                 'best_match': best_match,
                 'total_matches': len(matches),
                 'total_ocr_entries': len(ocr_data)
-            })
+            } 
+            logger.error(f"response value:{response}")
+            logger.error(f"=== BEFORE REFINE ===")
+            logger.error(f"word_ocr_data length: {len(word_ocr_data)}")
+            logger.error(f"word_ocr_data sample: {word_ocr_data[:2] if word_ocr_data else 'EMPTY'}")
+            logger.error(f"best_match: {best_match}")
 
+            refined_response = process_coordinate_response(response, word_ocr_data)
+
+            logger.error(f"=== AFTER REFINE ===")
+            logger.error(f"refined best_match type: {refined_response['best_match'].get('match_type')}")
+            logger.error(f"refined matched_text: {refined_response['best_match'].get('matched_text')}")
+            return jsonify(refined_response)
+             
         except Exception as e:
             logger.error(f"ERROR: Error in coordinate search API: {e}")
             return jsonify({
@@ -8942,7 +9589,7 @@ Return compliance status for each field.'''
                 'message': f'Search error: {str(e)}',
                 'matches': []
             }), 500
-
+        
     # ==================== Document Categories Routes ====================
     @app.route('/document_categories')
     @timing_aspect
@@ -16990,6 +17637,7 @@ Guidelines:
 
             text_data = extracted_text_data.get("text_data", [])
             ocr_time = time.time() - ocr_start
+            word_data= extracted_text_data.get("word_data", [])
 
             if "optimization_stats" in extracted_text_data:
                 stats = extracted_text_data["optimization_stats"]
@@ -17114,6 +17762,7 @@ Guidelines:
             ocr_temp_file = os.path.join(temp_dir, f"ocr_data_{ocr_session_id}.pkl")
 
             ocr_context = {
+                "word_data":word_data,
                 "ocr_data": text_data,
                 "pages_ocr_data": pages_ocr_data,
                 "quality_result": quality_result,
@@ -17421,6 +18070,7 @@ Guidelines:
                 ocr_context = pickle.load(f)
 
             # Extract context data
+            word_data = ocr_context.get("word_data",[])
             pages_ocr_data = ocr_context.get("pages_ocr_data", [])
             quality_result = ocr_context.get("quality_result", {})
             file_name = ocr_context.get("file_name", "Unknown")
@@ -17591,7 +18241,7 @@ Guidelines:
                                 model=extraction_model,
                                 page_number=group['pages'][0]  # Use first page number
                             )
-
+                          
                             # Merge results from all chunks
                             extracted_fields = {}
                             total_fields_extracted = 0
@@ -17704,7 +18354,6 @@ Guidelines:
                         file_content_hash
                     )
                     results.append(result)
-
             extraction_total_time = time.time() - start_time
             logger.info(f"✅ All extractions completed in {extraction_total_time:.2f}s")
 
@@ -17771,9 +18420,12 @@ Guidelines:
 
             # Store OCR data in temporary file
             final_ocr_temp_file = os.path.join(temp_dir, f"ocr_data_{final_ocr_session_id}.pkl")
+            word_temp_file = os.path.join(temp_dir, f"word_data_{final_ocr_session_id}.pkl")
             try:
                 with open(final_ocr_temp_file, 'wb') as f:
                     pickle.dump(all_ocr_data, f)
+                with open(word_temp_file, "wb") as f:
+                    pickle.dump(word_data, f)
                 logger.info(f"💾 OCR data stored: {final_ocr_temp_file}")
                 logger.info(f"🔑 New OCR session ID: {final_ocr_session_id}")
 
@@ -22171,129 +22823,6 @@ def _save_document_categories(data):
         except Exception as e:
             logger.error(f"Error getting custom function {function_id}: {e}")
             return jsonify({'success': False, 'message': str(e)}), 500
-
-    def search_text_in_ocr(field_value, ocr_data, search_mode='exact'):
-        """
-        Search for text matches in OCR data with different matching strategies
-
-        Args:
-            field_value: Text to search for
-            ocr_data: List of OCR entries with text and coordinates
-            search_mode: 'exact', 'fuzzy', or 'contains'
-
-        Returns:
-            List of matches with coordinates, sorted by confidence
-        """
-        import re
-        from difflib import SequenceMatcher
-
-        logger.info(f"SEARCH === STARTING OCR TEXT SEARCH ===")
-        logger.info(f"PARAMETERS: Search parameters:")
-        logger.info(f"   Field value: '{field_value}'")
-        logger.info(f"   Search mode: {search_mode}")
-        logger.info(f"   OCR entries to search: {len(ocr_data)}")
-
-        matches = []
-        field_value_lower = field_value.lower().strip()
-        logger.info(f"Normalized field value: '{field_value_lower}'")
-
-        # Track search statistics
-        exact_matches = 0
-        contains_matches = 0
-        partial_matches = 0
-        fuzzy_matches = 0
-        no_matches = 0
-
-        logger.info(f"SEARCH Searching in {len(ocr_data)} OCR entries...")
-
-        for i, ocr_entry in enumerate(ocr_data):
-            ocr_text = ocr_entry.get('text', '').strip()
-            if not ocr_text:
-                logger.debug(f"   Entry {i+1}: Skipping empty text")
-                continue
-
-            ocr_text_lower = ocr_text.lower()
-            match_confidence = 0
-            match_type = 'none'
-
-            logger.debug(f"   Entry {i+1}: Comparing '{field_value_lower}' with '{ocr_text_lower}'")
-
-            # Exact match (highest priority)
-            if search_mode in ['exact', 'fuzzy', 'contains']:
-                if field_value_lower == ocr_text_lower:
-                    match_confidence = 100
-                    match_type = 'exact'
-                    exact_matches += 1
-                    logger.debug(f"      SUCCESS:EXACT MATCH! Confidence: 100%")
-                elif field_value_lower in ocr_text_lower:
-                    match_confidence = 90
-                    match_type = 'contains'
-                    contains_matches += 1
-                    logger.debug(f"      SUCCESS:CONTAINS MATCH! '{field_value_lower}' found in '{ocr_text_lower}' - Confidence: 90%")
-                elif ocr_text_lower in field_value_lower:
-                    match_confidence = 85
-                    match_type = 'partial'
-                    partial_matches += 1
-                    logger.debug(f"      SUCCESS:PARTIAL MATCH! '{ocr_text_lower}' found in '{field_value_lower}' - Confidence: 85%")
-
-            # Fuzzy matching if enabled and no exact match
-            if search_mode in ['fuzzy', 'contains'] and match_confidence < 90:
-                similarity = SequenceMatcher(None, field_value_lower, ocr_text_lower).ratio()
-                logger.debug(f"      🔀 Fuzzy similarity: {similarity:.3f}")
-                if similarity >= 0.8:  # High similarity threshold
-                    fuzzy_confidence = similarity * 80
-                    if fuzzy_confidence > match_confidence:
-                        match_confidence = fuzzy_confidence
-                        match_type = 'fuzzy'
-                        fuzzy_matches += 1
-                        logger.debug(f"      SUCCESS:FUZZY MATCH! Similarity: {similarity:.3f} - Confidence: {fuzzy_confidence:.1f}%")
-
-            if match_confidence < 80:
-                no_matches += 1
-                logger.debug(f"      ERROR: No sufficient match (confidence: {match_confidence:.1f}%)")
-
-            # Only include high-confidence matches
-            if match_confidence >= 80:
-                match_data = {
-                    'ocr_index': i,
-                    'matched_text': ocr_text,
-                    'field_value': field_value,
-                    'match_confidence': round(match_confidence, 1),
-                    'match_type': match_type,
-                    'bounding_box': ocr_entry.get('bounding_box', []),
-                    'bounding_page': ocr_entry.get('bounding_page', 1),
-                    'ocr_confidence': ocr_entry.get('confidence', 0)
-                }
-                matches.append(match_data)
-
-                logger.info(f"SUCCESS:MATCH #{len(matches)}: '{ocr_text}' -> {match_confidence:.1f}% confidence ({match_type})")
-                logger.info(f"   OCR Index: {i}, Page: {match_data['bounding_page']}, BBox: {match_data['bounding_box']}")
-
-        # Sort by match confidence (highest first)
-        matches.sort(key=lambda x: x['match_confidence'], reverse=True)
-
-        # Log search summary
-        logger.info(f"ANALYTICS: === SEARCH SUMMARY ===")
-        logger.info(f"   Exact matches: {exact_matches}")
-        logger.info(f"   Contains matches: {contains_matches}")
-        logger.info(f"   Partial matches: {partial_matches}")
-        logger.info(f"   Fuzzy matches: {fuzzy_matches}")
-        logger.info(f"   No matches: {no_matches}")
-        logger.info(f"   Total qualifying matches: {len(matches)}")
-
-        if matches:
-            best_match = matches[0]
-            logger.info(f"TARGET: BEST MATCH: '{best_match['matched_text']}' ({best_match['match_confidence']}% {best_match['match_type']})")
-            logger.info(f"   Location: Page {best_match['bounding_page']}, BBox: {best_match['bounding_box']}")
-        else:
-            logger.warning(f"ERROR: NO QUALIFYING MATCHES FOUND for '{field_value}'")
-            logger.info(f"IDEA: Search suggestions:")
-            logger.info(f"   - Try using 'fuzzy' or 'contains' search mode")
-            logger.info(f"   - Check if the field value exactly matches the document text")
-            logger.info(f"   - Verify the document has been processed and OCR data is available")
-
-        logger.info(f"SAVE: Search complete: returning {len(matches)} matches")
-        return matches
 
 # new code added here
 def generate_mt700_message(lc_data):

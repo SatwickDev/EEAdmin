@@ -3337,7 +3337,7 @@
 
                                             <!-- Enhanced Action Buttons -->
                                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value)"
+                                                <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value,fieldData)"
                                                         :disabled="!fieldData?.value || searchingField === fieldKey"
                                                         class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
                                                         :class="{
@@ -8656,7 +8656,7 @@ populateFormFields() {
         // Shipment Details
         'Original Loading Location': 'portOfLoading',
         'Baseport Unloading Location': 'portOfDischarge',
-        'Place of the delivery of the goods (by the carrier)': 'finalDestination',
+        'Place of Final Destination / Delivery': 'finalDestination',
         'Latest pick-up date': 'latestShipmentDate',
         'Latest Date of Shipment': 'latestShipmentDate', // ADD THIS MAPPING
         'Latest Shipment Date': 'latestShipmentDate', // ADD THIS MAPPING
@@ -9293,7 +9293,8 @@ splitCurrencyAndAmount(combinedValue) {
                                     value: value.value || value.text || '',
                                     confidence: value.confidence || 85,
                                     bounding_page: pageNum,
-                                    bounding_box: value.bounding_box || value.bbox || null
+                                    bounding_box: value.bounding_box || value.bbox || null,
+                                    exact_text: value.exact_text || ''
                                 };
                             } else if (value.hasOwnProperty('content')) {
                                 // Handle alternative structure
@@ -9385,265 +9386,271 @@ splitCurrencyAndAmount(combinedValue) {
                         });
                     }
                 },
-               async searchFieldCoordinates(fieldKey, fieldValue) {
-    console.log('🔍 === FRONTEND COORDINATE SEARCH STARTED ===');
-    console.log(`📝 Search parameters:`, { fieldKey, fieldValue });
+                async searchFieldCoordinates(fieldKey, fieldValue, fieldData) {
+                    console.log('🔍 === FRONTEND COORDINATE SEARCH STARTED ===');
+                    console.log(`📝 Search parameters:`, { fieldKey, fieldValue, fieldData });
 
-    if (!fieldValue || !fieldValue.trim()) {
-        console.warn('❌ No value to search for this field');
-        alert('No value to search for this field');
-        return;
-    }
+                    if (!fieldValue || !fieldValue.trim()) {
+                        console.warn('❌ No value to search for this field');
+                        alert('No value to search for this field');
+                        return;
+                    }
+                    const page = fieldData.bounding_page + 1;
+                    const matchedDoc = this.results.find(doc => doc.pages?.includes(page));
 
-    console.log(`🔎 Setting search state for field: ${fieldKey}`);
-    this.searchingField = fieldKey;
-    
-    // Clear previous search results at the START of a new search
-    this.searchResultBlocks = [];
-    this.multiPageContent = {
-        active: false,
-        pages: [],
-        matches: []
-    };
-    console.log('🧹 Cleared previous search state');
+                    // ✅ Step 2: Collect all pages of that document (if found)
+                    const relatedPages = matchedDoc ? matchedDoc.pages : [page];
+                    // Detect multiline field value (or long continuous text)
+                    console.log(`🔎 Setting search state for field: ${fieldKey}`);
+                    this.searchingField = fieldKey;
 
-    try {
-        console.log(`🔍 Searching coordinates for field '${fieldKey}' with value '${fieldValue}'`);
+                    // Clear previous search results at the STARTSearch parameters: 
+                    this.multiPageContent = {
+                        active: false,
+                        pages: [],
+                        matches: []
+                    };
+                    console.log('🧹 Cleared previous search state');
 
-        const requestData = {
-            field_value: fieldValue.trim(),
-            document_id: this.selectedResult?.fileName || 'current',
-            search_mode: 'exact'  // Start with exact search, can make this configurable
-        };
+                    try {
+                        console.log(`🔍 Searching coordinates for field '${fieldKey}' with value '${fieldValue}'`);
 
-        console.log('📤 Sending API request:', requestData);
+                        const requestData = {
+                            field_value: fieldValue.trim(),
+                            document_id: this.selectedResult?.fileName || 'current',
+                            search_mode: 'exact',
+                            boundingpage: relatedPages,
+                            exact_text: fieldData.exact_text || '',
+                        };
 
-        const response = await fetch('/api/search_field_coordinates', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData)
-        });
+                        console.log('📤 Sending API request:', requestData);
 
-        console.log('📥 API response status:', response.status);
+                        const response = await fetch('/api/search_field_coordinates', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(requestData)
+                        });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+                        console.log('📥 API response status:', response.status);
 
-        const data = await response.json();
-        console.log('📊 API response data:', data);
-
-        if (data.success && data.total_matches > 0) {
-            console.log(`✅ Found ${data.total_matches} coordinate matches:`, data.matches);
-
-            // Store all matches for this field
-            this.coordinateSearchResults[fieldKey] = data.matches;
-            console.log('💾 Stored all search results for field:', fieldKey);
-
-            // Intelligent match selection strategy:
-            // 1. For SHORT searches (< 100 chars), use priority score (field definitions > narrative)
-            // 2. For LONG searches (>= 100 chars, multi-line), use largest bounding box
-            let bestMatch = data.best_match || data.matches[0];
-            const searchLength = fieldValue.length;
-            
-            // Check if we have multiple matches
-            if (data.matches.length > 1) {
-                if (searchLength >= 100) {
-                    // LONG TEXT: Find the match with the LARGEST bounding box (where main content is)
-                    console.log(`📊 Long text search (${searchLength} chars), finding largest bounding box...`);
-                    
-                    let largestMatch = bestMatch;
-                    let largestArea = 0;
-                    
-                    data.matches.forEach((match, idx) => {
-                        const bbox = match.bounding_box;
-                        let area = 0;
-                        
-                        if (bbox && bbox.length >= 4) {
-                            if (bbox.length === 8) {
-                                // 8-coordinate format: calculate area from min/max
-                                const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
-                                const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
-                                const width = Math.max(...x_coords) - Math.min(...x_coords);
-                                const height = Math.max(...y_coords) - Math.min(...y_coords);
-                                area = width * height;
-                            } else {
-                                // 4-coordinate format: [x1, y1, x2, y2]
-                                const width = bbox[2] - bbox[0];
-                                const height = bbox[3] - bbox[1];
-                                area = width * height;
-                            }
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                         }
-                        
-                        console.log(`   Match ${idx + 1}: Page ${match.bounding_page}, Area: ${area.toFixed(2)} sq.in, Priority: ${match.priority_score}`);
-                        
-                        if (area > largestArea) {
-                            largestArea = area;
-                            largestMatch = match;
-                        }
-                    });
-                    
-                    console.log(`🎯 Selected match with largest area (${largestArea.toFixed(2)} sq.in) on page ${largestMatch.bounding_page}`);
-                    bestMatch = largestMatch;
-                    
-                    // Check if content spans multiple consecutive pages (for dual-page display)
-                    const matchPages = data.matches.map(m => m.bounding_page).filter(p => p > 0);
-                    const uniquePages = [...new Set(matchPages)].sort((a, b) => a - b);
-                    
-                    // ALWAYS check for multi-page content when we have matches on multiple pages
-                    if (uniquePages.length > 1) {
-                        // Multi-page content detected - find best consecutive page pair
-                        console.log(`📖 Multi-page content detected spanning ${uniquePages.length} pages: ${uniquePages.join(', ')}`);
-                        
-                        // Find two consecutive pages with the largest combined content
-                        let bestPagePair = [uniquePages[0], uniquePages[0]];
-                        let bestPairArea = 0;
-                        
-                        for (let i = 0; i < uniquePages.length - 1; i++) {
-                            const page1 = uniquePages[i];
-                            const page2 = uniquePages[i + 1];
-                            
-                            // Check if pages are consecutive
-                            if (page2 === page1 + 1) {
-                                // Calculate combined area for this pair
-                                const page1Matches = data.matches.filter(m => m.bounding_page === page1);
-                                const page2Matches = data.matches.filter(m => m.bounding_page === page2);
-                                
-                                let pairArea = 0;
-                                [...page1Matches, ...page2Matches].forEach(match => {
-                                    const bbox = match.bounding_box;
-                                    if (bbox && bbox.length >= 4) {
-                                        if (bbox.length === 8) {
-                                            const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
-                                            const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
-                                            const width = Math.max(...x_coords) - Math.min(...x_coords);
-                                            const height = Math.max(...y_coords) - Math.min(...y_coords);
-                                            pairArea += width * height;
+
+                        const data = await response.json();
+                        console.log('📊 API response data:', data);
+
+                        if (data.success && data.total_matches > 0) {
+                            console.log(`✅ Found ${data.total_matches} coordinate matches:`, data.matches);
+
+                            // Store all matches for this field
+                            this.coordinateSearchResults[fieldKey] = data.matches;
+                            console.log('💾 Stored all search results for field:', fieldKey);
+
+                            // Intelligent match selection strategy:
+                            // 1. For SHORT searches (< 100 chars), use priority score (field definitions > narrative)
+                            // 2. For LONG searches (>= 100 chars, multi-line), use largest bounding box
+                            let bestMatch = data.best_match || data.matches[0];
+                            const searchLength = fieldValue.length;
+
+                            // Check if we have multiple matches
+                            if (data.matches.length > 1) {
+                                if (searchLength >= 100) {
+                                    // LONG TEXT: Find the match with the LARGEST bounding box (where main content is)
+                                    console.log(`📊 Long text search (${searchLength} chars), finding largest bounding box...`);
+
+                                    let largestMatch = bestMatch;
+                                    let largestArea = 0;
+
+                                    data.matches.forEach((match, idx) => {
+                                        const bbox = match.bounding_box;
+                                        let area = 0;
+
+                                        if (bbox && bbox.length >= 4) {
+                                            if (bbox.length === 8) {
+                                                // 8-coordinate format: calculate area from min/max
+                                                const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                                                const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                                                const width = Math.max(...x_coords) - Math.min(...x_coords);
+                                                const height = Math.max(...y_coords) - Math.min(...y_coords);
+                                                area = width * height;
+                                            } else {
+                                                // 4-coordinate format: [x1, y1, x2, y2]
+                                                const width = bbox[2] - bbox[0];
+                                                const height = bbox[3] - bbox[1];
+                                                area = width * height;
+                                            }
+                                        }
+
+                                        console.log(`   Match ${idx + 1}: Page ${match.bounding_page}, Area: ${area.toFixed(2)} sq.in, Priority: ${match.priority_score}`);
+
+                                        if (area > largestArea) {
+                                            largestArea = area;
+                                            largestMatch = match;
+                                        }
+                                    });
+
+                                    console.log(`🎯 Selected match with largest area (${largestArea.toFixed(2)} sq.in) on page ${largestMatch.bounding_page}`);
+                                    bestMatch = largestMatch;
+
+                                    // Check if content spans multiple consecutive pages (for dual-page display)
+                                    const matchPages = data.matches.map(m => m.bounding_page).filter(p => p > 0);
+                                    const uniquePages = [...new Set(matchPages)].sort((a, b) => a - b);
+
+                                    // ALWAYS check for multi-page content when we have matches on multiple pages
+                                    if (uniquePages.length > 1) {
+                                        // Multi-page content detected - find best consecutive page pair
+                                        console.log(`📖 Multi-page content detected spanning ${uniquePages.length} pages: ${uniquePages.join(', ')}`);
+
+                                        // Find two consecutive pages with the largest combined content
+                                        let bestPagePair = [uniquePages[0], uniquePages[0]];
+                                        let bestPairArea = 0;
+
+                                        for (let i = 0; i < uniquePages.length - 1; i++) {
+                                            const page1 = uniquePages[i];
+                                            const page2 = uniquePages[i + 1];
+
+                                            // Check if pages are consecutive
+                                            if (page2 === page1 + 1) {
+                                                // Calculate combined area for this pair
+                                                const page1Matches = data.matches.filter(m => m.bounding_page === page1);
+                                                const page2Matches = data.matches.filter(m => m.bounding_page === page2);
+
+                                                let pairArea = 0;
+                                                [...page1Matches, ...page2Matches].forEach(match => {
+                                                    const bbox = match.bounding_box;
+                                                    if (bbox && bbox.length >= 4) {
+                                                        if (bbox.length === 8) {
+                                                            const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                                                            const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                                                            const width = Math.max(...x_coords) - Math.min(...x_coords);
+                                                            const height = Math.max(...y_coords) - Math.min(...y_coords);
+                                                            pairArea += width * height;
+                                                        } else {
+                                                            const width = bbox[2] - bbox[0];
+                                                            const height = bbox[3] - bbox[1];
+                                                            pairArea += width * height;
+                                                        }
+                                                    }
+                                                });
+
+                                                console.log(`   Pages ${page1}-${page2}: Combined area ${pairArea.toFixed(2)} sq.in, Matches: P${page1}=${page1Matches.length}, P${page2}=${page2Matches.length}`);
+
+                                                if (pairArea > bestPairArea) {
+                                                    bestPairArea = pairArea;
+                                                    bestPagePair = [page1, page2];
+                                                }
+                                            }
+                                        }
+
+                                        // If we found a consecutive pair with substantial content, activate dual-page mode
+                                        // Lower threshold to 2 sq.in to catch multi-line text across pages
+                                        if (bestPairArea > 2 && bestPagePair[0] !== bestPagePair[1]) {
+                                            console.log(`✅ Activating dual-page view: Pages ${bestPagePair[0]}-${bestPagePair[1]} (combined area: ${bestPairArea.toFixed(2)} sq.in)`);
+
+                                            // Store info about multi-page content for highlighting
+                                            this.multiPageContent = {
+                                                active: true,
+                                                pages: bestPagePair,
+                                                matches: data.matches
+                                            };
+
+                                            // Navigate to first page of the pair (dual-page view will show both)
+                                            bestMatch = data.matches.find(m => m.bounding_page === bestPagePair[0]) || bestMatch;
                                         } else {
-                                            const width = bbox[2] - bbox[0];
-                                            const height = bbox[3] - bbox[1];
-                                            pairArea += width * height;
+                                            console.log(`⚠️ Multi-page content found but combined area too small (${bestPairArea.toFixed(2)} sq.in), using single-page view`);
                                         }
                                     }
-                                });
-                                
-                                console.log(`   Pages ${page1}-${page2}: Combined area ${pairArea.toFixed(2)} sq.in, Matches: P${page1}=${page1Matches.length}, P${page2}=${page2Matches.length}`);
-                                
-                                if (pairArea > bestPairArea) {
-                                    bestPairArea = pairArea;
-                                    bestPagePair = [page1, page2];
+                                } else {
+                                    // SHORT TEXT: Use priority score (backend already sorted by priority)
+                                    console.log(`🎯 Short text search (${searchLength} chars), using priority score...`);
+
+                                    data.matches.forEach((match, idx) => {
+                                        console.log(`   Match ${idx + 1}: Page ${match.bounding_page}, Priority: ${match.priority_score}, Text: "${match.matched_text.substring(0, 50)}${match.matched_text.length > 50 ? '...' : ''}"`);
+                                    });
+
+                                    // Backend already sorted by priority, so best_match is correct
+                                    console.log(`🎯 Using backend-prioritized best match (Priority: ${bestMatch.priority_score}) on page ${bestMatch.bounding_page}`);
                                 }
+                            } else {
+                                console.log('🎯 Single match found:', {
+                                    matched_text: bestMatch.matched_text,
+                                    priority_score: bestMatch.priority_score,
+                                    confidence: bestMatch.match_confidence,
+                                    bounding_page: bestMatch.bounding_page
+                                });
                             }
-                        }
-                        
-                        // If we found a consecutive pair with substantial content, activate dual-page mode
-                        // Lower threshold to 2 sq.in to catch multi-line text across pages
-                        if (bestPairArea > 2 && bestPagePair[0] !== bestPagePair[1]) {
-                            console.log(`✅ Activating dual-page view: Pages ${bestPagePair[0]}-${bestPagePair[1]} (combined area: ${bestPairArea.toFixed(2)} sq.in)`);
-                            
-                            // Store info about multi-page content for highlighting
-                            this.multiPageContent = {
-                                active: true,
-                                pages: bestPagePair,
-                                matches: data.matches
-                            };
-                            
-                            // Navigate to first page of the pair (dual-page view will show both)
-                            bestMatch = data.matches.find(m => m.bounding_page === bestPagePair[0]) || bestMatch;
+
+                            // Convert absolute page number to relative page index
+                            const absolutePage = bestMatch.bounding_page;
+                            let targetPage;
+
+                            // Method 1: Use the pages array if available
+                            if (this.selectedResult?.pages && this.selectedResult.pages.length > 0) {
+                                targetPage = this.selectedResult.pages.indexOf(absolutePage);
+                                console.log(`📚 Using pages array: absolute page ${absolutePage} = relative index ${targetPage}`);
+                            } else {
+                                // Method 2: Direct conversion (assuming pages are 1-indexed in backend, 0-indexed in frontend)
+                                targetPage = absolutePage - 1;
+                                console.log(`📝 Using direct conversion: absolute page ${absolutePage} = relative index ${targetPage}`);
+                            }
+
+                            console.log(`📄 Navigation: Current page: ${this.currentPage}, Target page: ${targetPage}`);
+                            console.log(`📚 Available pages: ${this.selectedResult?.previewImages?.length || 0}`);
+                            console.log(`📋 Absolute page: ${absolutePage}, Relative index: ${targetPage}`);
+                            console.log(`🗂️ Group pages: ${JSON.stringify(this.selectedResult?.pages)}`);
+
+                            if (targetPage >= 0 && targetPage < (this.selectedResult?.previewImages?.length || 0)) {
+                                console.log(`🧭 Navigating to relative page ${targetPage} (absolute page ${absolutePage})`);
+                                this.currentPage = targetPage;
+
+                                // Wait for page to load then highlight ALL matches
+                                this.$nextTick(() => {
+                                    console.log('⏱️ Waiting for page to load before highlighting...');
+                                    setTimeout(() => {
+                                        console.log('🎨 Highlighting ALL search results');
+                                        this.highlightAllSearchResults(data.matches);
+                                    }, 300);
+                                });
+                            } else {
+                                console.warn(`⚠️ Target page ${targetPage} is out of range (0-${(this.selectedResult?.previewImages?.length || 1) - 1})`);
+
+                                // Fallback: Highlight matches on current page anyway
+                                this.$nextTick(() => {
+                                    console.log('🔄 Fallback: Highlighting matches on current page');
+                                    this.highlightAllSearchResults(data.matches);
+                                });
+                            }
+
+                            // Show success message with total count
+                            const message = `Found ${data.total_matches} coordinate matches for "${fieldValue}"`;
+                            console.log('📢 Showing success notification:', message);
+                            this.showNotification(message, 'success');
+
                         } else {
-                            console.log(`⚠️ Multi-page content found but combined area too small (${bestPairArea.toFixed(2)} sq.in), using single-page view`);
+                            console.log('❌ No matches found in API response');
+                            const message = `No coordinates found for "${fieldValue}"`;
+                            console.log('📢 Showing warning notification:', message);
+                            this.showNotification(message, 'warning');
                         }
+
+                    } catch (error) {
+                        console.error('❌ Error searching coordinates:', error);
+                        console.error('📍 Error details:', {
+                            message: error.message,
+                            stack: error.stack
+                        });
+                        this.showNotification('Error searching for coordinates', 'error');
+                    } finally {
+                        console.log(`🏁 Clearing search state for field: ${fieldKey}`);
+                        this.searchingField = null;
+                        // DON'T clear searchResultBlocks or multiPageContent here!
+                        // They are needed for highlighting after navigation completes
+                        console.log('🔍 === FRONTEND COORDINATE SEARCH COMPLETED ===');
                     }
-                } else {
-                    // SHORT TEXT: Use priority score (backend already sorted by priority)
-                    console.log(`🎯 Short text search (${searchLength} chars), using priority score...`);
-                    
-                    data.matches.forEach((match, idx) => {
-                        console.log(`   Match ${idx + 1}: Page ${match.bounding_page}, Priority: ${match.priority_score}, Text: "${match.matched_text.substring(0, 50)}${match.matched_text.length > 50 ? '...' : ''}"`);
-                    });
-                    
-                    // Backend already sorted by priority, so best_match is correct
-                    console.log(`🎯 Using backend-prioritized best match (Priority: ${bestMatch.priority_score}) on page ${bestMatch.bounding_page}`);
-                }
-            } else {
-                console.log('🎯 Single match found:', {
-                    matched_text: bestMatch.matched_text,
-                    priority_score: bestMatch.priority_score,
-                    confidence: bestMatch.match_confidence,
-                    bounding_page: bestMatch.bounding_page
-                });
-            }
-
-            // Convert absolute page number to relative page index
-            const absolutePage = bestMatch.bounding_page;
-            let targetPage;
-
-            // Method 1: Use the pages array if available
-            if (this.selectedResult?.pages && this.selectedResult.pages.length > 0) {
-                targetPage = this.selectedResult.pages.indexOf(absolutePage);
-                console.log(`📚 Using pages array: absolute page ${absolutePage} = relative index ${targetPage}`);
-            } else {
-                // Method 2: Direct conversion (assuming pages are 1-indexed in backend, 0-indexed in frontend)
-                targetPage = absolutePage - 1;
-                console.log(`📝 Using direct conversion: absolute page ${absolutePage} = relative index ${targetPage}`);
-            }
-
-            console.log(`📄 Navigation: Current page: ${this.currentPage}, Target page: ${targetPage}`);
-            console.log(`📚 Available pages: ${this.selectedResult?.previewImages?.length || 0}`);
-            console.log(`📋 Absolute page: ${absolutePage}, Relative index: ${targetPage}`);
-            console.log(`🗂️ Group pages: ${JSON.stringify(this.selectedResult?.pages)}`);
-
-            if (targetPage >= 0 && targetPage < (this.selectedResult?.previewImages?.length || 0)) {
-                console.log(`🧭 Navigating to relative page ${targetPage} (absolute page ${absolutePage})`);
-                this.currentPage = targetPage;
-
-                // Wait for page to load then highlight ALL matches
-                this.$nextTick(() => {
-                    console.log('⏱️ Waiting for page to load before highlighting...');
-                    setTimeout(() => {
-                        console.log('🎨 Highlighting ALL search results');
-                        this.highlightAllSearchResults(data.matches);
-                    }, 300);
-                });
-            } else {
-                console.warn(`⚠️ Target page ${targetPage} is out of range (0-${(this.selectedResult?.previewImages?.length || 1) - 1})`);
-
-                // Fallback: Highlight matches on current page anyway
-                this.$nextTick(() => {
-                    console.log('🔄 Fallback: Highlighting matches on current page');
-                    this.highlightAllSearchResults(data.matches);
-                });
-            }
-
-            // Show success message with total count
-            const message = `Found ${data.total_matches} coordinate matches for "${fieldValue}"`;
-            console.log('📢 Showing success notification:', message);
-            this.showNotification(message, 'success');
-
-        } else {
-            console.log('❌ No matches found in API response');
-            const message = `No coordinates found for "${fieldValue}"`;
-            console.log('📢 Showing warning notification:', message);
-            this.showNotification(message, 'warning');
-        }
-
-    } catch (error) {
-        console.error('❌ Error searching coordinates:', error);
-        console.error('📍 Error details:', {
-            message: error.message,
-            stack: error.stack
-        });
-        this.showNotification('Error searching for coordinates', 'error');
-    } finally {
-        console.log(`🏁 Clearing search state for field: ${fieldKey}`);
-        this.searchingField = null;
-        // DON'T clear searchResultBlocks or multiPageContent here!
-        // They are needed for highlighting after navigation completes
-        console.log('🔍 === FRONTEND COORDINATE SEARCH COMPLETED ===');
-    }
-},
+                },
                 highlightSearchResult(searchResult) {
                     console.log('🎨 === HIGHLIGHTING SEARCH RESULT ===');
                     console.log('📊 Search result data:', searchResult);

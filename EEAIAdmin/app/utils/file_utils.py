@@ -230,7 +230,17 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
         for page_num, read_result in enumerate(result.analyze_result.read_results, start=1):
             for line in read_result.lines:
                 words = line.words
+                if words:
+                    if "word_data" not in locals():
+                        word_data = []  # Initialize only once
 
+                    for word in words:
+                        word_data.append({
+                            "text": word.text,
+                            "bounding_box": getattr(word, "bounding_box", None),
+                            "bounding_page": page_num,
+                            "confidence": getattr(word, "confidence", 1.0)
+                        })                
                 # OPTIMIZATION 7: Optimized confidence calculation
                 if words:
                     confidence_scores = [word.confidence for word in words if hasattr(word, "confidence")]
@@ -268,7 +278,8 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
                 "dynamic_timeout": dynamic_timeout,
                 "poll_count": poll_count,
                 "adaptive_polling": OCR_ADAPTIVE_POLLING
-            }
+            },
+            "word_data": word_data if 'word_data' in locals() else []
         }
 
     except Exception as e:
