@@ -17147,72 +17147,52 @@ Return compliance status for each field.'''
         def extract_single_group(idx, group):
             """Extract fields for a single document group (runs in separate thread)"""
             try:
-                logger.info(f"🧵 Thread {idx}: Extracting {group['document_type']}")
+                logger.info(f"🧵 Thread {idx}: Extracting {group['document_type']} using chunk-based approach")
                 extraction_start = time.time()
 
-                # Build extraction prompt
-                extraction_prompt = document_classifier.build_extraction_prompt(
-                    document_type=group['document_type'],
-                    ocr_text=group['text'],
-                    page_number=group['pages'][0]
-                )
-
-                logger.info(f"📝 Thread {idx}: Built extraction prompt ({len(extraction_prompt)} chars)")
-                logger.info(f"📝 Thread {idx}: Prompt preview (first 1000 chars): {extraction_prompt[:1000]}")
-
-                # Add field mappings
-                field_mapping_data = load_document_field_mappings(group['document_type'])
-                if field_mapping_data:
-                    field_mapping_example = field_mapping_data.get('example', '')
-                    extraction_prompt += f"\n\n{field_mapping_example}"
-                    logger.info(f"📝 Thread {idx}: Added field mapping examples ({len(field_mapping_example)} chars)")
-
-                logger.info(f"🤖 Thread {idx}: Calling LLM API (model: {extraction_model}, temp: {extraction_temp}, max_tokens: {extraction_max_tokens})")
-
-                # Call LLM for extraction
-                extraction_response = openai.ChatCompletion.create(
-                    engine=extraction_model,
-                    messages=[{"role": "user", "content": extraction_prompt}],
-                    temperature=extraction_temp,
-                    max_tokens=extraction_max_tokens,
-                    seed=12345,  # ✅ Reproducibility
-                    top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
-                    frequency_penalty=0,
-                    presence_penalty=0,
-                    response_format={"type": "json_object"}
-                )
-                extraction_result = extraction_response.choices[0].message.content
-
-                logger.info(f"✅ Thread {idx}: Received LLM response ({len(extraction_result)} chars)")
-
-                # Parse extraction result
-                try:
-                    # Log raw response for debugging
-                    logger.info(f"🔍 Thread {idx}: Raw LLM response (first 500 chars): {extraction_result[:500]}")
-
-                    # Try to extract JSON from markdown code blocks if present
-                    if '```json' in extraction_result:
-                        json_start = extraction_result.find('```json') + 7
-                        json_end = extraction_result.find('```', json_start)
-                        extraction_result = extraction_result[json_start:json_end].strip()
-                    elif '```' in extraction_result:
-                        json_start = extraction_result.find('```') + 3
-                        json_end = extraction_result.find('```', json_start)
-                        extraction_result = extraction_result[json_start:json_end].strip()
-
-                    extraction_json = json.loads(extraction_result)
-                    extracted_fields = extraction_json.get('extracted_fields', {})
-                    logger.info(f"✅ Thread {idx}: Successfully parsed {len(extracted_fields)} fields from JSON")
-                except json.JSONDecodeError as e:
-                    logger.error(f"❌ Thread {idx}: JSON parsing failed: {e}")
-                    logger.error(f"❌ Thread {idx}: Response content (first 1000 chars): {extraction_result[:1000]}")
+                # Load entity info for chunk-based extraction
+                doc_type_normalized = group['document_type'].replace(" ", "_")
+                logger.info(f"🔍 Thread {idx}: Getting entity fields for: {doc_type_normalized}")
+                entity_info = document_classifier.get_enhanced_entity_fields(doc_type_normalized)
+                
+                if not entity_info or not any([entity_info.get('mandatory_fields', []), entity_info.get('optional_fields', []), entity_info.get('conditional_fields', [])]):
+                    logger.error(f"❌ Thread {idx}: No entity info found for {group['document_type']} (normalized: {doc_type_normalized})")
                     extracted_fields = {}
-                except Exception as e:
-                    logger.error(f"❌ Thread {idx}: Unexpected error during parsing: {e}")
-                    extracted_fields = {}
+                else:
+                    # Use chunk-based extraction
+                    total_entities = len(entity_info['mandatory_fields']) + len(entity_info['optional_fields']) + len(entity_info['conditional_fields'])
+                    logger.info(f"📝 Thread {idx}: Starting chunk-based extraction for {total_entities} entities (Mandatory: {len(entity_info['mandatory_fields'])}, Optional: {len(entity_info['optional_fields'])}, Conditional: {len(entity_info['conditional_fields'])})")
+                    
+                    extraction_results = extract_entities_in_chunks(
+                        entity_info=entity_info,
+                        ocr_text=group['text'],
+                        model=extraction_model,
+                        page_number=group['pages'][0] if group['pages'] else 1
+                    )
+                    
+                    # Merge results from all chunks
+                    merged_results = {"extracted_fields": {}}
+                    total_fields_extracted = 0
+                    
+                    for result in extraction_results:
+                        if result and 'extracted_fields' in result:
+                            merged_results["extracted_fields"].update(result["extracted_fields"])
+                            total_fields_extracted += len(result["extracted_fields"])
+                    
+                    # Apply field filtering to remove empty optional/conditional fields
+                    logger.info(f"🔍 Thread {idx}: Filtering extracted fields (before: {len(merged_results['extracted_fields'])} fields)")
+                    filtered_fields = filter_extracted_fields_by_type(
+                        extracted_fields=merged_results["extracted_fields"],
+                        entity_info=entity_info
+                    )
+                    extracted_fields = filtered_fields
+                    logger.info(f"✅ Thread {idx}: After filtering: {len(extracted_fields)} fields")
 
                 extraction_time = time.time() - extraction_start
                 logger.info(f"✅ Thread {idx}: Extracted {len(extracted_fields)} fields in {extraction_time:.2f}s")
+
+                # Load field mapping data for result building
+                field_mapping_data = load_document_field_mappings(group['document_type'])
 
                 # Start background compliance check
                 file_content_hash = hashlib.md5(f"{file_name}_{group['document_type']}_{datetime.now().isoformat()}".encode()).hexdigest()
