@@ -3877,15 +3877,15 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-    {
-      "id": "468",
-      "name": "Place of Final Destination / Delivery",
-      "description": "Place of Final Destination / Delivery",
-      "mappingFormField": "Tag 44B",
-      "mappingFormDescription": "Place of Final Destination / Delivery",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
+{
+  "id": "468",
+  "name": "Place of Final Destination / Delivery",
+  "description": "Extract ONLY when the field is explicitly labeled as 'Place of Final Destination', 'Place of Delivery', 'For Transportation to' or corresponds to SWIFT Tag 44B. DO NOT extract from 'Port of Discharge' (44F) or any other location fields. Only extract if the field specifically indicates final destination/delivery point, not intermediate discharge ports.",
+  "mappingFormField": "Tag 44B",
+  "mappingFormDescription": "Place of Final Destination / Delivery - Extract only for explicit Tag 44B fields",
+  "dataCategoryId": "4",
+  "dataCategoryValue": "Locations"
+},
     {
       "id": "470",
       "name": "Documents Required",
