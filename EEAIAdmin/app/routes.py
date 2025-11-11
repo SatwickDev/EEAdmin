@@ -22879,13 +22879,16 @@ def generate_mt700_message(lc_data):
         swift_lines.append(":44C:" + shipment_date)
 
     if lc_data.get('portOfLoading'):
-        swift_lines.append(":44F:" + lc_data['portOfLoading'].upper())
+        swift_lines.append(":44E:" + lc_data['portOfLoading'].upper())
 
     if lc_data.get('portOfDischarge'):
-        swift_lines.append(":44B:" + lc_data['portOfDischarge'].upper())
+        swift_lines.append(":44F:" + lc_data['portOfDischarge'].upper())
 
+    if lc_data.get('placeOfTaking'):
+        swift_lines.append(":44A:" + lc_data['placeOfTaking'].upper())
+    
     if lc_data.get('finalDestination'):
-        swift_lines.append(":44A:" + lc_data['finalDestination'].upper())
+        swift_lines.append(":44B:" + lc_data['finalDestination'].upper())
 
     # Add partial shipment and transhipment
     swift_lines.append(":43P:" + ("ALLOWED" if lc_data.get('partialShipment') == 'allowed' else "NOT ALLOWED"))
