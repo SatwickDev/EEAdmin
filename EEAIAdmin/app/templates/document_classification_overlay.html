@@ -3132,26 +3132,24 @@
                 </div>
 
                 <!-- Modal Body -->
-                <div class="flex-1 flex overflow-hidden">
-                    <!-- Left Side - Clean Document Preview -->
-                    <div class="w-2/5 relative bg-gray-100 flex flex-col h-full">
+                <div class="flex-1 flex overflow-hidden" style="height: calc(100vh - 200px); max-height: 600px;">
+                    <!-- Optimized Single Document Preview - Increased Size -->
+                    <div class="w-1/2 relative bg-gray-100 flex flex-col overflow-y-auto">
 
                         <!-- Simple Document View -->
 
                         <!-- Drawing Help -->
-                        <div v-if="currentTool !== 'select' && !targetField" class="absolute top-20 left-6 bg-black/75 text-white px-3 py-2 rounded-lg text-sm">
+                        <div v-if="currentTool !== 'select' && !targetField" class="absolute top-20 left-6 bg-black/75 text-white px-3 py-2 rounded-lg text-sm z-20">
                             <i class="mdi mdi-information-outline mr-1"></i>
                             <span>
                                 {% raw %}{{ currentTool === 'draw' ? 'Click and drag to draw freely' : currentTool === 'rectangle' ? 'Click and drag to rectangle' : 'Click and drag to select text' }}{% endraw %}
                             </span>
                         </div>
 
+                        <!-- Single Document Image Viewer -->
+                        <div class="flex-1 flex p-4">
 
-
-                        <!-- Document Image Viewer - 2 Pages Side by Side (Book Layout) -->
-                        <div class="flex-1 flex gap-4 p-4">
-
-                            <!-- First Page (Current Page) - Independent Scrollable Container -->
+                            <!-- Single Page - Larger Container for Better Readability -->
                             <div class="flex-1 overflow-auto"
                                  v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage]"
                                  @wheel.prevent="handleWheel"
@@ -3159,10 +3157,10 @@
                                  @mousemove="pan"
                                  @mouseup="endPan"
                                  @mouseleave="endPan"
-                                 style="display: flex; align-items: flex-start; justify-content: center; background: #f3f4f6;">
-                                <div class="relative bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-gray-300"
-                                     :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: 'center', position: 'relative', display: 'inline-block', margin: '20px' }">
-                                    <div class="absolute top-2 left-2 bg-blue-600 text-white px-3 py-1 text-sm font-bold rounded-lg shadow-lg z-10">
+                                 style="display: flex; align-items: center; justify-content: center; background: #f8fafc;">
+                                <div class="relative bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200"
+                                     :style="{ transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`, transformOrigin: 'center', position: 'relative', display: 'inline-block', margin: '15px', maxWidth: '95%' }">
+                                    <div class="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 text-xs font-bold rounded shadow-lg z-10">
                                         Page {% raw %}{{ currentPage + 1 }}{% endraw %}
                                     </div>
                                     <img ref="documentImage"
@@ -3170,7 +3168,7 @@
                                          :alt="'Page ' + (currentPage + 1)"
                                          @load="onImageLoad"
                                          class="block w-full h-auto"
-                                         style="max-width: 100%; object-fit: contain;">
+                                     style="max-width: 100%; object-fit: contain; max-height: 500px; min-height: 300px;">
 
                                     <!-- Canvas for drawing -->
                                     <canvas ref="drawingCanvas"
@@ -3181,8 +3179,8 @@
                                             @mouseup="endDrawing"
                                             @mouseleave="endDrawing"></canvas>
 
-                                    <!-- Field Highlights for First Page -->
-                                    <!-- Search Result Highlights for First Page -->
+                                    <!-- Field Highlights -->
+                                    <!-- Search Result Highlights -->
                                     <div v-for="(block, idx) in getSearchBlocksForPage(currentPage)"
                                          :key="'search-' + idx"
                                          class="absolute pointer-events-none"
@@ -3190,7 +3188,7 @@
                                          style="background: rgba(255, 235, 59, 0.4);">
                                     </div>
 
-                                    <!-- Text Selection Highlight for First Page -->
+                                    <!-- Text Selection Highlight -->
                                     <div v-if="textSelectionBox"
                                          class="absolute pointer-events-none"
                                          :style="{
@@ -3207,53 +3205,24 @@
                                 </div>
                             </div>
 
-                            <!-- Divider Line (Book Spine) -->
-                            <div class="w-1 bg-gradient-to-b from-gray-300 via-gray-400 to-gray-300 rounded-full shadow-md"
-                                 v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage] && selectedResult.previewImages[currentPage + 1]">
-                            </div>
-
-                            <!-- Second Page (Next Page) - Independent Scrollable Container -->
-                            <div class="flex-1 overflow-auto"
-                                 v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage + 1]"
-                                 style="display: flex; align-items: flex-start; justify-content: center; background: #f3f4f6;">
-                                <div class="relative bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-gray-300"
-                                     :style="{ transform: `scale(${zoomLevel})`, transformOrigin: 'center', position: 'relative', display: 'inline-block', margin: '20px' }">
-                                    <div class="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 text-sm font-bold rounded-lg shadow-lg z-10">
-                                        Page {% raw %}{{ currentPage + 2 }}{% endraw %}
-                                    </div>
-                                    <img ref="documentImage2"
-                                         :src="'data:image/png;base64,' + selectedResult.previewImages[currentPage + 1]"
-                                         :alt="'Page ' + (currentPage + 2)"
-                                         class="block w-full h-auto"
-                                         style="max-width: 100%; object-fit: contain;">
-                                    <!-- Search Result Highlights for Second Page -->
-                                    <div v-for="(block, idx) in getSearchBlocksForPage(currentPage + 1)"
-                                         :key="'search2-' + idx"
-                                         class="absolute pointer-events-none"
-                                         :style="getSearchBlockStyle(block, currentPage + 1)"
-                                         style="background: rgba(255, 235, 59, 0.4);">
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Empty State -->
                             <div v-if="!selectedResult?.previewImages || selectedResult.previewImages.length === 0"
                                  class="flex-1 flex items-center justify-center text-center">
                                 <div>
-                                    <i class="mdi mdi-file-document-outline text-6xl text-gray-400 mb-4"></i>
-                                    <p class="text-gray-600">No preview available</p>
+                                    <i class="mdi mdi-file-document-outline text-4xl text-gray-400 mb-2"></i>
+                                    <p class="text-gray-600 text-sm">No preview available</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Panel - Enhanced Details -->
-                    <div class="w-3/5 bg-gradient-to-br from-gray-50 to-slate-100 overflow-y-auto border-l border-gray-200">
+                    <!-- Right Panel - Enhanced Details (Balanced with Fixed Scrolling) -->
+                    <div class="w-1/2 bg-gradient-to-br from-gray-50 to-slate-100 border-l border-gray-200 flex flex-col overflow-y-auto">
 
-                        <!-- Enhanced Document Classification Header -->
-                        <div class="p-6 bg-white border-b border-gray-200 shadow-sm">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <!-- Enhanced Document Classification Header (Fixed) -->
+                        <div class="p-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                                     <i class="mdi mdi-file-search text-white text-2xl"></i>
                                 </div>
                                 <div>
@@ -3303,15 +3272,15 @@
                         </div>
 
 
-                        <!-- Fields Content Area -->
-                        <div class="flex-1 overflow-y-auto">
+                        <!-- Fields Content Area (Optimized for Scrolling) -->
+                        <div class="flex-1 overflow-y-auto min-h-0">
 
                             <!-- Enhanced Fields Display -->
-                            <div class="p-6">
-                                <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="space-y-6">
+                            <div class="p-3">
+                                <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="space-y-3">
                                     <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
                                          :key="fieldKey"
-                                         class="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                         class="group bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all duration-200 cursor-pointer"
                                          :class="{
                                              'ring-2 ring-blue-500 shadow-lg border-blue-300': activeFieldIndex === index && fieldData?.value && !manuallyEditedFields[fieldKey],
                                              'ring-2 ring-yellow-400 shadow-lg border-yellow-300': activeFieldIndex === index && manuallyEditedFields[fieldKey],
@@ -3320,14 +3289,14 @@
                                          @click="highlightField(index, fieldData)">
 
                                         <!-- Enhanced Field Header -->
-                                        <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-start justify-between mb-3">
                                             <div class="flex-1">
-                                                <div class="flex items-center gap-3 mb-2">
-                                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                                        <i class="mdi mdi-text-box text-white text-lg"></i>
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                                        <i class="mdi mdi-text-box text-white text-sm"></i>
                                                     </div>
                                                     <div>
-                                                        <h4 class="text-lg font-bold text-gray-900">
+                                                        <h4 class="text-base font-bold text-gray-900">
                                                             {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
                                                         </h4>
                                                         <p class="text-sm text-gray-500">Field extracted from document</p>
@@ -9889,8 +9858,7 @@ splitCurrencyAndAmount(combinedValue) {
                     // Store blocks in reactive data property for CSS overlays to use
                     this.searchResultBlocks = blocks;
                     
-                    // Now highlight blocks on the FIRST page only using canvas
-                    // The SECOND page will be highlighted automatically by CSS overlays (Vue reactive)
+                    // Now highlight blocks using canvas
                     
                     // Clear previous canvas highlights ONCE at the beginning
                     const ctx = this.drawingContext;
@@ -9900,12 +9868,11 @@ splitCurrencyAndAmount(combinedValue) {
                     
                     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                     
-                    // Highlight blocks on FIRST page only (canvas)
-                    // CSS overlays will automatically render second page highlights via Vue reactivity
+                    // Highlight blocks on current page using canvas
                     blocks.forEach((block, index) => {
                         const blockPage = this.getRelativePageIndex(block.bounding_page);
                         
-                        // Only use canvas for FIRST page (currentPage)
+                        // Only highlight blocks on the current page
                         if (blockPage === this.currentPage) {
                             // Create a temporary field object for highlighting (using block's merged bbox)
                             const tempField = {
@@ -9922,7 +9889,6 @@ splitCurrencyAndAmount(combinedValue) {
                                 console.error(`Error highlighting block ${index + 1}:`, error);
                             }
                         }
-                        // Second page: CSS overlays handle this automatically via Vue reactivity
                     });
                     
                     // Force Vue to update the CSS overlays
@@ -9996,15 +9962,8 @@ splitCurrencyAndAmount(combinedValue) {
                             return {};
                         }
                         
-                        // Get the correct image reference based on the page
-                        let img;
-                        if (pageNumber !== null && pageNumber === this.currentPage + 1) {
-                            // Second page
-                            img = this.$refs.documentImage2;
-                        } else {
-                            // First page (default)
-                            img = this.$refs.documentImage;
-                        }
+                        // Get the image reference (single page view)
+                        const img = this.$refs.documentImage;
                         
                         if (!img) {
                             return {};
@@ -10153,25 +10112,6 @@ splitCurrencyAndAmount(combinedValue) {
                     ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
 
                     console.log(`🎨 Drew highlight at (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) size ${scaledWidth.toFixed(1)}x${scaledHeight.toFixed(1)}`);
-                },
-                
-                drawHighlightOnSecondPage(field) {
-                    // Draw highlight on the second page of dual-page view
-                    // Since we don't have a separate canvas for page 2, we'll use CSS overlay
-                    if (!field?.bounding_box || !this.$refs.documentImage2) return;
-
-                    const box = field.bounding_box;
-                    if (!Array.isArray(box) || (box.length !== 4 && box.length !== 8)) return;
-
-                    console.log(`🎨 Drawing highlight on second page for field:`, field.name);
-                    
-                    // Note: For second page, we're using the CSS-based bounding box overlay
-                    // which is already in the template. The highlighting will be visible
-                    // through the field highlights div elements that are already rendered.
-                    // We just need to make sure they're visible.
-                    
-                    // The actual highlighting is handled by the v-for loop in the template
-                    // that renders field highlights on both pages automatically
                 },
                 
                 startDrawing(event) {
