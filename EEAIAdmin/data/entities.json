@@ -137,7 +137,7 @@
     },
     {
       "id": "24",
-      "name": "Buyer/Importer/Consignee/Ship To Party/notify party ",
+      "name": "Notify Party",
       "description": "Party to be notified about shipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -182,7 +182,7 @@
     },
     {
       "id": "30",
-      "name": "Baseport Unloading Location / Place of discharge /Port of Discharge/Airport of Destination",
+      "name": "Port of Discharge / Place of discharge /Port of Discharge/Airport of Destination",
       "description": "Port where goods are unloaded - Extract ONLY the port name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port name is required (e.g., 'Rotterdam' not 'Rotterdam, Netherlands' or 'Port of Rotterdam, South Holland, Netherlands').",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -263,7 +263,7 @@
     },
     {
       "id": "43",
-      "name": "Insurance Amount /Insured value amount",
+      "name": "Insurance Amount",
       "description": "Amount of premium payable to the insurance company for insuring the goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -326,7 +326,7 @@
     },
     {
       "id": "51",
-      "name": "Gross Weight/Net Weight",
+      "name": "Net Weight",
       "description": "Weight of goods excluding packaging - Extract Net weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -956,7 +956,7 @@
     },
     {
       "id": "124",
-      "name": "Issue Date /Documentary credit document issue date",
+      "name": "Issue Date",
       "description": "Date that a document was issued and when appropriate, signed or otherwise authenticated",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1028,7 +1028,7 @@
     },
     {
       "id": "134",
-      "name": "Buyer/Importer/Consignee/Ship To Party/notify party ",
+      "name": "Ship To Party",
       "description": "Party to which goods should be delivered, if not identical with consignee such as the place where a container is to be, or has been, positioned.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1037,7 +1037,7 @@
     },
     {
       "id": "135",
-      "name": "Consignor/Seller/Exporter",
+      "name": "Consignor",
       "description": "Party consigning goods as stipulated in the transport contract by the party ordering transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1046,7 +1046,7 @@
     },
     {
       "id": "136",
-      "name": "Buyer/Importer/Consignee/Ship To Party/notify party",
+      "name": "Consignee",
       "description": "Consignee - Extract ONLY the consignee's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1055,7 +1055,7 @@
     },
     {
       "id": "137",
-      "name": "Buyer/Importer/Consignee/Ship To Party/notify party ",
+      "name": "Importer",
       "description": "Importer for commercial invoice - Extract ONLY the importer's company/person name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1064,7 +1064,7 @@
     },
     {
       "id": "138",
-      "name": "Exporter/Consignor/Seller",
+      "name": "Exporter",
       "description": "Exporter - Extract ONLY the exporter's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, or any contact details. Extract the pure company/person name only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1073,7 +1073,7 @@
     },
     {
       "id": "139",
-      "name": "Destination Country/Exportation country/Origin country",
+      "name": "Destination Country",
       "description": "Country to which a consignment of goods is to be or has been delivered",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1109,7 +1109,7 @@
     },
     {
       "id": "143",
-      "name": "Buyer/Importer/Consignee/Ship To Party/notify party",
+      "name": "Buyer/   ",
       "description": "Buyer - Extract ONLY the buyer's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1127,7 +1127,7 @@
     },
     {
       "id": "145",
-      "name": "Seller / Consignor / Exporter ",
+      "name": "Seller",
       "description": "Seller - Extract ONLY the seller's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1343,7 +1343,7 @@
     },
     {
       "id": "172",
-      "name": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
+      "name": "Invoicee",
       "description": "Invoicee - Extract ONLY the invoicee's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, tax IDs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1964,7 +1964,7 @@
     },
     {
       "id": "249",
-      "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
+      "name": "Shipping marks",
       "description": "Free form description of the marks and numbers on a transport unit or package",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2513,7 +2513,7 @@
     },
     {
       "id": "311",
-      "name": "Place of the delivery of the goods (by the carrier)/ Place of Final Destination / Delivery/Arrival location",
+      "name": "Place of the delivery of the goods (by the carrier)",
       "description": "Location to which a consignment is to be delivered to the final consignee",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2531,7 +2531,7 @@
     },
     {
       "id": "313",
-      "name": "Destination Country/Exportation country/Origin country",
+      "name": "Origin country",
       "description": "Name of the country in which the goods have been produced or manufactured, according to criteria laid down for the application of the Customs tariff or quantitative restrictions, or any measure related to trade",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2612,7 +2612,7 @@
     },
     {
       "id": "322",
-      "name": "Original Loading Location/ Port of Loading/Airport of Departure",
+      "name": "Original Loading Location",
       "description": "Seaport, airport, freight terminal, rail station or other location where the goods were first loaded onto the means of transport being utilised for their carriage",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2621,7 +2621,7 @@
     },
     {
       "id": "323",
-      "name": "Baseport Unloading Location / Port of Discharge/Airport of Destination",
+      "name": "Baseport Unloading Location",
       "description": "The place or port at which the cargo is discharged or unloaded from a means of transport according to the transport contract. The goods may or may not be discharged from the main means of transport at this place or port",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2692,7 +2692,7 @@
     },
     {
       "id": "331",
-      "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
+      "name": "Type of Packaging (UNCEFACT coded) and shipping marks",
       "description": "Code specifying the type of packaging of an item",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2827,7 +2827,7 @@
     },
     {
       "id": "346",
-      "name": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
+      "name": "Place or departure",
       "description": "Port, airport or other type of location from which a means of transport is scheduled to depart or has departed",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2935,7 +2935,7 @@
     },
     {
       "id": "358",
-      "name": "Destination Country/Exportation country/Origin country",
+      "name": "Exportation country",
       "description": "Country from which a consignment of goods was initially exported to the importing country without any commercial transaction taking place in intermediate countries. Syn.: country whence consigned. Country of despatch: country from which goods are despatched between countries of a Customs union",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2944,7 +2944,7 @@
     },
     {
       "id": "359",
-      "name": "Gross Weight/Net Weight,Transport Means, gross weight",
+      "name": "Transport Means, gross weight",
       "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3043,7 +3043,7 @@
     },
     {
       "id": "370",
-      "name": "Place of the delivery of the goods (by the carrier) / Place of Final Destination / Delivery /Arrival location",
+      "name": "Arrival location",
       "description": "Port, airport or other type of location at which a means of transport is scheduled to arrive or has arrived",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3151,7 +3151,7 @@
     },
     {
       "id": "382",
-      "name": "Insured value amount /Insurance Amount",
+      "name": "Insured value amount",
       "description": "Insured value amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3376,7 +3376,7 @@
     },
     {
       "id": "407",
-      "name": "Destination Country/Exportation country/Origin country/Consignment destination country",
+      "name": "Consignment destination country",
       "description": "Name of the country to which the goods are to be delivered to the final consignee or buyer",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3708,7 +3708,7 @@
     },
     {
       "id": "444",
-      "name": "Issue Date / Documentary credit document issue date",
+      "name": "Documentary credit document issue date",
       "description": "Documentary credit document issue date",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3735,7 +3735,7 @@
     },
     {
       "id": "447",
-      "name": "Applicant Bank/Issuing Bank/ Documentary Credit Available Bank",
+      "name": "Documentary Credit Available Bank",
       "description": "Documentary Credit Available Bank-Extract ONLY Documentary Credit Available Bank name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3744,7 +3744,7 @@
     },
     {
       "id": "448",
-      "name": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
+      "name": "Documentary Credit Beneficiary/Beneficiary/Payee",
       "description": "Documentary Credit Beneficiary - Extract ONLY the beneficiary's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3825,7 +3825,7 @@
     },
     {
       "id": "458",
-      "name": "Applicant Bank/Issuing Bank/ Documentary Credit Available Bank",
+      "name": "Applicant Bank/Issuing Bank",
       "description": "Applicant Bank",
       "mappingFormField": "Tag 51A",
       "mappingFormDescription": "Applicant Bank",
@@ -3835,7 +3835,7 @@
     {
       "id": "459",
       "name": "Percentage Credit Amount Tolerance",
-      "description": "Percentage Credit Amount Tolerance",
+      "description": "Extract Percentage Credit Amount Tolerance value. Typically appears as '10/10', '5/5', or '10%'. If format is 'X/X' (like 10/10), extract only the first number as percentage. If format is 'X%', extract with percentage symbol. Do NOT extract as combined numbers like '1010' - extract only valid tolerance percentages.",
       "mappingFormField": "Tag 39A",
       "mappingFormDescription": "Percentage Credit Amount Tolerance",
       "dataCategoryId": "7",
@@ -3877,15 +3877,15 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-    {
-      "id": "468",
-      "name": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
-      "description": "Place of Final Destination / Delivery",
-      "mappingFormField": "Tag 44B",
-      "mappingFormDescription": "Place of Final Destination / Delivery",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
+{
+  "id": "468",
+  "name": "Place of Final Destination / Delivery",
+  "description": "Extract ONLY when the field is explicitly labeled as 'Place of Final Destination', 'Place of Delivery', 'For Transportation to' or corresponds to SWIFT Tag 44B. DO NOT extract from 'Port of Discharge' (44F) or any other location fields. Only extract if the field specifically indicates final destination/delivery point, not intermediate discharge ports.",
+  "mappingFormField": "Tag 44B",
+  "mappingFormDescription": "Place of Final Destination / Delivery - Extract only for explicit Tag 44B fields",
+  "dataCategoryId": "4",
+  "dataCategoryValue": "Locations"
+},
     {
       "id": "470",
       "name": "Documents Required",
