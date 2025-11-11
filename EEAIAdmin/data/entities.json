@@ -3835,7 +3835,7 @@
     {
       "id": "459",
       "name": "Percentage Credit Amount Tolerance",
-      "description": "Percentage Credit Amount Tolerance",
+      "description": "Extract Percentage Credit Amount Tolerance value. Typically appears as '10/10', '5/5', or '10%'. If format is 'X/X' (like 10/10), extract only the first number as percentage. If format is 'X%', extract with percentage symbol. Do NOT extract as combined numbers like '1010' - extract only valid tolerance percentages.",
       "mappingFormField": "Tag 39A",
       "mappingFormDescription": "Percentage Credit Amount Tolerance",
       "dataCategoryId": "7",
