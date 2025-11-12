@@ -9,7 +9,24 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-from app.utils.app_config import deployment_name
+from app.utils.app_config import (
+    deployment_name, 
+    AZURE_OPENAI_API_VERSION, 
+    AZURE_OPENAI_API_TYPE,
+    OPENAI_TEMPERATURE_DEFAULT, 
+    OPENAI_TEMPERATURE_CLASSIFICATION, 
+    OPENAI_TEMPERATURE_EXTRACTION, 
+    OPENAI_TEMPERATURE_COMPLIANCE,
+    OPENAI_MAX_TOKENS_DEFAULT, 
+    OPENAI_MAX_TOKENS_CLASSIFICATION, 
+    OPENAI_MAX_TOKENS_EXTRACTION, 
+    OPENAI_MAX_TOKENS_COMPLIANCE,
+    OPENAI_TOP_P, 
+    OPENAI_FREQUENCY_PENALTY, 
+    OPENAI_PRESENCE_PENALTY, 
+    OPENAI_SEED, 
+    OPENAI_MAX_DELAY
+)
 import app.utils.app_config as app_config
 from app.utils.openai_retry import retry_openai, create_websocket_retry
 
@@ -19,9 +36,9 @@ class DocumentClassifier:
         logging.info("Initializing DocumentClassifier...")
 
         # Always load from environment variables to ensure we have the credentials
-        openai.api_type = "azure"
+        openai.api_type = AZURE_OPENAI_API_TYPE
         openai.api_base = os.getenv("AZURE_OPENAI_API_BASE")
-        openai.api_version = "2024-10-01-preview"
+        openai.api_version = AZURE_OPENAI_API_VERSION
         openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
 
         logging.info(f"OpenAI API Type at init: {openai.api_type}")
@@ -157,22 +174,22 @@ class DocumentClassifier:
                 return cat_dict
         except Exception as e:
             logging.error(f"Failed to load document categories: {e}")
-            # Set default config
+            # Set default config with values from app_config
             self.prompt_config = {
                 'classification': {
                     'system_prompt': 'You are an expert document classifier for international trade and finance documents.',
-                    'temperature': 0.1,
-                    'max_tokens': 500
+                    'temperature': OPENAI_TEMPERATURE_CLASSIFICATION,
+                    'max_tokens': OPENAI_MAX_TOKENS_CLASSIFICATION
                 },
                 'extraction': {
                     'system_prompt': 'You are an expert data extraction system for trade finance documents.',
-                    'temperature': 0,
-                    'max_tokens': 3000
+                    'temperature': OPENAI_TEMPERATURE_EXTRACTION,
+                    'max_tokens': OPENAI_MAX_TOKENS_EXTRACTION
                 },
                 'compliance': {
                     'system_prompt': 'You are a compliance verification expert for trade finance documents.',
-                    'temperature': 0.2,
-                    'max_tokens': 1500
+                    'temperature': OPENAI_TEMPERATURE_COMPLIANCE,
+                    'max_tokens': OPENAI_MAX_TOKENS_COMPLIANCE
                 }
             }
             return {
@@ -308,9 +325,9 @@ Return ONLY this JSON structure (no markdown, no additional text):
             # Ensure OpenAI is configured before each call (thread safety)
             if not openai.api_key:
                 logging.warning("API key not set, reloading from environment")
-                openai.api_type = "azure"
+                openai.api_type = AZURE_OPENAI_API_TYPE
                 openai.api_base = os.getenv("AZURE_OPENAI_API_BASE")
-                openai.api_version = "2024-10-01-preview"
+                openai.api_version = AZURE_OPENAI_API_VERSION
                 openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
             
             # Log API configuration for debugging
@@ -520,7 +537,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
                 client_id=client_id,
                 task_id=task_id or "document_classification",
                 # max_retries=None uses admin config automatically
-                max_delay=300.0
+                max_delay=OPENAI_MAX_DELAY
             )
 
             @retry_decorator
@@ -531,7 +548,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
                         {"role": "system", "content": "You are a document classification assistant."},
                         {"role": "user", "content": prompt.strip()}
                     ],
-                    temperature=0.0
+                    temperature=OPENAI_TEMPERATURE_DEFAULT
                 )
 
             return call_api()
@@ -545,7 +562,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
                         {"role": "system", "content": "You are a document classification assistant."},
                         {"role": "user", "content": prompt.strip()}
                     ],
-                    temperature=0.0
+                    temperature=OPENAI_TEMPERATURE_DEFAULT
                 )
 
             return call_api()
