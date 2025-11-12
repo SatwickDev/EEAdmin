@@ -17463,8 +17463,8 @@ Return compliance status for each field.'''
 
     def classify_pages_batch(pages_ocr_data, document_classifier):
         """
-        OPTIMIZED: Classify all pages in a single batch API call with enhanced Covering Schedule detection.
-
+        OPTIMIZED: Classify all pages with intelligent multi-document detection and Covering Schedule logic.
+        
         Args:
             pages_ocr_data: List of OCR data for each page
             document_classifier: DocumentClassifier instance
@@ -17489,8 +17489,8 @@ Return compliance status for each field.'''
                         'chars': len(page_text)
                     })
                 else:
-                    # Truncate long pages for efficiency but keep more text for first page
-                    max_length = 2000 if page_num == 1 else 1500
+                    # Keep more text for first 2 pages to better detect Covering Schedule
+                    max_length = 2500 if page_num <= 2 else 1500
                     truncated_text = page_text[:max_length] + "..." if len(page_text) > max_length else page_text
                     pages_summary.append({
                         'page': page_num,
@@ -17515,115 +17515,210 @@ Return compliance status for each field.'''
             for category_name in sorted(doc_types_by_category.keys()):
                 if doc_types_by_category[category_name]:
                     category_sections.append(f"**{category_name}:**\n{', '.join(sorted(doc_types_by_category[category_name]))}")
- 
-            # Log the document types being sent to AI for debugging
-            logger.info("🔍 DEBUG: Document types being sent to batch classifier:")
-            for category_name, types in doc_types_by_category.items():
-                if types:
-                    logger.info(f"  {category_name}: {', '.join(sorted(types))}")
- 
-            # Detect if this is likely a multi-document package
+
             total_pages = len(pages_summary)
-            is_multi_doc_package = total_pages >= 3
-           
-            # Build batch classification prompt with enhanced Covering Schedule detection
+            
+            # ENHANCED: Detect if this is a multi-document package
+            # Check Page 1 for Covering Schedule indicators
+            first_page_text = pages_summary[0].get('text', '').lower() if pages_summary else ''
+            
+            covering_schedule_indicators = {
+                'has_schedule_title': any(term in first_page_text[:400] for term in 
+                    ['covering schedule', 'document schedule', 'schedule of documents', 'list of documents', 'schedule']),
+                'has_tabular_headers': any(term in first_page_text for term in 
+                    ['document type', 's.no', 's/n', 'serial no', 'sl.no', 'ref no', 'reference no', 'description', 'remarks']),
+                'multiple_doc_refs': (
+                    first_page_text.count('invoice') > 2 or 
+                    first_page_text.count('bill of lading') > 1 or
+                    first_page_text.count('certificate') > 2 or
+                    first_page_text.count('lc') > 3 or
+                    first_page_text.count('l/c') > 3 or
+                    first_page_text.count('b/l') > 1 or
+                    first_page_text.count('packing list') > 1
+                ),
+                'has_list_structure': first_page_text.count('|') > 5 or first_page_text.count('\n') > 15,
+                'has_lc_narrative': (
+                    'terms and conditions' in first_page_text or
+                    'we hereby issue' in first_page_text or
+                    'irrevocable' in first_page_text[:500] or
+                    'documentary credit' in first_page_text
+                )
+            }
+            
+            cs_indicator_score = sum([v for k, v in covering_schedule_indicators.items() if k != 'has_lc_narrative'])
+            has_lc_narrative = covering_schedule_indicators['has_lc_narrative']
+            
+            # CRITICAL RULE: Multi-document package detection with strong bias
+            # 6+ pages = 95% likely to have Covering Schedule as Page 1
+            # 2-5 pages = 95% likely to be single document (typically LC)
+            is_multi_doc_package = total_pages >= 6
+            
+            # Strong override: If 6+ pages, Page 1 is Covering Schedule UNLESS it has clear LC narrative
+            if is_multi_doc_package and not has_lc_narrative:
+                is_likely_covering_schedule = True  # Force to True for 6+ pages
+                if cs_indicator_score == 0:
+                    cs_indicator_score = 1  # Boost score for multi-doc packages
+            elif total_pages >= 6 and cs_indicator_score >= 1:
+                # Even with LC narrative, if indicators present, likely CS
+                is_likely_covering_schedule = True
+            else:
+                is_likely_covering_schedule = cs_indicator_score >= 2
+            
+            logger.info(f"📊 Document Analysis:")
+            logger.info(f"   Total pages: {total_pages}")
+            logger.info(f"   Covering Schedule indicators: {cs_indicator_score}/4")
+            logger.info(f"   - Schedule title: {covering_schedule_indicators['has_schedule_title']}")
+            logger.info(f"   - Tabular headers: {covering_schedule_indicators['has_tabular_headers']}")
+            logger.info(f"   - Multiple doc refs: {covering_schedule_indicators['multiple_doc_refs']}")
+            logger.info(f"   - List structure: {covering_schedule_indicators['has_list_structure']}")
+            logger.info(f"   - Has LC narrative: {has_lc_narrative}")
+            logger.info(f"   📌 Multi-document package: {is_multi_doc_package}")
+            if is_multi_doc_package:
+                logger.info(f"   📌 Page 1 Bias: 95% COVERING SCHEDULE (6+ pages = multi-doc)")
+            else:
+                logger.info(f"   📌 Page 1 Bias: 95% LETTER OF CREDIT (2-5 pages = single doc)")
+            
+            # Build batch classification prompt
             batch_prompt = f"""You are an expert document classifier for international trade and finance documents.
- 
-    TASK: Classify ALL {len(pages_summary)} pages in this document package in a SINGLE response.
- 
+
+    TASK: Classify ALL {len(pages_summary)} pages in this document package.
+
     ### Available Document Types by Business Process Category:
- 
+
     {chr(10).join(category_sections)}
- 
+
     ### CRITICAL CLASSIFICATION RULES:
- 
-    **COVERING SCHEDULE DETECTION (HIGHEST PRIORITY):**
-    1. If Page 1 contains ANY of these indicators, classify it as "Covering Schedule":
-    - Title/header contains: "Covering Schedule", "Schedule", "Document Schedule", "List of Documents"
-    - Tabular/list format with multiple document references
-    - Contains LC numbers, invoice numbers, or document reference numbers in a list
-    - Contains columns like: Document Type, Reference Number, Date, etc.
- 
-    2. **MULTI-DOCUMENT PACKAGE RULE**:
-    - If this package has {total_pages} pages with 3+ different document types, Page 1 is HIGHLY LIKELY a Covering Schedule
-    - Covering Schedule probability: {'95%' if is_multi_doc_package else '50%'} for Page 1
- 
+
+    **DOCUMENT PACKAGE ANALYSIS:**
+    - Total Pages: {total_pages}
+    - Multi-Document Package: {'YES' if is_multi_doc_package else 'NO'}
+    - Covering Schedule Indicators on Page 1: {cs_indicator_score}/4
+
+    **COVERING SCHEDULE DETECTION (APPLY ONLY IF MULTI-DOCUMENT PACKAGE):**
+
+    {'🎯 HIGH PRIORITY: This appears to be a MULTI-DOCUMENT PACKAGE (6+ pages). Page 1 is VERY LIKELY a Covering Schedule if:' if is_multi_doc_package else '⚠️ This appears to be a SINGLE DOCUMENT (2-5 pages). DO NOT classify as Covering Schedule unless explicit "Covering Schedule" title present. Likely a multi-page Letter of Credit.'}
+
+    {'1. Page 1 contains "Covering Schedule" or "Schedule" in title → 98% confidence Covering Schedule' if is_multi_doc_package else ''}
+    {'2. Page 1 has tabular/list format with multiple document references → 95% confidence Covering Schedule' if is_multi_doc_package else ''}
+    {'3. Page 1 lists LC numbers, invoice numbers, or document types in columns → 95% confidence Covering Schedule' if is_multi_doc_package else ''}
+    {'4. For 6+ page packages, even if indicators are weak, assume Covering Schedule unless clear LC narrative present' if is_multi_doc_package else ''}
+    {'5. **CRITICAL**: Covering Schedule can span 1-3 pages. If Page 2-3 still has tabular format with document lists, mark as continuation of Covering Schedule, NOT as Letter of Credit' if is_multi_doc_package else ''}
+    {'6. **The actual LC (if present) will start after the Covering Schedule**, typically pages 3-7' if is_multi_doc_package else ''}
+
     **Letter of Credit vs Covering Schedule:**
-    - **Letter of Credit**: Contains credit amount, expiry date, detailed terms and conditions, beneficiary details, issuing bank, payment terms (narrative document)
-    - **Covering Schedule**: Summary/index listing multiple documents, contains schedule format, reference numbers in tabular/list format
-    - **KEY RULE**: If document title says "Covering Schedule" or has tabular list of documents → Classify as "Covering Schedule", NOT "Letter of Credit"
- 
-    **Other Document Distinctions:**
-    - **Bill of Lading**: "Bill of Lading" header, negotiable transport document
-    - **Commercial Invoice**: Final invoice with "Commercial Invoice" header, final prices
-    - **Packing List**: Details packaging (boxes, cartons), dimensions
-    - **Certificate of Origin**: "Certificate of Origin" header, country declaration
- 
+    - **Letter of Credit**: Contains credit amount, expiry date, detailed terms and conditions, beneficiary details, issuing bank, payment terms (NARRATIVE document, usually 2-4 pages, comes AFTER Covering Schedule in multi-doc packages)
+    - **Covering Schedule**: Summary/index listing multiple documents, tabular format, reference numbers (USUALLY Page 1-3 of 5+ page packages, comes BEFORE the actual LC)
+    - **KEY RULE**: 
+      - Multi-page LC documents (2-4 pages) should NOT be split
+      - Covering Schedule pages should NOT be classified as LC even if they contain LC information
+      - In multi-doc packages: Covering Schedule FIRST, then LC document, then other documents
+      - If pages are tabular with document references → Covering Schedule continuation
+      - If pages are narrative with detailed terms → Letter of Credit
+
+    **SINGLE vs MULTI-DOCUMENT DETECTION:**
+    - **SINGLE Document (2-5 pages)**: All pages are continuation of the same document (e.g., 4-5 page Letter of Credit)
+      - Pages have similar content structure
+      - No clear document boundaries
+      - Sequential narrative or terms
+      - Mark pages 2+ as is_continuation: true
+      - Common: Multi-page LC (2-5 pages), Multi-page Invoice (2-3 pages), Multi-page BL (1-2 pages)
+
+    - **MULTI-DOCUMENT Package (6+ pages)**: Contains MULTIPLE separate documents
+      - Page 1 is 95% likely a Covering Schedule (index/list)
+      - Clear document boundaries (new headers, different formats)
+      - Each document starts fresh with own title
+      - Mark new documents as is_continuation: false
+      - Typical structure: CS (p1-3) → LC (p3-7) → Invoice (p8-10) → BL → Certificates
+
+    **Other Document Types:**
+    - **Bill of Lading**: "Bill of Lading" header, transport document (1-2 pages typically)
+    - **Commercial Invoice**: "Commercial Invoice" header, itemized goods and prices (1-3 pages)
+    - **Packing List**: Details packaging, cartons, dimensions (1-2 pages)
+    - **Certificate of Origin**: "Certificate of Origin" header, country declaration (1 page)
+    - **Insurance Certificate**: "Insurance Certificate" header, coverage details (1-2 pages)
+
     ### PAGES TO CLASSIFY:
- 
+
     {json.dumps(pages_summary, indent=2)}
- 
+
     ### CLASSIFICATION INSTRUCTIONS:
- 
-    1. **ANALYZE PAGE 1 FIRST**:
-    - Check if it's a Covering Schedule (look for title, tabular format, multiple document references)
-    - If Page 1 is a Covering Schedule, subsequent pages are likely individual documents listed in it
- 
-    2. For each page:
-    - Look at the EXPLICIT TITLE/HEADER (most important)
-    - Determine if it's a NEW document or CONTINUATION of previous page
-    - Classify document type (MUST be EXACTLY from the list above)
-    - Empty pages should be marked as "Empty/Insufficient Text"
- 
-    3. Confidence Scoring:
-    - 95-100: Clear document title/header matches type
-    - 85-94: Strong indicators including title
-    - 70-84: Reasonable match from content structure
-    - 50-69: Limited information, inference only
- 
-    4. If Page 1 appears to list multiple documents or has "Schedule" in title → HIGH confidence it's "Covering Schedule"
- 
-    Respond in VALID JSON format ONLY (no markdown, no additional text):
+
+    1. **FIRST: Determine Package Type**
+       - If 6+ pages → Multi-document package (Page 1 = 95% Covering Schedule)
+       - If 2-5 pages → Single document (95% likely LC or other single doc type, NOT Covering Schedule)
+
+    2. **IF MULTI-DOCUMENT PACKAGE ({total_pages} pages, indicators: {cs_indicator_score}/4):**
+       - Check Page 1 for Covering Schedule indicators (title, tabular format, document list)
+       - **DEFAULT: Classify Page 1 as "Covering Schedule" with 95% confidence** (unless clear LC narrative)
+       - **IMPORTANT**: If Page 2-3 still has tabular/list format → Mark as continuation of Covering Schedule
+       - DO NOT classify Covering Schedule pages as "Letter of Credit" just because they mention LC numbers
+       - The actual Letter of Credit document will appear AFTER the Covering Schedule (typically page 3-7)
+       - Pattern: Covering Schedule (pages 1-3) → LC (pages 3-7) → Invoice → BL → Certificates
+
+    3. **IF SINGLE DOCUMENT (2-5 pages):**
+       - Classify Page 1 by its explicit title (likely "Letter of Credit", "Commercial Invoice", etc.)
+       - Mark pages 2+ as is_continuation: true (same document continues)
+       - DO NOT split a 4-5 page LC into multiple document types
+       - DO NOT classify as Covering Schedule unless explicit "Covering Schedule" title present
+
+    4. **For each page:**
+       - Look at EXPLICIT TITLE/HEADER first
+       - Check for document boundaries (new title, format change)
+       - Mark is_continuation appropriately
+       - Use confidence scores 95-100 for clear titles, 70-85 for inferred
+
+    5. **Confidence Scoring:**
+       - 95-100: Clear title/header matches type
+       - 85-94: Strong indicators with title
+       - 70-84: Reasonable match from structure
+       - 50-69: Limited info, continuation page
+
+    Respond in VALID JSON format ONLY (no markdown):
     {{
-    "pages": [
+      "package_analysis": {{
+        "is_multi_document": true/false,
+        "covering_schedule_likely": true/false,
+        "reasoning": "Brief package-level analysis"
+      }},
+      "pages": [
         {{
-        "page": 1,
-        "document_type": "exact document name from list",
-        "is_continuation": false,
-        "confidence": 95,
-        "reasoning": "Document title found: [title]. Contains [key indicators]."
+          "page": 1,
+          "document_type": "exact document name from list",
+          "is_continuation": false,
+          "confidence": 95,
+          "reasoning": "Document title: [title]. Key indicators: [indicators]."
         }},
         ...
-    ]
+      ]
     }}
- 
+
     **CRITICAL REMINDERS:**
-    - document_type MUST be exactly one of the document types listed above
-    - ALWAYS prioritize explicit document title over content similarity
-    - If Page 1 has tabular format with document references → "Covering Schedule"
-    - is_continuation: true if page continues previous document, false if new document starts
-    - For multi-page packages ({total_pages} pages), Page 1 is often a Covering Schedule"""
- 
+    - DO NOT split single multi-page documents (like 4-page LC)
+    - Continuation pages should have is_continuation: true and same document_type as previous page
+    - Multi-document packages (5+ pages) with indicators → Page 1 is likely Covering Schedule
+    - Always prioritize explicit document title over content analysis"""
+
             logger.info(f"📤 Sending batch classification request for {len(pages_summary)} pages...")
-            logger.info(f"🔍 Multi-document package detected: {is_multi_doc_package} (threshold: 3+ pages)")
- 
-            # Single API call for all pages with system prompt
-            system_message = """You are an expert document classification system for international trade and finance documents.
- 
-    **PRIORITY RULE**: If a document's title/header says "Covering Schedule" or shows a tabular list of documents, classify it as "Covering Schedule", NOT as "Letter of Credit", even if it contains LC-related information.
- 
-    Always prioritize explicit document titles over content similarity."""
- 
+
+            # API call with system message
+            system_message = """You are an expert document classification system for international trade and finance documents. 
+
+    CRITICAL RULES:
+    1. SINGLE DOCUMENT: If 2-4 pages appear to be ONE document, mark continuation pages appropriately. DO NOT split a 4-page Letter of Credit into 2 different types.
+    2. MULTI-DOCUMENT PACKAGE: If 5+ pages with multiple distinct documents, Page 1 is often a Covering Schedule.
+    3. ALWAYS prioritize explicit document titles over content similarity.
+    4. Continuation pages should maintain the same document_type as the page they continue."""
+
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": batch_prompt}
                 ],
-                temperature=0.05,  # Lower temperature for more consistent results
-                max_tokens=2500,  # Increased for multiple pages
-                seed=12345,  # Reproducibility
-                top_p=0.1,  # Reduce randomness
+                temperature=0.05,
+                max_tokens=3000,
+                seed=12345,
+                top_p=0.1,
                 frequency_penalty=0,
                 presence_penalty=0,
                 response_format={"type": "json_object"}
@@ -17631,53 +17726,130 @@ Return compliance status for each field.'''
 
             response_text = response.choices[0].message.content.strip()
 
-            # Clean up response
+            # Clean response
             if response_text.startswith('```json'):
                 response_text = response_text.replace('```json', '').replace('```', '')
             elif response_text.startswith('```'):
                 response_text = response_text.replace('```', '')
             response_text = response_text.strip()
 
-            # Parse batch response
+            # Parse response
             batch_result = json.loads(response_text)
+            
+            # Extract package analysis if present
+            package_analysis = batch_result.get('package_analysis', {})
+            ai_thinks_multi_doc = package_analysis.get('is_multi_document', is_multi_doc_package)
+            ai_thinks_covering_schedule = package_analysis.get('covering_schedule_likely', False)
+            
+            logger.info(f"🤖 AI Analysis:")
+            logger.info(f"   Multi-document: {ai_thinks_multi_doc}")
+            logger.info(f"   Covering Schedule likely: {ai_thinks_covering_schedule}")
+            logger.info(f"   Reasoning: {package_analysis.get('reasoning', 'N/A')}")
+            
             pages_data = batch_result.get('pages', [])
 
             if len(pages_data) != len(pages_ocr_data):
                 logger.warning(f"⚠️ Batch classification returned {len(pages_data)} results but expected {len(pages_ocr_data)}")
- 
-            # POST-PROCESSING: Apply heuristics for Covering Schedule detection
-            if len(pages_data) > 0:
+
+            # POST-PROCESSING: Apply intelligent override logic
+            if len(pages_data) > 0 and total_pages >= 5:
                 first_page = pages_data[0]
-                first_page_text = pages_summary[0].get('text', '').lower()
-               
-                # Check if Page 1 should be Covering Schedule
-                covering_schedule_indicators = [
-                    'covering schedule' in first_page_text,
-                    'schedule' in first_page_text[:200],  # Title area
-                    'document type' in first_page_text and 'reference' in first_page_text,
-                    first_page_text.count('lc') > 2 or first_page_text.count('l/c') > 2,  # Multiple LC refs
-                    first_page_text.count('invoice') > 2,  # Multiple invoice refs
-                ]
-               
-                # Count unique document types in the package
-                unique_doc_types = set()
-                for page_info in pages_data:
+                
+                # Count unique document types in subsequent pages
+                unique_doc_types_after_page1 = set()
+                for page_info in pages_data[1:]:  # Skip page 1
                     doc_type = page_info.get('document_type', '')
-                    if doc_type not in ['Empty/Insufficient Text', 'Unknown']:
-                        unique_doc_types.add(doc_type)
-               
-                # Override: If Page 1 has strong indicators AND package has 3+ doc types
-                if (sum(covering_schedule_indicators) >= 2 or
-                    (len(unique_doc_types) >= 3 and is_multi_doc_package)):
-                   
-                    if first_page.get('document_type') != 'Covering Schedule':
-                        logger.warning(f"⚠️ OVERRIDE: Page 1 classified as '{first_page.get('document_type')}' but indicators suggest Covering Schedule")
-                        logger.warning(f"   Indicators: {sum(covering_schedule_indicators)}/5, Unique docs: {len(unique_doc_types)}, Pages: {total_pages}")
-                       
-                        first_page['document_type'] = 'Covering Schedule'
-                        first_page['confidence'] = 90
-                        first_page['reasoning'] = f"Override applied: Document contains {len(unique_doc_types)} different document types across {total_pages} pages with tabular format indicators, characteristic of a Covering Schedule."
- 
+                    if doc_type not in ['Empty/Insufficient Text', 'Unknown', 'Covering Schedule']:
+                        unique_doc_types_after_page1.add(doc_type)
+                
+                # Strong override conditions for Covering Schedule
+                should_override_to_cs = (
+                    # STRONGEST CONDITION: 6+ pages without clear LC narrative = Covering Schedule
+                    (is_multi_doc_package and not has_lc_narrative) or
+                    # Condition 1: Explicit indicators + multi-doc package
+                    (cs_indicator_score >= 2 and is_multi_doc_package) or
+                    # Condition 2: 6+ pages with 2+ different document types (likely multi-doc)
+                    (total_pages >= 6 and len(unique_doc_types_after_page1) >= 2) or
+                    # Condition 3: AI detected covering schedule + indicators
+                    (ai_thinks_covering_schedule and cs_indicator_score >= 1) or
+                    # Condition 4: 7+ pages (very likely multi-doc package)
+                    (total_pages >= 7) or
+                    # Condition 5: 6 pages with any indicators
+                    (total_pages == 6 and cs_indicator_score >= 1)
+                )
+                
+                # Apply override if Page 1 is NOT already classified as Covering Schedule
+                if should_override_to_cs and first_page.get('document_type') != 'Covering Schedule':
+                    original_type = first_page.get('document_type')
+                    logger.warning(f"🔄 OVERRIDE APPLIED:")
+                    logger.warning(f"   Original: {original_type}")
+                    logger.warning(f"   Override to: Covering Schedule")
+                    logger.warning(f"   Reason: {total_pages} pages, {len(unique_doc_types_after_page1)} unique doc types, {cs_indicator_score} indicators")
+                    
+                    first_page['document_type'] = 'Covering Schedule'
+                    first_page['confidence'] = 95  # Increased from 92
+                    first_page['reasoning'] = f"95% Rule Applied: Multi-document package ({total_pages} pages). Page 1 is Covering Schedule (found {len(unique_doc_types_after_page1)} document types after page 1, indicators: {cs_indicator_score}/4, no LC narrative detected)."
+                    first_page['is_continuation'] = False
+            
+            # CRITICAL FIX: If this is a multi-doc package, REMOVE all "Letter of Credit" classifications
+            # Multi-doc packages NEVER contain LC - any LC classification is a mistake
+            if is_multi_doc_package:
+                lc_found = False
+                for page_info in pages_data:
+                    if page_info.get('document_type') == 'Letter of Credit':
+                        lc_found = True
+                        original_type = page_info.get('document_type')
+                        page_num = page_info.get('page', 0)
+                        
+                        # If Page 1, it's definitely Covering Schedule
+                        if page_num == 1:
+                            logger.warning(f"🔄 PAGE {page_num} MULTI-DOC RULE APPLIED:")
+                            logger.warning(f"   Original: {original_type}")
+                            logger.warning(f"   Corrected to: Covering Schedule")
+                            logger.warning(f"   Reason: Multi-doc packages (6+ pages) NEVER contain Letter of Credit. Page 1 is always Covering Schedule.")
+                            
+                            page_info['document_type'] = 'Covering Schedule'
+                            page_info['is_continuation'] = False
+                            page_info['confidence'] = 98
+                            page_info['reasoning'] = f"100% RULE: Multi-document package ({total_pages} pages) never contains Letter of Credit. Page 1 is Covering Schedule."
+                        else:
+                            # Check if it's continuation of Page 1's Covering Schedule
+                            page_text = pages_summary[page_num - 1].get('text', '').lower() if page_num - 1 < len(pages_summary) else ''
+                            
+                            is_still_schedule = (
+                                page_text.count('|') > 5 or  # Tabular format
+                                'document type' in page_text or
+                                's.no' in page_text or
+                                's/n' in page_text or
+                                page_text.count('invoice') > 2 or
+                                page_text.count('certificate') > 2
+                            )
+                            
+                            if is_still_schedule or page_num <= 3:  # Pages 2-3 likely CS continuation
+                                logger.warning(f"🔄 PAGE {page_num} MULTI-DOC RULE APPLIED:")
+                                logger.warning(f"   Original: {original_type}")
+                                logger.warning(f"   Corrected to: Covering Schedule (continuation)")
+                                logger.warning(f"   Reason: Multi-doc package - LC classification is incorrect. Appears to be CS continuation.")
+                                
+                                page_info['document_type'] = 'Covering Schedule'
+                                page_info['is_continuation'] = True
+                                page_info['confidence'] = 90
+                                page_info['reasoning'] = f"Multi-doc package correction: Changed from LC to Covering Schedule continuation (tabular format detected)."
+                            else:
+                                # It's likely another document (Invoice, BL, etc.), reclassify
+                                logger.warning(f"🔄 PAGE {page_num} MULTI-DOC RULE APPLIED:")
+                                logger.warning(f"   Original: {original_type}")
+                                logger.warning(f"   Action: Needs reclassification (LC not possible in multi-doc packages)")
+                                logger.warning(f"   Likely: Commercial Invoice, Bill of Lading, or Certificate")
+                                
+                                # Keep as-is for now but flag for review
+                                # In production, you might want to force reclassification here
+                                page_info['confidence'] = max(page_info.get('confidence', 50) - 20, 50)
+                                page_info['reasoning'] = f"WARNING: Classified as LC but multi-doc packages never contain LC. May need manual review."
+                
+                if lc_found:
+                    logger.warning(f"⚠️ CRITICAL: Multi-document package contained Letter of Credit classification(s) - all corrected/flagged")
+
             # Build page classifications from batch result
             page_classifications = []
             for idx, page_info in enumerate(pages_data):
@@ -17695,28 +17867,31 @@ Return compliance status for each field.'''
                     page_text = ""
                     page_data = []
 
-                # Apply continuation logic
+                # Apply continuation logic - inherit from previous page
                 if is_continuation and len(page_classifications) > 0:
                     prev_type = page_classifications[-1]['document_type']
                     if prev_type not in ['Empty/Insufficient Text', 'Unknown']:
                         final_document_type = prev_type
                         final_confidence = max(confidence * 100 if confidence <= 1.0 else confidence, 75)
-                        logger.info(f"  Page {page_num}: CONTINUATION of {prev_type} (confidence: {final_confidence:.0f}%)")
+                        logger.info(f"  📄 Page {page_num}: CONTINUATION of {prev_type} (confidence: {final_confidence:.0f}%)")
                     else:
                         final_document_type = document_type
                         final_confidence = confidence * 100 if confidence <= 1.0 else confidence
-                        logger.info(f"  Page {page_num}: FRESH {final_document_type} (confidence: {final_confidence:.0f}%)")
+                        logger.info(f"  📄 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
                 else:
                     final_document_type = document_type
                     final_confidence = confidence * 100 if confidence <= 1.0 else confidence
-                   
-                    # Highlight Covering Schedule detection
+                    
+                    # Highlight important classifications
                     if final_document_type == 'Covering Schedule':
                         logger.info(f"  📋 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%) ⭐")
+                    elif page_num == 1:
+                        logger.info(f"  📄 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%) [FIRST PAGE]")
                     else:
-                        logger.info(f"  Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
- 
-                logger.info(f"    ↳ {reasoning}")
+                        logger.info(f"  📄 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
+
+                if reasoning:
+                    logger.info(f"      ↳ {reasoning[:100]}...")
 
                 page_classifications.append({
                     'page': page_num,
@@ -17726,17 +17901,30 @@ Return compliance status for each field.'''
                     'ocr_data': page_data,
                     'is_continuation': is_continuation
                 })
- 
-            logger.info(f"✅ Batch classification completed: {len(page_classifications)} pages classified")
-            logger.info(f"📊 Unique document types found: {len(unique_doc_types)} - {', '.join(unique_doc_types)}")
-           
+
+            # Final summary
+            unique_types = set()
+            continuation_count = 0
+            for pc in page_classifications:
+                if not pc['is_continuation']:
+                    unique_types.add(pc['document_type'])
+                else:
+                    continuation_count += 1
+            
+            logger.info(f"")
+            logger.info(f"✅ CLASSIFICATION SUMMARY:")
+            logger.info(f"   Total pages: {len(page_classifications)}")
+            logger.info(f"   Unique document types: {len(unique_types)}")
+            logger.info(f"   Continuation pages: {continuation_count}")
+            logger.info(f"   Document types found: {', '.join(sorted(unique_types))}")
+            
             return page_classifications
 
         except Exception as e:
             logger.error(f"❌ Batch classification failed: {e}")
             import traceback
             logger.error(traceback.format_exc())
-            return []  # Fall back to sequential classification
+            return []
 
     def process_document_page_by_page(uploaded_file, function_name=None, product_name=None,
                                       document_type=None, progress_tracker=None, config=None,
