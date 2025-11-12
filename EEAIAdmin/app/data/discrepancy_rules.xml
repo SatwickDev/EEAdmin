@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<discrepancyRules version="1.0" lastUpdated="2025-10-14T20:28:46.090450">
+<discrepancyRules version="1.0" lastUpdated="2025-11-12T12:09:01.775923">
   <rule id="rule-0002">
     <code>R-0002</code>
     <documentType>Bill of Lading</documentType>
@@ -9009,4 +9009,102 @@
     <createdAt>2025-10-14T20:28:27.208838</createdAt>
     <updatedAt>2025-10-14T20:28:27.208838</updatedAt>
   </rule>
+  <rule id="1116030b-1f56-492c-bb89-9f7166d09608">
+    <code>R-1001</code>
+    <documentType>Bill of Lading</documentType>
+    <description>Shipment date in Bill of Lading must be compared with the shipment date mentioned in the Master LC or the latest LC data for consistency.</description>
+    <basis>Bank Practice</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-12T12:09:01.771838</createdAt>
+    <updatedAt>2025-11-12T12:09:01.771838</updatedAt>
+  </rule>
+  <rule id="7994bdbb-e9c0-4307-89e7-bf18ff054cda">
+    <code>R-1002</code>
+    <documentType>Certificate of Origin</documentType>
+    <description>Certificate must be issued by an authorized body (chamber/inspector).</description>
+    <basis>ISBP 821</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-12T12:29:01.784568</createdAt>
+    <updatedAt>2025-11-12T12:29:01.784568</updatedAt>
+</rule>
+<rule id="f41b6b9b-8d7c-4f4a-872d-235c8137a9c1">
+    <code>R-1003</code>
+    <documentType>Certificate of Origin</documentType>
+    <description>Certificate of Origin must not be made in the name of Abu Dhabi Islamic Bank (47A-1).</description>
+    <basis>Bank Practice</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208521</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208521</updatedAt>
+</rule>
+
+<rule id="8a1d6219-29a2-43a1-a5a8-5d9e6bba7f9c">
+    <code>R-1004</code>
+    <documentType>Certificate of Origin</documentType>
+    <description>Certificate of Origin must show the name and address of the manufacturer or processor.</description>
+    <basis>ISBP 821</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208522</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208522</updatedAt>
+</rule>
+
+<rule id="4a72b47d-5314-4b85-a3c4-9fd3c6c9521d">
+    <code>R-1005</code>
+    <documentType>Bill of Lading</documentType>
+    <description>Freight Forwarder Bill of Lading presented in lieu of an original Bill of Lading must be flagged as a discrepancy.</description>
+    <basis>Bank Practice</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208523</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208523</updatedAt>
+</rule>
+
+<rule id="6d83b1f1-1f76-49d3-9b93-1a08e90a41e9">
+    <code>R-1006</code>
+    <documentType>Vessel Certificate</documentType>
+    <description>Vessel Certificate must confirm that shipment is made on a regular or conference line vessel.</description>
+    <basis>Bank Practice</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208524</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208524</updatedAt>
+</rule>
+
+<rule id="a1b6e00c-41e7-4a78-93a2-3a9cba7f5f25">
+    <code>R-1007</code>
+    <documentType>Certificate of Weight</documentType>
+    <description>Certificate of Weight must show the Notify Party as per LC clause (47A-19).</description>
+    <basis>Bank Practice</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208525</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208525</updatedAt>
+</rule>
+
+<rule id="b9dfd91e-85d4-4f22-9e2a-8a3216e39a3d">
+    <code>R-1008</code>
+    <documentType>Insurance Policy/Certificate</documentType>
+    <description>Copy of Marine Insurance Declaration presented instead of the original must be flagged as a discrepancy.</description>
+    <basis>UCP 600 Article 28(a)</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208526</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208526</updatedAt>
+</rule>
+
+<rule id="d122e6f1-9a25-4723-820a-f28b6d99b542">
+    <code>R-1009</code>
+    <documentType>Insurance Policy/Certificate</documentType>
+    <description>Insurance coverage must comply fully with the terms and conditions of the Letter of Credit.</description>
+    <basis>UCP 600 Article 28(e)</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208527</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208527</updatedAt>
+</rule>
+
+<rule id="c77f45bb-3f0b-4e9a-bae0-b0712f1a8223">
+    <code>R-1010</code>
+    <documentType>Insurance Policy/Certificate</documentType>
+    <description>Insurance Policy or Certificate must show the Notify Party as per LC clause (47A-19).</description>
+    <basis>Bank Practice</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-10-14T20:28:27.208528</createdAt>
+    <updatedAt>2025-10-14T20:28:27.208528</updatedAt>
+</rule>
+
 </discrepancyRules>
