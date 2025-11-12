@@ -17472,6 +17472,7 @@ Return compliance status for each field.'''
         Returns:
             list: Page classifications with document_type, confidence, etc.
         """
+        
         try:
             import json
             import openai
@@ -18502,6 +18503,8 @@ Return compliance status for each field.'''
         Pause for user classification correction (no extraction yet)
         """
         logger.info("=== API CALL: /api/document/classify-initial (Stage 1) ===")
+        from app.utils.reload_helper import reload_all_jsons
+        reload_all_jsons()
 
         try:
             # === INPUT VALIDATION ===
@@ -18583,6 +18586,9 @@ Return compliance status for each field.'''
         import threading
         import json
         from datetime import datetime
+
+        from app.utils.reload_helper import reload_all_jsons
+        reload_all_jsons()
 
         try:
             # === INPUT VALIDATION ===
