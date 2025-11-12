@@ -8793,13 +8793,19 @@ Return compliance status for each field.'''
             'timestamp': str(time.time())
         })
 
-    # ============================================
+    ## ============================================
     # UTILITIES
     # ============================================
 
     def fuzzy_match(str1: str, str2: str) -> float:
         """Calculate similarity ratio"""
         return SequenceMatcher(None, str1.lower(), str2.lower()).ratio()
+
+
+    def strip_punctuation(text: str) -> str:
+        """Remove leading/trailing punctuation"""
+        import string
+        return text.strip(string.punctuation + string.whitespace)
 
 
     def merge_bboxes(bboxes: List[List[float]], padding: float = 0.01) -> List[float]:
@@ -8839,21 +8845,34 @@ Return compliance status for each field.'''
 
 
     def are_words_on_same_line(words: List[Dict], y_tolerance: float = 0.2) -> bool:
-        """Check if words are on same horizontal line"""
+        """Check if words are on same horizontal line OR vertical stack"""
         if not words or len(words) < 2:
             return True
         
         y_positions = []
+        x_positions = []
+        
         for word in words:
             bbox = word.get('bounding_box', [])
             if len(bbox) >= 8:
                 y_center = (bbox[1] + bbox[3] + bbox[5] + bbox[7]) / 4
+                x_center = (bbox[0] + bbox[2] + bbox[4] + bbox[6]) / 4
                 y_positions.append(y_center)
+                x_positions.append(x_center)
         
         if not y_positions:
             return True
         
-        return (max(y_positions) - min(y_positions)) <= y_tolerance
+        y_range = max(y_positions) - min(y_positions)
+        x_range = max(x_positions) - min(x_positions)
+        
+        # Check if text is vertical (X similar, Y varies)
+        if x_range < 0.3 and y_range > 0.5:
+            logger.debug(f"Detected VERTICAL text: X-range={x_range:.2f}, Y-range={y_range:.2f}")
+            return True  # Accept vertical text as valid "line"
+        
+        # Standard horizontal line check
+        return y_range <= y_tolerance
 
 
     def sort_words_left_to_right(words: List[Dict]) -> List[Dict]:
@@ -8900,7 +8919,7 @@ Return compliance status for each field.'''
                 best_idx = -1
                 
                 # Search forward from current position
-                for idx in range(start_idx, min(start_idx + 50, len(word_pool))):  # Look ahead 50 words max
+                for idx in range(start_idx, min(start_idx + 50, len(word_pool))):
                     if idx in used_indices:
                         continue
                     
@@ -8924,12 +8943,39 @@ Return compliance status for each field.'''
             
             # Check if we matched all tokens
             if len(matched_words) == len(tokens):
-                # Check if on same line (more lenient for single words)
+                # Check if on same line (includes vertical text detection)
                 y_tolerance = 0.3 if len(matched_words) == 1 else 0.2
                 
                 if are_words_on_same_line(matched_words, y_tolerance=y_tolerance):
-                    # Sort left to right
-                    matched_words_sorted = sort_words_left_to_right(matched_words)
+                    # Detect if vertical or horizontal text for proper sorting
+                    if len(matched_words) >= 2:
+                        y_positions = []
+                        x_positions = []
+                        
+                        for word in matched_words:
+                            bbox = word.get('bounding_box', [])
+                            if len(bbox) >= 8:
+                                y_center = (bbox[1] + bbox[3] + bbox[5] + bbox[7]) / 4
+                                x_center = (bbox[0] + bbox[2] + bbox[4] + bbox[6]) / 4
+                                y_positions.append(y_center)
+                                x_positions.append(x_center)
+                        
+                        if y_positions and x_positions:
+                            y_range = max(y_positions) - min(y_positions)
+                            x_range = max(x_positions) - min(x_positions)
+                            
+                            # If vertical text (X similar, Y varies), sort by Y
+                            if x_range < 0.3 and y_range > 0.5:
+                                # Sort top to bottom (by Y coordinate)
+                                matched_words_sorted = sorted(matched_words, 
+                                    key=lambda w: (w['bounding_box'][1] + w['bounding_box'][5]) / 2)
+                            else:
+                                # Sort left to right (by X coordinate)
+                                matched_words_sorted = sort_words_left_to_right(matched_words)
+                        else:
+                            matched_words_sorted = sort_words_left_to_right(matched_words)
+                    else:
+                        matched_words_sorted = matched_words
                     
                     # Build match info
                     matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
@@ -9059,7 +9105,6 @@ Return compliance status for each field.'''
             return 0
         
         # 1. Spatial compactness score
-        # Calculate bounding box of entire cluster
         all_bboxes = [item['bounding_box'] for item in cluster]
         merged = merge_bboxes(all_bboxes, padding=0)
         
@@ -9071,10 +9116,8 @@ Return compliance status for each field.'''
         height = max(merged[5], merged[7]) - min(merged[1], merged[3])
         area = width * height
         
-        # Normalize: prefer smaller areas (inverse score)
-        # Typical page is 8.5 x 11 inches, so area of ~93
-        # Good clusters should be much smaller
-        compactness_score = max(0, 100 - (area * 10))  # Smaller area = higher score
+        # Normalize: prefer smaller areas
+        compactness_score = max(0, 100 - (area * 10))
         
         # 2. Match quality score
         avg_confidence = sum(item['match_confidence'] for item in cluster) / len(cluster)
@@ -9084,31 +9127,172 @@ Return compliance status for each field.'''
         
         # Combined score (weighted)
         total_score = (
-            compactness_score * 0.5 +  # 50% weight on spatial proximity
-            avg_confidence * 0.3 +      # 30% weight on match quality
-            completeness_score * 0.2    # 20% weight on completeness
+            compactness_score * 0.5 +
+            avg_confidence * 0.3 +
+            completeness_score * 0.2
         )
         
         return total_score
 
 
     # ============================================
-    # FALLBACK STRATEGIES
+    # VERTICAL TEXT FALLBACK
     # ============================================
 
-    def strip_punctuation(text: str) -> str:
-        """Remove leading/trailing punctuation and special chars"""
-        import string
-        return text.strip(string.punctuation + string.whitespace)
+    def fallback_vertical_text_search(expected_lines: List[str], word_pool: List[Dict],
+                                    fuzzy_threshold: float = 0.75) -> List[Dict]:
+        """
+        Fallback strategy for VERTICAL text
+        Respects line breaks but looks for vertical stacks per line
+        """
+        logger.info("FALLBACK: Trying vertical text search (line-by-line)")
+        
+        result_lines = []
+        
+        for line_text in expected_lines:
+            # Get tokens for this line
+            tokens = line_text.split()
+            if not tokens:
+                continue
+            
+            # Clean tokens
+            clean_tokens = [strip_punctuation(t) for t in tokens if strip_punctuation(t)]
+            if not clean_tokens:
+                clean_tokens = tokens
+            
+            logger.info(f"Searching for vertical line: '{line_text}' ({len(clean_tokens)} tokens)")
+            
+            # Find ALL matching words for any token in this line
+            matching_words = []
+            
+            for word in word_pool:
+                word_text = word.get('text', '').strip()
+                word_text_clean = strip_punctuation(word_text)
+                
+                if not word_text:
+                    continue
+                
+                # Check if this word matches any token
+                for token in clean_tokens:
+                    similarity = fuzzy_match(token, word_text_clean)
+                    
+                    if similarity >= fuzzy_threshold:
+                        matching_words.append({
+                            'word': word,
+                            'matched_token': token,
+                            'similarity': similarity
+                        })
+                        break
+            
+            if not matching_words:
+                logger.warning(f"No matches found for line: '{line_text}'")
+                continue
+            
+            # CRITICAL: Check if we found enough words (at least 50% of tokens)
+            if len(matching_words) < len(clean_tokens) * 0.5:
+                logger.warning(f"Found only {len(matching_words)}/{len(clean_tokens)} tokens - insufficient")
+                continue
+            
+            logger.info(f"Found {len(matching_words)} matching words for this line")
+            
+            # Group words by X-coordinate (vertical stacks)
+            x_groups = {}
+            
+            for match in matching_words:
+                word = match['word']
+                bbox = word.get('bounding_box', [])
+                
+                if len(bbox) >= 8:
+                    x_center = (bbox[0] + bbox[2] + bbox[4] + bbox[6]) / 4
+                    
+                    # Find existing group with similar X
+                    found_group = False
+                    for group_x in list(x_groups.keys()):
+                        if abs(x_center - group_x) < 0.3:
+                            x_groups[group_x].append(match)
+                            found_group = True
+                            break
+                    
+                    if not found_group:
+                        x_groups[x_center] = [match]
+            
+            if not x_groups:
+                logger.warning(f"No vertical groups found for: '{line_text}'")
+                continue
+            
+            # Find best group (most matches)
+            best_group = max(x_groups.values(), key=len)
+            
+            # CRITICAL: Verify this is actually vertical text
+            # Check Y-range vs X-range ratio
+            if len(best_group) >= 2:
+                bboxes = [m['word']['bounding_box'] for m in best_group]
+                x_coords = [(b[0] + b[2] + b[4] + b[6]) / 4 for b in bboxes]
+                y_coords = [(b[1] + b[3] + b[5] + b[7]) / 4 for b in bboxes]
+                
+                x_range = max(x_coords) - min(x_coords)
+                y_range = max(y_coords) - min(y_coords)
+                
+                # If X varies more than Y, this is NOT vertical text
+                if x_range > y_range:
+                    logger.warning(f"Not vertical text (X-range={x_range:.2f} > Y-range={y_range:.2f})")
+                    continue
+                
+                # If Y-range is too large (> 3.0 units), probably scattered across page
+                if y_range > 3.0:
+                    logger.warning(f"Y-range too large ({y_range:.2f}) - probably scattered text")
+                    continue
+            
+            logger.info(f"Best vertical group has {len(best_group)} words")
+            
+            # Sort by Y-coordinate
+            words_sorted = sorted(best_group, key=lambda m: (m['word']['bounding_box'][1] + m['word']['bounding_box'][5]) / 2)
+            
+            # Build result
+            matched_words = [m['word'] for m in words_sorted]
+            matched_text = ' '.join([w.get('text', '') for w in matched_words])
+            line_bbox = merge_bboxes([w['bounding_box'] for w in matched_words], padding=0.01)
+            
+            if not line_bbox:
+                continue
+            
+            avg_confidence = sum(w.get('confidence', 0) for w in matched_words) / len(matched_words)
+            similarity = fuzzy_match(line_text, matched_text)
+            
+            # CRITICAL: Only accept if similarity is reasonable (> 50%)
+            if similarity < 0.5:
+                logger.warning(f"Low similarity ({similarity*100:.1f}%) - rejecting match")
+                continue
+            
+            result = {
+                'matched_text': matched_text,
+                'field_value': line_text,
+                'bounding_box': line_bbox,
+                'bounding_page': matched_words[0].get('bounding_page', 1),
+                'match_confidence': similarity * 100,
+                'coordinate_confidence': similarity * 100,
+                'match_type': 'word_refined_vertical',
+                'ocr_confidence': avg_confidence,
+                'word_count': len(matched_words)
+            }
+            
+            result_lines.append(result)
+            logger.info(f"✓ Found vertical line: '{line_text}' → '{matched_text}' (similarity: {similarity*100:.1f}%)")
+        
+        return result_lines
 
+
+    # ============================================
+    # FUZZY SEARCH FALLBACK
+    # ============================================
 
     def fallback_fuzzy_search(expected_lines: List[str], word_pool: List[Dict], 
                             fuzzy_threshold: float = 0.75) -> List[Dict]:
         """
-        Fallback strategy 1: Fuzzy search with punctuation stripping
+        Fallback strategy: Fuzzy search with punctuation stripping
         More lenient matching for edge cases
         """
-        logger.info("FALLBACK 1: Trying fuzzy search with punctuation stripping")
+        logger.info("FALLBACK: Trying fuzzy search with punctuation stripping")
         
         result_lines = []
         search_start_idx = 0
@@ -9118,12 +9302,10 @@ Return compliance status for each field.'''
             clean_line = strip_punctuation(line_text)
             
             if not clean_line:
-                # Line is just punctuation, search original
                 clean_line = line_text
             
-            logger.debug(f"Searching for cleaned line: '{clean_line}' (original: '{line_text}')")
+            logger.debug(f"Searching for: '{clean_line}' (original: '{line_text}')")
             
-            # Try to find this line starting from search_start_idx
             best_match = None
             best_score = 0
             best_end_idx = search_start_idx
@@ -9133,14 +9315,12 @@ Return compliance status for each field.'''
                 if not tokens:
                     continue
                 
-                # Try to match all tokens from this position
                 matched_words = []
                 current_idx = start_idx
                 
                 for token in tokens:
                     found = False
                     
-                    # Look ahead up to 20 words
                     for look_idx in range(current_idx, min(current_idx + 20, len(word_pool))):
                         word = word_pool[look_idx]
                         word_text = strip_punctuation(word.get('text', ''))
@@ -9154,12 +9334,9 @@ Return compliance status for each field.'''
                     if not found:
                         break
                 
-                # Check if we matched all tokens
                 if len(matched_words) == len(tokens):
-                    # Check if on same line
-                    y_tolerance = 0.35  # More lenient
+                    y_tolerance = 0.35
                     if are_words_on_same_line(matched_words, y_tolerance=y_tolerance):
-                        # Calculate score
                         matched_words_sorted = sort_words_left_to_right(matched_words)
                         matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
                         score = fuzzy_match(clean_line, matched_text)
@@ -9170,7 +9347,6 @@ Return compliance status for each field.'''
                             best_end_idx = current_idx
             
             if best_match:
-                # Build result
                 matched_text = ' '.join([w.get('text', '') for w in best_match])
                 line_bbox = merge_bboxes([w['bounding_box'] for w in best_match], padding=0.01)
                 
@@ -9191,7 +9367,7 @@ Return compliance status for each field.'''
                     
                     result_lines.append(result)
                     search_start_idx = best_end_idx
-                    logger.info(f"✓ Fallback found: '{line_text}' → '{matched_text}'")
+                    logger.info(f"✓ Fuzzy found: '{line_text}' → '{matched_text}'")
         
         return result_lines
 
@@ -9199,10 +9375,9 @@ Return compliance status for each field.'''
     def fallback_expand_existing_match(best_match: Dict, expected_lines: List[str], 
                                     word_pool: List[Dict]) -> List[Dict]:
         """
-        Fallback strategy 2: Expand around existing partial match
-        Find nearby words that match the expected text
+        Fallback strategy: Expand around existing partial match
         """
-        logger.info("FALLBACK 2: Trying to expand existing partial match")
+        logger.info("FALLBACK: Trying to expand existing partial match")
         
         if not best_match or 'bounding_box' not in best_match:
             return []
@@ -9210,7 +9385,6 @@ Return compliance status for each field.'''
         match_bbox = best_match['bounding_box']
         match_page = best_match.get('bounding_page', 1)
         
-        # Find words near the existing match (wider search area)
         nearby_words = []
         
         for word in word_pool:
@@ -9221,10 +9395,8 @@ Return compliance status for each field.'''
             if not word_bbox or len(word_bbox) < 8:
                 continue
             
-            # Calculate distance from match
             distance = calculate_distance(match_bbox, word_bbox)
             
-            # Include words within reasonable distance (1.0 units)
             if distance <= 1.0:
                 nearby_words.append(word)
         
@@ -9232,34 +9404,26 @@ Return compliance status for each field.'''
             logger.warning("No nearby words found")
             return []
         
-        # Sort nearby words in reading order
         sorted_nearby = sort_words_reading_order(nearby_words)
         
-        logger.info(f"Found {len(sorted_nearby)} nearby words, trying to match lines")
+        logger.info(f"Found {len(sorted_nearby)} nearby words")
         
-        # Try fuzzy search within these nearby words
         return fallback_fuzzy_search(expected_lines, sorted_nearby, fuzzy_threshold=0.70)
 
 
     # ============================================
-    # MAIN REFINER - WITH SPATIAL CLUSTERING
+    # MAIN REFINER
     # ============================================
 
     def refine_coordinate_response(field_value: str, matches: List[Dict], 
                                 best_match: Optional[Dict], 
                                 word_ocr_data: List[Dict]) -> Dict:
         """
-        Main refiner function with SPATIAL CLUSTERING
-        
-        Steps:
-        1. Parse field_value into lines
-        2. Find ALL candidates for each line
-        3. Find best spatial cluster (lines close together)
-        4. Build result with individual lines + merged bbox
+        Main refiner function with spatial clustering + multiple fallbacks
         """
         
         logger.info("=" * 60)
-        logger.info("OCR REFINER - Starting (Spatial Clustering)")
+        logger.info("OCR REFINER - Starting")
         logger.info(f"Field value: '{field_value}'")
         logger.info(f"Matches: {len(matches)}")
         logger.info("=" * 60)
@@ -9271,53 +9435,68 @@ Return compliance status for each field.'''
         # Parse lines
         expected_lines = [line.strip() for line in field_value.split('\n') if line.strip()]
         
-        # Skip if any line is too long (>80 chars)
+        # Skip if any line is too long
         if any(len(line) > 80 for line in expected_lines):
             logger.info("Line(s) too long (>80 chars) - skipping refinement")
             return {'best_match': best_match, 'matches': matches}
         
         logger.info(f"Processing {len(expected_lines)} lines")
         
-        # Get anchor page from best_match
+        # Get anchor page
         anchor_page = best_match.get('bounding_page', 1) if best_match else None
         
-        # Filter word data to anchor page only (if we have one)
+        # Filter to anchor page
         if anchor_page:
             word_pool = [w for w in word_ocr_data if w.get('bounding_page') == anchor_page]
             logger.info(f"Using {len(word_pool)} words from page {anchor_page}")
         else:
             word_pool = word_ocr_data
         
-        # Sort word pool in reading order
+        # Sort word pool
         sorted_word_pool = sort_words_reading_order(word_pool)
         logger.info(f"Sorted {len(sorted_word_pool)} words in reading order")
         
-        # Find best spatial cluster (PRIMARY METHOD)
+        # PRIMARY: Spatial clustering
         result_lines = find_best_spatial_cluster(expected_lines, sorted_word_pool, fuzzy_threshold=0.80)
         
-        # FALLBACK LOGIC - Only if spatial clustering fails
+        # FALLBACK LOGIC
         if not result_lines:
             logger.warning("❌ Spatial clustering failed - trying fallback strategies")
             
-            # Fallback 1: Try fuzzy search with punctuation stripping
-            result_lines = fallback_fuzzy_search(expected_lines, sorted_word_pool, fuzzy_threshold=0.75)
+            # Fallback 1: Vertical text search
+            logger.info("Trying vertical text fallback...")
+            result_lines = fallback_vertical_text_search(expected_lines, sorted_word_pool, fuzzy_threshold=0.75)
             
-            # Fallback 2: If still no results, try expanding around existing partial match
-            if not result_lines and best_match:
-                logger.warning("❌ Fallback 1 failed - trying to expand existing match")
-                result_lines = fallback_expand_existing_match(best_match, expected_lines, sorted_word_pool)
+            # CRITICAL: Check if vertical result is actually good
+            if result_lines:
+                # Calculate average match confidence
+                avg_match_conf = sum(line.get('match_confidence', 0) for line in result_lines) / len(result_lines)
+                
+                # Reject if confidence too low (< 60%)
+                if avg_match_conf < 60:
+                    logger.warning(f"❌ Vertical result has low confidence ({avg_match_conf:.1f}%) - rejecting")
+                    result_lines = []
+                else:
+                    logger.info(f"✓ Vertical result accepted with confidence {avg_match_conf:.1f}%")
             
-            # If all fallbacks fail, return original
+            if not result_lines:
+                # Fallback 2: Fuzzy search
+                logger.info("Trying fuzzy search fallback...")
+                result_lines = fallback_fuzzy_search(expected_lines, sorted_word_pool, fuzzy_threshold=0.75)
+                
+                if not result_lines and best_match:
+                    # Fallback 3: Expand existing match
+                    logger.warning("Trying to expand existing match...")
+                    result_lines = fallback_expand_existing_match(best_match, expected_lines, sorted_word_pool)
+            
             if not result_lines:
                 logger.error("❌ ALL FALLBACKS FAILED - returning original")
                 return {'best_match': best_match, 'matches': matches}
         
         # Build final result
         if len(result_lines) == 1:
-            # Single line
             refined_best_match = result_lines[0]
         else:
-            # Multi-line: merge
             all_bboxes = [line['bounding_box'] for line in result_lines]
             merged_bbox = merge_bboxes(all_bboxes, padding=0.02)
             
@@ -17710,7 +17889,7 @@ Guidelines:
                         'pages': [page_class['page']],
                         'confidence': page_class['confidence'],
                         'text': page_class['text'],
-                        'ocr_data': page_class['ocr_data'],
+                        'ocr_data': page_class['ocr_data'].copy(),
                         'individual_pages': [page_class]
                     }
                 else:
