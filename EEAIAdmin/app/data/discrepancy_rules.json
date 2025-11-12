@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2025-11-12T12:09:02.692553",
+  "lastUpdated": "2025-11-12T13:27:09.229985",
   "rules": [
     {
       "id": "rule-0002",
@@ -10022,95 +10022,68 @@
       "createdAt": "2025-11-12T12:09:01.771838",
       "updatedAt": "2025-11-12T12:09:01.771838"
     },
-     {
-    "id": "7994bdbb-e9c0-4307-89e7-bf18ff054cda",
-    "code": "R-1002",
-    "documentType": "Certificate of Origin",
-    "description": "Certificate must be issued by an authorized body (chamber/inspector).",
-    "basis": "ISBP 821",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208519",
-    "updatedAt": "2025-10-14T20:28:27.208520"
-  },
-     {
-    "id": "f41b6b9b-8d7c-4f4a-872d-235c8137a9c1",
-    "code": "R-1003",
-    "documentType": "Certificate of Origin",
-    "description": "Certificate of Origin must not be made in the name of Abu Dhabi Islamic Bank (47A-1).",
-    "basis": "Bank Practice",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208521",
-    "updatedAt": "2025-10-14T20:28:27.208521"
-  },
-  {
-    "id": "8a1d6219-29a2-43a1-a5a8-5d9e6bba7f9c",
-    "code": "R-1004",
-    "documentType": "Certificate of Origin",
-    "description": "Certificate of Origin must show the name and address of the manufacturer or processor.",
-    "basis": "ISBP 821",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208522",
-    "updatedAt": "2025-10-14T20:28:27.208522"
-  },
-  {
-    "id": "4a72b47d-5314-4b85-a3c4-9fd3c6c9521d",
-    "code": "R-1005",
-    "documentType": "Bill of Lading",
-    "description": "Freight Forwarder Bill of Lading presented in lieu of an original Bill of Lading must be flagged as a discrepancy.",
-    "basis": "Bank Practice",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208523",
-    "updatedAt": "2025-10-14T20:28:27.208523"
-  },
-  {
-    "id": "6d83b1f1-1f76-49d3-9b93-1a08e90a41e9",
-    "code": "R-1006",
-    "documentType": "Vessel Certificate",
-    "description": "Vessel Certificate must confirm that shipment is made on a regular or conference line vessel.",
-    "basis": "Bank Practice",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208524",
-    "updatedAt": "2025-10-14T20:28:27.208524"
-  },
-  {
-    "id": "a1b6e00c-41e7-4a78-93a2-3a9cba7f5f25",
-    "code": "R-1007",
-    "documentType": "Certificate of Weight",
-    "description": "Certificate of Weight must show the Notify Party as per LC clause (47A-19).",
-    "basis": "Bank Practice",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208525",
-    "updatedAt": "2025-10-14T20:28:27.208525"
-  },
-  {
-    "id": "b9dfd91e-85d4-4f22-9e2a-8a3216e39a3d",
-    "code": "R-1008",
-    "documentType": "Insurance Policy/Certificate",
-    "description": "Copy of Marine Insurance Declaration presented instead of the original must be flagged as a discrepancy.",
-    "basis": "UCP 600 Article 28(a)",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208526",
-    "updatedAt": "2025-10-14T20:28:27.208526"
-  },
-  {
-    "id": "d122e6f1-9a25-4723-820a-f28b6d99b542",
-    "code": "R-1009",
-    "documentType": "Insurance Policy/Certificate",
-    "description": "Insurance coverage must comply fully with the terms and conditions of the Letter of Credit.",
-    "basis": "UCP 600 Article 28(e)",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208527",
-    "updatedAt": "2025-10-14T20:28:27.208527"
-  },
-  {
-    "id": "c77f45bb-3f0b-4e9a-bae0-b0712f1a8223",
-    "code": "R-1010",
-    "documentType": "Insurance Policy/Certificate",
-    "description": "Insurance Policy or Certificate must show the Notify Party as per LC clause (47A-19).",
-    "basis": "Bank Practice",
-    "priority": "Mandatory",
-    "createdAt": "2025-10-14T20:28:27.208528",
-    "updatedAt": "2025-10-14T20:28:27.208528"
-  }
+    {
+      "id": "20d68407-19cf-4b37-b3c5-a1d4945e9956",
+      "code": "R-1002",
+      "documentType": "Bill of Lading",
+      "description": "Freight Forwarder Bill of Lading presented in lieu of an original Bill of Lading must be flagged as a discrepancy.",
+      "basis": "Bank Practice",
+      "priority": "Mandatory",
+      "createdAt": "2025-11-12T13:27:08.844561",
+      "updatedAt": "2025-11-12T13:27:08.844561"
+    },
+   {
+  "id": "a9c31cf8-3a7e-4df6-b6e7-f7a6e4bafc01",
+  "code": "R-1003",
+  "documentType": "Insurance Certificate",
+  "description": "Copy of Marine Insurance Declaration is presented instead of the original Insurance Policy or Certificate.",
+  "basis": "UCP 600 Article 28(a)",
+  "priority": "Mandatory",
+  "createdAt": "2025-10-14T20:28:27.208531",
+  "updatedAt": "2025-10-14T20:28:27.208531"
+},
+
+   {
+  "id": "a9c31cf8-3a7e-4df6-b6e7-f7a6e4bafc01",
+  "code": "R-1004",
+  "documentType": "Insurance Certificate",
+  "description": "Copy of Marine Insurance Declaration is presented instead of the original Insurance Policy or Certificate.",
+  "basis": "UCP 600 Article 28(a)",
+  "priority": "Mandatory",
+  "createdAt": "2025-10-14T20:28:27.208531",
+  "updatedAt": "2025-10-14T20:28:27.208531"
+},
+    {
+  "id": "c13bf4a5-42f5-4cb8-bff9-d1cfe7f81b03",
+  "code": "R-1005",
+  "documentType": "Insurance Certificate",
+  "description": "Insurance Policy or Certificate omits to show the Notify Party as per LC clause (47A-19).",
+  "basis": "Bank Practice",
+  "priority": "Mandatory",
+  "createdAt": "2025-10-14T20:28:27.208533",
+  "updatedAt": "2025-10-14T20:28:27.208533"
+},
+    {
+  "id": "f41b6b9b-8d7c-4f4a-872d-235c8137a9c1",
+  "code": "R-1006",
+  "documentType": "Certificate of Origin",
+  "description": "Certificate of Origin must not be made in the name of the issuing bank as specified in the Letter of Credit (47A-1).",
+  "basis": "Bank Practice",
+  "priority": "Mandatory",
+  "createdAt": "2025-10-14T20:28:27.208521",
+  "updatedAt": "2025-10-14T20:28:27.208521"
+},
+    {
+  "id": "8a1d6219-29a2-43a1-a5a8-5d9e6bba7f9c",
+  "code": "R-1007",
+  "documentType": "Certificate of Origin",
+  "description": "Certificate of Origin omits to show the name and address of the manufacturer or processor.",
+  "basis": "ISBP 821",
+  "priority": "Mandatory",
+  "createdAt": "2025-10-14T20:28:27.208522",
+  "updatedAt": "2025-10-14T20:28:27.208522"
+}
+
+
   ]
 }
