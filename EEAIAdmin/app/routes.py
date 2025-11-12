@@ -8793,7 +8793,7 @@ Return compliance status for each field.'''
             'timestamp': str(time.time())
         })
 
-    ## ============================================
+    # ============================================
     # UTILITIES
     # ============================================
 
@@ -8966,9 +8966,10 @@ Return compliance status for each field.'''
                             
                             # If vertical text (X similar, Y varies), sort by Y
                             if x_range < 0.3 and y_range > 0.5:
-                                # Sort top to bottom (by Y coordinate)
+                                # Sort top to bottom (by Y coordinate, DESCENDING)
                                 matched_words_sorted = sorted(matched_words, 
-                                    key=lambda w: (w['bounding_box'][1] + w['bounding_box'][5]) / 2)
+                                    key=lambda w: (w['bounding_box'][1] + w['bounding_box'][5]) / 2,
+                                    reverse=True)  # DESCENDING = top to bottom
                             else:
                                 # Sort left to right (by X coordinate)
                                 matched_words_sorted = sort_words_left_to_right(matched_words)
