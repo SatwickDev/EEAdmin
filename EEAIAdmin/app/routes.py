@@ -6290,7 +6290,7 @@ Output format:
                 if line.strip():
                     logger.info(f"📋 Line {i:2d}: {line.strip()}")
             
-            logger.info(f"📋 Expected rules from this text: Minimum 3-6 individual validation rules")
+            logger.info(f"📋 Expected rules from this text: Extract ALL individual validation rules (should be 15-30+ rules for comprehensive LC conditions)")
             logger.info(f"📋 =======================================================")
 
             # Use global Azure OpenAI configuration from app_config.py
@@ -6358,7 +6358,7 @@ LC Number: {lc_number}
 Additional Conditions Text:
 {additional_conditions_text}
 
-Return JSON array with multiple rules (minimum 3-6 rules). Break down every requirement into separate rules.""".format(
+Return JSON array with ALL validation rules - extract EVERY requirement as separate rules. Do not limit to 6 rules - there should be 15-30+ rules from this comprehensive LC text. Break down every single requirement into separate actionable rules.""".format(
                 lc_number=lc_number,
                 additional_conditions_text=additional_conditions_text
             )
@@ -6380,11 +6380,11 @@ Return JSON array with multiple rules (minimum 3-6 rules). Break down every requ
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
-                    {"role": "system", "content": "You are an expert who ALWAYS extracts multiple separate rules from compound conditions. NEVER return a single rule. Follow the example pattern exactly. Always return a JSON ARRAY with 3+ rules minimum."},
+                    {"role": "system", "content": "You are an expert who ALWAYS extracts ALL INDIVIDUAL validation rules from LC conditions. Extract EVERY requirement as a separate rule - typically 15-30+ rules from comprehensive LC text. Do NOT limit to only 6 rules. Follow the example pattern exactly and return a JSON ARRAY with ALL rules."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_tokens=10000,  # Increased for multiple rules
+                max_tokens=15000,  # Increased for many more rules
                 seed=12345,  # ✅ Reproducibility
                 top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                 frequency_penalty=0,
