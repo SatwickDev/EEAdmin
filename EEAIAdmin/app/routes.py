@@ -19179,7 +19179,6 @@ Return compliance status for each field.'''
                     top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                     frequency_penalty=0,
                     presence_penalty=0,
-                    response_format={"type": "json_object"}
                 )
 
                 extracted_text = response.choices[0].message.content.strip()
