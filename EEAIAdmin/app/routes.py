@@ -17599,6 +17599,12 @@ Return compliance status for each field.'''
                 if doc_types_by_category[category_name]:
                     category_sections.append(f"**{category_name}:**\n{', '.join(sorted(doc_types_by_category[category_name]))}")
  
+            # Log the document types being sent to AI for debugging
+            logger.info("🔍 DEBUG: Document types being sent to batch classifier:")
+            for category_name, types in doc_types_by_category.items():
+                if types:
+                    logger.info(f"  {category_name}: {', '.join(sorted(types))}")
+ 
             # Detect if this is likely a multi-document package
             total_pages = len(pages_summary)
             is_multi_doc_package = total_pages >= 3
@@ -17957,19 +17963,185 @@ Return compliance status for each field.'''
             classification_time = time.time() - classification_start
             logger.info(f"✅ Classification completed in {classification_time:.2f}s")
 
+            # === STEP 4.1: VALIDATE DOCUMENT TYPES AGAINST PREDEFINED LIST ===
+            logger.info(f"🔍 STEP 4.1: VALIDATING DOCUMENT TYPES AGAINST PREDEFINED LIST")
+            
+            # Build list of valid document types from our system
+            valid_document_types = set()
+            for doc_id, mapping in document_classifier.entity_mappings.items():
+                document_name = mapping.get('documentName', doc_id)
+                valid_document_types.add(document_name)
+            
+            # Add standard system types
+            valid_document_types.update(['Empty/Insufficient Text', 'Unknown'])
+            
+            # Define document type aliases/mappings for AI variations
+            document_type_aliases = {
+                'Weight List': 'Certificate of Weight',
+                'weight list': 'Certificate of Weight',
+                'Weight Certificate': 'Certificate of Weight',
+                'Weighing Certificate': 'Certificate of Weight',
+                # Add more aliases as needed
+            }
+            
+            logger.info(f"📋 Valid document types count: {len(valid_document_types)}")
+            logger.info(f"🔄 Document type aliases configured: {len(document_type_aliases)}")
+            
+            # Validate each classification result
+            validated_classifications = []
+            validation_warnings = []
+            
+            for page_class in page_classifications:
+                original_doc_type = page_class['document_type']
+                page_num = page_class['page']
+                confidence = page_class['confidence']
+                
+                # First check if it's a direct match with valid types
+                if original_doc_type in valid_document_types:
+                    # Valid document type - keep as is
+                    validated_classifications.append(page_class)
+                    logger.info(f"✅ Page {page_num}: {original_doc_type} (VALID)")
+                # Check if it's an alias that maps to a valid type
+                elif original_doc_type in document_type_aliases:
+                    mapped_type = document_type_aliases[original_doc_type]
+                    logger.info(f"🔄 Page {page_num}: '{original_doc_type}' mapped to '{mapped_type}'")
+                    
+                    # Create new classification with mapped type
+                    mapped_page_class = page_class.copy()
+                    mapped_page_class['document_type'] = mapped_type
+                    mapped_page_class['original_ai_type'] = original_doc_type
+                    mapped_page_class['was_mapped'] = True
+                    
+                    validated_classifications.append(mapped_page_class)
+                    logger.info(f"✅ Page {page_num}: {mapped_type} (MAPPED FROM: {original_doc_type})")
+                else:
+                    # Invalid document type - mark as unknown with AI suggestion
+                    warning_msg = f"⚠️ Page {page_num}: '{original_doc_type}' not found in predefined document types"
+                    validation_warnings.append(warning_msg)
+                    logger.warning(warning_msg)
+                    
+                    # Create new classification with unknown type and AI suggestion
+                    validated_page_class = page_class.copy()
+                    validated_page_class['document_type'] = f"Unknown Classification Type (Not found in the list of documents provided, Suggested By AI: {original_doc_type})"
+                    validated_page_class['original_ai_suggestion'] = original_doc_type
+                    validated_page_class['validation_status'] = 'invalid'
+                    validated_page_class['confidence'] = max(confidence * 0.5, 10)  # Reduce confidence for invalid types
+                    
+                    validated_classifications.append(validated_page_class)
+                    logger.info(f"🚫 Page {page_num}: Changed to Unknown Classification Type (AI suggested: {original_doc_type})")
+            
+            # Replace original classifications with validated ones
+            page_classifications = validated_classifications
+            
+            if validation_warnings:
+                logger.warning(f"📊 Validation Summary: {len(validation_warnings)} invalid document types detected")
+                for warning in validation_warnings[:3]:  # Log first 3 warnings
+                    logger.warning(f"   {warning}")
+                if len(validation_warnings) > 3:
+                    logger.warning(f"   ... and {len(validation_warnings) - 3} more")
+            else:
+                logger.info(f"✅ All document types validated successfully")
+
+            # === STEP 4.5: DUPLICATE DOCUMENT TYPE PREVENTION ===
+            logger.info(f"🚫 STEP 4.5: PREVENTING DUPLICATE DOCUMENT TYPES")
+            
+            # Track already seen document types
+            seen_document_types = {}
+            filtered_classifications = []
+            
+            for page_class in page_classifications:
+                doc_type = page_class['document_type']
+                confidence = page_class['confidence']
+                page_num = page_class['page']
+                
+                # Skip empty/insufficient text, unknown types, and unknown classification types
+                if (doc_type in ['Empty/Insufficient Text', 'Unknown'] or 
+                    doc_type.startswith('Unknown Classification Type')):
+                    filtered_classifications.append(page_class)
+                    continue
+                
+                # Check if we've seen this document type before
+                if doc_type in seen_document_types:
+                    previous_page = seen_document_types[doc_type]['page']
+                    previous_confidence = seen_document_types[doc_type]['confidence']
+                    
+                    # Only allow duplicate if confidence is extremely high (99%+)
+                    if confidence >= 99.0:
+                        logger.info(f"⚠️ DUPLICATE ALLOWED: {doc_type} on page {page_num} (confidence: {confidence:.1f}% >= 99%)")
+                        filtered_classifications.append(page_class)
+                        # Update to track the highest confidence occurrence
+                        if confidence > previous_confidence:
+                            seen_document_types[doc_type] = {'page': page_num, 'confidence': confidence}
+                    else:
+                        logger.info(f"🚫 DUPLICATE BLOCKED: {doc_type} on page {page_num} (confidence: {confidence:.1f}% < 99%). Already seen on page {previous_page}")
+                        # Convert to continuation page or generic type
+                        page_class_copy = page_class.copy()
+                        page_class_copy['document_type'] = f"{doc_type}_Continuation"
+                        page_class_copy['is_duplicate_filtered'] = True
+                        page_class_copy['original_type'] = doc_type
+                        filtered_classifications.append(page_class_copy)
+                else:
+                    # First occurrence of this document type
+                    seen_document_types[doc_type] = {'page': page_num, 'confidence': confidence}
+                    filtered_classifications.append(page_class)
+                    logger.info(f"✅ NEW TYPE: {doc_type} on page {page_num} (confidence: {confidence:.1f}%)")
+            
+            # Replace original classifications with filtered ones
+            page_classifications = filtered_classifications
+            logger.info(f"📊 Duplicate filtering complete. {len([p for p in page_classifications if p.get('is_duplicate_filtered')])} duplicates filtered")
+
             # === STEP 5: GROUPING CONSECUTIVE PAGES ===
-            logger.info(f"📚 STEP 4/5: GROUPING PAGES BY DOCUMENT TYPE")
+            logger.info(f"📚 STEP 5/5: GROUPING PAGES BY DOCUMENT TYPE")
 
             document_groups = []
             current_group = None
 
             for page_class in page_classifications:
-                if page_class['document_type'] in ['Empty/Insufficient Text', 'Unknown']:
-                    logger.info(f"⏭️ Skipping page {page_class['page']}: {page_class['document_type']}")
+                doc_type = page_class['document_type']
+                page_num = page_class['page']
+                
+                # Skip empty/insufficient text, unknown types, and unknown classification types
+                if (doc_type in ['Empty/Insufficient Text', 'Unknown'] or 
+                    doc_type.startswith('Unknown Classification Type')):
+                    logger.info(f"⏭️ Skipping page {page_num}: {doc_type}")
                     continue
 
+                # Handle continuation pages - merge them with the parent document
+                if page_class.get('is_duplicate_filtered', False):
+                    original_type = page_class.get('original_type')
+                    logger.info(f"🔗 Processing continuation page {page_num} for {original_type}")
+                    
+                    # Find existing group with the original type
+                    parent_group = None
+                    
+                    # First check the current group (in progress)
+                    if current_group and current_group['document_type'] == original_type:
+                        parent_group = current_group
+                        logger.info(f"➕ Found parent in current group: {original_type}")
+                    else:
+                        # Check completed groups
+                        for group in document_groups:
+                            if group['document_type'] == original_type:
+                                parent_group = group
+                                logger.info(f"➕ Found parent in completed groups: {original_type}")
+                                break
+                    
+                    if parent_group:
+                        logger.info(f"➕ Merging continuation page {page_num} into {original_type} group")
+                        parent_group['pages'].append(page_num)
+                        parent_group['text'] += "\n" + page_class['text']
+                        parent_group['ocr_data'].extend(page_class['ocr_data'])
+                        parent_group['confidence'] = max(parent_group['confidence'], page_class['confidence'])
+                        parent_group['individual_pages'].append(page_class)
+                        # Sort pages to maintain order
+                        parent_group['pages'].sort()
+                    else:
+                        logger.warning(f"⚠️ No parent group found for continuation page {page_num} ({original_type})")
+                    continue
+
+                # Normal grouping logic for consecutive pages
                 should_group = (current_group is not None and
-                                current_group['document_type'] == page_class['document_type'])
+                                current_group['document_type'] == doc_type)
 
                 if not should_group:
                     if current_group:
@@ -17977,18 +18149,18 @@ Return compliance status for each field.'''
                             f"✅ Completed group: {current_group['document_type']} (Pages: {current_group['pages']})")
                         document_groups.append(current_group)
 
-                    logger.info(f"🆕 Starting new group: {page_class['document_type']} (Page {page_class['page']})")
+                    logger.info(f"🆕 Starting new group: {doc_type} (Page {page_num})")
                     current_group = {
-                        'document_type': page_class['document_type'],
-                        'pages': [page_class['page']],
+                        'document_type': doc_type,
+                        'pages': [page_num],
                         'confidence': page_class['confidence'],
                         'text': page_class['text'],
                         'ocr_data': page_class['ocr_data'].copy(),
                         'individual_pages': [page_class]
                     }
                 else:
-                    logger.info(f"➕ Adding page {page_class['page']} to group: {current_group['document_type']}")
-                    current_group['pages'].append(page_class['page'])
+                    logger.info(f"➕ Adding page {page_num} to group: {current_group['document_type']}")
+                    current_group['pages'].append(page_num)
                     current_group['text'] += "\n" + page_class['text']
                     current_group['ocr_data'].extend(page_class['ocr_data'])
                     current_group['confidence'] = max(current_group['confidence'], page_class['confidence'])
@@ -17999,15 +18171,53 @@ Return compliance status for each field.'''
                     f"✅ Completed final group: {current_group['document_type']} (Pages: {current_group['pages']})")
                 document_groups.append(current_group)
 
-            # Add page_range to each group
+            # Add page_range to each group (handle non-consecutive pages)
             for group in document_groups:
-                group['page_range'] = (f"Page {group['pages'][0]}" if len(group['pages']) == 1
-                                       else f"Pages {group['pages'][0]}-{group['pages'][-1]}")
+                pages = sorted(group['pages'])
+                if len(pages) == 1:
+                    group['page_range'] = f"Page {pages[0]}"
+                elif len(pages) == 2:
+                    group['page_range'] = f"Pages {pages[0]}, {pages[1]}"
+                else:
+                    # Check if pages are consecutive
+                    consecutive = True
+                    for i in range(1, len(pages)):
+                        if pages[i] - pages[i-1] != 1:
+                            consecutive = False
+                            break
+                    
+                    if consecutive:
+                        group['page_range'] = f"Pages {pages[0]}-{pages[-1]}"
+                    else:
+                        # Non-consecutive pages, list individually or in ranges
+                        ranges = []
+                        start = pages[0]
+                        end = pages[0]
+                        
+                        for i in range(1, len(pages)):
+                            if pages[i] == end + 1:
+                                end = pages[i]
+                            else:
+                                if start == end:
+                                    ranges.append(str(start))
+                                else:
+                                    ranges.append(f"{start}-{end}")
+                                start = end = pages[i]
+                        
+                        # Add the last range
+                        if start == end:
+                            ranges.append(str(start))
+                        else:
+                            ranges.append(f"{start}-{end}")
+                        
+                        group['page_range'] = f"Pages {', '.join(ranges)}"
 
             logger.info(f"📊 Found {len(document_groups)} distinct document types:")
             for group in document_groups:
-                logger.info(
-                    f"   - {group['document_type']} ({group['page_range']}, confidence: {group['confidence']:.0f}%)")
+                pages_info = f"({group['page_range']}, confidence: {group['confidence']:.0f}%)"
+                if any(p.get('is_duplicate_filtered') for p in group.get('individual_pages', [])):
+                    pages_info += " [includes merged duplicates]"
+                logger.info(f"   - {group['document_type']} {pages_info}")
 
             # === STORE OCR DATA TEMPORARILY (for reuse during revalidation) ===
             temp_dir = tempfile.gettempdir()

@@ -4155,6 +4155,132 @@
       "mappingFormDescription": "",
       "dataCategoryId": "",
       "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "501",
+      "name": "Weight Certificate Number",
+      "description": "Reference number identifying the weight certificate document",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "502",
+      "name": "Weight Certificate Issue Date",
+      "description": "Date when the weight certificate was issued",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "503",
+      "name": "Certifying Authority",
+      "description": "Organization or authority that issued the weight certificate",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "504",
+      "name": "Weighing Method",
+      "description": "Method or procedure used for weighing the goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "505",
+      "name": "Weighing Equipment Details",
+      "description": "Details of the weighing equipment used including calibration information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "506",
+      "name": "Vessel Certificate Number",
+      "description": "Reference number identifying the vessel certificate document",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "507",
+      "name": "Vessel Certificate Issue Date",
+      "description": "Date when the vessel certificate was issued",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "508",
+      "name": "Vessel Certificate Expiry Date",
+      "description": "Date when the vessel certificate expires",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "509",
+      "name": "Vessel Name",
+      "description": "Official name of the vessel",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Identifiers"
+    },
+    {
+      "id": "510",
+      "name": "Vessel IMO Number",
+      "description": "International Maritime Organization number assigned to the vessel",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Identifiers"
+    },
+    {
+      "id": "511",
+      "name": "Vessel Flag State",
+      "description": "Country under whose laws the vessel is registered",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "512",
+      "name": "Certificate Type",
+      "description": "Type or class of the vessel certificate (safety, security, environmental, etc.)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "513",
+      "name": "Issuing Authority",
+      "description": "Organization or authority that issued the vessel certificate",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "514",
+      "name": "Vessel Classification Society",
+      "description": "Classification society that verified the vessel compliance",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
     }
   ]
 }
