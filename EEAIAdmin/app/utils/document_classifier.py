@@ -633,7 +633,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
         # Organize fields by data category with descriptions
         fields_by_category = {}
         for field in enhanced_mandatory + enhanced_optional + enhanced_conditional:
-            category = field.get('dataCategoryValue', 'Other')
+            category = field.get('dataCategoryValue') or 'Other'
             if category not in fields_by_category:
                 fields_by_category[category] = []
             fields_by_category[category].append(field)
@@ -687,7 +687,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
         if extract_mandatory and entity_info['mandatory_fields']:
             mandatory_by_category = {}
             for field in entity_info['mandatory_fields']:
-                category = field.get('dataCategoryValue', 'Other')
+                category = field.get('dataCategoryValue') or 'Other'
                 if category not in mandatory_by_category:
                     mandatory_by_category[category] = []
                 
@@ -705,7 +705,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
         if extract_optional and entity_info['optional_fields']:
             optional_by_category = {}
             for field in entity_info['optional_fields']:
-                category = field.get('dataCategoryValue', 'Other')
+                category = field.get('dataCategoryValue') or 'Other'
                 if category not in optional_by_category:
                     optional_by_category[category] = []
                 
@@ -723,7 +723,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
         if extract_conditional and entity_info['conditional_fields']:
             conditional_by_category = {}
             for field in entity_info['conditional_fields']:
-                category = field.get('dataCategoryValue', 'Other')
+                category = field.get('dataCategoryValue') or 'Other'
                 if category not in conditional_by_category:
                     conditional_by_category[category] = []
                 
