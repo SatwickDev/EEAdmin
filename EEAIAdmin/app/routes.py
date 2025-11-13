@@ -6290,7 +6290,7 @@ Output format:
                 if line.strip():
                     logger.info(f"📋 Line {i:2d}: {line.strip()}")
             
-            logger.info(f"📋 Expected rules from this text: Minimum 3-6 individual validation rules")
+            logger.info(f"📋 Expected rules from this text: Extract ALL individual validation rules (should be 15-30+ rules for comprehensive LC conditions)")
             logger.info(f"📋 =======================================================")
 
             # Use global Azure OpenAI configuration from app_config.py
@@ -6358,7 +6358,7 @@ LC Number: {lc_number}
 Additional Conditions Text:
 {additional_conditions_text}
 
-Return JSON array with multiple rules (minimum 3-6 rules). Break down every requirement into separate rules.""".format(
+Return JSON array with ALL validation rules - extract EVERY requirement as separate rules. Do not limit to 6 rules - there should be 15-30+ rules from this comprehensive LC text. Break down every single requirement into separate actionable rules.""".format(
                 lc_number=lc_number,
                 additional_conditions_text=additional_conditions_text
             )
@@ -6380,11 +6380,11 @@ Return JSON array with multiple rules (minimum 3-6 rules). Break down every requ
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
-                    {"role": "system", "content": "You are an expert who ALWAYS extracts multiple separate rules from compound conditions. NEVER return a single rule. Follow the example pattern exactly. Always return a JSON ARRAY with 3+ rules minimum."},
+                    {"role": "system", "content": "You are an expert who ALWAYS extracts ALL INDIVIDUAL validation rules from LC conditions. Extract EVERY requirement as a separate rule - typically 15-30+ rules from comprehensive LC text. Do NOT limit to only 6 rules. Follow the example pattern exactly and return a JSON ARRAY with ALL rules."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                max_tokens=10000,  # Increased for multiple rules
+                max_tokens=15000,  # Increased for many more rules
                 seed=12345,  # ✅ Reproducibility
                 top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                 frequency_penalty=0,
@@ -8793,7 +8793,7 @@ Return compliance status for each field.'''
             'timestamp': str(time.time())
         })
 
-    ## ============================================
+    # ============================================
     # UTILITIES
     # ============================================
 
@@ -8845,34 +8845,21 @@ Return compliance status for each field.'''
 
 
     def are_words_on_same_line(words: List[Dict], y_tolerance: float = 0.2) -> bool:
-        """Check if words are on same horizontal line OR vertical stack"""
+        """Check if words are on same horizontal line"""
         if not words or len(words) < 2:
             return True
         
         y_positions = []
-        x_positions = []
-        
         for word in words:
             bbox = word.get('bounding_box', [])
             if len(bbox) >= 8:
                 y_center = (bbox[1] + bbox[3] + bbox[5] + bbox[7]) / 4
-                x_center = (bbox[0] + bbox[2] + bbox[4] + bbox[6]) / 4
                 y_positions.append(y_center)
-                x_positions.append(x_center)
         
         if not y_positions:
             return True
         
-        y_range = max(y_positions) - min(y_positions)
-        x_range = max(x_positions) - min(x_positions)
-        
-        # Check if text is vertical (X similar, Y varies)
-        if x_range < 0.3 and y_range > 0.5:
-            logger.debug(f"Detected VERTICAL text: X-range={x_range:.2f}, Y-range={y_range:.2f}")
-            return True  # Accept vertical text as valid "line"
-        
-        # Standard horizontal line check
-        return y_range <= y_tolerance
+        return (max(y_positions) - min(y_positions)) <= y_tolerance
 
 
     def sort_words_left_to_right(words: List[Dict]) -> List[Dict]:
@@ -8886,6 +8873,74 @@ Return compliance status for each field.'''
             (w['bounding_box'][1] + w['bounding_box'][5]) / 2,  # Y
             (w['bounding_box'][0] + w['bounding_box'][2]) / 2   # X
         ))
+
+
+    # ============================================
+    # ROTATED PAGE DETECTION & TRANSFORMATION
+    # ============================================
+
+    def detect_page_rotation(word_pool: List[Dict]) -> bool:
+        """
+        Detect if page is rotated 90° counter-clockwise
+        Rotated page: Y-range >> X-range for most words (text flows on Y-axis)
+        """
+        if len(word_pool) < 5:
+            return False
+        
+        rotated_count = 0
+        
+        for word in word_pool:
+            bbox = word.get('bounding_box', [])
+            if not bbox or len(bbox) < 8:
+                continue
+            
+            x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]]
+            y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]]
+            
+            x_range = max(x_coords) - min(x_coords)
+            y_range = max(y_coords) - min(y_coords)
+            
+            # If Y-range > X-range * 1.5 → word flows on Y-axis (rotated)
+            if y_range > x_range * 1.5:
+                rotated_count += 1
+        
+        rotation_ratio = rotated_count / len(word_pool)
+        is_rotated = rotation_ratio > 0.7
+        
+        logger.info(f"Page rotation check: {rotation_ratio*100:.1f}% words rotated → {'ROTATED' if is_rotated else 'NORMAL'}")
+        
+        return is_rotated
+
+
+    def transform_rotated_coordinates(word_pool: List[Dict]) -> List[Dict]:
+        """
+        Transform coordinates for rotated page by swapping X ↔ Y
+        This makes Y-axis (text flow) become X-axis (normal reading)
+        """
+        transformed = []
+        
+        for word in word_pool:
+            bbox = word.get('bounding_box', [])
+            
+            if bbox and len(bbox) >= 8:
+                # Swap X ↔ Y: [x1,y1,x2,y2,x3,y3,x4,y4] → [y1,x1,y2,x2,y3,x3,y4,x4]
+                transformed_bbox = [
+                    bbox[1], bbox[0],
+                    bbox[3], bbox[2],
+                    bbox[5], bbox[4],
+                    bbox[7], bbox[6]
+                ]
+                
+                new_word = word.copy()
+                new_word['bounding_box'] = transformed_bbox
+                new_word['_rotated'] = True
+                transformed.append(new_word)
+            else:
+                transformed.append(word)
+        
+        logger.info(f"✓ Transformed {len(transformed)} words (swapped X↔Y axes)")
+        
+        return transformed
 
 
     # ============================================
@@ -8905,11 +8960,9 @@ Return compliance status for each field.'''
         
         logger.debug(f"Finding candidates for: '{line_text}' ({len(tokens)} tokens)")
         
-        # For each position in word_pool, try to match the line
         candidates = []
         
         for start_idx in range(len(word_pool)):
-            # Try to match all tokens starting from this position
             matched_words = []
             used_indices = set()
             
@@ -8919,7 +8972,7 @@ Return compliance status for each field.'''
                 best_idx = -1
                 
                 # Search forward from current position
-                for idx in range(start_idx, min(start_idx + 50, len(word_pool))):
+                for idx in range(start_idx, min(start_idx + 100, len(word_pool))):
                     if idx in used_indices:
                         continue
                     
@@ -8939,43 +8992,16 @@ Return compliance status for each field.'''
                     matched_words.append(best_match)
                     used_indices.add(best_idx)
                 else:
-                    break  # Token not found, this candidate fails
+                    break
             
             # Check if we matched all tokens
             if len(matched_words) == len(tokens):
-                # Check if on same line (includes vertical text detection)
+                # Check if on same line
                 y_tolerance = 0.3 if len(matched_words) == 1 else 0.2
                 
                 if are_words_on_same_line(matched_words, y_tolerance=y_tolerance):
-                    # Detect if vertical or horizontal text for proper sorting
-                    if len(matched_words) >= 2:
-                        y_positions = []
-                        x_positions = []
-                        
-                        for word in matched_words:
-                            bbox = word.get('bounding_box', [])
-                            if len(bbox) >= 8:
-                                y_center = (bbox[1] + bbox[3] + bbox[5] + bbox[7]) / 4
-                                x_center = (bbox[0] + bbox[2] + bbox[4] + bbox[6]) / 4
-                                y_positions.append(y_center)
-                                x_positions.append(x_center)
-                        
-                        if y_positions and x_positions:
-                            y_range = max(y_positions) - min(y_positions)
-                            x_range = max(x_positions) - min(x_positions)
-                            
-                            # If vertical text (X similar, Y varies), sort by Y
-                            if x_range < 0.3 and y_range > 0.5:
-                                # Sort top to bottom (by Y coordinate)
-                                matched_words_sorted = sorted(matched_words, 
-                                    key=lambda w: (w['bounding_box'][1] + w['bounding_box'][5]) / 2)
-                            else:
-                                # Sort left to right (by X coordinate)
-                                matched_words_sorted = sort_words_left_to_right(matched_words)
-                        else:
-                            matched_words_sorted = sort_words_left_to_right(matched_words)
-                    else:
-                        matched_words_sorted = matched_words
+                    # Sort left to right
+                    matched_words_sorted = sort_words_left_to_right(matched_words)
                     
                     # Build match info
                     matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
@@ -8984,6 +9010,7 @@ Return compliance status for each field.'''
                     if line_bbox:
                         avg_confidence = sum(w.get('confidence', 0) for w in matched_words_sorted) / len(matched_words_sorted)
                         similarity = fuzzy_match(line_text, matched_text)
+                        was_rotated = any(w.get('_rotated', False) for w in matched_words_sorted)
                         
                         candidate = {
                             'matched_text': matched_text,
@@ -8992,7 +9019,7 @@ Return compliance status for each field.'''
                             'bounding_page': matched_words_sorted[0].get('bounding_page', 1),
                             'match_confidence': similarity * 100,
                             'coordinate_confidence': similarity * 100,
-                            'match_type': 'word_refined',
+                            'match_type': 'word_refined_rotated' if was_rotated else 'word_refined',
                             'ocr_confidence': avg_confidence,
                             'word_count': len(matched_words_sorted),
                             'start_idx': start_idx,
@@ -9037,8 +9064,6 @@ Return compliance status for each field.'''
             logger.info(f"  '{line_text}': {len(candidates)} candidates")
         
         # Step 2: Try to find best combination
-        # For each candidate of first line, try to build a cluster
-        
         best_cluster = None
         best_score = -1
         
@@ -9105,6 +9130,7 @@ Return compliance status for each field.'''
             return 0
         
         # 1. Spatial compactness score
+        # Calculate bounding box of entire cluster
         all_bboxes = [item['bounding_box'] for item in cluster]
         merged = merge_bboxes(all_bboxes, padding=0)
         
@@ -9116,7 +9142,7 @@ Return compliance status for each field.'''
         height = max(merged[5], merged[7]) - min(merged[1], merged[3])
         area = width * height
         
-        # Normalize: prefer smaller areas
+        # Normalize: prefer smaller areas (inverse score)
         compactness_score = max(0, 100 - (area * 10))
         
         # 2. Match quality score
@@ -9127,163 +9153,44 @@ Return compliance status for each field.'''
         
         # Combined score (weighted)
         total_score = (
-            compactness_score * 0.5 +
-            avg_confidence * 0.3 +
-            completeness_score * 0.2
+            compactness_score * 0.5 +  # 50% weight on spatial proximity
+            avg_confidence * 0.3 +      # 30% weight on match quality
+            completeness_score * 0.2    # 20% weight on completeness
         )
         
         return total_score
 
 
     # ============================================
-    # VERTICAL TEXT FALLBACK
+    # FALLBACK: ROTATED PAGE SEARCH
     # ============================================
 
-    def fallback_vertical_text_search(expected_lines: List[str], word_pool: List[Dict],
-                                    fuzzy_threshold: float = 0.75) -> List[Dict]:
+    def fallback_rotated_page_search(expected_lines: List[str], word_pool: List[Dict],
+                                    fuzzy_threshold: float = 0.80) -> List[Dict]:
         """
-        Fallback strategy for VERTICAL text
-        Respects line breaks but looks for vertical stacks per line
+        Fallback for rotated pages: Transform coordinates then use normal clustering
         """
-        logger.info("FALLBACK: Trying vertical text search (line-by-line)")
+        logger.info("FALLBACK: Trying rotated page search")
         
-        result_lines = []
+        # Check if page is actually rotated
+        if not detect_page_rotation(word_pool):
+            logger.info("Page not rotated, skipping this fallback")
+            return []
         
-        for line_text in expected_lines:
-            # Get tokens for this line
-            tokens = line_text.split()
-            if not tokens:
-                continue
-            
-            # Clean tokens
-            clean_tokens = [strip_punctuation(t) for t in tokens if strip_punctuation(t)]
-            if not clean_tokens:
-                clean_tokens = tokens
-            
-            logger.info(f"Searching for vertical line: '{line_text}' ({len(clean_tokens)} tokens)")
-            
-            # Find ALL matching words for any token in this line
-            matching_words = []
-            
-            for word in word_pool:
-                word_text = word.get('text', '').strip()
-                word_text_clean = strip_punctuation(word_text)
-                
-                if not word_text:
-                    continue
-                
-                # Check if this word matches any token
-                for token in clean_tokens:
-                    similarity = fuzzy_match(token, word_text_clean)
-                    
-                    if similarity >= fuzzy_threshold:
-                        matching_words.append({
-                            'word': word,
-                            'matched_token': token,
-                            'similarity': similarity
-                        })
-                        break
-            
-            if not matching_words:
-                logger.warning(f"No matches found for line: '{line_text}'")
-                continue
-            
-            # CRITICAL: Check if we found enough words (at least 50% of tokens)
-            if len(matching_words) < len(clean_tokens) * 0.5:
-                logger.warning(f"Found only {len(matching_words)}/{len(clean_tokens)} tokens - insufficient")
-                continue
-            
-            logger.info(f"Found {len(matching_words)} matching words for this line")
-            
-            # Group words by X-coordinate (vertical stacks)
-            x_groups = {}
-            
-            for match in matching_words:
-                word = match['word']
-                bbox = word.get('bounding_box', [])
-                
-                if len(bbox) >= 8:
-                    x_center = (bbox[0] + bbox[2] + bbox[4] + bbox[6]) / 4
-                    
-                    # Find existing group with similar X
-                    found_group = False
-                    for group_x in list(x_groups.keys()):
-                        if abs(x_center - group_x) < 0.3:
-                            x_groups[group_x].append(match)
-                            found_group = True
-                            break
-                    
-                    if not found_group:
-                        x_groups[x_center] = [match]
-            
-            if not x_groups:
-                logger.warning(f"No vertical groups found for: '{line_text}'")
-                continue
-            
-            # Find best group (most matches)
-            best_group = max(x_groups.values(), key=len)
-            
-            # CRITICAL: Verify this is actually vertical text
-            # Check Y-range vs X-range ratio
-            if len(best_group) >= 2:
-                bboxes = [m['word']['bounding_box'] for m in best_group]
-                x_coords = [(b[0] + b[2] + b[4] + b[6]) / 4 for b in bboxes]
-                y_coords = [(b[1] + b[3] + b[5] + b[7]) / 4 for b in bboxes]
-                
-                x_range = max(x_coords) - min(x_coords)
-                y_range = max(y_coords) - min(y_coords)
-                
-                # If X varies more than Y, this is NOT vertical text
-                if x_range > y_range:
-                    logger.warning(f"Not vertical text (X-range={x_range:.2f} > Y-range={y_range:.2f})")
-                    continue
-                
-                # If Y-range is too large (> 3.0 units), probably scattered across page
-                if y_range > 3.0:
-                    logger.warning(f"Y-range too large ({y_range:.2f}) - probably scattered text")
-                    continue
-            
-            logger.info(f"Best vertical group has {len(best_group)} words")
-            
-            # Sort by Y-coordinate
-            words_sorted = sorted(best_group, key=lambda m: (m['word']['bounding_box'][1] + m['word']['bounding_box'][5]) / 2)
-            
-            # Build result
-            matched_words = [m['word'] for m in words_sorted]
-            matched_text = ' '.join([w.get('text', '') for w in matched_words])
-            line_bbox = merge_bboxes([w['bounding_box'] for w in matched_words], padding=0.01)
-            
-            if not line_bbox:
-                continue
-            
-            avg_confidence = sum(w.get('confidence', 0) for w in matched_words) / len(matched_words)
-            similarity = fuzzy_match(line_text, matched_text)
-            
-            # CRITICAL: Only accept if similarity is reasonable (> 50%)
-            if similarity < 0.5:
-                logger.warning(f"Low similarity ({similarity*100:.1f}%) - rejecting match")
-                continue
-            
-            result = {
-                'matched_text': matched_text,
-                'field_value': line_text,
-                'bounding_box': line_bbox,
-                'bounding_page': matched_words[0].get('bounding_page', 1),
-                'match_confidence': similarity * 100,
-                'coordinate_confidence': similarity * 100,
-                'match_type': 'word_refined_vertical',
-                'ocr_confidence': avg_confidence,
-                'word_count': len(matched_words)
-            }
-            
-            result_lines.append(result)
-            logger.info(f"✓ Found vertical line: '{line_text}' → '{matched_text}' (similarity: {similarity*100:.1f}%)")
+        # Transform coordinates (swap X ↔ Y)
+        transformed_pool = transform_rotated_coordinates(word_pool)
         
-        return result_lines
+        # Use normal spatial clustering on transformed coordinates
+        result = find_best_spatial_cluster(expected_lines, transformed_pool, fuzzy_threshold)
+        
+        if result:
+            logger.info(f"✓ Rotated page search found {len(result)} lines")
+        
+        return result
 
 
     # ============================================
-    # FUZZY SEARCH FALLBACK
+    # FALLBACK STRATEGIES
     # ============================================
 
     def fallback_fuzzy_search(expected_lines: List[str], word_pool: List[Dict], 
@@ -9321,6 +9228,7 @@ Return compliance status for each field.'''
                 for token in tokens:
                     found = False
                     
+                    # Look ahead up to 20 words
                     for look_idx in range(current_idx, min(current_idx + 20, len(word_pool))):
                         word = word_pool[look_idx]
                         word_text = strip_punctuation(word.get('text', ''))
@@ -9334,9 +9242,12 @@ Return compliance status for each field.'''
                     if not found:
                         break
                 
+                # Check if we matched all tokens
                 if len(matched_words) == len(tokens):
-                    y_tolerance = 0.35
+                    # Check if on same line
+                    y_tolerance = 0.35  # More lenient
                     if are_words_on_same_line(matched_words, y_tolerance=y_tolerance):
+                        # Sort left to right
                         matched_words_sorted = sort_words_left_to_right(matched_words)
                         matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
                         score = fuzzy_match(clean_line, matched_text)
@@ -9347,11 +9258,13 @@ Return compliance status for each field.'''
                             best_end_idx = current_idx
             
             if best_match:
+                # Build result
                 matched_text = ' '.join([w.get('text', '') for w in best_match])
                 line_bbox = merge_bboxes([w['bounding_box'] for w in best_match], padding=0.01)
                 
                 if line_bbox:
                     avg_confidence = sum(w.get('confidence', 0) for w in best_match) / len(best_match)
+                    was_rotated = any(w.get('_rotated', False) for w in best_match)
                     
                     result = {
                         'matched_text': matched_text,
@@ -9360,14 +9273,14 @@ Return compliance status for each field.'''
                         'bounding_page': best_match[0].get('bounding_page', 1),
                         'match_confidence': best_score * 100,
                         'coordinate_confidence': best_score * 100,
-                        'match_type': 'word_refined_fallback',
+                        'match_type': 'word_refined_fallback_rotated' if was_rotated else 'word_refined_fallback',
                         'ocr_confidence': avg_confidence,
                         'word_count': len(best_match)
                     }
                     
                     result_lines.append(result)
                     search_start_idx = best_end_idx
-                    logger.info(f"✓ Fuzzy found: '{line_text}' → '{matched_text}'")
+                    logger.info(f"✓ Fallback found: '{line_text}' → '{matched_text}'")
         
         return result_lines
 
@@ -9376,6 +9289,7 @@ Return compliance status for each field.'''
                                     word_pool: List[Dict]) -> List[Dict]:
         """
         Fallback strategy: Expand around existing partial match
+        Find nearby words that match the expected text
         """
         logger.info("FALLBACK: Trying to expand existing partial match")
         
@@ -9385,6 +9299,7 @@ Return compliance status for each field.'''
         match_bbox = best_match['bounding_box']
         match_page = best_match.get('bounding_page', 1)
         
+        # Find words near the existing match (wider search area)
         nearby_words = []
         
         for word in word_pool:
@@ -9395,8 +9310,10 @@ Return compliance status for each field.'''
             if not word_bbox or len(word_bbox) < 8:
                 continue
             
+            # Calculate distance from match
             distance = calculate_distance(match_bbox, word_bbox)
             
+            # Include words within reasonable distance (1.0 units)
             if distance <= 1.0:
                 nearby_words.append(word)
         
@@ -9404,10 +9321,12 @@ Return compliance status for each field.'''
             logger.warning("No nearby words found")
             return []
         
+        # Sort nearby words in reading order
         sorted_nearby = sort_words_reading_order(nearby_words)
         
-        logger.info(f"Found {len(sorted_nearby)} nearby words")
+        logger.info(f"Found {len(sorted_nearby)} nearby words, trying to match lines")
         
+        # Try fuzzy search within these nearby words
         return fallback_fuzzy_search(expected_lines, sorted_nearby, fuzzy_threshold=0.70)
 
 
@@ -9419,7 +9338,15 @@ Return compliance status for each field.'''
                                 best_match: Optional[Dict], 
                                 word_ocr_data: List[Dict]) -> Dict:
         """
-        Main refiner function with spatial clustering + multiple fallbacks
+        Main refiner function with spatial clustering + rotated page support
+        
+        Steps:
+        1. Parse field_value into lines (split by \n)
+        2. PRIMARY: Try normal spatial clustering
+        3. FALLBACK 1: Try rotated page search (transform coordinates)
+        4. FALLBACK 2: Try fuzzy search
+        5. FALLBACK 3: Try expanding existing match
+        6. Build result with individual lines + merged bbox
         """
         
         logger.info("=" * 60)
@@ -9435,49 +9362,37 @@ Return compliance status for each field.'''
         # Parse lines
         expected_lines = [line.strip() for line in field_value.split('\n') if line.strip()]
         
-        # Skip if any line is too long
+        # Skip if any line is too long (>80 chars)
         if any(len(line) > 80 for line in expected_lines):
             logger.info("Line(s) too long (>80 chars) - skipping refinement")
             return {'best_match': best_match, 'matches': matches}
         
         logger.info(f"Processing {len(expected_lines)} lines")
         
-        # Get anchor page
+        # Get anchor page from best_match
         anchor_page = best_match.get('bounding_page', 1) if best_match else None
         
-        # Filter to anchor page
+        # Filter word data to anchor page only (if we have one)
         if anchor_page:
             word_pool = [w for w in word_ocr_data if w.get('bounding_page') == anchor_page]
             logger.info(f"Using {len(word_pool)} words from page {anchor_page}")
         else:
             word_pool = word_ocr_data
         
-        # Sort word pool
+        # Sort word pool in reading order ONCE
         sorted_word_pool = sort_words_reading_order(word_pool)
         logger.info(f"Sorted {len(sorted_word_pool)} words in reading order")
         
-        # PRIMARY: Spatial clustering
+        # PRIMARY: Try normal spatial clustering
         result_lines = find_best_spatial_cluster(expected_lines, sorted_word_pool, fuzzy_threshold=0.80)
         
         # FALLBACK LOGIC
         if not result_lines:
             logger.warning("❌ Spatial clustering failed - trying fallback strategies")
             
-            # Fallback 1: Vertical text search
-            logger.info("Trying vertical text fallback...")
-            result_lines = fallback_vertical_text_search(expected_lines, sorted_word_pool, fuzzy_threshold=0.75)
-            
-            # CRITICAL: Check if vertical result is actually good
-            if result_lines:
-                # Calculate average match confidence
-                avg_match_conf = sum(line.get('match_confidence', 0) for line in result_lines) / len(result_lines)
-                
-                # Reject if confidence too low (< 60%)
-                if avg_match_conf < 60:
-                    logger.warning(f"❌ Vertical result has low confidence ({avg_match_conf:.1f}%) - rejecting")
-                    result_lines = []
-                else:
-                    logger.info(f"✓ Vertical result accepted with confidence {avg_match_conf:.1f}%")
+            # Fallback 1: Rotated page search
+            logger.info("Trying rotated page fallback...")
+            result_lines = fallback_rotated_page_search(expected_lines, sorted_word_pool, fuzzy_threshold=0.80)
             
             if not result_lines:
                 # Fallback 2: Fuzzy search
@@ -9495,8 +9410,10 @@ Return compliance status for each field.'''
         
         # Build final result
         if len(result_lines) == 1:
+            # Single line
             refined_best_match = result_lines[0]
         else:
+            # Multi-line: merge
             all_bboxes = [line['bounding_box'] for line in result_lines]
             merged_bbox = merge_bboxes(all_bboxes, padding=0.02)
             
@@ -9524,7 +9441,7 @@ Return compliance status for each field.'''
         
         return {
             'best_match': refined_best_match,
-            'matches': result_lines
+            'matches': result_lines  # Return refined individual lines
         }
 
 
@@ -17546,8 +17463,8 @@ Return compliance status for each field.'''
 
     def classify_pages_batch(pages_ocr_data, document_classifier):
         """
-        OPTIMIZED: Classify all pages in a single batch API call with enhanced Covering Schedule detection.
-
+        OPTIMIZED: Classify all pages with intelligent multi-document detection and Covering Schedule logic.
+        
         Args:
             pages_ocr_data: List of OCR data for each page
             document_classifier: DocumentClassifier instance
@@ -17555,6 +17472,7 @@ Return compliance status for each field.'''
         Returns:
             list: Page classifications with document_type, confidence, etc.
         """
+        
         try:
             import json
             import openai
@@ -17572,8 +17490,8 @@ Return compliance status for each field.'''
                         'chars': len(page_text)
                     })
                 else:
-                    # Truncate long pages for efficiency but keep more text for first page
-                    max_length = 2000 if page_num == 1 else 1500
+                    # Keep more text for first 2 pages to better detect Covering Schedule
+                    max_length = 2500 if page_num <= 2 else 1500
                     truncated_text = page_text[:max_length] + "..." if len(page_text) > max_length else page_text
                     pages_summary.append({
                         'page': page_num,
@@ -17598,109 +17516,210 @@ Return compliance status for each field.'''
             for category_name in sorted(doc_types_by_category.keys()):
                 if doc_types_by_category[category_name]:
                     category_sections.append(f"**{category_name}:**\n{', '.join(sorted(doc_types_by_category[category_name]))}")
- 
-            # Detect if this is likely a multi-document package
+
             total_pages = len(pages_summary)
-            is_multi_doc_package = total_pages >= 3
-           
-            # Build batch classification prompt with enhanced Covering Schedule detection
+            
+            # ENHANCED: Detect if this is a multi-document package
+            # Check Page 1 for Covering Schedule indicators
+            first_page_text = pages_summary[0].get('text', '').lower() if pages_summary else ''
+            
+            covering_schedule_indicators = {
+                'has_schedule_title': any(term in first_page_text[:400] for term in 
+                    ['covering schedule', 'document schedule', 'schedule of documents', 'list of documents', 'schedule']),
+                'has_tabular_headers': any(term in first_page_text for term in 
+                    ['document type', 's.no', 's/n', 'serial no', 'sl.no', 'ref no', 'reference no', 'description', 'remarks']),
+                'multiple_doc_refs': (
+                    first_page_text.count('invoice') > 2 or 
+                    first_page_text.count('bill of lading') > 1 or
+                    first_page_text.count('certificate') > 2 or
+                    first_page_text.count('lc') > 3 or
+                    first_page_text.count('l/c') > 3 or
+                    first_page_text.count('b/l') > 1 or
+                    first_page_text.count('packing list') > 1
+                ),
+                'has_list_structure': first_page_text.count('|') > 5 or first_page_text.count('\n') > 15,
+                'has_lc_narrative': (
+                    'terms and conditions' in first_page_text or
+                    'we hereby issue' in first_page_text or
+                    'irrevocable' in first_page_text[:500] or
+                    'documentary credit' in first_page_text
+                )
+            }
+            
+            cs_indicator_score = sum([v for k, v in covering_schedule_indicators.items() if k != 'has_lc_narrative'])
+            has_lc_narrative = covering_schedule_indicators['has_lc_narrative']
+            
+            # CRITICAL RULE: Multi-document package detection with strong bias
+            # 6+ pages = 95% likely to have Covering Schedule as Page 1
+            # 2-5 pages = 95% likely to be single document (typically LC)
+            is_multi_doc_package = total_pages >= 6
+            
+            # Strong override: If 6+ pages, Page 1 is Covering Schedule UNLESS it has clear LC narrative
+            if is_multi_doc_package and not has_lc_narrative:
+                is_likely_covering_schedule = True  # Force to True for 6+ pages
+                if cs_indicator_score == 0:
+                    cs_indicator_score = 1  # Boost score for multi-doc packages
+            elif total_pages >= 6 and cs_indicator_score >= 1:
+                # Even with LC narrative, if indicators present, likely CS
+                is_likely_covering_schedule = True
+            else:
+                is_likely_covering_schedule = cs_indicator_score >= 2
+            
+            logger.info(f"📊 Document Analysis:")
+            logger.info(f"   Total pages: {total_pages}")
+            logger.info(f"   Covering Schedule indicators: {cs_indicator_score}/4")
+            logger.info(f"   - Schedule title: {covering_schedule_indicators['has_schedule_title']}")
+            logger.info(f"   - Tabular headers: {covering_schedule_indicators['has_tabular_headers']}")
+            logger.info(f"   - Multiple doc refs: {covering_schedule_indicators['multiple_doc_refs']}")
+            logger.info(f"   - List structure: {covering_schedule_indicators['has_list_structure']}")
+            logger.info(f"   - Has LC narrative: {has_lc_narrative}")
+            logger.info(f"   📌 Multi-document package: {is_multi_doc_package}")
+            if is_multi_doc_package:
+                logger.info(f"   📌 Page 1 Bias: 95% COVERING SCHEDULE (6+ pages = multi-doc)")
+            else:
+                logger.info(f"   📌 Page 1 Bias: 95% LETTER OF CREDIT (2-5 pages = single doc)")
+            
+            # Build batch classification prompt
             batch_prompt = f"""You are an expert document classifier for international trade and finance documents.
- 
-    TASK: Classify ALL {len(pages_summary)} pages in this document package in a SINGLE response.
- 
+
+    TASK: Classify ALL {len(pages_summary)} pages in this document package.
+
     ### Available Document Types by Business Process Category:
- 
+
     {chr(10).join(category_sections)}
- 
+
     ### CRITICAL CLASSIFICATION RULES:
- 
-    **COVERING SCHEDULE DETECTION (HIGHEST PRIORITY):**
-    1. If Page 1 contains ANY of these indicators, classify it as "Covering Schedule":
-    - Title/header contains: "Covering Schedule", "Schedule", "Document Schedule", "List of Documents"
-    - Tabular/list format with multiple document references
-    - Contains LC numbers, invoice numbers, or document reference numbers in a list
-    - Contains columns like: Document Type, Reference Number, Date, etc.
- 
-    2. **MULTI-DOCUMENT PACKAGE RULE**:
-    - If this package has {total_pages} pages with 3+ different document types, Page 1 is HIGHLY LIKELY a Covering Schedule
-    - Covering Schedule probability: {'95%' if is_multi_doc_package else '50%'} for Page 1
- 
+
+    **DOCUMENT PACKAGE ANALYSIS:**
+    - Total Pages: {total_pages}
+    - Multi-Document Package: {'YES' if is_multi_doc_package else 'NO'}
+    - Covering Schedule Indicators on Page 1: {cs_indicator_score}/4
+
+    **COVERING SCHEDULE DETECTION (APPLY ONLY IF MULTI-DOCUMENT PACKAGE):**
+
+    {'🎯 HIGH PRIORITY: This appears to be a MULTI-DOCUMENT PACKAGE (6+ pages). Page 1 is VERY LIKELY a Covering Schedule if:' if is_multi_doc_package else '⚠️ This appears to be a SINGLE DOCUMENT (2-5 pages). DO NOT classify as Covering Schedule unless explicit "Covering Schedule" title present. Likely a multi-page Letter of Credit.'}
+
+    {'1. Page 1 contains "Covering Schedule" or "Schedule" in title → 98% confidence Covering Schedule' if is_multi_doc_package else ''}
+    {'2. Page 1 has tabular/list format with multiple document references → 95% confidence Covering Schedule' if is_multi_doc_package else ''}
+    {'3. Page 1 lists LC numbers, invoice numbers, or document types in columns → 95% confidence Covering Schedule' if is_multi_doc_package else ''}
+    {'4. For 6+ page packages, even if indicators are weak, assume Covering Schedule unless clear LC narrative present' if is_multi_doc_package else ''}
+    {'5. **CRITICAL**: Covering Schedule can span 1-3 pages. If Page 2-3 still has tabular format with document lists, mark as continuation of Covering Schedule, NOT as Letter of Credit' if is_multi_doc_package else ''}
+    {'6. **The actual LC (if present) will start after the Covering Schedule**, typically pages 3-7' if is_multi_doc_package else ''}
+
     **Letter of Credit vs Covering Schedule:**
-    - **Letter of Credit**: Contains credit amount, expiry date, detailed terms and conditions, beneficiary details, issuing bank, payment terms (narrative document)
-    - **Covering Schedule**: Summary/index listing multiple documents, contains schedule format, reference numbers in tabular/list format
-    - **KEY RULE**: If document title says "Covering Schedule" or has tabular list of documents → Classify as "Covering Schedule", NOT "Letter of Credit"
- 
-    **Other Document Distinctions:**
-    - **Bill of Lading**: "Bill of Lading" header, negotiable transport document
-    - **Commercial Invoice**: Final invoice with "Commercial Invoice" header, final prices
-    - **Packing List**: Details packaging (boxes, cartons), dimensions
-    - **Certificate of Origin**: "Certificate of Origin" header, country declaration
- 
+    - **Letter of Credit**: Contains credit amount, expiry date, detailed terms and conditions, beneficiary details, issuing bank, payment terms (NARRATIVE document, usually 2-4 pages, comes AFTER Covering Schedule in multi-doc packages)
+    - **Covering Schedule**: Summary/index listing multiple documents, tabular format, reference numbers (USUALLY Page 1-3 of 5+ page packages, comes BEFORE the actual LC)
+    - **KEY RULE**: 
+      - Multi-page LC documents (2-4 pages) should NOT be split
+      - Covering Schedule pages should NOT be classified as LC even if they contain LC information
+      - In multi-doc packages: Covering Schedule FIRST, then LC document, then other documents
+      - If pages are tabular with document references → Covering Schedule continuation
+      - If pages are narrative with detailed terms → Letter of Credit
+
+    **SINGLE vs MULTI-DOCUMENT DETECTION:**
+    - **SINGLE Document (2-5 pages)**: All pages are continuation of the same document (e.g., 4-5 page Letter of Credit)
+      - Pages have similar content structure
+      - No clear document boundaries
+      - Sequential narrative or terms
+      - Mark pages 2+ as is_continuation: true
+      - Common: Multi-page LC (2-5 pages), Multi-page Invoice (2-3 pages), Multi-page BL (1-2 pages)
+
+    - **MULTI-DOCUMENT Package (6+ pages)**: Contains MULTIPLE separate documents
+      - Page 1 is 95% likely a Covering Schedule (index/list)
+      - Clear document boundaries (new headers, different formats)
+      - Each document starts fresh with own title
+      - Mark new documents as is_continuation: false
+      - Typical structure: CS (p1-3) → LC (p3-7) → Invoice (p8-10) → BL → Certificates
+
+    **Other Document Types:**
+    - **Bill of Lading**: "Bill of Lading" header, transport document (1-2 pages typically)
+    - **Commercial Invoice**: "Commercial Invoice" header, itemized goods and prices (1-3 pages)
+    - **Packing List**: Details packaging, cartons, dimensions (1-2 pages)
+    - **Certificate of Origin**: "Certificate of Origin" header, country declaration (1 page)
+    - **Insurance Certificate**: "Insurance Certificate" header, coverage details (1-2 pages)
+
     ### PAGES TO CLASSIFY:
- 
+
     {json.dumps(pages_summary, indent=2)}
- 
+
     ### CLASSIFICATION INSTRUCTIONS:
- 
-    1. **ANALYZE PAGE 1 FIRST**:
-    - Check if it's a Covering Schedule (look for title, tabular format, multiple document references)
-    - If Page 1 is a Covering Schedule, subsequent pages are likely individual documents listed in it
- 
-    2. For each page:
-    - Look at the EXPLICIT TITLE/HEADER (most important)
-    - Determine if it's a NEW document or CONTINUATION of previous page
-    - Classify document type (MUST be EXACTLY from the list above)
-    - Empty pages should be marked as "Empty/Insufficient Text"
- 
-    3. Confidence Scoring:
-    - 95-100: Clear document title/header matches type
-    - 85-94: Strong indicators including title
-    - 70-84: Reasonable match from content structure
-    - 50-69: Limited information, inference only
- 
-    4. If Page 1 appears to list multiple documents or has "Schedule" in title → HIGH confidence it's "Covering Schedule"
- 
-    Respond in VALID JSON format ONLY (no markdown, no additional text):
+
+    1. **FIRST: Determine Package Type**
+       - If 6+ pages → Multi-document package (Page 1 = 95% Covering Schedule)
+       - If 2-5 pages → Single document (95% likely LC or other single doc type, NOT Covering Schedule)
+
+    2. **IF MULTI-DOCUMENT PACKAGE ({total_pages} pages, indicators: {cs_indicator_score}/4):**
+       - Check Page 1 for Covering Schedule indicators (title, tabular format, document list)
+       - **DEFAULT: Classify Page 1 as "Covering Schedule" with 95% confidence** (unless clear LC narrative)
+       - **IMPORTANT**: If Page 2-3 still has tabular/list format → Mark as continuation of Covering Schedule
+       - DO NOT classify Covering Schedule pages as "Letter of Credit" just because they mention LC numbers
+       - The actual Letter of Credit document will appear AFTER the Covering Schedule (typically page 3-7)
+       - Pattern: Covering Schedule (pages 1-3) → LC (pages 3-7) → Invoice → BL → Certificates
+
+    3. **IF SINGLE DOCUMENT (2-5 pages):**
+       - Classify Page 1 by its explicit title (likely "Letter of Credit", "Commercial Invoice", etc.)
+       - Mark pages 2+ as is_continuation: true (same document continues)
+       - DO NOT split a 4-5 page LC into multiple document types
+       - DO NOT classify as Covering Schedule unless explicit "Covering Schedule" title present
+
+    4. **For each page:**
+       - Look at EXPLICIT TITLE/HEADER first
+       - Check for document boundaries (new title, format change)
+       - Mark is_continuation appropriately
+       - Use confidence scores 95-100 for clear titles, 70-85 for inferred
+
+    5. **Confidence Scoring:**
+       - 95-100: Clear title/header matches type
+       - 85-94: Strong indicators with title
+       - 70-84: Reasonable match from structure
+       - 50-69: Limited info, continuation page
+
+    Respond in VALID JSON format ONLY (no markdown):
     {{
-    "pages": [
+      "package_analysis": {{
+        "is_multi_document": true/false,
+        "covering_schedule_likely": true/false,
+        "reasoning": "Brief package-level analysis"
+      }},
+      "pages": [
         {{
-        "page": 1,
-        "document_type": "exact document name from list",
-        "is_continuation": false,
-        "confidence": 95,
-        "reasoning": "Document title found: [title]. Contains [key indicators]."
+          "page": 1,
+          "document_type": "exact document name from list",
+          "is_continuation": false,
+          "confidence": 95,
+          "reasoning": "Document title: [title]. Key indicators: [indicators]."
         }},
         ...
-    ]
+      ]
     }}
- 
+
     **CRITICAL REMINDERS:**
-    - document_type MUST be exactly one of the document types listed above
-    - ALWAYS prioritize explicit document title over content similarity
-    - If Page 1 has tabular format with document references → "Covering Schedule"
-    - is_continuation: true if page continues previous document, false if new document starts
-    - For multi-page packages ({total_pages} pages), Page 1 is often a Covering Schedule"""
- 
+    - DO NOT split single multi-page documents (like 4-page LC)
+    - Continuation pages should have is_continuation: true and same document_type as previous page
+    - Multi-document packages (5+ pages) with indicators → Page 1 is likely Covering Schedule
+    - Always prioritize explicit document title over content analysis"""
+
             logger.info(f"📤 Sending batch classification request for {len(pages_summary)} pages...")
-            logger.info(f"🔍 Multi-document package detected: {is_multi_doc_package} (threshold: 3+ pages)")
- 
-            # Single API call for all pages with system prompt
-            system_message = """You are an expert document classification system for international trade and finance documents.
- 
-    **PRIORITY RULE**: If a document's title/header says "Covering Schedule" or shows a tabular list of documents, classify it as "Covering Schedule", NOT as "Letter of Credit", even if it contains LC-related information.
- 
-    Always prioritize explicit document titles over content similarity."""
- 
+
+            # API call with system message
+            system_message = """You are an expert document classification system for international trade and finance documents. 
+
+    CRITICAL RULES:
+    1. SINGLE DOCUMENT: If 2-4 pages appear to be ONE document, mark continuation pages appropriately. DO NOT split a 4-page Letter of Credit into 2 different types.
+    2. MULTI-DOCUMENT PACKAGE: If 5+ pages with multiple distinct documents, Page 1 is often a Covering Schedule.
+    3. ALWAYS prioritize explicit document titles over content similarity.
+    4. Continuation pages should maintain the same document_type as the page they continue."""
+
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": batch_prompt}
                 ],
-                temperature=0.05,  # Lower temperature for more consistent results
-                max_tokens=2500,  # Increased for multiple pages
-                seed=12345,  # Reproducibility
-                top_p=0.1,  # Reduce randomness
+                temperature=0.05,
+                max_tokens=3000,
+                seed=12345,
+                top_p=0.1,
                 frequency_penalty=0,
                 presence_penalty=0,
                 response_format={"type": "json_object"}
@@ -17708,53 +17727,130 @@ Return compliance status for each field.'''
 
             response_text = response.choices[0].message.content.strip()
 
-            # Clean up response
+            # Clean response
             if response_text.startswith('```json'):
                 response_text = response_text.replace('```json', '').replace('```', '')
             elif response_text.startswith('```'):
                 response_text = response_text.replace('```', '')
             response_text = response_text.strip()
 
-            # Parse batch response
+            # Parse response
             batch_result = json.loads(response_text)
+            
+            # Extract package analysis if present
+            package_analysis = batch_result.get('package_analysis', {})
+            ai_thinks_multi_doc = package_analysis.get('is_multi_document', is_multi_doc_package)
+            ai_thinks_covering_schedule = package_analysis.get('covering_schedule_likely', False)
+            
+            logger.info(f"🤖 AI Analysis:")
+            logger.info(f"   Multi-document: {ai_thinks_multi_doc}")
+            logger.info(f"   Covering Schedule likely: {ai_thinks_covering_schedule}")
+            logger.info(f"   Reasoning: {package_analysis.get('reasoning', 'N/A')}")
+            
             pages_data = batch_result.get('pages', [])
 
             if len(pages_data) != len(pages_ocr_data):
                 logger.warning(f"⚠️ Batch classification returned {len(pages_data)} results but expected {len(pages_ocr_data)}")
- 
-            # POST-PROCESSING: Apply heuristics for Covering Schedule detection
-            if len(pages_data) > 0:
+
+            # POST-PROCESSING: Apply intelligent override logic
+            if len(pages_data) > 0 and total_pages >= 5:
                 first_page = pages_data[0]
-                first_page_text = pages_summary[0].get('text', '').lower()
-               
-                # Check if Page 1 should be Covering Schedule
-                covering_schedule_indicators = [
-                    'covering schedule' in first_page_text,
-                    'schedule' in first_page_text[:200],  # Title area
-                    'document type' in first_page_text and 'reference' in first_page_text,
-                    first_page_text.count('lc') > 2 or first_page_text.count('l/c') > 2,  # Multiple LC refs
-                    first_page_text.count('invoice') > 2,  # Multiple invoice refs
-                ]
-               
-                # Count unique document types in the package
-                unique_doc_types = set()
-                for page_info in pages_data:
+                
+                # Count unique document types in subsequent pages
+                unique_doc_types_after_page1 = set()
+                for page_info in pages_data[1:]:  # Skip page 1
                     doc_type = page_info.get('document_type', '')
-                    if doc_type not in ['Empty/Insufficient Text', 'Unknown']:
-                        unique_doc_types.add(doc_type)
-               
-                # Override: If Page 1 has strong indicators AND package has 3+ doc types
-                if (sum(covering_schedule_indicators) >= 2 or
-                    (len(unique_doc_types) >= 3 and is_multi_doc_package)):
-                   
-                    if first_page.get('document_type') != 'Covering Schedule':
-                        logger.warning(f"⚠️ OVERRIDE: Page 1 classified as '{first_page.get('document_type')}' but indicators suggest Covering Schedule")
-                        logger.warning(f"   Indicators: {sum(covering_schedule_indicators)}/5, Unique docs: {len(unique_doc_types)}, Pages: {total_pages}")
-                       
-                        first_page['document_type'] = 'Covering Schedule'
-                        first_page['confidence'] = 90
-                        first_page['reasoning'] = f"Override applied: Document contains {len(unique_doc_types)} different document types across {total_pages} pages with tabular format indicators, characteristic of a Covering Schedule."
- 
+                    if doc_type not in ['Empty/Insufficient Text', 'Unknown', 'Covering Schedule']:
+                        unique_doc_types_after_page1.add(doc_type)
+                
+                # Strong override conditions for Covering Schedule
+                should_override_to_cs = (
+                    # STRONGEST CONDITION: 6+ pages without clear LC narrative = Covering Schedule
+                    (is_multi_doc_package and not has_lc_narrative) or
+                    # Condition 1: Explicit indicators + multi-doc package
+                    (cs_indicator_score >= 2 and is_multi_doc_package) or
+                    # Condition 2: 6+ pages with 2+ different document types (likely multi-doc)
+                    (total_pages >= 6 and len(unique_doc_types_after_page1) >= 2) or
+                    # Condition 3: AI detected covering schedule + indicators
+                    (ai_thinks_covering_schedule and cs_indicator_score >= 1) or
+                    # Condition 4: 7+ pages (very likely multi-doc package)
+                    (total_pages >= 7) or
+                    # Condition 5: 6 pages with any indicators
+                    (total_pages == 6 and cs_indicator_score >= 1)
+                )
+                
+                # Apply override if Page 1 is NOT already classified as Covering Schedule
+                if should_override_to_cs and first_page.get('document_type') != 'Covering Schedule':
+                    original_type = first_page.get('document_type')
+                    logger.warning(f"🔄 OVERRIDE APPLIED:")
+                    logger.warning(f"   Original: {original_type}")
+                    logger.warning(f"   Override to: Covering Schedule")
+                    logger.warning(f"   Reason: {total_pages} pages, {len(unique_doc_types_after_page1)} unique doc types, {cs_indicator_score} indicators")
+                    
+                    first_page['document_type'] = 'Covering Schedule'
+                    first_page['confidence'] = 95  # Increased from 92
+                    first_page['reasoning'] = f"95% Rule Applied: Multi-document package ({total_pages} pages). Page 1 is Covering Schedule (found {len(unique_doc_types_after_page1)} document types after page 1, indicators: {cs_indicator_score}/4, no LC narrative detected)."
+                    first_page['is_continuation'] = False
+            
+            # CRITICAL FIX: If this is a multi-doc package, REMOVE all "Letter of Credit" classifications
+            # Multi-doc packages NEVER contain LC - any LC classification is a mistake
+            if is_multi_doc_package:
+                lc_found = False
+                for page_info in pages_data:
+                    if page_info.get('document_type') == 'Letter of Credit':
+                        lc_found = True
+                        original_type = page_info.get('document_type')
+                        page_num = page_info.get('page', 0)
+                        
+                        # If Page 1, it's definitely Covering Schedule
+                        if page_num == 1:
+                            logger.warning(f"🔄 PAGE {page_num} MULTI-DOC RULE APPLIED:")
+                            logger.warning(f"   Original: {original_type}")
+                            logger.warning(f"   Corrected to: Covering Schedule")
+                            logger.warning(f"   Reason: Multi-doc packages (6+ pages) NEVER contain Letter of Credit. Page 1 is always Covering Schedule.")
+                            
+                            page_info['document_type'] = 'Covering Schedule'
+                            page_info['is_continuation'] = False
+                            page_info['confidence'] = 98
+                            page_info['reasoning'] = f"100% RULE: Multi-document package ({total_pages} pages) never contains Letter of Credit. Page 1 is Covering Schedule."
+                        else:
+                            # Check if it's continuation of Page 1's Covering Schedule
+                            page_text = pages_summary[page_num - 1].get('text', '').lower() if page_num - 1 < len(pages_summary) else ''
+                            
+                            is_still_schedule = (
+                                page_text.count('|') > 5 or  # Tabular format
+                                'document type' in page_text or
+                                's.no' in page_text or
+                                's/n' in page_text or
+                                page_text.count('invoice') > 2 or
+                                page_text.count('certificate') > 2
+                            )
+                            
+                            if is_still_schedule or page_num <= 3:  # Pages 2-3 likely CS continuation
+                                logger.warning(f"🔄 PAGE {page_num} MULTI-DOC RULE APPLIED:")
+                                logger.warning(f"   Original: {original_type}")
+                                logger.warning(f"   Corrected to: Covering Schedule (continuation)")
+                                logger.warning(f"   Reason: Multi-doc package - LC classification is incorrect. Appears to be CS continuation.")
+                                
+                                page_info['document_type'] = 'Covering Schedule'
+                                page_info['is_continuation'] = True
+                                page_info['confidence'] = 90
+                                page_info['reasoning'] = f"Multi-doc package correction: Changed from LC to Covering Schedule continuation (tabular format detected)."
+                            else:
+                                # It's likely another document (Invoice, BL, etc.), reclassify
+                                logger.warning(f"🔄 PAGE {page_num} MULTI-DOC RULE APPLIED:")
+                                logger.warning(f"   Original: {original_type}")
+                                logger.warning(f"   Action: Needs reclassification (LC not possible in multi-doc packages)")
+                                logger.warning(f"   Likely: Commercial Invoice, Bill of Lading, or Certificate")
+                                
+                                # Keep as-is for now but flag for review
+                                # In production, you might want to force reclassification here
+                                page_info['confidence'] = max(page_info.get('confidence', 50) - 20, 50)
+                                page_info['reasoning'] = f"WARNING: Classified as LC but multi-doc packages never contain LC. May need manual review."
+                
+                if lc_found:
+                    logger.warning(f"⚠️ CRITICAL: Multi-document package contained Letter of Credit classification(s) - all corrected/flagged")
+
             # Build page classifications from batch result
             page_classifications = []
             for idx, page_info in enumerate(pages_data):
@@ -17772,28 +17868,31 @@ Return compliance status for each field.'''
                     page_text = ""
                     page_data = []
 
-                # Apply continuation logic
+                # Apply continuation logic - inherit from previous page
                 if is_continuation and len(page_classifications) > 0:
                     prev_type = page_classifications[-1]['document_type']
                     if prev_type not in ['Empty/Insufficient Text', 'Unknown']:
                         final_document_type = prev_type
                         final_confidence = max(confidence * 100 if confidence <= 1.0 else confidence, 75)
-                        logger.info(f"  Page {page_num}: CONTINUATION of {prev_type} (confidence: {final_confidence:.0f}%)")
+                        logger.info(f"  📄 Page {page_num}: CONTINUATION of {prev_type} (confidence: {final_confidence:.0f}%)")
                     else:
                         final_document_type = document_type
                         final_confidence = confidence * 100 if confidence <= 1.0 else confidence
-                        logger.info(f"  Page {page_num}: FRESH {final_document_type} (confidence: {final_confidence:.0f}%)")
+                        logger.info(f"  📄 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
                 else:
                     final_document_type = document_type
                     final_confidence = confidence * 100 if confidence <= 1.0 else confidence
-                   
-                    # Highlight Covering Schedule detection
+                    
+                    # Highlight important classifications
                     if final_document_type == 'Covering Schedule':
                         logger.info(f"  📋 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%) ⭐")
+                    elif page_num == 1:
+                        logger.info(f"  📄 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%) [FIRST PAGE]")
                     else:
-                        logger.info(f"  Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
- 
-                logger.info(f"    ↳ {reasoning}")
+                        logger.info(f"  📄 Page {page_num}: {final_document_type} (confidence: {final_confidence:.0f}%)")
+
+                if reasoning:
+                    logger.info(f"      ↳ {reasoning[:100]}...")
 
                 page_classifications.append({
                     'page': page_num,
@@ -17803,17 +17902,30 @@ Return compliance status for each field.'''
                     'ocr_data': page_data,
                     'is_continuation': is_continuation
                 })
- 
-            logger.info(f"✅ Batch classification completed: {len(page_classifications)} pages classified")
-            logger.info(f"📊 Unique document types found: {len(unique_doc_types)} - {', '.join(unique_doc_types)}")
-           
+
+            # Final summary
+            unique_types = set()
+            continuation_count = 0
+            for pc in page_classifications:
+                if not pc['is_continuation']:
+                    unique_types.add(pc['document_type'])
+                else:
+                    continuation_count += 1
+            
+            logger.info(f"")
+            logger.info(f"✅ CLASSIFICATION SUMMARY:")
+            logger.info(f"   Total pages: {len(page_classifications)}")
+            logger.info(f"   Unique document types: {len(unique_types)}")
+            logger.info(f"   Continuation pages: {continuation_count}")
+            logger.info(f"   Document types found: {', '.join(sorted(unique_types))}")
+            
             return page_classifications
 
         except Exception as e:
             logger.error(f"❌ Batch classification failed: {e}")
             import traceback
             logger.error(traceback.format_exc())
-            return []  # Fall back to sequential classification
+            return []
 
     def process_document_page_by_page(uploaded_file, function_name=None, product_name=None,
                                       document_type=None, progress_tracker=None, config=None,
@@ -17957,19 +18069,190 @@ Return compliance status for each field.'''
             classification_time = time.time() - classification_start
             logger.info(f"✅ Classification completed in {classification_time:.2f}s")
 
+            # === STEP 4.1: VALIDATE DOCUMENT TYPES AGAINST PREDEFINED LIST ===
+            logger.info(f"🔍 STEP 4.1: VALIDATING DOCUMENT TYPES AGAINST PREDEFINED LIST")
+            
+            # Build list of valid document types from our system
+            valid_document_types = set()
+            for doc_id, mapping in document_classifier.entity_mappings.items():
+                document_name = mapping.get('documentName', doc_id)
+                valid_document_types.add(document_name)
+            
+            # Add standard system types
+            valid_document_types.update(['Empty/Insufficient Text', 'Unknown'])
+            
+            # Define document type aliases/mappings for AI variations
+            document_type_aliases = {
+                'Weight List': 'Certificate of Weight',
+                'weight list': 'Certificate of Weight',
+                'Weight Certificate': 'Certificate of Weight',
+                'Weighing Certificate': 'Certificate of Weight',
+                'Certificate Of Origin': 'Preferential Certificate of Origin',
+                'certificate of origin': 'Preferential Certificate of Origin',
+                'Certificate of Origin': 'Preferential Certificate of Origin',
+                'COO': 'Preferential Certificate of Origin',
+                'Origin Certificate': 'Preferential Certificate of Origin',
+                # Add more aliases as needed
+            }
+            
+            logger.info(f"📋 Valid document types count: {len(valid_document_types)}")
+            logger.info(f"🔄 Document type aliases configured: {len(document_type_aliases)}")
+            
+            # Validate each classification result
+            validated_classifications = []
+            validation_warnings = []
+            
+            for page_class in page_classifications:
+                original_doc_type = page_class['document_type']
+                page_num = page_class['page']
+                confidence = page_class['confidence']
+                
+                # First check if it's a direct match with valid types
+                if original_doc_type in valid_document_types:
+                    # Valid document type - keep as is
+                    validated_classifications.append(page_class)
+                    logger.info(f"✅ Page {page_num}: {original_doc_type} (VALID)")
+                # Check if it's an alias that maps to a valid type
+                elif original_doc_type in document_type_aliases:
+                    mapped_type = document_type_aliases[original_doc_type]
+                    logger.info(f"🔄 Page {page_num}: '{original_doc_type}' mapped to '{mapped_type}'")
+                    
+                    # Create new classification with mapped type
+                    mapped_page_class = page_class.copy()
+                    mapped_page_class['document_type'] = mapped_type
+                    mapped_page_class['original_ai_type'] = original_doc_type
+                    mapped_page_class['was_mapped'] = True
+                    
+                    validated_classifications.append(mapped_page_class)
+                    logger.info(f"✅ Page {page_num}: {mapped_type} (MAPPED FROM: {original_doc_type})")
+                else:
+                    # Invalid document type - mark as unknown with AI suggestion
+                    warning_msg = f"⚠️ Page {page_num}: '{original_doc_type}' not found in predefined document types"
+                    validation_warnings.append(warning_msg)
+                    logger.warning(warning_msg)
+                    
+                    # Create new classification with unknown type and AI suggestion
+                    validated_page_class = page_class.copy()
+                    validated_page_class['document_type'] = f"Unknown Classification Type (Not found in the list of documents provided, Suggested By AI: {original_doc_type})"
+                    validated_page_class['original_ai_suggestion'] = original_doc_type
+                    validated_page_class['validation_status'] = 'invalid'
+                    validated_page_class['confidence'] = max(confidence * 0.5, 10)  # Reduce confidence for invalid types
+                    
+                    validated_classifications.append(validated_page_class)
+                    logger.info(f"🚫 Page {page_num}: Changed to Unknown Classification Type (AI suggested: {original_doc_type})")
+            
+            # Replace original classifications with validated ones
+            page_classifications = validated_classifications
+            
+            if validation_warnings:
+                logger.warning(f"📊 Validation Summary: {len(validation_warnings)} invalid document types detected")
+                for warning in validation_warnings[:3]:  # Log first 3 warnings
+                    logger.warning(f"   {warning}")
+                if len(validation_warnings) > 3:
+                    logger.warning(f"   ... and {len(validation_warnings) - 3} more")
+            else:
+                logger.info(f"✅ All document types validated successfully")
+
+            # === STEP 4.5: DUPLICATE DOCUMENT TYPE PREVENTION ===
+            logger.info(f"🚫 STEP 4.5: PREVENTING DUPLICATE DOCUMENT TYPES")
+            
+            # Track already seen document types
+            seen_document_types = {}
+            filtered_classifications = []
+            
+            for page_class in page_classifications:
+                doc_type = page_class['document_type']
+                confidence = page_class['confidence']
+                page_num = page_class['page']
+                
+                # Skip empty/insufficient text, unknown types, and unknown classification types
+                if (doc_type in ['Empty/Insufficient Text', 'Unknown'] or 
+                    doc_type.startswith('Unknown Classification Type')):
+                    filtered_classifications.append(page_class)
+                    continue
+                
+                # Check if we've seen this document type before
+                if doc_type in seen_document_types:
+                    previous_page = seen_document_types[doc_type]['page']
+                    previous_confidence = seen_document_types[doc_type]['confidence']
+                    
+                    # Only allow duplicate if confidence is extremely high (99%+)
+                    if confidence >= 99.0:
+                        logger.info(f"⚠️ DUPLICATE ALLOWED: {doc_type} on page {page_num} (confidence: {confidence:.1f}% >= 99%)")
+                        filtered_classifications.append(page_class)
+                        # Update to track the highest confidence occurrence
+                        if confidence > previous_confidence:
+                            seen_document_types[doc_type] = {'page': page_num, 'confidence': confidence}
+                    else:
+                        logger.info(f"🚫 DUPLICATE BLOCKED: {doc_type} on page {page_num} (confidence: {confidence:.1f}% < 99%). Already seen on page {previous_page}")
+                        # Convert to continuation page or generic type
+                        page_class_copy = page_class.copy()
+                        page_class_copy['document_type'] = f"{doc_type}_Continuation"
+                        page_class_copy['is_duplicate_filtered'] = True
+                        page_class_copy['original_type'] = doc_type
+                        filtered_classifications.append(page_class_copy)
+                else:
+                    # First occurrence of this document type
+                    seen_document_types[doc_type] = {'page': page_num, 'confidence': confidence}
+                    filtered_classifications.append(page_class)
+                    logger.info(f"✅ NEW TYPE: {doc_type} on page {page_num} (confidence: {confidence:.1f}%)")
+            
+            # Replace original classifications with filtered ones
+            page_classifications = filtered_classifications
+            logger.info(f"📊 Duplicate filtering complete. {len([p for p in page_classifications if p.get('is_duplicate_filtered')])} duplicates filtered")
+
             # === STEP 5: GROUPING CONSECUTIVE PAGES ===
-            logger.info(f"📚 STEP 4/5: GROUPING PAGES BY DOCUMENT TYPE")
+            logger.info(f"📚 STEP 5/5: GROUPING PAGES BY DOCUMENT TYPE")
 
             document_groups = []
             current_group = None
 
             for page_class in page_classifications:
-                if page_class['document_type'] in ['Empty/Insufficient Text', 'Unknown']:
-                    logger.info(f"⏭️ Skipping page {page_class['page']}: {page_class['document_type']}")
+                doc_type = page_class['document_type']
+                page_num = page_class['page']
+                
+                # Skip empty/insufficient text, unknown types, and unknown classification types
+                if (doc_type in ['Empty/Insufficient Text', 'Unknown'] or 
+                    doc_type.startswith('Unknown Classification Type')):
+                    logger.info(f"⏭️ Skipping page {page_num}: {doc_type}")
                     continue
 
+                # Handle continuation pages - merge them with the parent document
+                if page_class.get('is_duplicate_filtered', False):
+                    original_type = page_class.get('original_type')
+                    logger.info(f"🔗 Processing continuation page {page_num} for {original_type}")
+                    
+                    # Find existing group with the original type
+                    parent_group = None
+                    
+                    # First check the current group (in progress)
+                    if current_group and current_group['document_type'] == original_type:
+                        parent_group = current_group
+                        logger.info(f"➕ Found parent in current group: {original_type}")
+                    else:
+                        # Check completed groups
+                        for group in document_groups:
+                            if group['document_type'] == original_type:
+                                parent_group = group
+                                logger.info(f"➕ Found parent in completed groups: {original_type}")
+                                break
+                    
+                    if parent_group:
+                        logger.info(f"➕ Merging continuation page {page_num} into {original_type} group")
+                        parent_group['pages'].append(page_num)
+                        parent_group['text'] += "\n" + page_class['text']
+                        parent_group['ocr_data'].extend(page_class['ocr_data'])
+                        parent_group['confidence'] = max(parent_group['confidence'], page_class['confidence'])
+                        parent_group['individual_pages'].append(page_class)
+                        # Sort pages to maintain order
+                        parent_group['pages'].sort()
+                    else:
+                        logger.warning(f"⚠️ No parent group found for continuation page {page_num} ({original_type})")
+                    continue
+
+                # Normal grouping logic for consecutive pages
                 should_group = (current_group is not None and
-                                current_group['document_type'] == page_class['document_type'])
+                                current_group['document_type'] == doc_type)
 
                 if not should_group:
                     if current_group:
@@ -17977,18 +18260,18 @@ Return compliance status for each field.'''
                             f"✅ Completed group: {current_group['document_type']} (Pages: {current_group['pages']})")
                         document_groups.append(current_group)
 
-                    logger.info(f"🆕 Starting new group: {page_class['document_type']} (Page {page_class['page']})")
+                    logger.info(f"🆕 Starting new group: {doc_type} (Page {page_num})")
                     current_group = {
-                        'document_type': page_class['document_type'],
-                        'pages': [page_class['page']],
+                        'document_type': doc_type,
+                        'pages': [page_num],
                         'confidence': page_class['confidence'],
                         'text': page_class['text'],
                         'ocr_data': page_class['ocr_data'].copy(),
                         'individual_pages': [page_class]
                     }
                 else:
-                    logger.info(f"➕ Adding page {page_class['page']} to group: {current_group['document_type']}")
-                    current_group['pages'].append(page_class['page'])
+                    logger.info(f"➕ Adding page {page_num} to group: {current_group['document_type']}")
+                    current_group['pages'].append(page_num)
                     current_group['text'] += "\n" + page_class['text']
                     current_group['ocr_data'].extend(page_class['ocr_data'])
                     current_group['confidence'] = max(current_group['confidence'], page_class['confidence'])
@@ -17999,15 +18282,53 @@ Return compliance status for each field.'''
                     f"✅ Completed final group: {current_group['document_type']} (Pages: {current_group['pages']})")
                 document_groups.append(current_group)
 
-            # Add page_range to each group
+            # Add page_range to each group (handle non-consecutive pages)
             for group in document_groups:
-                group['page_range'] = (f"Page {group['pages'][0]}" if len(group['pages']) == 1
-                                       else f"Pages {group['pages'][0]}-{group['pages'][-1]}")
+                pages = sorted(group['pages'])
+                if len(pages) == 1:
+                    group['page_range'] = f"Page {pages[0]}"
+                elif len(pages) == 2:
+                    group['page_range'] = f"Pages {pages[0]}, {pages[1]}"
+                else:
+                    # Check if pages are consecutive
+                    consecutive = True
+                    for i in range(1, len(pages)):
+                        if pages[i] - pages[i-1] != 1:
+                            consecutive = False
+                            break
+                    
+                    if consecutive:
+                        group['page_range'] = f"Pages {pages[0]}-{pages[-1]}"
+                    else:
+                        # Non-consecutive pages, list individually or in ranges
+                        ranges = []
+                        start = pages[0]
+                        end = pages[0]
+                        
+                        for i in range(1, len(pages)):
+                            if pages[i] == end + 1:
+                                end = pages[i]
+                            else:
+                                if start == end:
+                                    ranges.append(str(start))
+                                else:
+                                    ranges.append(f"{start}-{end}")
+                                start = end = pages[i]
+                        
+                        # Add the last range
+                        if start == end:
+                            ranges.append(str(start))
+                        else:
+                            ranges.append(f"{start}-{end}")
+                        
+                        group['page_range'] = f"Pages {', '.join(ranges)}"
 
             logger.info(f"📊 Found {len(document_groups)} distinct document types:")
             for group in document_groups:
-                logger.info(
-                    f"   - {group['document_type']} ({group['page_range']}, confidence: {group['confidence']:.0f}%)")
+                pages_info = f"({group['page_range']}, confidence: {group['confidence']:.0f}%)"
+                if any(p.get('is_duplicate_filtered') for p in group.get('individual_pages', [])):
+                    pages_info += " [includes merged duplicates]"
+                logger.info(f"   - {group['document_type']} {pages_info}")
 
             # === STORE OCR DATA TEMPORARILY (for reuse during revalidation) ===
             temp_dir = tempfile.gettempdir()
@@ -18187,6 +18508,8 @@ Return compliance status for each field.'''
         Pause for user classification correction (no extraction yet)
         """
         logger.info("=== API CALL: /api/document/classify-initial (Stage 1) ===")
+        from app.utils.reload_helper import reload_all_jsons
+        reload_all_jsons()
 
         try:
             # === INPUT VALIDATION ===
@@ -18268,6 +18591,9 @@ Return compliance status for each field.'''
         import threading
         import json
         from datetime import datetime
+
+        from app.utils.reload_helper import reload_all_jsons
+        reload_all_jsons()
 
         try:
             # === INPUT VALIDATION ===
@@ -18864,7 +19190,6 @@ Return compliance status for each field.'''
                     top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
                     frequency_penalty=0,
                     presence_penalty=0,
-                    response_format={"type": "json_object"}
                 )
 
                 extracted_text = response.choices[0].message.content.strip()

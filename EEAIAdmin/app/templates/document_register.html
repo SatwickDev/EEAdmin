@@ -4564,6 +4564,7 @@ later than expiry date of credit
             iframe.src = `/document-classification-overlay?${params.toString()}`;
 
             // Show the modal with animation
+            modal.style.display = 'flex'; // Override any inline display:none
             modal.classList.add('active');
 
             // Prevent body scroll when modal is open

@@ -49,6 +49,42 @@ except Exception as e:
     logger.error(f"Environment variables check - AZURE_OPENAI_DEPLOYMENT_NAME exists: {bool(os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME'))}")
     raise
 
+# OpenAI API Configuration Parameters
+# These replace hardcoded values throughout the application
+# Usage: Import these constants instead of hardcoding API parameters
+AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-10-01-preview")
+AZURE_OPENAI_API_TYPE = os.getenv("AZURE_OPENAI_API_TYPE", "azure")
+
+# OpenAI Model Parameters - Configurable via environment variables
+OPENAI_TEMPERATURE_DEFAULT = float(os.getenv("OPENAI_TEMPERATURE_DEFAULT", "0.0"))
+OPENAI_TEMPERATURE_CLASSIFICATION = float(os.getenv("OPENAI_TEMPERATURE_CLASSIFICATION", "0.1"))
+OPENAI_TEMPERATURE_EXTRACTION = float(os.getenv("OPENAI_TEMPERATURE_EXTRACTION", "0.0"))
+OPENAI_TEMPERATURE_COMPLIANCE = float(os.getenv("OPENAI_TEMPERATURE_COMPLIANCE", "0.2"))
+
+OPENAI_MAX_TOKENS_DEFAULT = int(os.getenv("OPENAI_MAX_TOKENS_DEFAULT", "3000"))
+OPENAI_MAX_TOKENS_CLASSIFICATION = int(os.getenv("OPENAI_MAX_TOKENS_CLASSIFICATION", "500"))
+OPENAI_MAX_TOKENS_EXTRACTION = int(os.getenv("OPENAI_MAX_TOKENS_EXTRACTION", "3000"))
+OPENAI_MAX_TOKENS_COMPLIANCE = int(os.getenv("OPENAI_MAX_TOKENS_COMPLIANCE", "1500"))
+
+OPENAI_TOP_P = float(os.getenv("OPENAI_TOP_P", "1.0"))
+OPENAI_FREQUENCY_PENALTY = float(os.getenv("OPENAI_FREQUENCY_PENALTY", "0.0"))
+OPENAI_PRESENCE_PENALTY = float(os.getenv("OPENAI_PRESENCE_PENALTY", "0.0"))
+OPENAI_SEED = int(os.getenv("OPENAI_SEED", "12345"))
+
+# OpenAI Retry Configuration
+OPENAI_MAX_DELAY = float(os.getenv("OPENAI_MAX_DELAY", "300.0"))
+
+logger.info(f"OpenAI API Configuration:")
+logger.info(f"  API Version: {AZURE_OPENAI_API_VERSION}")
+logger.info(f"  API Type: {AZURE_OPENAI_API_TYPE}")
+logger.info(f"  Default Temperature: {OPENAI_TEMPERATURE_DEFAULT}")
+logger.info(f"  Default Max Tokens: {OPENAI_MAX_TOKENS_DEFAULT}")
+logger.info(f"  Top P: {OPENAI_TOP_P}")
+logger.info(f"  Frequency Penalty: {OPENAI_FREQUENCY_PENALTY}")
+logger.info(f"  Presence Penalty: {OPENAI_PRESENCE_PENALTY}")
+logger.info(f"  Seed: {OPENAI_SEED}")
+logger.info(f"  Max Delay: {OPENAI_MAX_DELAY}")
+
 # Database Configuration
 credentials = {
     'username': os.getenv("DB_USERNAME"),

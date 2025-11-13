@@ -9376,20 +9376,62 @@ splitCurrencyAndAmount(combinedValue) {
                 highlightField(index, fieldData) {
                     // Set active field index
                     this.activeFieldIndex = index;
+                    console.log('highlightField called, fieldData.bounding_page:', fieldData?.bounding_page);
+                    console.log('currentPage (relative):', this.currentPage);
+                    console.log('Preview images length (selectedResult):', this.selectedResult?.previewImages?.length);
 
-                    // If field has page info, navigate to that page
-                    if (fieldData.bounding_page !== undefined && fieldData.bounding_page !== this.currentPage) {
-                        this.currentPage = fieldData.bounding_page;
-                        // Store the field to highlight after page loads
-                        this.pendingHighlight = fieldData;
-                    } else {
-                        // Same page, highlight immediately
-                        this.$nextTick(() => {
-                            this.ensureCanvasReady(() => {
-                                this.drawHighlight(fieldData);
-                            });
-                        });
+                    // If bounding_page provided, convert to the document-local (relative) page index
+                    if (fieldData?.bounding_page !== undefined) {
+                        // bounding_page is zero-based absolute page index (across the whole PDF)
+                        const absolutePage = Number(fieldData.bounding_page) + 1; // convert to 1-based absolute page number
+
+                        // Determine relative index within the selectedResult.previewImages/pages
+                        let relativeIndex = -1;
+                        if (this.selectedResult?.pages && Array.isArray(this.selectedResult.pages) && this.selectedResult.pages.length > 0) {
+                            // Find the absolutePage inside the selectedResult.pages (which holds absolute page numbers)
+                            const found = this.selectedResult.pages.indexOf(absolutePage);
+                            if (found >= 0) {
+                                relativeIndex = found;
+                            }
+                        } else {
+                            // No pages array present: assume previewImages aligns with absolute 1-based pages
+                            // Map absolutePage -> zero-based index relative to previewImages by subtracting the first absolute page if available
+                            // Fallback: try to use bounding_page directly if within previewImages range
+                            if (this.selectedResult?.previewImages && (fieldData.bounding_page >= 0 && fieldData.bounding_page < this.selectedResult.previewImages.length)) {
+                                relativeIndex = fieldData.bounding_page;
+                            }
+                        }
+
+                        // If we found a valid relative index and it's within preview images, navigate to it
+                        const previewLen = this.selectedResult?.previewImages?.length || 0;
+                        if (relativeIndex >= 0 && relativeIndex < previewLen) {
+                            if (relativeIndex !== this.currentPage) {
+                                this.currentPage = relativeIndex;
+                                // Store the field to highlight after page loads
+                                this.pendingHighlight = fieldData;
+                            } else {
+                                // Already on correct relative page — draw immediately
+                                this.$nextTick(() => {
+                                    this.ensureCanvasReady(() => {
+                                        this.drawHighlight(fieldData);
+                                    });
+                                });
+                            }
+                        } else {
+                            // Page not present in this selectedResult previewImages — avoid changing currentPage which would hide previews
+                            console.warn('Requested page not found in selectedResult previewImages/pages:', absolutePage);
+                            // Optionally, set pendingHighlight so if the user navigates to that doc/page later it will draw
+                            this.pendingHighlight = fieldData;
+                        }
+                        return;
                     }
+
+                    // No page info: if same page, highlight immediately
+                    this.$nextTick(() => {
+                        this.ensureCanvasReady(() => {
+                            this.drawHighlight(fieldData);
+                        });
+                    });
                 },
                 async searchFieldCoordinates(fieldKey, fieldValue, fieldData) {
                     console.log('🔍 === FRONTEND COORDINATE SEARCH STARTED ===');
