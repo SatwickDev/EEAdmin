@@ -18087,6 +18087,11 @@ Return compliance status for each field.'''
                 'weight list': 'Certificate of Weight',
                 'Weight Certificate': 'Certificate of Weight',
                 'Weighing Certificate': 'Certificate of Weight',
+                'Certificate Of Origin': 'Preferential Certificate of Origin',
+                'certificate of origin': 'Preferential Certificate of Origin',
+                'Certificate of Origin': 'Preferential Certificate of Origin',
+                'COO': 'Preferential Certificate of Origin',
+                'Origin Certificate': 'Preferential Certificate of Origin',
                 # Add more aliases as needed
             }
             
