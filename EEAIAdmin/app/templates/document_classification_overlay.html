@@ -6220,6 +6220,7 @@
                     URL.revokeObjectURL(url);
                 },
                 // Enhanced modal methods
+                // Enhanced modal methods
                 viewDetails(index) {
                     this.selectedResult = this.results[index];
                     this.showDetailsModal = true;
@@ -6229,7 +6230,15 @@
                     this.drawings = [];
                     this.hasDrawings = false;
                     this.pendingHighlight = null;
+                    this.coordinateSearchResults = {};
+                    this.searchingField = null;
+                    // Clear previous canvas highlights ONCE at the beginning
+                    const ctx = this.drawingContext;
+                    if (!ctx) {
+                        return;
+                    }
 
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                     // Debug logging to help identify issues
                     console.log('=== DEBUG: View Details ===');
                     console.log('Selected result:', this.selectedResult);
@@ -6268,7 +6277,6 @@
                         this.activeTab = 'fields'; // Start with fields tab
                     }
                 },
-
                 viewDiscrepancies(result, index) {
                     console.log('=== DEBUG: View Compliance Analysis ===');
                     console.log('Full result object:', result);
@@ -9442,6 +9450,31 @@ splitCurrencyAndAmount(combinedValue) {
                         alert('No value to search for this field');
                         return;
                     }
+
+                    // ⚠️ CRITICAL FIX: Clear ALL previous search data IMMEDIATELY to prevent old highlights from showing
+                    console.log('🧹 === CLEARING ALL PREVIOUS SEARCH STATE ===');
+
+                    // 1. Clear canvas immediately
+                    const ctx = this.drawingContext;
+                    if (ctx) {
+                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                        console.log('✅ Canvas cleared immediately');
+                    }
+
+                    // 2. Clear ALL reactive data that drives the CSS overlays
+                    this.searchResultBlocks = [];  // ⚠️ CRITICAL: This prevents old overlays from rendering
+                    this.coordinateSearchResults = {};
+                    this.multiPageContent = {
+                        active: false,
+                        pages: [],
+                        matches: []
+                    };
+
+                    console.log('✅ Cleared: searchResultBlocks, coordinateSearchResults, multiPageContent');
+
+                    // Force Vue to update immediately and remove old overlays
+                    this.$forceUpdate();
+
                     const page = fieldData.bounding_page + 1;
                     const matchedDoc = this.results.find(doc => doc.pages?.includes(page));
 
@@ -9450,14 +9483,6 @@ splitCurrencyAndAmount(combinedValue) {
                     // Detect multiline field value (or long continuous text)
                     console.log(`🔎 Setting search state for field: ${fieldKey}`);
                     this.searchingField = fieldKey;
-
-                    // Clear previous search results at the STARTSearch parameters: 
-                    this.multiPageContent = {
-                        active: false,
-                        pages: [],
-                        matches: []
-                    };
-                    console.log('🧹 Cleared previous search state');
 
                     try {
                         console.log(`🔍 Searching coordinates for field '${fieldKey}' with value '${fieldValue}'`);
