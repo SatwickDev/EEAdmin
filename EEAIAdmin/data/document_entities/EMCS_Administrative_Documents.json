@@ -36,12 +36,12 @@
       "documentName": "Administrative Documents used in the Excise Movement Control System",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -184,7 +184,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "846",
       "documentId": "EMCS_Administrative_Documents",
       "documentName": "Administrative Documents used in the Excise Movement Control System",
@@ -212,7 +212,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "288",
       "documentId": "EMCS_Administrative_Documents",
       "documentName": "Administrative Documents used in the Excise Movement Control System",
@@ -240,7 +240,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "290",
       "documentId": "EMCS_Administrative_Documents",
       "documentName": "Administrative Documents used in the Excise Movement Control System",
@@ -296,7 +296,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "294",
       "documentId": "EMCS_Administrative_Documents",
       "documentName": "Administrative Documents used in the Excise Movement Control System",

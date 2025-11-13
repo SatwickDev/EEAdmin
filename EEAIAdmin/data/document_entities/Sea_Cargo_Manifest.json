@@ -50,12 +50,12 @@
       "documentName": "Sea Cargo Manifest",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -65,11 +65,11 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -79,7 +79,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -247,14 +247,14 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "322",
-      "entityName": "Original Loading Location",
+      "entityName": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "320",
       "documentId": "Sea_Cargo_Manifest",
       "documentName": "Sea Cargo Manifest",
@@ -268,35 +268,21 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-	{
-      "id": "321",
-      "documentId": "Sea_Cargo_Manifest",
-      "documentName": "Sea Cargo Manifest",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "24",
-      "entityName": "Notify Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-	{
+    {
       "id": "322",
       "documentId": "Sea_Cargo_Manifest",
       "documentName": "Sea Cargo Manifest",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "323",
-      "entityName": "Baseport Unloading Location",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "323",
       "documentId": "Sea_Cargo_Manifest",
       "documentName": "Sea Cargo Manifest",
@@ -310,7 +296,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "324",
       "documentId": "Sea_Cargo_Manifest",
       "documentName": "Sea Cargo Manifest",
@@ -324,7 +310,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "325",
       "documentId": "Sea_Cargo_Manifest",
       "documentName": "Sea Cargo Manifest",

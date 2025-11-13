@@ -37,11 +37,11 @@
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -79,7 +79,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -126,34 +126,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
-      "id": "57",
-      "documentId": "Purchase_Order",
-      "documentName": "Purchase Order",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "172",
-      "entityName": "Invoicee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "58",
-      "documentId": "Purchase_Order",
-      "documentName": "Purchase Order",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "134",
-      "entityName": "Ship To Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
       "fieldType": "optional"
     },
     {

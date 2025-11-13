@@ -17,41 +17,27 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "342",
-      "documentId": "Road_Consignment_Note",
-      "documentName": "Road Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "343",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
       "id": "344",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -142,7 +128,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "351",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -156,7 +142,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "352",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -170,7 +156,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "353",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -184,7 +170,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "354",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -198,7 +184,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "355",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -212,7 +198,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "356",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -226,7 +212,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "357",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -240,7 +226,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "358",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -254,7 +240,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "359",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -268,7 +254,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "360",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -282,7 +268,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "361",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -296,7 +282,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "362",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -310,7 +296,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "363",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -324,7 +310,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "364",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -338,7 +324,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "365",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -352,7 +338,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "366",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -366,7 +352,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "367",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -380,21 +366,21 @@
       "dataCategoryValue": "Dates",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "368",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "369",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -408,7 +394,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "370",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -422,7 +408,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "371",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -436,21 +422,21 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "372",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "323",
-      "entityName": "Baseport Unloading Location",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "373",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -464,7 +450,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "374",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -478,7 +464,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "375",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -492,7 +478,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "376",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -506,7 +492,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "377",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -520,7 +506,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "378",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -534,10 +520,9 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "379",
       "documentId": "Road_Consignment_Note",
-      "documentName": "Road Consignment Note",
       "documentName": "Consignment Security Declaration",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
@@ -549,7 +534,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "380",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -563,7 +548,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "381",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -577,7 +562,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "382",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -591,7 +576,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "383",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -605,7 +590,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "384",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -619,7 +604,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "385",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -633,7 +618,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "386",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -647,21 +632,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-	{
-      "id": "387",
-      "documentId": "Road_Consignment_Note",
-      "documentName": "Road Consignment Note",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "134",
-      "entityName": "Ship To Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-	{
+    {
       "id": "388",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -675,7 +646,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "389",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -689,21 +660,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "optional"
     },
-	{
-      "id": "390",
-      "documentId": "Road_Consignment_Note",
-      "documentName": "Road Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "24",
-      "entityName": "Notify Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-	{
+    {
       "id": "391",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -717,21 +674,21 @@
       "dataCategoryValue": "Parties",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "392",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "322",
-      "entityName": "Original Loading Location",
+      "entityName": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "393",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -745,7 +702,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "394",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -759,7 +716,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "395",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -773,7 +730,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "396",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -787,7 +744,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "397",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -801,7 +758,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "398",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -815,7 +772,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "399",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -829,7 +786,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "400",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -843,7 +800,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "401",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -857,7 +814,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "402",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -871,7 +828,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "403",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -885,7 +842,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "404",
       "documentId": "Road_Consignment_Note",
       "documentName": "Road Consignment Note",
@@ -898,6 +855,6 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms",
       "fieldType": "optional"
-	}
+    }
   ]
 }

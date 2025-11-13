@@ -100,19 +100,18 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
-
     {
       "id": "825",
       "documentId": "Excise_Guarantee",
       "documentName": "Excise Guarantee",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -143,7 +142,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "829",
       "documentId": "Excise_Guarantee",
       "documentName": "Excise Guarantee",
@@ -185,7 +184,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "822",
       "documentId": "Excise_Guarantee",
       "documentName": "Excise Guarantee",

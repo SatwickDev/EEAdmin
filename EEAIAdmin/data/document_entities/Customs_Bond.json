@@ -2,22 +2,20 @@
   "documentId": "Customs_Bond",
   "documentName": "Customs Bond",
   "mappings": [
-
     {
       "id": "720",
       "documentId": "Customs_Bond",
       "documentName": "Customs Bond",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
-
     {
       "id": "726",
       "documentId": "Customs_Bond",
@@ -32,9 +30,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-
-
-     {
+    {
       "id": "362",
       "documentId": "Customs_Bond",
       "documentName": "Customs Bond",
@@ -48,14 +44,14 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "363",
       "documentId": "Customs_Bond",
       "documentName": "Customs Bond",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",

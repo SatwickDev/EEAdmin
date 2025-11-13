@@ -956,7 +956,7 @@
     },
     {
       "id": "124",
-      "name": "Issue Date",
+      "name": "Issue Date/Documentary credit document issue date",
       "description": "Date that a document was issued and when appropriate, signed or otherwise authenticated",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -984,7 +984,7 @@
     {
       "id": "129",
       "name": "Description of Goods",
-      "description": "Extract COMPLETE description of goods including ALL shipping terms and incoterms. MUST INCLUDE: CIF, EXW, FOB, CFR, DDP, and ANY other incoterms. Also extract variations like 'INCOTERMS: CFR, JEBEL ALI PORT, UAE' or 'INCOTERMS: CIF ANY SEAPORT IN ABU DHABI,UAE'. Capture ALL text including terms that appear after page breaks, in next lines, or in different formats. DO NOT MISS any shipping/incoterm information regardless of formatting, page breaks, or positioning. Extract 100% of goods description with ALL incoterm details.",
+      "description": "Extract the complete description of goods exactly as written in the document. Include Incoterms or shipping terms (CIF, EXW, FOB, CFR, DDP, or similar) only if they are explicitly present in the same section or in immediate continuation of the goods description — for example, on the next line or right after the goods text. Do not assume, generate, or append any Incoterms unless they are actually shown in the document. For Letters of Credit, include all visible Incoterm and shipping term details that appear directly with or following the goods description (even if they continue onto the next line or next page). For other document types (such as Commercial Invoice, Packing List, or Certificate of Origin), extract Incoterms only if they physically appear in the text immediately after or beside the goods description. If no Incoterm text appears near the goods, do not add or infer any. Capture the entire goods description, including text that spans multiple lines or pages, but only append Incoterms that are part of the same visible block or direct continuation. Example: if the text reads 'AL SAMAH ALUMINIUM PROFILES, DIFFUSER FRAME, GRILL BLADE, SUPPLY FRAME SLOT FRAME SLOT CORE, ROUND PIPE 9MM, DEFLECTOR BLADE LINEAR BLADE. INCOTERMS: CFR, JEBEL ALI PORT, UAE', extract the full sentence including the Incoterms. However, if the document stops at 'DEFLECTOR BLADE LINEAR BLADE.' and no visible Incoterms follow, extract only up to that point without adding anything else.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -1037,8 +1037,8 @@
     },
     {
       "id": "135",
-      "name": "Consignor",
-      "description": "Party consigning goods as stipulated in the transport contract by the party ordering transport",
+      "name": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
+      "description": "EXTRACT only Name of the Consignor/Exporter/Seller/Documentary Credit Beneficiary , DO NOT include any kind of address, contact and email details",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1109,8 +1109,8 @@
     },
     {
       "id": "143",
-      "name": "Buyer/   ",
-      "description": "Buyer - Extract ONLY the buyer's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
+      "name": "Buyer/Importer/Consignee/Ship To Party/Notify Party/Invoicee",
+      "description": "EXTRACT only Name of the Buyer/Importer/Consignee/Ship To Party/Notify Party/Invoicee, DO NOT include any kind of address, contact and email details",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -2514,7 +2514,7 @@
     {
       "id": "311",
       "name": "Place of the delivery of the goods (by the carrier)",
-      "description": "Location to which a consignment is to be delivered to the final consignee",
+      "description": "The final inland delivery location (Place of Delivery) is the actual address/place where the carrier delivers goods to the consignee after sea/air discharge. This is distinct from the Port of Discharge (the seaport where cargo is unloaded) and Airport of Destination (the airport where cargo is unloaded). Common extraction errors: (1) using the Port of Discharge value as Place of Delivery, (2) reading Incoterms or shipment routing lines inside the goods description (commodity lines) as the Place of Delivery, or (3) taking a distant address (notify party/consignee address) incorrectly. Preferred extraction sources (in order): explicit labelled fields on the Bill of Lading such as 'Place of Delivery', 'Place of Delivery (by carrier)', 'Final Destination', or a specific 'Consignee address / Delivery to' block. Secondary cues: presence of words like 'final', 'delivery', 'place of delivery', or explicit street/city/warehouse phrases. Avoid taking values from: 'Port of Discharge', 'Airport of Destination', 'Goods Description' lines with Incoterms like 'CIF Jebel Ali' or 'Ex-works', and free-text routing notes. If multiple candidate locations exist, prefer the field that is explicitly labelled with 'delivery' or that is structured as an address (street + city + country) rather than a single port name. If ambiguity remains, set a low-confidence flag and surface both values for human review.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -2543,7 +2543,7 @@
       "name": "Payment Term",
       "description": "Extract the standard payment term keyword from the document — one of: BY PAYMENT, BY ACCEPTANCE, BY DEF PAYMENT, BY MIXED PYMT, BY NEGOTIATION. These indicate how and when payment is made under a Letter of Credit or trade transaction. Extract only the exact term (e.g., 'BY PAYMENT'), not the surrounding conditions or dates.\n\nReference meanings for clarity:\n\n• BY PAYMENT = 'At Sight' = Immediate payment when compliant documents are presented.\n  Equivalent to: Payment at sight\n  When paid: Upon presentation of documents\n\n• BY ACCEPTANCE = 'Acceptance' = Payment upon acceptance of a time draft.\n  Equivalent to: Usance credit with acceptance\n  When paid: At maturity date after draft acceptance\n\n• BY DEF PAYMENT = 'Deferred Payment' = Payment at a future date without draft.\n  Equivalent to: Deferred payment undertaking\n  When paid: On predetermined future date\n\n• BY NEGOTIATION = 'Negotiation' = Any bank can purchase the beneficiary's documents.\n  Equivalent to: Freely negotiable credit\n  When paid: When the negotiating bank purchases documents\n\n• BY MIXED PYMT = 'Mixed Payment' = Combination of multiple payment methods.\n  Equivalent to: Split payment terms\n  When paid: According to mixed schedule (requires Field 42M)\n\nKey Extraction Rules:\n- 'At Sight' always maps to 'BY PAYMENT'.\n- 'Deferred Payment' maps to 'BY DEF PAYMENT' (requires Field 42P).\n- 'Acceptance' maps to 'BY ACCEPTANCE' (requires draft acceptance).\n- 'Negotiation' maps to 'BY NEGOTIATION' (available with any bank).\n- Mixed terms map to 'BY MIXED PYMT' (requires Field 42M).",
       "mappingFormField": "",
-      "mappingFormDescription": "Identifies the standard payment method under the Letter of Credit — BY PAYMENT, BY ACCEPTANCE, BY DEF PAYMENT, BY MIXED PYMT, or BY NEGOTIATION — as defined in UCP 600 and SWIFT field 42x specifications.",
+      "mappingFormDescription": "",
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
@@ -2612,7 +2612,7 @@
     },
     {
       "id": "322",
-      "name": "Original Loading Location",
+      "name": "Original Loading Location/Port of Loading",
       "description": "Seaport, airport, freight terminal, rail station or other location where the goods were first loaded onto the means of transport being utilised for their carriage",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2621,7 +2621,7 @@
     },
     {
       "id": "323",
-      "name": "Baseport Unloading Location",
+      "name": "Baseport Unloading Location/Port of Discharge",
       "description": "The place or port at which the cargo is discharged or unloaded from a means of transport according to the transport contract. The goods may or may not be discharged from the main means of transport at this place or port",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2944,7 +2944,7 @@
     },
     {
       "id": "359",
-      "name": "Transport Means, gross weight",
+      "name": "Gross Weight/Net Weight/Transport Means, gross weight",
       "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2972,7 +2972,7 @@
     {
       "id": "362",
       "name": "Prepaid amount",
-      "description": "Monetary amount of all of the consignment charges which have been paid in advance",
+      "description": "Monetary amount of all of the consignment charges which have been paid in advance-EXTRACT numerical values only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3708,7 +3708,7 @@
     },
     {
       "id": "444",
-      "name": "Documentary credit document issue date",
+      "name": "Documentary credit document issue date/Issue Date",
       "description": "Documentary credit document issue date",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3735,12 +3735,12 @@
     },
     {
       "id": "447",
-      "name": "Documentary Credit Available Bank",
-      "description": "Documentary Credit Available Bank-Extract ONLY Documentary Credit Available Bank name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
+      "name": "Documentary Credit Available Bank/Applicant Bank",
+      "description": "EXTRACT Documentary Credit Available Bank name/Applicant Bank name ONLY. DO NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties"
+      "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
       "id": "448",
@@ -3877,15 +3877,15 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-{
-  "id": "468",
-  "name": "Place of Final Destination / Delivery",
-  "description": "Extract ONLY when the field is explicitly labeled as 'Place of Final Destination', 'Place of Delivery', 'For Transportation to' or corresponds to SWIFT Tag 44B. DO NOT extract from 'Port of Discharge' (44F) or any other location fields. Only extract if the field specifically indicates final destination/delivery point, not intermediate discharge ports.",
-  "mappingFormField": "Tag 44B",
-  "mappingFormDescription": "Place of Final Destination / Delivery - Extract only for explicit Tag 44B fields",
-  "dataCategoryId": "4",
-  "dataCategoryValue": "Locations"
-},
+    {
+      "id": "468",
+      "name": "Place of Final Destination / Delivery",
+      "description": "Extract ONLY when the field is explicitly labeled as 'Place of Final Destination', 'Place of Delivery', 'For Transportation to' or corresponds to SWIFT Tag 44B. DO NOT extract from 'Port of Discharge' (44F) or any other location fields. Only extract if the field specifically indicates final destination/delivery point, not intermediate discharge ports.",
+      "mappingFormField": "Tag 44B",
+      "mappingFormDescription": "Place of Final Destination / Delivery - Extract only for explicit Tag 44B fields",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
     {
       "id": "470",
       "name": "Documents Required",
@@ -4150,11 +4150,29 @@
     {
       "id": "500",
       "name": "Applicant Address",
-      "description": "Applicant Address",
+      "description": "Extract ONLY the applicant's company/person address. Include address, street, city, country, postal code. Only the address is required, DO NOT include emails,Contact or Telephone details",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "",
       "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "501",
+      "name": "Buyer/Importer/Notify Party",
+      "description": "Buyer - Extract ONLY the buyer's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": ""
+    },
+    {
+      "id": "502",
+      "name": "Gross Weight",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Measure/Quantities"
     }
   ]
 }

@@ -23,11 +23,11 @@
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -51,7 +51,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -185,27 +185,13 @@
       "fieldType": "optional"
     },
     {
-      "id": "138",
-      "documentId": "Packing_List",
-      "documentName": "Packing List",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "140",
       "documentId": "Packing_List",
       "documentName": "Packing List",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "323",
-      "entityName": "Baseport Unloading Location",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -324,7 +310,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "150",
       "documentId": "Packing_List",
       "documentName": "Packing List",
@@ -338,7 +324,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "151",
       "documentId": "Packing_List",
       "documentName": "Packing List",
@@ -352,7 +338,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "152",
       "documentId": "Packing_List",
       "documentName": "Packing List",

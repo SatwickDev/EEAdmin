@@ -50,12 +50,12 @@
       "documentName": "Certificate of Inspection for Organic Products",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -64,12 +64,12 @@
       "documentName": "Certificate of Inspection for Organic Products",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
+      "entityId": "135",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -142,7 +142,6 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-
     {
       "id": "711",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
@@ -185,7 +184,6 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-
     {
       "id": "716",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
@@ -242,7 +240,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "720",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
       "documentName": "Certificate of Inspection for Organic Products",
@@ -256,7 +254,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "721",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
       "documentName": "Certificate of Inspection for Organic Products",

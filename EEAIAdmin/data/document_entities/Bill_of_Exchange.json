@@ -185,20 +185,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "895",
-      "documentId": "Bill_of_Exchange",
-      "documentName": "Bill of Exchange",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "172",
-      "entityName": "Invoicee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
       "id": "897",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
@@ -254,7 +240,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "900",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
@@ -275,14 +261,14 @@
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "902",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
@@ -297,31 +283,17 @@
       "fieldType": "optional"
     },
     {
-      "id": "903",
-      "documentId": "Bill_of_Exchange",
-      "documentName": "Bill of Exchange",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-     {
       "id": "904",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
+      "entityId": "135",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -345,11 +317,11 @@
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "447",
-      "entityName": "Documentary Credit Available Bank",
+      "entityName": "Documentary Credit Available Bank / Applicant Bank",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -409,20 +381,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "911",
-      "documentId": "Bill_of_Exchange",
-      "documentName": "Bill of Exchange",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
-      "entityId": "453",
-      "entityName": "Buyer's bank",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
       "id": "912",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
@@ -436,7 +394,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "913",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
@@ -492,7 +450,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "917",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
@@ -506,7 +464,6 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-
     {
       "id": "918",
       "documentId": "Bill_of_Exchange",

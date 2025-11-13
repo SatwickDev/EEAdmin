@@ -101,31 +101,17 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "150",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-    {
       "id": "151",
       "documentId": "Bill_of_Lading",
       "documentName": "Bill of Lading",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -135,7 +121,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -163,7 +149,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "323",
-      "entityName": "Baseport Unloading Location",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -378,34 +364,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates",
-      "fieldType": "optional"
-    },
-    {
-      "id": "174",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "175",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
       "fieldType": "optional"
     },
     {
@@ -720,15 +678,15 @@
       "id": "198",
       "documentId": "Bill_of_Lading",
       "documentName": "Bill of Lading",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "372",
-      "entityName": "Buyer",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "136",
+      "entityName": "Consignee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "conditional"
     },
     {
       "id": "199",
@@ -743,20 +701,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "optional"
-    },
-    {
-      "id": "200",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "374",
-      "entityName": "Notify party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
     },
     {
       "id": "201",
@@ -855,6 +799,20 @@
       "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory",
       "id": "88483"
+    },
+    {
+      "documentId": "Bill_of_Lading",
+      "documentName": "Bill of Lading",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Border and Regulatory Processes",
+      "entityId": "501",
+      "entityName": "Buyer/Importer/Notify Party",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "optional",
+      "id": "88489"
     }
   ]
 }

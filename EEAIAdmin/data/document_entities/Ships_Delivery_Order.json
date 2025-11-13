@@ -62,14 +62,14 @@
       "id": "238",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -104,14 +104,14 @@
       "id": "241",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -121,7 +121,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -135,7 +135,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "322",
-      "entityName": "Original Loading Location",
+      "entityName": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -177,7 +177,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "323",
-      "entityName": "Baseport Unloading Location",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -308,20 +308,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates",
-      "fieldType": "optional"
-    },
-    {
-      "id": "256",
-      "documentId": "Ships_Delivery_Order",
-      "documentName": "Ship's Delivery Order",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "24",
-      "entityName": "Notify Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
       "fieldType": "optional"
     },
     {
@@ -464,7 +450,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "267",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",
@@ -478,7 +464,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "268",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",
@@ -492,7 +478,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "269",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",
@@ -506,7 +492,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "270",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",

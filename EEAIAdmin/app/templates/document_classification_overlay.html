@@ -8600,14 +8600,14 @@ populateFormFields() {
     const fieldMapping = {
         // Basic Information
         'Documentary Credit Number': 'lcNumber',
-        'Documentary credit document issue date': 'issueDate',
+        'Issue Date/Documentary credit document issue date': 'issueDate',
         'LC Expiry Date': 'expiryDate',
         'Documentary credit document effective end date': 'expiryDate',
 
         // Parties
         'Documentary Credit Applicant': 'applicant',
         'Documentary Credit Beneficiary': 'beneficiary',
-        'Documentary Credit Available Bank': 'issuingBank',
+        'Documentary Credit Available Bank/Applicant Bank': 'issuingBank', // This is correct
         'Documentary Credit Applicant Agent Bank': 'advisingBank',
         'Documentary Credit Drawee': 'drawee',
         'Documentary Credit Reimbursing Bank': 'reimbursingBank',
@@ -8629,7 +8629,7 @@ populateFormFields() {
         'Amount Tolerance': 'tolerancePercent',
 
         // Shipment Details
-        'Original Loading Location': 'portOfLoading',
+        'Original Loading Location/Port of Loading/Airport of Departure/Place or departure': 'portOfLoading', // UPDATED
         'Baseport Unloading Location': 'portOfDischarge',
         'Latest pick-up date': 'latestShipmentDate',
         'Latest Date of Shipment': 'latestShipmentDate', // ADD THIS MAPPING
@@ -8653,9 +8653,9 @@ populateFormFields() {
 
         // 🔹 NEW MAPPINGS FOR FRONTEND FORM FIELDS
     'Place of Taking in Charge/Dispatch/Receipt': 'placeOfTaking',
-    'Port of Loading/Airport of Departure': 'portOfLoading',
+    'Original Loading Location/Port of Loading': 'portOfLoading',
     'Port of Discharge/Airport of Destination': 'portOfDischarge',
-    'Place of Final Destination / Delivery': 'finalDestination',
+    'Place of the delivery of the goods (by the carrier)': 'finalDestination',
 
         // Goods
         'Description of Goods': 'goodsDescription',
@@ -8694,9 +8694,21 @@ populateFormFields() {
 
         let extractedFields = result.extractedFields || {};
 
+        // DEBUG: Log ALL available field names from this document
+        console.log('=== DEBUG: AVAILABLE FIELD NAMES FOR THIS DOCUMENT ===');
+        Object.keys(extractedFields).forEach(fieldName => {
+            console.log(`"${fieldName}"`);
+        });
+
         // Process fields from this document
         if (extractedFields && typeof extractedFields === 'object') {
             for (const [key, fieldData] of Object.entries(extractedFields)) {
+
+                // DEBUG: Check if this is an issue date related field
+                if (key.toLowerCase().includes('issue') || key.toLowerCase().includes('date')) {
+                    console.log('🔍 ISSUE DATE RELATED FIELD:', key, '->', fieldMapping[key]);
+                }
+
                 const formFieldName = fieldMapping[key];
 
                 // DEBUG: Log each field being processed

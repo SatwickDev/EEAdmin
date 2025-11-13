@@ -352,7 +352,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "796",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -366,7 +366,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "797",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -394,7 +394,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-      {
+    {
       "id": "799",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -422,8 +422,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-
-     {
+    {
       "id": "801",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -437,7 +436,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "802",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -457,12 +456,12 @@
       "documentName": "TIR Carnet",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -479,18 +478,18 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "805",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -521,7 +520,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "808",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -556,7 +555,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "322",
-      "entityName": "Original Loading Location",
+      "entityName": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -577,7 +576,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "812",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -595,10 +594,10 @@
       "id": "813",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "323",
-      "entityName": "Baseport Unloading Location",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -647,7 +646,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "817",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",
@@ -661,7 +660,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "818",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",

@@ -31,20 +31,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "97",
-      "documentId": "Shippers_Letter_of_Instructions",
-      "documentName": "Shipper's Letter of Instructions",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "98",
       "documentId": "Shippers_Letter_of_Instructions",
       "documentName": "Shipper's Letter of Instructions",
@@ -65,11 +51,11 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -255,20 +241,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "113",
-      "documentId": "Shippers_Letter_of_Instructions",
-      "documentName": "Shipper's Letter of Instructions",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "24",
-      "entityName": "Notify Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-    {
       "id": "114",
       "documentId": "Shippers_Letter_of_Instructions",
       "documentName": "Shipper's Letter of Instructions",
@@ -356,14 +328,14 @@
       "id": "120",
       "documentId": "Shippers_Letter_of_Instructions",
       "documentName": "Shipper's Letter of Instructions",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "conditional"
     },
     {

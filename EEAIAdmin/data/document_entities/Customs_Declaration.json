@@ -107,39 +107,11 @@
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "601",
-      "documentId": "Customs_Declaration",
-      "documentName": "Customs Declaration",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "602",
-      "documentId": "Customs_Declaration",
-      "documentName": "Customs Declaration",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "conditional"
     },
     {
@@ -171,31 +143,17 @@
       "fieldType": "conditional"
     },
     {
-      "id": "605",
-      "documentId": "Customs_Declaration",
-      "documentName": "Customs Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-    {
       "id": "606",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "conditional"
     },
     {
@@ -548,7 +506,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "633",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -562,7 +520,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "634",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -604,7 +562,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "637",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -618,7 +576,7 @@
       "dataCategoryValue": "Dates",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "638",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -633,20 +591,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "639",
-      "documentId": "Customs_Declaration",
-      "documentName": "Customs Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "134",
-      "entityName": "Ship To Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-     {
       "id": "640",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -658,20 +602,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "641",
-      "documentId": "Customs_Declaration",
-      "documentName": "Customs Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "24",
-      "entityName": "Notify Party",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
       "fieldType": "conditional"
     },
     {
@@ -688,7 +618,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "643",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -702,7 +632,6 @@
       "dataCategoryValue": "Parties",
       "fieldType": "conditional"
     },
-
     {
       "id": "644",
       "documentId": "Customs_Declaration",
@@ -731,7 +660,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "646",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -857,7 +786,7 @@
       "dataCategoryValue": "Amounts",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "655",
       "documentId": "Customs_Declaration",
       "documentName": "Customs Declaration",
@@ -969,7 +898,6 @@
       "dataCategoryValue": "Terms",
       "fieldType": "conditional"
     },
-
     {
       "id": "663",
       "documentId": "Customs_Declaration",

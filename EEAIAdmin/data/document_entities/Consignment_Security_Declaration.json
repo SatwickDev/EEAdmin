@@ -148,12 +148,12 @@
       "documentName": "Consignment Security Declaration",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -163,11 +163,11 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -177,7 +177,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "322",
-      "entityName": "Original Loading Location",
+      "entityName": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -464,7 +464,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "453",
       "documentId": "Consignment_Security_Declaration",
       "documentName": "Consignment Security Declaration",
@@ -478,7 +478,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "454",
       "documentId": "Consignment_Security_Declaration",
       "documentName": "Consignment Security Declaration",
@@ -492,7 +492,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "455",
       "documentId": "Consignment_Security_Declaration",
       "documentName": "Consignment Security Declaration",
@@ -506,7 +506,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "456",
       "documentId": "Consignment_Security_Declaration",
       "documentName": "Consignment Security Declaration",

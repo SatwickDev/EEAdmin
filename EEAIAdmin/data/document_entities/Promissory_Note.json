@@ -171,20 +171,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "911",
-      "documentId": "Promissory_Note",
-      "documentName": "Promissory Note",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "172",
-      "entityName": "Invoicee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
       "id": "912",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",
@@ -226,7 +212,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "915",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",
@@ -254,7 +240,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "917",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",
@@ -296,7 +282,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "920",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",
@@ -324,18 +310,18 @@
       "dataCategoryValue": "Dates",
       "fieldType": "conditional"
     },
-     {
+    {
       "id": "922",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -353,20 +339,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "924",
-      "documentId": "Promissory_Note",
-      "documentName": "Promissory Note",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-     {
       "id": "925",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",
@@ -398,14 +370,14 @@
       "id": "927",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "447",
-      "entityName": "Documentary Credit Available Bank",
+      "entityName": "Documentary Credit Available Bank / Applicant Bank",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -492,7 +464,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "934",
       "documentId": "Promissory_Note",
       "documentName": "Promissory Note",

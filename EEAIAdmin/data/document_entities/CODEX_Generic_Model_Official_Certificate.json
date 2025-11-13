@@ -64,12 +64,12 @@
       "documentName": "CODEX Generic Model Official Certificate",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -129,20 +129,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "639",
-      "documentId": "CODEX_Generic_Model_Official_Certificate",
-      "documentName": "CODEX Generic Model Official Certificate",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "141",
-      "entityName": "Place of Issue",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "640",
       "documentId": "CODEX_Generic_Model_Official_Certificate",
       "documentName": "CODEX Generic Model Official Certificate",
@@ -150,20 +136,6 @@
       "documentCategoryName": "Border and Regulatory Processes",
       "entityId": "409",
       "entityName": "Permit/Certificate/Carnet issuer",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "641",
-      "documentId": "CODEX_Generic_Model_Official_Certificate",
-      "documentName": "CODEX Generic Model Official Certificate",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "410",
-      "entityName": "Management/Competent Authority",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",

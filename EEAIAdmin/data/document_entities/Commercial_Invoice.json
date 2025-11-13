@@ -65,25 +65,11 @@
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
       "entityId": "143",
-      "entityName": "Buyer",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "920",
-      "documentId": "Commercial_Invoice",
-      "documentName": "Commercial Invoice",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "172",
-      "entityName": "Invoicee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -129,20 +115,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "924",
-      "documentId": "Commercial_Invoice",
-      "documentName": "Commercial Invoice",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "140",
-      "entityName": "Total Invoice Amount",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "925",
       "documentId": "Commercial_Invoice",
       "documentName": "Commercial Invoice",
@@ -176,12 +148,12 @@
       "documentName": "Commercial Invoice",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
-      "entityId": "119",
-      "entityName": "Contract Number",
+      "entityId": "447",
+      "entityName": "Documentary Credit Available Bank/Applicant Bank",
       "mappingFormField": "",
       "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -191,7 +163,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "322",
-      "entityName": "Original Loading Location",
+      "entityName": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -219,7 +191,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "323",
-      "entityName": "Baseport Unloading Location",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -316,12 +288,12 @@
       "documentName": "Commercial Invoice",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "51",
-      "entityName": "Net Weight",
+      "entityId": "359",
+      "entityName": "Gross Weight/Net Weight/Transport Means, gross weight",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
+      "dataCategoryValue": "Measure/Quantities",
       "fieldType": "optional"
     },
     {
@@ -379,20 +351,6 @@
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
       "fieldType": "optional"
-    },
-    {
-      "id": "942",
-      "documentId": "Commercial_Invoice",
-      "documentName": "Commercial Invoice",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "143",
-      "entityName": "Buyer",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
     }
   ]
 }

@@ -48,31 +48,16 @@
       "id": "522",
       "documentId": "Preferential_Certificate_of_Origin",
       "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
-    {
-      "id": "523",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-
     {
       "id": "528",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -121,12 +106,12 @@
       "documentName": "Preferential Certificate of Origin",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "50",
-      "entityName": "Gross Weight",
+      "entityId": "359",
+      "entityName": "Gross Weight/Net Weight/Transport Means, gross weight",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
+      "dataCategoryValue": "Measure/Quantities",
       "fieldType": "mandatory"
     },
     {
@@ -143,7 +128,6 @@
       "dataCategoryValue": "Measure",
       "fieldType": "optional"
     },
-
     {
       "id": "536",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -172,7 +156,6 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-
     {
       "id": "539",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -188,31 +171,17 @@
       "fieldType": "optional"
     },
     {
-      "id": "540",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
       "id": "541",
       "documentId": "Preferential_Certificate_of_Origin",
       "documentName": "Preferential Certificate of Origin",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -241,20 +210,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
-      "fieldType": "optional"
-    },
-    {
-      "id": "546",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "359",
-      "entityName": "Transport Means, gross weight",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
       "fieldType": "optional"
     },
     {
@@ -299,7 +254,6 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-
     {
       "id": "556",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -328,7 +282,6 @@
       "dataCategoryValue": "Goods",
       "fieldType": "optional"
     },
-
     {
       "id": "560",
       "documentId": "Preferential_Certificate_of_Origin",
@@ -343,7 +296,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-     {
+    {
       "id": "561",
       "documentId": "Preferential_Certificate_of_Origin",
       "documentName": "Preferential Certificate of Origin",
@@ -399,8 +352,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "optional"
     },
-
-     {
+    {
       "id": "566",
       "documentId": "Preferential_Certificate_of_Origin",
       "documentName": "Preferential Certificate of Origin",
@@ -444,4 +396,3 @@
     }
   ]
 }
-

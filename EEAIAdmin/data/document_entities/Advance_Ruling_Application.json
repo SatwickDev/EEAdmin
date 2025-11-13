@@ -22,12 +22,12 @@
       "documentName": "Advance Ruling Application",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
-      "entityId": "124",
-      "entityName": "Issue Date",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {

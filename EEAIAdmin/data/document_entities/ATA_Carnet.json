@@ -240,7 +240,6 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-
     {
       "id": "759",
       "documentId": "ATA_Carnet",
@@ -331,12 +330,12 @@
       "documentName": "ATA Carnet",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -345,12 +344,12 @@
       "documentName": "ATA Carnet",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
+      "entityId": "135",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -437,7 +436,6 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-
     {
       "id": "774",
       "documentId": "ATA_Carnet",
@@ -452,7 +450,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "775",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",
@@ -466,8 +464,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-
-{
+    {
       "id": "776",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",
@@ -481,7 +478,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "777",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",
@@ -593,7 +590,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "785",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",
@@ -607,7 +604,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "786",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",
@@ -677,7 +674,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "792",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",
@@ -691,6 +688,5 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     }
-
   ]
 }

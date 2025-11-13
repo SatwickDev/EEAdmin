@@ -50,12 +50,12 @@
       "documentName": "CITES Permit / Certificate",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -64,12 +64,12 @@
       "documentName": "CITES Permit / Certificate",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
+      "entityId": "135",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -100,7 +100,6 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-
     {
       "id": "687",
       "documentId": "CITES_Permit_Certificate",
@@ -255,7 +254,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "699",
       "documentId": "CITES_Permit_Certificate",
       "documentName": "CITES Permit / Certificate",

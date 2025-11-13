@@ -50,40 +50,12 @@
       "documentName": "Non-preferential Certificate of Origin",
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "477",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "478",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -93,11 +65,11 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional"
     },
     {
@@ -218,12 +190,12 @@
       "documentName": "Non-preferential Certificate of Origin",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "50",
-      "entityName": "Gross Weight",
+      "entityId": "359",
+      "entityName": "Gross Weight/Net Weight/Transport Means, gross weight",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
+      "dataCategoryValue": "Measure/Quantities",
       "fieldType": "mandatory"
     },
     {
@@ -297,48 +269,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "494",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "495",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "135",
-      "entityName": "Consignor",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "496",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "359",
-      "entityName": "Transport Means, gross weight",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "optional"
-    },
-    {
       "id": "497",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",
@@ -395,48 +325,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "501",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "137",
-      "entityName": "Importer",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
-      "id": "502",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "138",
-      "entityName": "Exporter",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "503",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "optional"
-    },
-    {
       "id": "504",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",
@@ -449,34 +337,6 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
-    },
-    {
-      "id": "505",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "141",
-      "entityName": "Place of Issue",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "506",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "5",
-      "documentCategoryName": "Quality and Compliance Processes",
-      "entityId": "337",
-      "entityName": "Authentication",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
-      "fieldType": "conditional"
     },
     {
       "id": "507",
@@ -519,34 +379,6 @@
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure",
       "fieldType": "conditional"
-    },
-    {
-      "id": "510",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "129",
-      "entityName": "Description of Goods",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "9",
-      "dataCategoryValue": "Goods",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "511",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "56",
-      "entityName": "Number of Packages",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "mandatory"
     },
     {
       "id": "512",
@@ -646,7 +478,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "519",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",
@@ -660,7 +492,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "520",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",
@@ -674,7 +506,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "521",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",
@@ -688,7 +520,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "522",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",
@@ -700,20 +532,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-	{
-      "id": "523",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "346",
-      "entityName": "Place or departure",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
     {
@@ -730,7 +548,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "525",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",

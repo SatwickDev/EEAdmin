@@ -171,20 +171,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "387",
-      "documentId": "Dangerous_Goods_Declaration",
-      "documentName": "Dangerous Goods Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "51",
-      "entityName": "Net Weight",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure",
-      "fieldType": "optional"
-    },
-    {
       "id": "388",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
@@ -210,20 +196,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
-      "fieldType": "optional"
-    },
-    {
-      "id": "390",
-      "documentId": "Dangerous_Goods_Declaration",
-      "documentName": "Dangerous Goods Declaration",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "390",
-      "entityName": "Document endorsement",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms",
       "fieldType": "optional"
     },
     {
@@ -632,21 +604,21 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "420",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "421",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
@@ -660,7 +632,7 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "422",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
@@ -674,21 +646,21 @@
       "dataCategoryValue": "References",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "423",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "311",
-      "entityName": "Place of the delivery of the goods (by the carrier)",
+      "entityName": "Place of the delivery of the goods (by the carrier)/Place of Final Destination / Delivery",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
-      "fieldType": "optional"
+      "fieldType": "mandatory"
     },
-	{
+    {
       "id": "424",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
@@ -702,7 +674,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "425",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
@@ -716,7 +688,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-	{
+    {
       "id": "426",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
@@ -730,7 +702,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "427",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",
@@ -744,7 +716,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "428",
       "documentId": "Dangerous_Goods_Declaration",
       "documentName": "Dangerous Goods Declaration",

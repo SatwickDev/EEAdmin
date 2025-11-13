@@ -20,28 +20,28 @@
       "id": "337",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
       "id": "338",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -72,7 +72,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "341",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
@@ -86,21 +86,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
-      "id": "342",
-      "documentId": "Rail_Consignment_Note",
-      "documentName": "Rail Consignment Note",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "326",
-      "entityName": "Number of Packages",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts",
-      "fieldType": "mandatory"
-    },
-	{
+    {
       "id": "343",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
@@ -114,7 +100,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "344",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
@@ -128,7 +114,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "345",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
@@ -142,7 +128,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "346",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",

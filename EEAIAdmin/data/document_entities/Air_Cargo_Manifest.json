@@ -17,31 +17,17 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "321",
-      "documentId": "Air_Cargo_Manifest",
-      "documentName": "Air Cargo Manifest",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "322",
       "documentId": "Air_Cargo_Manifest",
       "documentName": "Air Cargo Manifest",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -226,7 +212,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "conditional"
     },
-	{
+    {
       "id": "336",
       "documentId": "Air_Cargo_Manifest",
       "documentName": "Air Cargo Manifest",
@@ -240,7 +226,7 @@
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "337",
       "documentId": "Air_Cargo_Manifest",
       "documentName": "Air Cargo Manifest",
@@ -254,21 +240,21 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "338",
       "documentId": "Air_Cargo_Manifest",
       "documentName": "Air Cargo Manifest",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "322",
-      "entityName": "Original Loading Location",
+      "entityName": "Original Loading Location/Port of Loading/Airport of Departure/Place or departure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-	{
+    {
       "id": "339",
       "documentId": "Air_Cargo_Manifest",
       "documentName": "Air Cargo Manifest",

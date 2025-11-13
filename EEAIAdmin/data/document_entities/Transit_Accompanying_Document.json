@@ -86,7 +86,7 @@
       "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "811",
       "documentId": "Transit_Accompanying_Document",
       "documentName": "Transit Accompanying Document",
@@ -104,14 +104,14 @@
       "id": "812",
       "documentId": "Transit_Accompanying_Document",
       "documentName": "Transit Accompanying Document",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "136",
-      "entityName": "Consignee",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
+      "entityId": "143",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
     {
@@ -132,17 +132,17 @@
       "id": "814",
       "documentId": "Transit_Accompanying_Document",
       "documentName": "Transit Accompanying Document",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
       "entityId": "135",
-      "entityName": "Consignor",
+      "entityName": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties",
+      "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "815",
       "documentId": "Transit_Accompanying_Document",
       "documentName": "Transit Accompanying Document",
@@ -156,7 +156,7 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "816",
       "documentId": "Transit_Accompanying_Document",
       "documentName": "Transit Accompanying Document",
@@ -170,7 +170,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "817",
       "documentId": "Transit_Accompanying_Document",
       "documentName": "Transit Accompanying Document",
@@ -240,7 +240,7 @@
       "dataCategoryValue": "Goods",
       "fieldType": "mandatory"
     },
-     {
+    {
       "id": "822",
       "documentId": "Transit_Accompanying_Document",
       "documentName": "Transit Accompanying Document",
