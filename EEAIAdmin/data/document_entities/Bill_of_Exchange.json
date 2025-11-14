@@ -51,7 +51,7 @@
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "319",
-      "entityName": "Payment due date/Documentary credit document effective end date",
+      "entityName": "Payment due date",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -107,7 +107,7 @@
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "314",
-      "entityName": "Payment term",
+      "entityName": "Payment Term",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -317,7 +317,7 @@
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "447",
-      "entityName": "Documentary Credit Available Bank / Applicant Bank",
+      "entityName": "Documentary Credit Available Bank",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -414,20 +414,6 @@
       "documentName": "Bill of Exchange",
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
-      "entityId": "319",
-      "entityName": "Payment due date/Documentary credit document effective end date",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "915",
-      "documentId": "Bill_of_Exchange",
-      "documentName": "Bill of Exchange",
-      "documentCategoryId": "4",
-      "documentCategoryName": "Financial Processes",
       "entityId": "444",
       "entityName": "Documentary credit document issue date",
       "mappingFormField": "",
@@ -437,7 +423,7 @@
       "fieldType": "conditional"
     },
     {
-      "id": "916",
+      "id": "915",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
       "documentCategoryId": "4",
@@ -451,7 +437,7 @@
       "fieldType": "conditional"
     },
     {
-      "id": "917",
+      "id": "916",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
       "documentCategoryId": "1",
@@ -465,7 +451,7 @@
       "fieldType": "optional"
     },
     {
-      "id": "918",
+      "id": "917",
       "documentId": "Bill_of_Exchange",
       "documentName": "Bill of Exchange",
       "documentCategoryId": "1",

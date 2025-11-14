@@ -956,7 +956,7 @@
     },
     {
       "id": "124",
-      "name": "Issue Date/Documentary credit document issue date",
+      "name": "Issue Date",
       "description": "Date that a document was issued and when appropriate, signed or otherwise authenticated",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2531,7 +2531,7 @@
     },
     {
       "id": "314",
-      "name": "Payment term",
+      "name": "Payment Term",
       "description": "Extract the standard payment term keyword from the document — one of: BY PAYMENT, BY ACCEPTANCE, BY DEF PAYMENT, BY MIXED PYMT, BY NEGOTIATION. These indicate how and when payment is made under a Letter of Credit or trade transaction. Extract only the exact term (e.g., 'BY PAYMENT'), not the surrounding conditions or dates.\n\nReference meanings for clarity:\n\n• BY PAYMENT = 'At Sight' = Immediate payment when compliant documents are presented.\n  Equivalent to: Payment at sight\n  When paid: Upon presentation of documents\n\n• BY ACCEPTANCE = 'Acceptance' = Payment upon acceptance of a time draft.\n  Equivalent to: Usance credit with acceptance\n  When paid: At maturity date after draft acceptance\n\n• BY DEF PAYMENT = 'Deferred Payment' = Payment at a future date without draft.\n  Equivalent to: Deferred payment undertaking\n  When paid: On predetermined future date\n\n• BY NEGOTIATION = 'Negotiation' = Any bank can purchase the beneficiary's documents.\n  Equivalent to: Freely negotiable credit\n  When paid: When the negotiating bank purchases documents\n\n• BY MIXED PYMT = 'Mixed Payment' = Combination of multiple payment methods.\n  Equivalent to: Split payment terms\n  When paid: According to mixed schedule (requires Field 42M)\n\nKey Extraction Rules:\n- 'At Sight' always maps to 'BY PAYMENT'.\n- 'Deferred Payment' maps to 'BY DEF PAYMENT' (requires Field 42P).\n- 'Acceptance' maps to 'BY ACCEPTANCE' (requires draft acceptance).\n- 'Negotiation' maps to 'BY NEGOTIATION' (available with any bank).\n- Mixed terms map to 'BY MIXED PYMT' (requires Field 42M).",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2576,7 +2576,7 @@
     },
     {
       "id": "319",
-      "name": "Payment due date/Documentary credit document effective end date",
+      "name": "Payment due date",
       "description": "Date when an amount due should be made available to the creditor under the terms of payment",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3699,8 +3699,17 @@
     },
     {
       "id": "444",
-      "name": "Documentary credit document issue date/Issue Date",
+      "name": "Documentary credit document issue date",
       "description": "Documentary credit document issue date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "445",
+      "name": "Documentary credit document effective end date",
+      "description": "Documentary credit document effective end date",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3717,8 +3726,8 @@
     },
     {
       "id": "447",
-      "name": "Documentary Credit Available Bank/Applicant Bank",
-      "description": "EXTRACT Documentary Credit Available Bank name/Applicant Bank name ONLY. DO NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
+      "name": "Documentary Credit Available Bank",
+      "description": "EXTRACT Documentary Credit Available Bank name ONLY. DO NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -4312,7 +4321,7 @@
     {
       "id": "463",
       "name": "Partial Shipments",
-      "description": "Indicates whether partial shipments are allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')",
+      "description": "Indicates whether partial shipments are allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/ in exact_text give the feild name that is present in text given (***important)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -4321,7 +4330,7 @@
     {
       "id": "464",
       "name": "Transhipment",
-      "description": "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')",
+      "description":  "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/ in exact_text feild give the feild name that is present in text given (***important)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",

@@ -120,13 +120,13 @@
       "documentName": "Warehouse Receipt",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
-      "entityId": "124",
-      "entityName": "Issue Date",
+      "entityId": "130",
+      "entityName": "Quantity of Goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates",
-      "fieldType": "optional"
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure",
+      "fieldType": "mandatory"
     },
     {
       "id": "373",
@@ -156,7 +156,7 @@
       "dataCategoryValue": "Terms",
       "fieldType": "optional"
     },
-	{
+	  {
       "id": "375",
       "documentId": "Warehouse_Receipt",
       "documentName": "Warehouse Receipt",
@@ -170,7 +170,7 @@
       "dataCategoryValue": "References",
       "fieldType": "conditional"
     },
-	{
+	  {
       "id": "376",
       "documentId": "Warehouse_Receipt",
       "documentName": "Warehouse Receipt",
@@ -184,7 +184,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-	{
+	  {
       "id": "377",
       "documentId": "Warehouse_Receipt",
       "documentName": "Warehouse Receipt",
@@ -198,7 +198,7 @@
       "dataCategoryValue": "Measure",
       "fieldType": "mandatory"
     },
-	{
+	  {
       "id": "378",
       "documentId": "Warehouse_Receipt",
       "documentName": "Warehouse Receipt",

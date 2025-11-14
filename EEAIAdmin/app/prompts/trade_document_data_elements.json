@@ -222,7 +222,7 @@
       },
       {
         "uid": "2211",
-        "name": "Payment due date/Documentary credit document effective end date",
+        "name": "Payment due date",
         "description": "Date on which the validity of a documentary credit expires",
         "requirements": {"LC": "M", "BoE": "C", "PN": "C"}
       },
@@ -258,7 +258,7 @@
       },
       {
         "uid": "2480",
-        "name": "Payment due date/Documentary credit document effective end date",
+        "name": "Payment due date",
         "description": "Date when an amount due should be made available to the creditor under the terms of payment",
         "requirements": {"INV": "M", "LC": "O", "PC": "M", "PN": "M"}
       },
@@ -740,7 +740,7 @@
       },
       {
         "uid": "4277",
-        "name": "Payment term",
+        "name": "Payment Term",
         "description": "Identification of the terms of payment between the parties",
         "requirements": {"PO": "O", "INV": "O", "LC": "M", "PN": "M"}
       },
