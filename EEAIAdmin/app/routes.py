@@ -8950,6 +8950,147 @@ Return compliance status for each field.'''
         return is_rotated
 
 
+    def is_standalone_punctuation(word_text: str) -> bool:
+        """Check if word is just punctuation"""
+        import string
+        return all(c in string.punctuation + string.whitespace for c in word_text)
+
+
+    def smart_sort_words(matched_words: List[Dict], line_text: str, is_rotated: bool = False) -> List[Dict]:
+        """
+        Smart sorting that handles punctuation correctly
+        If punctuation is far from main text, it might be misplaced
+        """
+        if len(matched_words) <= 1:
+            return matched_words
+        
+        # Separate punctuation from regular words
+        punctuation_words = []
+        regular_words = []
+        
+        for word in matched_words:
+            word_text = word.get('text', '').strip()
+            if is_standalone_punctuation(word_text):
+                punctuation_words.append(word)
+            else:
+                regular_words.append(word)
+        
+        # If no punctuation or all punctuation, sort normally
+        if not punctuation_words or not regular_words:
+            if is_rotated:
+                return sort_words_for_rotated_page(matched_words)
+            else:
+                return sort_words_left_to_right(matched_words)
+        
+        # Sort regular words
+        if is_rotated:
+            sorted_regular = sort_words_for_rotated_page(regular_words)
+        else:
+            sorted_regular = sort_words_left_to_right(regular_words)
+        
+        # For each punctuation, find where it should go based on expected text
+        result = []
+        regular_text = ' '.join([w.get('text', '') for w in sorted_regular])
+        
+        for punct_word in punctuation_words:
+            punct_text = punct_word.get('text', '').strip()
+            
+            # Find where this punctuation appears in expected text
+            expected_before = None
+            expected_after = None
+            
+            # Check if punctuation appears between two words in expected text
+            tokens = line_text.split()
+            for i, token in enumerate(tokens):
+                if punct_text in token:
+                    # Punctuation is part of a word (e.g., "2021-22/172:")
+                    # It should be placed with that word
+                    if i > 0:
+                        expected_before = tokens[i-1]
+                    if i < len(tokens) - 1:
+                        expected_after = tokens[i+1]
+                    break
+            
+            # If we found context, insert punctuation in the right place
+            inserted = False
+            if expected_before or expected_after:
+                for i, word in enumerate(sorted_regular):
+                    word_text = word.get('text', '')
+                    
+                    # Check if this word matches the context
+                    if expected_before and fuzzy_match(word_text, expected_before) > 0.8:
+                        # Insert after this word
+                        result = sorted_regular[:i+1] + [punct_word] + sorted_regular[i+1:]
+                        inserted = True
+                        break
+                    elif expected_after and fuzzy_match(word_text, expected_after) > 0.8:
+                        # Insert before this word
+                        result = sorted_regular[:i] + [punct_word] + sorted_regular[i:]
+                        inserted = True
+                        break
+            
+            if inserted:
+                break
+        
+        # If we couldn't place punctuation smartly, use spatial distance
+        if not result:
+            # Check if punctuation is close to any regular word
+            for punct_word in punctuation_words:
+                punct_bbox = punct_word.get('bounding_box', [])
+                if not punct_bbox or len(punct_bbox) < 8:
+                    continue
+                
+                punct_center = get_bbox_center(punct_bbox)
+                
+                # Find closest regular word
+                min_distance = float('inf')
+                closest_idx = 0
+                
+                for i, reg_word in enumerate(sorted_regular):
+                    reg_bbox = reg_word.get('bounding_box', [])
+                    if not reg_bbox or len(reg_bbox) < 8:
+                        continue
+                    
+                    distance = calculate_distance(punct_bbox, reg_bbox)
+                    
+                    if distance < min_distance:
+                        min_distance = distance
+                        closest_idx = i
+                
+                # If punctuation is far (> 1.0 units), it's probably misplaced - skip it
+                if min_distance > 1.0:
+                    logger.debug(f"Skipping far punctuation '{punct_word.get('text', '')}' (distance: {min_distance:.2f})")
+                    continue
+                
+                # Insert punctuation near closest word
+                # Decide before/after based on spatial position
+                punct_x = punct_center[0]
+                closest_x = get_bbox_center(sorted_regular[closest_idx].get('bounding_box', []))[0]
+                
+                if is_rotated:
+                    # For rotated, compare Y positions
+                    punct_y = punct_center[1]
+                    closest_y = get_bbox_center(sorted_regular[closest_idx].get('bounding_box', []))[1]
+                    if punct_y > closest_y:  # Punctuation is below (comes before in reading order)
+                        result = sorted_regular[:closest_idx] + [punct_word] + sorted_regular[closest_idx:]
+                    else:
+                        result = sorted_regular[:closest_idx+1] + [punct_word] + sorted_regular[closest_idx+1:]
+                else:
+                    # For normal, compare X positions
+                    if punct_x < closest_x:  # Punctuation is to the left
+                        result = sorted_regular[:closest_idx] + [punct_word] + sorted_regular[closest_idx:]
+                    else:
+                        result = sorted_regular[:closest_idx+1] + [punct_word] + sorted_regular[closest_idx+1:]
+                
+                break
+        
+        # If still no result, just append punctuation at the end
+        if not result:
+            result = sorted_regular + punctuation_words
+        
+        return result
+
+
     # ============================================
     # FIND ALL CANDIDATES FOR EACH LINE
     # ============================================
@@ -8978,6 +9119,7 @@ Return compliance status for each field.'''
                 best_match = None
                 best_similarity = 0
                 best_idx = -1
+                best_distance = float('inf')
                 
                 # Search forward from current position
                 for idx in range(start_idx, min(start_idx + 100, len(word_pool))):
@@ -8994,10 +9136,44 @@ Return compliance status for each field.'''
                     
                     similarity = fuzzy_match(token, word_text)
                     
-                    if similarity >= fuzzy_threshold and similarity > best_similarity:
-                        best_match = word
-                        best_similarity = similarity
-                        best_idx = idx
+                    if similarity >= fuzzy_threshold:
+                        # If we already have matched words, prefer words that are CLOSE to them
+                        if matched_words:
+                            # Calculate distance to last matched word
+                            last_bbox = matched_words[-1].get('bounding_box', [])
+                            curr_bbox = word.get('bounding_box', [])
+                            
+                            if last_bbox and curr_bbox and len(last_bbox) >= 8 and len(curr_bbox) >= 8:
+                                distance = calculate_distance(last_bbox, curr_bbox)
+                                
+                                # Prefer closer words, especially for punctuation
+                                if is_standalone_punctuation(word_text):
+                                    # For punctuation, strongly prefer close matches
+                                    if distance < 1.0 and (similarity > best_similarity or 
+                                                        (similarity == best_similarity and distance < best_distance)):
+                                        best_match = word
+                                        best_similarity = similarity
+                                        best_idx = idx
+                                        best_distance = distance
+                                else:
+                                    # For regular words, prefer high similarity, but consider distance
+                                    if similarity > best_similarity or (similarity == best_similarity and distance < best_distance):
+                                        best_match = word
+                                        best_similarity = similarity
+                                        best_idx = idx
+                                        best_distance = distance
+                            else:
+                                # No bbox info, use similarity only
+                                if similarity > best_similarity:
+                                    best_match = word
+                                    best_similarity = similarity
+                                    best_idx = idx
+                        else:
+                            # First word, use similarity only
+                            if similarity > best_similarity:
+                                best_match = word
+                                best_similarity = similarity
+                                best_idx = idx
                 
                 if best_match:
                     matched_words.append(best_match)
@@ -9017,11 +9193,8 @@ Return compliance status for each field.'''
                     on_same_line = are_words_on_same_line(matched_words, y_tolerance=y_tolerance)
                 
                 if on_same_line:
-                    # Sort based on page rotation
-                    if is_rotated:
-                        matched_words_sorted = sort_words_for_rotated_page(matched_words)
-                    else:
-                        matched_words_sorted = sort_words_left_to_right(matched_words)
+                    # Sort based on page rotation - use smart sorting for punctuation
+                    matched_words_sorted = smart_sort_words(matched_words, line_text, is_rotated)
                     
                     # Build match info
                     matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
@@ -9343,11 +9516,13 @@ Return compliance status for each field.'''
             logger.error("No field_value!")
             return {'best_match': best_match, 'matches': matches if matches else []}
         
+        if SequenceMatcher(None, field_value.lower(), "allowed".lower()).ratio() >= 0.85:
+            logger.info("default allowed is sent to frontend (fuzzy matched)")
+            return {'best_match': best_match, 'matches': matches if matches else []} 
         # Skip if TOTAL field_value length is too long (>80 chars)
-        if len(field_value) > 100:
-            logger.info(f"Field value too long ({len(field_value)} chars > 100) - skipping refinement")
+        if len(field_value) > 200:
+            logger.info(f"Field value too long ({len(field_value)} chars > 200) - skipping refinement")
             return {'best_match': best_match, 'matches': matches if matches else []}
-        
         # Parse lines
         expected_lines = [line.strip() for line in field_value.split('\n') if line.strip()]
         

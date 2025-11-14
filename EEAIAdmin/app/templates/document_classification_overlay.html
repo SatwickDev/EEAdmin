@@ -6220,7 +6220,6 @@
                     URL.revokeObjectURL(url);
                 },
                 // Enhanced modal methods
-                // Enhanced modal methods
                 viewDetails(index) {
                     this.selectedResult = this.results[index];
                     this.showDetailsModal = true;
@@ -6232,13 +6231,24 @@
                     this.pendingHighlight = null;
                     this.coordinateSearchResults = {};
                     this.searchingField = null;
+                    // Clear any stored search blocks / multi-page state so old highlights won't reappear
+                    this.searchResultBlocks = [];
+                    this.multiPageContent = { active: false, pages: [], matches: [] };
+
+                    // Ensure overlays are removed immediately
+                    this.$forceUpdate();
                     // Clear previous canvas highlights ONCE at the beginning
                     const ctx = this.drawingContext;
-                    if (!ctx) {
-                        return;
+                    if (ctx) {
+                        try {
+                            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                        } catch (err) {
+                            console.warn('Could not clear canvas immediately:', err);
+                        }
+                    } else {
+                        // If canvas not yet ready, mark to clear on next setup
+                        this._clearCanvasOnNextSetup = true;
                     }
-
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                     // Debug logging to help identify issues
                     console.log('=== DEBUG: View Details ===');
                     console.log('Selected result:', this.selectedResult);
