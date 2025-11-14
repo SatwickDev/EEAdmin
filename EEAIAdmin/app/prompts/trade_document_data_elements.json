@@ -25,13 +25,13 @@
   "documents": [
     {"code": "PO", "name": "Purchase Order", "sender": "Seller, Exporter", "receiver": "Buyer, Importer"},
     {"code": "INV", "name": "Commercial Invoice", "sender": "Seller, Exporter", "receiver": "Buyer, Importer"},
-    {"code": "SLI", "name": "Shipper's Letter of Instructions", "sender": "Shipper, Consignor", "receiver": "Freight Forwarder"},
+    {"code": "SLI", "name": "Shipper's Letter of Instructions", "sender": "Shipper, Consignor", "receiver": "Freight forwarder"},
     {"code": "PL", "name": "Packing List", "sender": "Seller, Exporter", "receiver": "Buyer, Importer"},
     {"code": "BoL", "name": "Bill of Lading", "sender": "Carrier, Freight Forwarder", "receiver": "Shipper, Freight Forwarder, Customs, Consignee"},
     {"code": "SW", "name": "Sea Waybill", "sender": "Carrier, Freight Forwarder", "receiver": "Shipper, Consignor"},
-    {"code": "SDO", "name": "Ship's Delivery Order", "sender": "Carrier", "receiver": "Consignee"},
-    {"code": "AW", "name": "Air Waybill", "sender": "Freight Forwarder, Shipper", "receiver": "Carrier"},
-    {"code": "SCM", "name": "Sea Cargo Manifest", "sender": "Carrier", "receiver": "Customs"},
+    {"code": "SDO", "name": "Ship's Delivery Order", "sender": "Carrier (Transport Services Provider)", "receiver": "Consignee"},
+    {"code": "AW", "name": "Air Waybill", "sender": "Freight Forwarder, Shipper", "receiver": "Carrier (Transport Services Provider)"},
+    {"code": "SCM", "name": "Sea Cargo Manifest", "sender": "Carrier (Transport Services Provider)", "receiver": "Customs"},
     {"code": "ACM", "name": "Air Cargo Manifest", "sender": "Exporter, Freight Forwarder", "receiver": "Customs"},
     {"code": "CIM", "name": "Rail Consignment Note", "sender": "Shipper, Consignor", "receiver": "Consignee"},
     {"code": "CMR", "name": "Road Consignment Note", "sender": "Shipper, Consignor", "receiver": "Consignee, Carrier"},
@@ -118,7 +118,7 @@
       },
       {
         "uid": "1296",
-        "name": "Contract number",
+        "name": "Contract Number",
         "description": "Identifier of a contract concluded between parties",
         "requirements": {"PO": "C", "INV": "O", "PL": "O", "BoL": "M", "SW": "O", "CoO": "O", "PCoO": "O", "EMCS": "O", "LC": "O"}
       },
@@ -368,7 +368,7 @@
       },
       {
         "uid": "3170",
-        "name": "Freight Forwarder",
+        "name": "Freight forwarder",
         "description": "Party undertaking forwarding of goods",
         "requirements": {"SLI": "M", "BoL": "O", "SCM": "M", "CIM": "O", "CoO": "O", "ATA": "M", "TIR": "M"}
       },
@@ -598,7 +598,7 @@
       },
       {
         "uid": "3238",
-        "name": "Origin country",
+        "name": "Destination Country/Exportation country/Origin country",
         "description": "Country in which the goods have been produced or manufactured",
         "requirements": {"PO": "O", "INV": "O", "SLI": "M", "BoL": "O", "CIM": "O", "CoO": "M", "PCoO": "M", "CODEX": "M", "CD": "C", "CODEX": "M", "WOAH": "M", "CPC": "M"}
       },
@@ -728,7 +728,7 @@
     "terms": [
       {
         "uid": "4052",
-        "name": "Trade terms conditions description",
+        "name": "Trade Terms Conditions Description",
         "description": "Free form description of delivery or transport terms (Incoterms)",
         "requirements": {"INV": "O", "SLI": "M", "BoL": "O", "SW": "O", "PCoO": "C"}
       },
@@ -986,7 +986,7 @@
       },
       {
         "uid": "7065",
-        "name": "Type of Packaging (UNCEFACT coded) and shipping marks",
+        "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks"Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
         "description": "Code specifying the type of packaging of an item",
         "requirements": {"SLI": "M", "PL": "M", "BoL": "O", "SW": "M", "CIM": "O", "CoO": "O", "PCoO": "O", "CD": "C"}
       },

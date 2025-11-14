@@ -24,7 +24,7 @@
     "description": "Party applying for LC"
   },
   {
-    "name": "Beneficiary",
+    "name": "Payee/Beneficiary Name/Beneficiary",
     "type": "text",
     "required": true,
     "description": "Party receiving payment"

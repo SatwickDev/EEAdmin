@@ -263,7 +263,7 @@
     },
     {
       "id": "43",
-      "name": "Insurance Amount",
+      "name": "Insured value amount /Insurance Amount",
       "description": "Amount of premium payable to the insurance company for insuring the goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1244,7 +1244,7 @@
     },
     {
       "id": "159",
-      "name": "Carrier",
+      "name": "Carrier (Transport Services Provider)",
       "description": "Party providing the transport of goods between named points",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1685,7 +1685,7 @@
     },
     {
       "id": "217",
-      "name": "Available with bank",
+      "name": "Available With / By",
       "description": "Name and address of a bank at which the Documentary credit is available",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1703,7 +1703,7 @@
     },
     {
       "id": "219",
-      "name": "Expiry date",
+      "name": "Expiry Date",
       "description": "Date on which the validity of a documentary credit expires",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1962,15 +1962,7 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
     },
-    {
-      "id": "249",
-      "name": "Shipping marks",
-      "description": "Free form description of the marks and numbers on a transport unit or package",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "9",
-      "dataCategoryValue": "Goods"
-    },
+
     {
       "id": "250",
       "name": "Number of originals",
@@ -2099,7 +2091,7 @@
     },
     {
       "id": "265",
-      "name": "Partial shipment",
+      "name": "Partial Shipment / Transshipment",
       "description": "Partial shipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2117,8 +2109,8 @@
     },
     {
       "id": "267",
-      "name": "Transhipment",
-      "description": "Transhipment",
+      "name": "Transshipment",
+      "description": "Transshipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "12",
@@ -2531,7 +2523,7 @@
     },
     {
       "id": "313",
-      "name": "Origin country",
+      "name": "Destination Country/Exportation country/Origin country",
       "description": "Name of the country in which the goods have been produced or manufactured, according to criteria laid down for the application of the Customs tariff or quantitative restrictions, or any measure related to trade",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2621,7 +2613,7 @@
     },
     {
       "id": "323",
-      "name": "Baseport Unloading Location/Port of Discharge",
+      "name": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "description": "The place or port at which the cargo is discharged or unloaded from a means of transport according to the transport contract. The goods may or may not be discharged from the main means of transport at this place or port",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2692,7 +2684,7 @@
     },
     {
       "id": "331",
-      "name": "Type of Packaging (UNCEFACT coded) and shipping marks",
+      "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
       "description": "Code specifying the type of packaging of an item",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -4166,13 +4158,16 @@
       "dataCategoryValue": ""
     },
     {
-      "id": "502",
+      "id": "515",
       "name": "Gross Weight",
       "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "",
-      "dataCategoryValue": "Measure/Quantities",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "516",
       "name": "Weight Certificate Number",
       "description": "Reference number identifying the weight certificate document",
       "mappingFormField": "",
@@ -4296,6 +4291,105 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "21",
+      "name": "Net Weight",
+      "description": "Net weight of the goods without packaging or container - Extract the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "50",
+      "name": "Gross Weight/Net Weight/Transport Means, gross weight",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "216",
+      "name": "Documentary Credit Drawee /Drawee",
+      "description": "Documentary Credit Drawee - Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "454",
+      "name": "Payment term",
+      "description": "Payment terms specified in the documentary credit (e.g., 'Sight', 'Usance', 'Deferred Payment')",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "463",
+      "name": "Partial Shipments",
+      "description": "Indicates whether partial shipments are allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "464",
+      "name": "Transhipment",
+      "description": "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "467",
+      "name": "Port of Discharge/Airport of Destination",
+      "description": "Port where goods are unloaded or airport of final destination - Extract ONLY the port/airport name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port/airport name is required (e.g., 'Rotterdam' not 'Rotterdam, Netherlands').",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "469",
+      "name": "Latest Date of Shipment",
+      "description": "Latest date by which goods must be shipped as specified in the documentary credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "480",
+      "name": "Documentary Credit Number",
+      "description": "Reference number identifying the documentary credit/letter of credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "601",
+      "name": "Document Title",
+      "description": "Title or heading of the document (e.g., 'COVERING SCHEDULE FOR LETTER OF CREDIT', 'COMMERCIAL INVOICE')",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "618",
+      "name": "Place of Expiry",
+      "description": "Place where the documentary credit expires and documents must be presented",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
     }
   ]
 }

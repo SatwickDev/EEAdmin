@@ -51,7 +51,7 @@ SAMPLE_FIELDS = {
         {"name": "Issue Date", "type": "date", "required": True, "description": "Date of LC issuance"},
         {"name": "Expiry Date", "type": "date", "required": True, "description": "Date of LC expiry"},
         {"name": "Applicant", "type": "text", "required": True, "description": "Party applying for LC"},
-        {"name": "Beneficiary", "type": "text", "required": True, "description": "Party receiving payment"},
+        {"name": "Payee/Beneficiary Name/Beneficiary", "type": "text", "required": True, "description": "Party receiving payment"},
         {"name": "Issuing Bank", "type": "text", "required": True, "description": "Bank issuing the LC"},
         {"name": "Advising Bank", "type": "text", "required": False, "description": "Bank advising the LC"},
         {"name": "Currency", "type": "text", "required": True, "description": "LC currency"},

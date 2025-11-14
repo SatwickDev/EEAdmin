@@ -380,7 +380,7 @@
     },
     {
       "id": "43",
-      "name": "Insurance Amount",
+      "name": "Insured value amount /Insurance Amount",
       "description": "Amount of insurance coverage",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1370,8 +1370,8 @@
     },
     {
       "id": "154",
-      "name": "Beneficiary",
-      "description": "Beneficiary",
+      "name": "Payee/Beneficiary Name/Beneficiary",
+      "description": "Payee/Beneficiary Name/Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1415,8 +1415,8 @@
     },
     {
       "id": "159",
-      "name": "Carrier",
-      "description": "Carrier",
+      "name": "Carrier (Transport Services Provider)",
+      "description": "Carrier (Transport Services Provider)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -2224,9 +2224,9 @@
       "dataCategoryValue": "References"
     },
     {
-      "id": "249",
-      "name": "Shipping marks",
-      "description": "Shipping marks",
+      "id": "331",
+      "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
+      "description": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -2801,8 +2801,8 @@
     },
     {
       "id": "313",
-      "name": "Origin country",
-      "description": "Origin country",
+      "name": "Destination Country/Exportation country/Origin country",
+      "description": "Destination Country/Exportation country/Origin country",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -2961,15 +2961,7 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-    {
-      "id": "331",
-      "name": "Type of Packaging (UNCEFACT coded) and shipping marks",
-      "description": "Type of Packaging (UNCEFACT coded) and shipping marks",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "9",
-      "dataCategoryValue": "Goods"
-    },
+
     {
       "id": "332",
       "name": "Package length",

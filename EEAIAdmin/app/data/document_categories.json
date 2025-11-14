@@ -21,7 +21,7 @@
       "code": "SLI",
       "name": "Shipper's Letter of Instructions",
       "sender": "Shipper, Consignor",
-      "receiver": "Freight Forwarder",
+      "receiver": "Freight forwarder",
       "processType": "Transport Processes"
     },
     {
@@ -52,7 +52,7 @@
       "id": "7",
       "code": "SDO",
       "name": "Ship's Delivery Order",
-      "sender": "Carrier",
+      "sender": "Carrier (Transport Services Provider)",
       "receiver": "Consignee",
       "processType": "Transport Processes"
     },
@@ -61,14 +61,14 @@
       "code": "AW",
       "name": "Air Waybill",
       "sender": "Freight Forwarder, Shipper",
-      "receiver": "Carrier",
+      "receiver": "Carrier (Transport Services Provider)",
       "processType": "Transport Processes"
     },
     {
       "id": "9",
       "code": "SCM",
       "name": "Sea Cargo Manifest",
-      "sender": "Carrier",
+      "sender": "Carrier (Transport Services Provider)",
       "receiver": "Customs",
       "processType": "Transport Processes"
     },

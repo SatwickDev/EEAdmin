@@ -302,7 +302,7 @@
         "category": "OPTIONAL"
       },
       {
-        "name": "Freight Forwarder",
+        "name": "Freight forwarder",
         "fieldId": "freight_forwarder",
         "type": "text",
         "required": false,

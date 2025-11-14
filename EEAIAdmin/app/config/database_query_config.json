@@ -27,7 +27,7 @@
       "description": "Party receiving payment under LC/guarantee",
       "id": "beneficiary",
       "id_column": "party_id",
-      "name": "Beneficiary",
+      "name": "Payee/Beneficiary Name/Beneficiary",
       "natural_keys": [
         "name",
         "swift_bic",

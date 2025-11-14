@@ -46,7 +46,7 @@
         "category": "MANDATORY"
       },
       {
-        "name": "Freight Forwarder",
+        "name": "Freight forwarder",
         "fieldId": "freight_forwarder",
         "type": "text",
         "required": true,

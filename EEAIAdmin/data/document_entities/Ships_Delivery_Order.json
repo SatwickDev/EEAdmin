@@ -65,7 +65,7 @@
       "documentCategoryId": "",
       "documentCategoryName": "",
       "entityId": "143",
-      "entityName": "Buyer/Importer/Consignee/Ship To Party/notify party/Invoicee",
+      "entityName": "Buyer/Importer/Consignee/Ship To Party/Notify Party/Invoicee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -213,7 +213,7 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "249",
+      "id": "331",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",
       "documentCategoryId": "3",
@@ -484,8 +484,8 @@
       "documentName": "Ship's Delivery Order",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "249",
-      "entityName": "Shipping marks",
+      "entityId": "331",
+      "entityName": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",

@@ -136,7 +136,7 @@
       "documentCategoryId": "3",
       "documentCategoryName": "Financial Instruments",
       "entityId": "150",
-      "entityName": "Beneficiary",
+      "entityName": "Payee/Beneficiary Name/Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "Exporter in whose favour the LC is issued",
       "dataCategoryId": "3",
