@@ -222,7 +222,7 @@
       },
       {
         "uid": "2211",
-        "name": "Documentary credit document effective end date",
+        "name": "Payment due date/Documentary credit document effective end date",
         "description": "Date on which the validity of a documentary credit expires",
         "requirements": {"LC": "M", "BoE": "C", "PN": "C"}
       },
@@ -258,7 +258,7 @@
       },
       {
         "uid": "2480",
-        "name": "Payment due date",
+        "name": "Payment due date/Documentary credit document effective end date",
         "description": "Date when an amount due should be made available to the creditor under the terms of payment",
         "requirements": {"INV": "M", "LC": "O", "PC": "M", "PN": "M"}
       },
@@ -532,7 +532,7 @@
       },
       {
         "uid": "3014",
-        "name": "Destination country",
+        "name": "Destination Country/Exportation country/Consignment destination country",
         "description": "Country to which a consignment of goods is to be or has been delivered",
         "requirements": {"SDO": "M", "CID": "M", "CoO": "M", "CODEX": "M", "ePhyto": "M", "WOAH": "M", "ATA": "M"}
       },
@@ -986,7 +986,7 @@
       },
       {
         "uid": "7065",
-        "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks"Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
+        "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
         "description": "Code specifying the type of packaging of an item",
         "requirements": {"SLI": "M", "PL": "M", "BoL": "O", "SW": "M", "CIM": "O", "CoO": "O", "PCoO": "O", "CD": "C"}
       },

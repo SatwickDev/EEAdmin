@@ -107,7 +107,7 @@
       "documentCategoryId": "3",
       "documentCategoryName": "Border and Regulatory Processes",
       "entityId": "313",
-      "entityName": "Destination Country/Exportation country/Origin country",
+      "entityName": "Origin country",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -323,20 +323,6 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "conditional"
-    },
-    {
-      "id": "504",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "3",
-      "documentCategoryName": "Border and Regulatory Processes",
-      "entityId": "313",
-      "entityName": "Destination Country/Exportation country/Origin country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
     },
     {
       "id": "507",

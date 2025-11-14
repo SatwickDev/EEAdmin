@@ -16,7 +16,7 @@
         "category": "MANDATORY"
       },
       {
-        "name": "Documentary Credit Document Effective End Date",
+        "name": "Documentary credit document effective end date",
         "fieldId": "dc_effective_end_date",
         "type": "date",
         "required": true,

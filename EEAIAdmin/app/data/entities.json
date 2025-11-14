@@ -12,7 +12,7 @@
     {
       "id": "2",
       "name": "Booking reference number",
-      "description": "Reference number assigned by a carrier or agent to identify a specific consignment",
+      "description": "Reference number assigned by a carrier or its agent to identify a specific consignment such as a booking reference number when cargo space is reserved prior to loading",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -48,16 +48,7 @@
     {
       "id": "6",
       "name": "Invoice Number",
-      "description": "Unique identifier for a commercial invoice",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References"
-    },
-    {
-      "id": "7",
-      "name": "Bill of Lading Number",
-      "description": "Reference number for a bill of lading document",
+      "description": "Reference number to identify an invoice",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -84,16 +75,7 @@
     {
       "id": "10",
       "name": "Certificate of Origin Number",
-      "description": "Reference number for a certificate of origin",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References"
-    },
-    {
-      "id": "11",
-      "name": "Letter of Credit Number",
-      "description": "Unique identifier for a letter of credit",
+      "description": "Reference number to identify a certificate of origin",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -111,7 +93,7 @@
     {
       "id": "13",
       "name": "Insurance Policy Number",
-      "description": "Unique identifier for an insurance policy",
+      "description": "Reference number to identify an insurance policy",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -127,15 +109,6 @@
       "dataCategoryValue": "References"
     },
     {
-      "id": "15",
-      "name": "Commercial Invoice Date",
-      "description": "Date on which a commercial invoice was issued",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates"
-    },
-    {
       "id": "16",
       "name": "Shipment Date",
       "description": "Date when goods were shipped",
@@ -147,16 +120,7 @@
     {
       "id": "17",
       "name": "Delivery Date",
-      "description": "Expected or actual date of delivery",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates"
-    },
-    {
-      "id": "18",
-      "name": "LC Expiry Date",
-      "description": "Expiration date of a letter of credit",
+      "description": "Date and optionally time by which the merchandise should be delivered to the buyer, as agreed between the seller and the buyer",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -172,42 +136,6 @@
       "dataCategoryValue": "Dates"
     },
     {
-      "id": "20",
-      "name": "Exporter Name",
-      "description": "Name of the party exporting goods",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
-      "id": "21",
-      "name": "Importer Name",
-      "description": "Name of the party importing goods",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
-      "id": "22",
-      "name": "Consignee Name",
-      "description": "Name of the party to whom goods are consigned",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
-      "id": "23",
-      "name": "Shipper Name",
-      "description": "Name of the party shipping the goods",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
       "id": "24",
       "name": "Notify Party",
       "description": "Party to be notified about shipment",
@@ -220,15 +148,6 @@
       "id": "25",
       "name": "Carrier Name",
       "description": "Name of the transportation carrier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
-      "id": "26",
-      "name": "Issuing Bank",
-      "description": "Bank that issues the letter of credit",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -254,8 +173,8 @@
     },
     {
       "id": "29",
-      "name": "Port of Loading",
-      "description": "Port where goods are loaded for shipment",
+      "name": "Port of Loading / Place of loading / Port of Loading/Airport of Departure",
+      "description": "Port where goods are loaded for shipment - Extract ONLY the port name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port name is required (e.g., 'Shanghai' not 'Shanghai, China' or 'Port of Shanghai, Yangshan Port Area, China').",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -263,8 +182,8 @@
     },
     {
       "id": "30",
-      "name": "Port of Discharge",
-      "description": "Port where goods are unloaded",
+      "name": "Port of Discharge / Place of discharge /Port of Discharge/Airport of Destination",
+      "description": "Port where goods are unloaded - Extract ONLY the port name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port name is required (e.g., 'Rotterdam' not 'Rotterdam, Netherlands' or 'Port of Rotterdam, South Holland, Netherlands').",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -289,27 +208,9 @@
       "dataCategoryValue": "Locations"
     },
     {
-      "id": "33",
-      "name": "Country of Destination",
-      "description": "Country where goods are destined",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
-    {
-      "id": "34",
-      "name": "Payment Terms",
-      "description": "Terms and conditions for payment",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms"
-    },
-    {
       "id": "35",
       "name": "Incoterms",
-      "description": "International commercial terms defining responsibilities",
+      "description": "Extract only the official Incoterm code (EXW, FOB, CFR, CIF, DDP). Do not include city names, ports, or countries. Example: if the text says 'CFR, NHAVA SHEVA, INDIA', extract only 'CFR'.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -361,27 +262,9 @@
       "dataCategoryValue": "Clauses/conditions/instructions"
     },
     {
-      "id": "41",
-      "name": "Invoice Amount",
-      "description": "Total amount stated on the invoice",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts/charges/percentages"
-    },
-    {
-      "id": "42",
-      "name": "LC Amount",
-      "description": "Total amount of the letter of credit",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "7",
-      "dataCategoryValue": "Amounts/charges/percentages"
-    },
-    {
       "id": "43",
       "name": "Insured value amount /Insurance Amount",
-      "description": "Amount of insurance coverage",
+      "description": "Amount of premium payable to the insurance company for insuring the goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -390,7 +273,7 @@
     {
       "id": "44",
       "name": "Freight Charges",
-      "description": "Charges for transportation of goods",
+      "description": "Costs incurred by the shipper in moving goods, by whatever means, from one place to another under the terms of the contract of carriage. In addition to transport costs, this may include such elements as packing, documentation, loading, unloading, and insurance (to the extent that they relate to the freight cost)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -442,18 +325,9 @@
       "dataCategoryValue": "Amounts/charges/percentages"
     },
     {
-      "id": "50",
-      "name": "Gross Weight",
-      "description": "Total weight including packaging",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "8",
-      "dataCategoryValue": "Measure"
-    },
-    {
       "id": "51",
       "name": "Net Weight",
-      "description": "Weight of goods excluding packaging",
+      "description": "Weight of goods excluding packaging - Extract Net weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -462,7 +336,7 @@
     {
       "id": "52",
       "name": "Volume",
-      "description": "Total volume of the shipment",
+      "description": "Total volume of the shipment - Extract the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -498,16 +372,7 @@
     {
       "id": "56",
       "name": "Number of Packages",
-      "description": "Total count of packages",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "9",
-      "dataCategoryValue": "Goods"
-    },
-    {
-      "id": "57",
-      "name": "Goods Description",
-      "description": "Detailed description of the goods",
+      "description": "Number of packages per goods item packaged in such a way that they cannot be divided without first undoing the package",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -516,7 +381,7 @@
     {
       "id": "58",
       "name": "HS Code",
-      "description": "Harmonized System code for goods classification",
+      "description": "Code specifying a type of goods for Customs, transport or statistical purposes (generic term)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -561,7 +426,7 @@
     {
       "id": "63",
       "name": "Hazard Class",
-      "description": "Classification of hazardous materials",
+      "description": "Identification of a hazard class applicable to dangerous goods as defined by the relevant regulation authority such as the IMDG Class Number of the SOLAS Convention of IMO and the ADR/RID Class Number for the road/rail environment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -633,7 +498,7 @@
     {
       "id": "71",
       "name": "Container Type",
-      "description": "Type and size of container",
+      "description": "Code specifying the characteristics, i.e. size and type of a piece of transport equipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -687,7 +552,7 @@
     {
       "id": "77",
       "name": "EORI Number",
-      "description": "Economic Operators Registration and Identification",
+      "description": "Economic Operators Registration and Identification number is a European Union registration and identification number for businesses which undertake the import or export of goods into or out of the EU",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -714,25 +579,16 @@
     {
       "id": "80",
       "name": "Permit Number",
-      "description": "Special permit or authorization number",
+      "description": "Unique number allocated to each document by the relevant  Issuing Authority",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References"
     },
     {
-      "id": "81",
-      "name": "Beneficiary Name",
-      "description": "Name of the LC beneficiary",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
       "id": "82",
       "name": "Applicant Name",
-      "description": "Name of the LC applicant",
+      "description": "Name of the LC applicant - Extract ONLY the applicant's company/person name. Do NOT include address, street, city, country, postal code, phone, email, or any other contact details. Only the name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -741,7 +597,7 @@
     {
       "id": "83",
       "name": "Account Number",
-      "description": "Bank account number",
+      "description": "Identifier of an account with the bank designated to receive payment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -939,7 +795,7 @@
     {
       "id": "105",
       "name": "Freight Forwarder Reference",
-      "description": "Forwarder's internal reference",
+      "description": "Reference number assigned by the freight forwarder to identify a particular consignment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -1065,7 +921,7 @@
     {
       "id": "119",
       "name": "Contract Number",
-      "description": "Sales or purchase contract reference",
+      "description": "Identifier of a contract concluded between parties such as between buyer and seller",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -1100,8 +956,8 @@
     },
     {
       "id": "124",
-      "name": "Issue Date",
-      "description": "Date when the document was issued",
+      "name": "Issue Date/Documentary credit document issue date",
+      "description": "Date that a document was issued and when appropriate, signed or otherwise authenticated",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -1110,34 +966,16 @@
     {
       "id": "125",
       "name": "Order Date",
-      "description": "Date when the order was placed",
+      "description": "Date of order",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
     {
-      "id": "126",
-      "name": "Buyer Name",
-      "description": "Name of the party purchasing goods or services",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties"
-    },
-    {
-      "id": "127",
-      "name": "Seller Name",
-      "description": "Name of the party selling goods or services",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties"
-    },
-    {
       "id": "128",
       "name": "Product Identifier",
-      "description": "Unique identifier for a product or item",
+      "description": "Reference number identifying a product",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -1146,7 +984,7 @@
     {
       "id": "129",
       "name": "Description of Goods",
-      "description": "Detailed description of the goods being traded",
+      "description": "Extract the complete description of goods exactly as written in the document. Include Incoterms or shipping terms (CIF, EXW, FOB, CFR, DDP, or similar) only if they are explicitly present in the same section or in immediate continuation of the goods description — for example, on the next line or right after the goods text. Do not assume, generate, or append any Incoterms unless they are actually shown in the document. For Letters of Credit, include all visible Incoterm and shipping term details that appear directly with or following the goods description (even if they continue onto the next line or next page). For other document types (such as Commercial Invoice, Packing List, or Certificate of Origin), extract Incoterms only if they physically appear in the text immediately after or beside the goods description. If no Incoterm text appears near the goods, do not add or infer any. Capture the entire goods description, including text that spans multiple lines or pages, but only append Incoterms that are part of the same visible block or direct continuation. Example: if the text reads 'AL SAMAH ALUMINIUM PROFILES, DIFFUSER FRAME, GRILL BLADE, SUPPLY FRAME SLOT FRAME SLOT CORE, ROUND PIPE 9MM, DEFLECTOR BLADE LINEAR BLADE. INCOTERMS: CFR, JEBEL ALI PORT, UAE', extract the full sentence including the Incoterms. However, if the document stops at 'DEFLECTOR BLADE LINEAR BLADE.' and no visible Incoterms follow, extract only up to that point without adding anything else.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -1155,7 +993,7 @@
     {
       "id": "130",
       "name": "Unit Price",
-      "description": "Price per unit of the product",
+      "description": "Price per unit of quantity on which an article item amount is calculated",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -1164,7 +1002,7 @@
     {
       "id": "131",
       "name": "Payment Method",
-      "description": "Method of payment (e.g., wire transfer, letter of credit)",
+      "description": "Code specifying a method of payment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -1173,7 +1011,7 @@
     {
       "id": "132",
       "name": "Trade Terms Conditions Description",
-      "description": "Detailed description of trade terms and conditions (Incoterms description)",
+      "description": "Free form description of delivery or transport terms (Incoterms)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -1182,7 +1020,7 @@
     {
       "id": "133",
       "name": "Trade Terms Conditions Code",
-      "description": "Code for trade terms and conditions (Incoterms code)",
+      "description": "Code specifying the delivery or transport terms (Incoterms)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -1191,7 +1029,7 @@
     {
       "id": "134",
       "name": "Ship To Party",
-      "description": "Party to whom goods are to be shipped or delivered",
+      "description": "Party to which goods should be delivered, if not identical with consignee such as the place where a container is to be, or has been, positioned.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1199,8 +1037,8 @@
     },
     {
       "id": "135",
-      "name": "Consignor",
-      "description": "Consignor for commercial invoice",
+      "name": "Consignor/Exporter/Seller/Documentary Credit Beneficiary",
+      "description": "**CRITICAL: EXTRACT ONLY THE CLEAN NAME VALUE** - Extract ONLY the consignor/exporter/seller/beneficiary's company/person name. MANDATORY CLEANING RULES: Remove ALL special characters and symbols including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and ANY other non-alphanumeric symbols. Return ONLY clean text containing letters, numbers, and spaces. STRICTLY FORBIDDEN: address, street, city, country, postal code, phone numbers, email addresses, fax numbers, contact information, or any special symbols whatsoever. Extract the pure company/person name only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1209,7 +1047,7 @@
     {
       "id": "136",
       "name": "Consignee",
-      "description": "Consignee for commercial invoice",
+      "description": "Consignee - Extract ONLY the consignee's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1218,7 +1056,7 @@
     {
       "id": "137",
       "name": "Importer",
-      "description": "Importer for commercial invoice",
+      "description": "Importer for commercial invoice - Extract ONLY the importer's company/person name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1227,7 +1065,7 @@
     {
       "id": "138",
       "name": "Exporter",
-      "description": "Exporter for commercial invoice",
+      "description": "Exporter - Extract ONLY the exporter's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, or any contact details. Extract the pure company/person name only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1236,7 +1074,7 @@
     {
       "id": "139",
       "name": "Destination Country",
-      "description": "Destination Country for commercial invoice",
+      "description": "Country to which a consignment of goods is to be or has been delivered",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -1245,7 +1083,7 @@
     {
       "id": "140",
       "name": "Total Invoice Amount",
-      "description": "Total Invoice Amount for commercial invoice",
+      "description": "Total Invoice Amount for commercial invoice - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).\"",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -1254,7 +1092,7 @@
     {
       "id": "141",
       "name": "Place of Issue",
-      "description": "Place of Issue for commercial invoice",
+      "description": "Location where a document was issued and when appropriate, signed or otherwise authenticated",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -1263,7 +1101,7 @@
     {
       "id": "142",
       "name": "Documentary Credit Identifier",
-      "description": "Documentary Credit Identifier for commercial invoice",
+      "description": "Extract the MUR (Message User Reference) number from the Letter of Credit application. The MUR number uniquely identifies the transaction reference used in SWIFT messages or LC documentation. Do not extract the LC number or any other reference numbers.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -1271,8 +1109,8 @@
     },
     {
       "id": "143",
-      "name": "Buyer",
-      "description": "Buyer",
+      "name": "Buyer/Importer/Consignee/Ship To Party/Notify Party/Invoicee",
+      "description": "EXTRACT only Name of the Buyer/Importer/Consignee/Ship To Party/Notify Party/Invoicee, DO NOT include any kind of address, contact and email details",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1281,7 +1119,7 @@
     {
       "id": "144",
       "name": "Warehouse depositor",
-      "description": "Warehouse depositor",
+      "description": "Party depositing goods in a warehouse",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1290,7 +1128,7 @@
     {
       "id": "145",
       "name": "Seller",
-      "description": "Seller",
+      "description": "Seller - Extract ONLY the seller's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1299,7 +1137,7 @@
     {
       "id": "146",
       "name": "Warehouse keeper",
-      "description": "Warehouse keeper",
+      "description": "Party taking responsibility for goods entered into a warehouse",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1334,8 +1172,8 @@
     },
     {
       "id": "150",
-      "name": "Payee",
-      "description": "Payee",
+      "name": "Payee/Beneficiary Name/Beneficiary",
+      "description": "**CRITICAL: EXTRACT ONLY THE CLEAN NAME VALUE** - Extract ONLY the payee/beneficiary's company/person name. MANDATORY CLEANING RULES: Remove ALL special characters and symbols including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and ANY other non-alphanumeric symbols. Return ONLY clean text containing letters, numbers, and spaces. STRICTLY FORBIDDEN: address, street, city, country, postal code, phone numbers, email addresses, fax numbers, contact information, or any special symbols whatsoever. Extract the pure company/person name only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1363,15 +1201,6 @@
       "id": "153",
       "name": "Consignee's freight forwarder",
       "description": "Consignee's freight forwarder",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
-      "id": "154",
-      "name": "Payee/Beneficiary Name/Beneficiary",
-      "description": "Payee/Beneficiary Name/Beneficiary",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1416,7 +1245,7 @@
     {
       "id": "159",
       "name": "Carrier (Transport Services Provider)",
-      "description": "Carrier (Transport Services Provider)",
+      "description": "Party providing the transport of goods between named points",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1470,7 +1299,7 @@
     {
       "id": "165",
       "name": "Delivery party",
-      "description": "Delivery party",
+      "description": "Party to which goods should be delivered, if not identical with consignee such as the place where a container is to be, or has been, positioned.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1484,15 +1313,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "12",
       "dataCategoryValue": "Others"
-    },
-    {
-      "id": "167",
-      "name": "Place of loading",
-      "description": "Place of loading",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
     },
     {
       "id": "168",
@@ -1513,15 +1333,6 @@
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
-      "id": "170",
-      "name": "Place of discharge",
-      "description": "Place of discharge",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
-    {
       "id": "171",
       "name": "Buyer's agent",
       "description": "Buyer's agent",
@@ -1533,7 +1344,7 @@
     {
       "id": "172",
       "name": "Invoicee",
-      "description": "Invoicee",
+      "description": "Invoicee - Extract ONLY the invoicee's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, tax IDs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1560,7 +1371,7 @@
     {
       "id": "175",
       "name": "Place of destination",
-      "description": "Place of destination",
+      "description": "Port, airport or other type of location from which a means of transport is scheduled to depart or has departed",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -1596,7 +1407,7 @@
     {
       "id": "179",
       "name": "Country of despatch",
-      "description": "Country of despatch",
+      "description": "Country from which a consignment of goods was initially exported to the importing country without any commercial transaction taking place in intermediate countries. Syn.: country whence consigned. Country of despatch: country from which goods are despatched between countries of a Customs union",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -1612,15 +1423,6 @@
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
-      "id": "181",
-      "name": "Despatch country",
-      "description": "Despatch country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
-    {
       "id": "182",
       "name": "Manufacturer's agent",
       "description": "Manufacturer's agent",
@@ -1630,15 +1432,6 @@
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
-      "id": "183",
-      "name": "Final destination country",
-      "description": "Final destination country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
-    {
       "id": "184",
       "name": "Packer",
       "description": "Packer",
@@ -1646,15 +1439,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "12",
       "dataCategoryValue": "Others"
-    },
-    {
-      "id": "185",
-      "name": "Export country",
-      "description": "Export country",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
     },
     {
       "id": "186",
@@ -1684,15 +1468,6 @@
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
-      "id": "189",
-      "name": "Country of exportation",
-      "description": "Country of exportation",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
-    {
       "id": "190",
       "name": "Importer's agent",
       "description": "Importer's agent",
@@ -1704,7 +1479,7 @@
     {
       "id": "191",
       "name": "Transit country",
-      "description": "Transit country",
+      "description": "A transit event for this logistics transport movement",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -1718,15 +1493,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
-      "id": "193",
-      "name": "Country of transit",
-      "description": "Country of transit",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
     },
     {
       "id": "194",
@@ -1799,15 +1565,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
-    },
-    {
-      "id": "202",
-      "name": "Reimbursing bank",
-      "description": "Reimbursing bank",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
       "id": "203",
@@ -1884,7 +1641,7 @@
     {
       "id": "211",
       "name": "Negotiating bank",
-      "description": "Negotiating bank",
+      "description": "Customs office at which a security or guarantee for the movement of goods under a transit procedure is lodged",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1911,7 +1668,7 @@
     {
       "id": "214",
       "name": "Dispatch date",
-      "description": "Dispatch date",
+      "description": "Date and optionally time on which goods are, or are expected to be despatched or consigned",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -1927,18 +1684,9 @@
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
-      "id": "216",
-      "name": "Drawee",
-      "description": "Drawee",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
-    {
       "id": "217",
-      "name": "Available with bank",
-      "description": "Available with bank",
+      "name": "Available With / By",
+      "description": "Name and address of a bank at which the Documentary credit is available",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -1955,8 +1703,8 @@
     },
     {
       "id": "219",
-      "name": "Expiry date",
-      "description": "Expiry date",
+      "name": "Expiry Date",
+      "description": "Date on which the validity of a documentary credit expires",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -1974,7 +1722,7 @@
     {
       "id": "221",
       "name": "Delivery date/time, requested",
-      "description": "Delivery date/time, requested",
+      "description": "Date and optionally time by which the merchandise should be delivered to the buyer, as agreed between the seller and the buyer",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -2010,7 +1758,7 @@
     {
       "id": "225",
       "name": "Departure date",
-      "description": "Departure date",
+      "description": "Date and or time of the departure of means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -2019,7 +1767,7 @@
     {
       "id": "226",
       "name": "Arrival date",
-      "description": "Arrival date",
+      "description": "Date and or time of the estimated arrival of means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -2046,20 +1794,11 @@
     {
       "id": "229",
       "name": "Documentary credit issue date",
-      "description": "Documentary credit issue date",
+      "description": "Issue date of a documentary credit",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
-    },
-    {
-      "id": "230",
-      "name": "Trade terms (Incoterms)",
-      "description": "Trade terms (Incoterms)",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "6",
-      "dataCategoryValue": "Terms"
     },
     {
       "id": "231",
@@ -2073,7 +1812,7 @@
     {
       "id": "232",
       "name": "Mode of transport, coded",
-      "description": "Mode of transport, coded",
+      "description": "Code specifying a mode of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -2100,7 +1839,7 @@
     {
       "id": "235",
       "name": "Documentary credit number",
-      "description": "Documentary credit number",
+      "description": "Unique identifier for a letter of credit",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -2224,27 +1963,9 @@
       "dataCategoryValue": "References"
     },
     {
-      "id": "331",
-      "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
-      "description": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "9",
-      "dataCategoryValue": "Goods"
-    },
-    {
       "id": "250",
       "name": "Number of originals",
       "description": "Number of originals",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References"
-    },
-    {
-      "id": "251",
-      "name": "House bill of lading number",
-      "description": "House bill of lading number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -2369,7 +2090,7 @@
     },
     {
       "id": "265",
-      "name": "Partial shipment",
+      "name": "Partial Shipment / Transshipment",
       "description": "Partial shipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2387,8 +2108,8 @@
     },
     {
       "id": "267",
-      "name": "Transhipment",
-      "description": "Transhipment",
+      "name": "Transshipment",
+      "description": "Transshipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "12",
@@ -2640,7 +2361,7 @@
     {
       "id": "295",
       "name": "Container size",
-      "description": "Container size",
+      "description": "Code specifying the characteristics, i.e. size and type of a piece of transport equipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -2784,7 +2505,7 @@
     {
       "id": "311",
       "name": "Place of the delivery of the goods (by the carrier)",
-      "description": "Place of the delivery of the goods (by the carrier)",
+      "description": "The final inland delivery location (Place of Delivery) is the actual address/place where the carrier delivers goods to the consignee after sea/air discharge. This is distinct from the Port of Discharge (the seaport where cargo is unloaded) and Airport of Destination (the airport where cargo is unloaded). Common extraction errors: (1) using the Port of Discharge value as Place of Delivery, (2) reading Incoterms or shipment routing lines inside the goods description (commodity lines) as the Place of Delivery, or (3) taking a distant address (notify party/consignee address) incorrectly. Preferred extraction sources (in order): explicit labelled fields on the Bill of Lading such as 'Place of Delivery', 'Place of Delivery (by carrier)', 'Final Destination', or a specific 'Consignee address / Delivery to' block. Secondary cues: presence of words like 'final', 'delivery', 'place of delivery', or explicit street/city/warehouse phrases. Avoid taking values from: 'Port of Discharge', 'Airport of Destination', 'Goods Description' lines with Incoterms like 'CIF Jebel Ali' or 'Ex-works', and free-text routing notes. If multiple candidate locations exist, prefer the field that is explicitly labelled with 'delivery' or that is structured as an address (street + city + country) rather than a single port name. If ambiguity remains, set a low-confidence flag and surface both values for human review.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -2793,7 +2514,7 @@
     {
       "id": "312",
       "name": "Quantity ordered",
-      "description": "Quantity ordered",
+      "description": "The quantity which has been ordered",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -2801,8 +2522,8 @@
     },
     {
       "id": "313",
-      "name": "Destination Country/Exportation country/Origin country",
-      "description": "Destination Country/Exportation country/Origin country",
+      "name": "Origin country",
+      "description": "Name of the country in which the goods have been produced or manufactured, according to criteria laid down for the application of the Customs tariff or quantitative restrictions, or any measure related to trade",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -2811,7 +2532,7 @@
     {
       "id": "314",
       "name": "Payment term",
-      "description": "Payment term",
+      "description": "Extract the standard payment term keyword from the document — one of: BY PAYMENT, BY ACCEPTANCE, BY DEF PAYMENT, BY MIXED PYMT, BY NEGOTIATION. These indicate how and when payment is made under a Letter of Credit or trade transaction. Extract only the exact term (e.g., 'BY PAYMENT'), not the surrounding conditions or dates.\n\nReference meanings for clarity:\n\n• BY PAYMENT = 'At Sight' = Immediate payment when compliant documents are presented.\n  Equivalent to: Payment at sight\n  When paid: Upon presentation of documents\n\n• BY ACCEPTANCE = 'Acceptance' = Payment upon acceptance of a time draft.\n  Equivalent to: Usance credit with acceptance\n  When paid: At maturity date after draft acceptance\n\n• BY DEF PAYMENT = 'Deferred Payment' = Payment at a future date without draft.\n  Equivalent to: Deferred payment undertaking\n  When paid: On predetermined future date\n\n• BY NEGOTIATION = 'Negotiation' = Any bank can purchase the beneficiary's documents.\n  Equivalent to: Freely negotiable credit\n  When paid: When the negotiating bank purchases documents\n\n• BY MIXED PYMT = 'Mixed Payment' = Combination of multiple payment methods.\n  Equivalent to: Split payment terms\n  When paid: According to mixed schedule (requires Field 42M)\n\nKey Extraction Rules:\n- 'At Sight' always maps to 'BY PAYMENT'.\n- 'Deferred Payment' maps to 'BY DEF PAYMENT' (requires Field 42P).\n- 'Acceptance' maps to 'BY ACCEPTANCE' (requires draft acceptance).\n- 'Negotiation' maps to 'BY NEGOTIATION' (available with any bank).\n- Mixed terms map to 'BY MIXED PYMT' (requires Field 42M).",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -2820,7 +2541,7 @@
     {
       "id": "315",
       "name": "Allowance / Charge",
-      "description": "Allowance / Charge",
+      "description": "Code specifying a type of an adjustment to a monetary amount such as an allowance or charge",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -2829,7 +2550,7 @@
     {
       "id": "316",
       "name": "Order amount",
-      "description": "Order amount",
+      "description": "Total amount of an order",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -2838,7 +2559,7 @@
     {
       "id": "317",
       "name": "Tax amount",
-      "description": "Tax amount",
+      "description": "Amount in national currency resulting from the application, at the appropriate rate, of value added tax (or similar tax) to the invoice amount subject to such tax",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -2847,7 +2568,7 @@
     {
       "id": "318",
       "name": "Invoice date",
-      "description": "Invoice date",
+      "description": "Date of issue of an invoice",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -2855,8 +2576,8 @@
     },
     {
       "id": "319",
-      "name": "Payment due date",
-      "description": "Payment due date",
+      "name": "Payment due date/Documentary credit document effective end date",
+      "description": "Date when an amount due should be made available to the creditor under the terms of payment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -2865,7 +2586,7 @@
     {
       "id": "320",
       "name": "Seller's bank",
-      "description": "Seller's bank",
+      "description": "Bank designated by the seller to receive payment.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -2874,7 +2595,7 @@
     {
       "id": "321",
       "name": "Seller's bank account number",
-      "description": "Seller's bank account number",
+      "description": "Identifier of an account with the bank designated to receive payment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -2882,8 +2603,8 @@
     },
     {
       "id": "322",
-      "name": "Original Loading Location",
-      "description": "Original Loading Location",
+      "name": "Original Loading Location/Port of Loading",
+      "description": "Seaport, airport, freight terminal, rail station or other location where the goods were first loaded onto the means of transport being utilised for their carriage",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -2891,8 +2612,8 @@
     },
     {
       "id": "323",
-      "name": "Baseport Unloading Location",
-      "description": "Baseport Unloading Location",
+      "name": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
+      "description": "The place or port at which the cargo is discharged or unloaded from a means of transport according to the transport contract. The goods may or may not be discharged from the main means of transport at this place or port",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -2901,7 +2622,7 @@
     {
       "id": "324",
       "name": "Documentary credit amount",
-      "description": "Documentary credit amount",
+      "description": "Documentary credit amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -2910,7 +2631,7 @@
     {
       "id": "325",
       "name": "Humidity percentage",
-      "description": "Humidity percentage",
+      "description": "The measurement of the moisture in the air, measured as a percentage",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -2919,8 +2640,7 @@
     {
       "id": "326",
       "name": "Goods value",
-      "description": "Goods value",
-      "mappingFormField": "",
+      "description": "Value of the goods for the calculation of the freight or similar transport charges",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
       "dataCategoryValue": "Amounts/charges/percentages"
@@ -2928,7 +2648,7 @@
     {
       "id": "327",
       "name": "Volume (Cube)",
-      "description": "Volume (Cube)",
+      "description": "Measurement normally arrived at by multiplying the maximum length, width and height of pieces or package or transport equipment. Also known as cube.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -2937,7 +2657,7 @@
     {
       "id": "328",
       "name": "HS Code (Commodity Code)",
-      "description": "HS Code (Commodity Code)",
+      "description": "Code specifying a type of goods for Customs, transport or statistical purposes (generic term)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -2946,7 +2666,7 @@
     {
       "id": "329",
       "name": "Despatch date",
-      "description": "Despatch date",
+      "description": "Date and optionally time on which goods are, or are expected to be despatched or consigned",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -2955,17 +2675,25 @@
     {
       "id": "330",
       "name": "Despatch",
-      "description": "Despatch",
+      "description": "lace, from or at which despatch is to take place",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-
+    {
+      "id": "331",
+      "name": "Type of Packaging (UNCEFACT coded) and shipping marks/Shipping marks",
+      "description": "Code specifying the type of packaging of an item",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods"
+    },
     {
       "id": "332",
       "name": "Package length",
-      "description": "Package length",
+      "description": "Measure of the length of a package",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -2974,7 +2702,7 @@
     {
       "id": "333",
       "name": "Package width",
-      "description": "Package width",
+      "description": "Measure of the width of a package",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -2983,7 +2711,7 @@
     {
       "id": "334",
       "name": "Insured party",
-      "description": "Insured party",
+      "description": "Party which benefits from insurance coverage. For example, in transport this is usually the shipper.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -2992,7 +2720,7 @@
     {
       "id": "335",
       "name": "Handling Instructions",
-      "description": "Handling Instructions",
+      "description": "Free form description of a set of handling instructions. For example how specified goods, packages or transport equipment (container) should be handled",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3001,7 +2729,7 @@
     {
       "id": "336",
       "name": "Insurance condition",
-      "description": "Insurance condition",
+      "description": "Insurance condition - Extract Complete insurance coverage terms and clauses. Extract ALL specified conditions including: Institute Cargo Clauses (A/B/C), War Clauses, Strike Clauses, Warehouse to Warehouse, and any special terms, exclusions, or deductibles. Include clause dates if stated (e.g., \"ICC (A) 01/01/2009\"). DO NOT summarize - extract complete text from fields labeled \"Coverage\", \"Conditions\", \"Clauses\", \"Terms\", \"Risks Covered\". Format: \"ICC (A), Institute War Clauses (Cargo), Institute Strike Clauses (Cargo), Warehouse to Warehouse, subject to USD 500 deductible\". Include ALL clauses mentioned, not just the primary one.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3010,7 +2738,7 @@
     {
       "id": "337",
       "name": "Authentication",
-      "description": "Authentication",
+      "description": "Proof that a document has been authenticated indicating where appropriate the authentication party",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3019,7 +2747,7 @@
     {
       "id": "338",
       "name": "Transport means identifier",
-      "description": "Transport means identifier",
+      "description": "Unique identification of the vessel/aircraft/vehicle transporting goods. For ocean freight, extract the complete vessel name (e.g., \"MAERSK ESSEX\"). Include IMO number if stated (format: \"VESSEL NAME (IMO: 1234567)\"). For air freight, extract flight/aircraft registration. For multimodal transport, extract the ocean vessel name (primary transport). DO NOT extract carrier company names (e.g., \"Maersk Line\") - only extract the actual vessel/vehicle identifier. Commonly found in fields labeled \"Vessel Name\", \"Ocean Vessel\", \"Carrying Vessel\", or \"Vessel/Voy\". Extract complete name as stated, including any prefix like \"M.V.\" or \"S.S.\" if present",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3028,7 +2756,7 @@
     {
       "id": "339",
       "name": "Vehicle registration number",
-      "description": "Vehicle registration number",
+      "description": "Identifier of a specific means of transport such as the International Maritime Organisation number of a vessel",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3037,7 +2765,7 @@
     {
       "id": "340",
       "name": "Transport Contract Document / Bill of Lading number",
-      "description": "Transport Contract Document / Bill of Lading number",
+      "description": "Transport Contract Document / Bill of Lading number - Unique B/L reference number (e.g., \"MAEU123456789\", \"BL-2024-001234\"). Extract complete number with all prefixes, hyphens, and characters exactly as stated. Found in fields labeled \"B/L No.\", \"Bill of Lading No.\", \"BL Number\", typically in document header. Preserve exact format.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3046,7 +2774,7 @@
     {
       "id": "341",
       "name": "Transport Temperature",
-      "description": "Transport Temperature",
+      "description": "Instructions regarding the temperature under which the cargo has to be transported",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -3055,7 +2783,7 @@
     {
       "id": "342",
       "name": "Freight Forwarder reference number",
-      "description": "Freight Forwarder reference number",
+      "description": "Reference number assigned by the freight forwarder to identify a particular consignment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3064,7 +2792,7 @@
     {
       "id": "343",
       "name": "Consignment loading date",
-      "description": "Consignment loading date",
+      "description": "Date and optionally time when a consignment is to be or has been loaded onto a means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3073,7 +2801,7 @@
     {
       "id": "344",
       "name": "Freight payer",
-      "description": "Freight payer",
+      "description": "Name and address of a party responsible for the payment of freight charges",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3082,7 +2810,7 @@
     {
       "id": "345",
       "name": "Payment Location",
-      "description": "Payment Location",
+      "description": "Name of the place where the payment has been, or should be made",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3091,7 +2819,7 @@
     {
       "id": "346",
       "name": "Place or departure",
-      "description": "Place or departure",
+      "description": "Port, airport or other type of location from which a means of transport is scheduled to depart or has departed",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3100,7 +2828,7 @@
     {
       "id": "347",
       "name": "Consignment summary description",
-      "description": "Consignment summary description",
+      "description": "Plain language description of a consignment in summary terms",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -3109,7 +2837,7 @@
     {
       "id": "348",
       "name": "Conveyance reference number/Journey identifier",
-      "description": "Conveyance reference number/Journey identifier",
+      "description": "Identifier of a journey of a means of transport, for example voyage number, flight number, trip number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3118,7 +2846,7 @@
     {
       "id": "349",
       "name": "Mode of Transport",
-      "description": "Mode of Transport",
+      "description": "Mode of Transport - Extract ONLY the transport mode value as clean, meaningful text. CRITICAL CLEANING RULES: Remove ALL special characters and symbols including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY the transport mode name (e.g., 'Sea', 'Air', 'Road', 'Rail', 'Multimodal') as clean text with letters, numbers, and spaces only. Do NOT include codes, descriptions, addresses, locations, vehicle details, or any additional information. Extract the pure transport mode value only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3127,7 +2855,7 @@
     {
       "id": "350",
       "name": "Container size and type",
-      "description": "Container size and type",
+      "description": "Code specifying the characteristics, i.e. size and type of a piece of transport equipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3136,7 +2864,7 @@
     {
       "id": "351",
       "name": "Full or empty container",
-      "description": "Full or empty container",
+      "description": "Code specifying how full a piece of transport equipment is",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3145,7 +2873,7 @@
     {
       "id": "352",
       "name": "Seal Identifier",
-      "description": "Seal Identifier",
+      "description": "Seal Identifier - Extract the identification number of a seal affixed to a piece of transport equipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "12",
@@ -3154,7 +2882,7 @@
     {
       "id": "353",
       "name": "Actual arrival date",
-      "description": "Actual arrival date",
+      "description": "Date and or time of the arrival of means of transport.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3163,7 +2891,7 @@
     {
       "id": "354",
       "name": "Estimated time of departure",
-      "description": "Estimated time of departure",
+      "description": "Date and or time when a transport means is scheduled to depart",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3172,7 +2900,7 @@
     {
       "id": "355",
       "name": "Actual departure date",
-      "description": "Actual departure date",
+      "description": "Date and or time of the departure of means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3181,7 +2909,7 @@
     {
       "id": "356",
       "name": "Estimated time of arrival",
-      "description": "Estimated time of arrival",
+      "description": "Date and or time of the estimated arrival of means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3190,7 +2918,7 @@
     {
       "id": "357",
       "name": "Despatch/Pick-up Party",
-      "description": "Despatch/Pick-up Party",
+      "description": "Party where goods are to be, or have been, taken over by a carrier such as the place where a container is picked-up",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3199,7 +2927,7 @@
     {
       "id": "358",
       "name": "Exportation country",
-      "description": "Exportation country",
+      "description": "Country from which a consignment of goods was initially exported to the importing country without any commercial transaction taking place in intermediate countries. Syn.: country whence consigned. Country of despatch: country from which goods are despatched between countries of a Customs union",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3207,8 +2935,8 @@
     },
     {
       "id": "359",
-      "name": "Transport Means, gross weight",
-      "description": "Transport Means, gross weight",
+      "name": "Gross Weight/Net Weight/Transport Means, gross weight",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -3217,7 +2945,7 @@
     {
       "id": "360",
       "name": "Customs value",
-      "description": "Customs value",
+      "description": "Amount declared for customs purposes of those goods in a consignment which are subject to the same customs procedure, and have the same tariff/statistical heading, country information and duty regime",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3226,7 +2954,7 @@
     {
       "id": "361",
       "name": "Freight and charges amount",
-      "description": "Freight and charges amount",
+      "description": "Costs incurred by the shipper in moving goods, by whatever means, from one place to another under the terms of the contract of carriage. In addition to transport costs, this may include such elements as packing, documentation, loading, unloading, and insurance (to the extent that they relate to the freight cost)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3235,7 +2963,7 @@
     {
       "id": "362",
       "name": "Prepaid amount",
-      "description": "Prepaid amount",
+      "description": "Monetary amount of all of the consignment charges which have been paid in advance-EXTRACT numerical values only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3244,7 +2972,7 @@
     {
       "id": "363",
       "name": "Total collect charges",
-      "description": "Total collect charges",
+      "description": "Monetary amount of all of the consignment charges which are to be collected from the consignee at or after delivery.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3253,7 +2981,7 @@
     {
       "id": "364",
       "name": "Dangerous Goods Technical Name",
-      "description": "Dangerous Goods Technical Name",
+      "description": "Proper shipping name, supplemented as necessary with the correct technical name, by which a dangerous substance or article may be correctly identified, or which is sufficiently informative to permit identification by reference to generally available literature",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3262,7 +2990,7 @@
     {
       "id": "365",
       "name": "Dangerous Goods Regulation Code",
-      "description": "Dangerous Goods Regulation Code",
+      "description": "Code specifying a dangerous goods regulation",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3271,7 +2999,7 @@
     {
       "id": "366",
       "name": "Packaging. Danger Level.Code",
-      "description": "Packaging. Danger Level.Code",
+      "description": "Code specifying the level of danger for which the packaging must cater",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3280,7 +3008,7 @@
     {
       "id": "367",
       "name": "UNDG Number",
-      "description": "UNDG Number",
+      "description": "United Nations Dangerous Goods Identifier (UNDG) is the unique serial number assigned within the United Nations to substances and articles contained in a list of the dangerous goods most commonly carried",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3289,7 +3017,7 @@
     {
       "id": "368",
       "name": "Flashpoint temperature",
-      "description": "Flashpoint temperature",
+      "description": "The value of the flashpoint of dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3298,7 +3026,7 @@
     {
       "id": "369",
       "name": "Transport Equipment Identifier",
-      "description": "Transport Equipment Identifier",
+      "description": "Identifier of a piece of transport equipment e.g. container or unit load device",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3307,7 +3035,7 @@
     {
       "id": "370",
       "name": "Arrival location",
-      "description": "Arrival location",
+      "description": "Port, airport or other type of location at which a means of transport is scheduled to arrive or has arrived",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3316,7 +3044,7 @@
     {
       "id": "371",
       "name": "Transport Contract Document Conditions",
-      "description": "Transport Contract Document Conditions",
+      "description": "Reference to carrier's conditions of carriage printed on document or provided separately",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3325,7 +3053,7 @@
     {
       "id": "372",
       "name": "Transport equipment operator",
-      "description": "Transport equipment operator",
+      "description": "Party owning, operating or controlling the transport equipment, for example container",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3334,7 +3062,7 @@
     {
       "id": "373",
       "name": "Latest pick-up date",
-      "description": "Latest pick-up date",
+      "description": "Latest date and optionally time when a consignment of goods can been picked-up by a carrier.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3343,7 +3071,7 @@
     {
       "id": "374",
       "name": "Place of taking over of the goods",
-      "description": "Place of taking over of the goods",
+      "description": "Place where the goods are taken over by the carrier",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3352,7 +3080,7 @@
     {
       "id": "375",
       "name": "Delivery Instructions",
-      "description": "Delivery Instructions",
+      "description": "Delivery instructions relating to a consignment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3361,7 +3089,7 @@
     {
       "id": "376",
       "name": "Loading Instructions",
-      "description": "Loading Instructions",
+      "description": "Instructions on where or how specified packages or containers are to be loaded on a means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3370,7 +3098,7 @@
     {
       "id": "377",
       "name": "Name of the destination station",
-      "description": "Name of the destination station",
+      "description": "Seaport, airport, freight terminal, rail station or other place at which goods are unloaded from the means of transport having been used for their carriage",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3379,7 +3107,7 @@
     {
       "id": "378",
       "name": "Emergency Contact",
-      "description": "Emergency Contact",
+      "description": "The name of the person to be contacted in the event of a dangerous goods emergency",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3388,7 +3116,7 @@
     {
       "id": "379",
       "name": "Dangerous goods class number",
-      "description": "Dangerous goods class number",
+      "description": "Identification of a hazard class applicable to dangerous goods as defined by the relevant regulation authority such as the IMDG Class Number of the SOLAS Convention of IMO and the ADR/RID Class Number for the road/rail environment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3397,7 +3125,7 @@
     {
       "id": "380",
       "name": "Insurance company",
-      "description": "Insurance company",
+      "description": "Details related to the company engaged in the business of insurance",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3406,7 +3134,7 @@
     {
       "id": "381",
       "name": "Insurance claim adjuster",
-      "description": "Insurance claim adjuster",
+      "description": "Name and address of the insurance claims adjuster",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3415,7 +3143,7 @@
     {
       "id": "382",
       "name": "Insured value amount",
-      "description": "Insured value amount",
+      "description": "Insured value amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3424,7 +3152,7 @@
     {
       "id": "383",
       "name": "Issuer / Drawer",
-      "description": "Issuer / Drawer",
+      "description": "Issuer / Drawer - Extract ONLY name of the entity or person who issues the bill of exchange (the party making the payment), Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3433,7 +3161,7 @@
     {
       "id": "384",
       "name": "Warehouse",
-      "description": "Warehouse",
+      "description": "Party depositing goods in a warehouse",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3442,7 +3170,7 @@
     {
       "id": "385",
       "name": "Risk object text",
-      "description": "Risk object text",
+      "description": "Free form description of the object sub-type of a risk",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -3451,7 +3179,7 @@
     {
       "id": "386",
       "name": "Transport Means Type Code",
-      "description": "Transport Means Type Code",
+      "description": "The code specifying the type of logistics means of transport (Reference UNECE Recommendation 28)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3460,7 +3188,7 @@
     {
       "id": "387",
       "name": "Dangerous Goods Declaration identifier",
-      "description": "Dangerous Goods Declaration identifier",
+      "description": "Reference number to identify a Dangerous Goods Declaration",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3469,7 +3197,7 @@
     {
       "id": "388",
       "name": "Security information",
-      "description": "Security information",
+      "description": "A note of security information related to a consignment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3478,7 +3206,7 @@
     {
       "id": "389",
       "name": "Unique Consignment Reference (UCR)",
-      "description": "Unique Consignment Reference (UCR)",
+      "description": "Unique reference identifying a particular consignment of goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3487,7 +3215,7 @@
     {
       "id": "390",
       "name": "Document endorsement",
-      "description": "Document endorsement",
+      "description": "Proof that a document has been signed",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -3496,7 +3224,7 @@
     {
       "id": "391",
       "name": "Upper Orange Hazard Placard ID",
-      "description": "Upper Orange Hazard Placard ID",
+      "description": "The identity number for the upper part of the orange hazard placard required on the means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3505,7 +3233,7 @@
     {
       "id": "392",
       "name": "Lower Orange Hazard Placard ID",
-      "description": "Lower Orange Hazard Placard ID",
+      "description": "The identity number for the lower part of the orange hazard placard required on the means of transport",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3514,7 +3242,7 @@
     {
       "id": "393",
       "name": "Explosive Compatibility Group Code",
-      "description": "Explosive Compatibility Group Code",
+      "description": "The code specifying the explosive compatibility group for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3523,7 +3251,7 @@
     {
       "id": "394",
       "name": "Reportable Quantity",
-      "description": "Reportable Quantity",
+      "description": "The reportable quantity for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3532,7 +3260,7 @@
     {
       "id": "395",
       "name": "Tunnel Restriction Code",
-      "description": "Tunnel Restriction Code",
+      "description": "The code specifying the tunnel restriction for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3541,7 +3269,7 @@
     {
       "id": "396",
       "name": "Special Provision ID",
-      "description": "Special Provision ID",
+      "description": "The unique identifier of the special provision for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3550,7 +3278,7 @@
     {
       "id": "397",
       "name": "All Packed In One Information",
-      "description": "All Packed In One Information",
+      "description": "All packed in one information, expressed as text, for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3559,7 +3287,7 @@
     {
       "id": "398",
       "name": "Q-Value Number",
-      "description": "Q-Value Number",
+      "description": "The number of the Q-Value for these transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3568,7 +3296,7 @@
     {
       "id": "399",
       "name": "Overpack Information",
-      "description": "Overpack Information",
+      "description": "Overpack information, expressed as text, for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3577,7 +3305,7 @@
     {
       "id": "400",
       "name": "Aircraft Limitation Information",
-      "description": "Aircraft Limitation Information",
+      "description": "Aircraft limitation information, expressed as text, for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -3586,7 +3314,7 @@
     {
       "id": "401",
       "name": "Shipper DG Declaration Information",
-      "description": "Shipper DG Declaration Information",
+      "description": "Shipper declaration information, expressed as text, for transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3595,7 +3323,7 @@
     {
       "id": "402",
       "name": "Radioactive Indicator",
-      "description": "Radioactive Indicator",
+      "description": "The indicator of whether or not transported dangerous goods are radioactive",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3604,7 +3332,7 @@
     {
       "id": "403",
       "name": "Radioactive Material Details",
-      "description": "Radioactive Material Details",
+      "description": "The radioactive material (Class 7) transported as dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3613,7 +3341,7 @@
     {
       "id": "404",
       "name": "Dangerous Goods Logistics Package",
-      "description": "Dangerous Goods Logistics Package",
+      "description": "A logistics package specified for these transported dangerous goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "10",
@@ -3622,7 +3350,7 @@
     {
       "id": "405",
       "name": "Permit/Certificate/Carnet expiry date",
-      "description": "Permit/Certificate/Carnet expiry date",
+      "description": "Date on which the validity of a Permit/Certificate or Carnet expires",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3631,7 +3359,7 @@
     {
       "id": "406",
       "name": "Consignment route",
-      "description": "Consignment route",
+      "description": "Route to be used for the transport of goods",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3640,7 +3368,7 @@
     {
       "id": "407",
       "name": "Consignment destination country",
-      "description": "Consignment destination country",
+      "description": "Name of the country to which the goods are to be delivered to the final consignee or buyer",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3649,7 +3377,7 @@
     {
       "id": "408",
       "name": "Certification",
-      "description": "Certification",
+      "description": "Certification - Text of official certification, legalisation or stamp etc.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3658,7 +3386,7 @@
     {
       "id": "409",
       "name": "Permit/Certificate/Carnet issuer",
-      "description": "Permit/Certificate/Carnet issuer",
+      "description": "Permit/Certificate/Carnet issuer - Extract ONLY the issuing organization/authority name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include permit numbers, certificate numbers, addresses, locations, dates, codes, or any additional information. Extract the pure organization/authority name only with no special symbols whatsoever.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3667,7 +3395,7 @@
     {
       "id": "410",
       "name": "Management/Competent Authority",
-      "description": "Management/Competent Authority",
+      "description": "Name, address, national seal/stamp and country of Management/Competent Authority",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3676,7 +3404,7 @@
     {
       "id": "411",
       "name": "Statistical value",
-      "description": "Statistical value",
+      "description": "Value declared for statistical purposes of those goods in a consignment which have the same statistical heading",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3685,7 +3413,7 @@
     {
       "id": "412",
       "name": "Nature of transaction",
-      "description": "Nature of transaction",
+      "description": "Textual representation of a type of contract",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3694,7 +3422,7 @@
     {
       "id": "413",
       "name": "Goods declaration number",
-      "description": "Goods declaration number",
+      "description": "Reference number, assigned or accepted by Customs, to identify a goods declaration",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3703,7 +3431,7 @@
     {
       "id": "414",
       "name": "Customs office of destination",
-      "description": "Customs office of destination",
+      "description": "Customs office at which goods are released from a Customs transit regime",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3712,7 +3440,7 @@
     {
       "id": "415",
       "name": "Customs office of entry",
-      "description": "Customs office of entry",
+      "description": "Customs office at which the goods enter the customs territory of destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3721,7 +3449,7 @@
     {
       "id": "416",
       "name": "Customs office of transit",
-      "description": "Customs office of transit",
+      "description": "Customs office which is responsible for transit formalities en route",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3730,7 +3458,7 @@
     {
       "id": "417",
       "name": "Agent",
-      "description": "Agent",
+      "description": "Authorized representative",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3739,7 +3467,7 @@
     {
       "id": "418",
       "name": "Consignment. Exit Customs Office",
-      "description": "Consignment. Exit Customs Office",
+      "description": "Customs office at which the goods leave or intended to leave the customs territory of despatch",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3748,7 +3476,7 @@
     {
       "id": "419",
       "name": "Tax or fee assessment basis amount",
-      "description": "Tax or fee assessment basis amount",
+      "description": "The amount on which a duty or tax or fee will be assessed",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3757,7 +3485,7 @@
     {
       "id": "420",
       "name": "Tax or fee type",
-      "description": "Tax or fee type",
+      "description": "Type of duty or tax applicable to commodities or type of tax or fee applicable to services",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3766,7 +3494,7 @@
     {
       "id": "421",
       "name": "Customs Tariff Quantity Deduction",
-      "description": "Customs Tariff Quantity Deduction",
+      "description": "Quantity to be deducted from the tariff quantity to calculate the duty/tax/fee assessment basis for Customs",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -3775,7 +3503,7 @@
     {
       "id": "422",
       "name": "Tax Regime Type",
-      "description": "Tax Regime Type",
+      "description": "Code specifying a regime according to which tax is assessed such as preferential duty rate",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "12",
@@ -3784,7 +3512,7 @@
     {
       "id": "423",
       "name": "Transport means at border crossing",
-      "description": "Transport means at border crossing",
+      "description": "Identifier of the means of transport used in crossing the border out of the country of despatch for export or into the country of final destination for import",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -3793,7 +3521,7 @@
     {
       "id": "424",
       "name": "Permit/Certificate/Carnet number",
-      "description": "Permit/Certificate/Carnet number",
+      "description": "Unique number allocated to each document by the relevant  Issuing Authority",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3802,7 +3530,7 @@
     {
       "id": "425",
       "name": "Approval number",
-      "description": "Approval number",
+      "description": "Approval number of establishments (slaughterhouse, production plant, store)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -3811,7 +3539,7 @@
     {
       "id": "426",
       "name": "Specimen country of re-export",
-      "description": "Specimen country of re-export",
+      "description": "Country from which the specimens were re-exported before entering the country in which the present CITES document is issued",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3820,7 +3548,7 @@
     {
       "id": "427",
       "name": "Specimen country of origin",
-      "description": "Specimen country of origin",
+      "description": "Country in which the specimens were taken from the wild, bred in captivity or artificially propagated, except in the case of plant specimens that cease to qualify for an exemption from the provisions of CITES",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3829,7 +3557,7 @@
     {
       "id": "428",
       "name": "CITES Appendix reference",
-      "description": "CITES Appendix reference",
+      "description": "Number of the Appendix of the CITES Convention (I, II or III) in which the species is listed",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3838,7 +3566,7 @@
     {
       "id": "429",
       "name": "Purpose of CITES trade transaction",
-      "description": "Purpose of CITES trade transaction",
+      "description": "T: commercial, Z: zoo, G: botanical garden, Q: circus or travelling exhibition, S: scientific, H: hunting trophy, P: personal, M: medical, E: education, N: reintroduction or introduction into the wild, B: breeding in captivity or artificial propagation, L: law enforcement / judicial / forensic",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -3847,7 +3575,7 @@
     {
       "id": "430",
       "name": "Monetary amount",
-      "description": "Monetary amount",
+      "description": "Monetary amount - Extract ONLY the numeric amount value. Do NOT include currency code, currency symbol, or any text. Only numbers and decimal points (e.g., 60465.00, not USD 60,465.00 or USD60465).\"",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3856,7 +3584,7 @@
     {
       "id": "431",
       "name": "Annual quota",
-      "description": "Annual quota",
+      "description": "Current annual quota for the CITES species concerned",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -3865,7 +3593,7 @@
     {
       "id": "432",
       "name": "Exported quantity",
-      "description": "Exported quantity",
+      "description": "Total number of CITES specimens exported in the current calendar year (1 January to 31 December)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -3874,7 +3602,7 @@
     {
       "id": "433",
       "name": "Name of animal or plant",
-      "description": "Name of animal or plant",
+      "description": "Scientific name (genus and species, where appropriate subspecies) of the animal or plant, and the common name of the animal or plant as known in the country issuing the permit",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -3883,7 +3611,7 @@
     {
       "id": "434",
       "name": "Specimen description",
-      "description": "Specimen description",
+      "description": "Description of the specimens entering trade (live animals, skins, flanks, wallets, shoes, etc.)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
@@ -3892,7 +3620,7 @@
     {
       "id": "435",
       "name": "Guarantor",
-      "description": "Guarantor",
+      "description": "Financial institution, insurance company, or approved entity acting as the guarantor for an excise guarantee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3901,7 +3629,7 @@
     {
       "id": "436",
       "name": "Type of transit guarantee",
-      "description": "Type of transit guarantee",
+      "description": "Details regarding undertaking given in cash, bond or as a written guarantee to ensure that an obligation will be fulfilled, e.g. under a transit procedure",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -3910,7 +3638,7 @@
     {
       "id": "437",
       "name": "Customs office of guarantee",
-      "description": "Customs office of guarantee",
+      "description": "Customs office at which a security or guarantee for the movement of goods under a transit procedure is lodged",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -3919,7 +3647,7 @@
     {
       "id": "438",
       "name": "Advance ruling applicant",
-      "description": "Advance ruling applicant",
+      "description": "Name and address of an importer, exporter, producer or any person with a justifiable cause applying for an advance ruling",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3928,7 +3656,7 @@
     {
       "id": "439",
       "name": "Advance ruling application recipient",
-      "description": "Advance ruling application recipient",
+      "description": "Customs administration or designated body responsible for the issuance of advance rulings",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3937,7 +3665,7 @@
     {
       "id": "440",
       "name": "Excise guarantee beneficiary",
-      "description": "Excise guarantee beneficiary",
+      "description": "Revenue authority responsible for collecting the excise duties",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3946,7 +3674,7 @@
     {
       "id": "441",
       "name": "Conditions of guarantee",
-      "description": "Conditions of guarantee",
+      "description": "Circumstances under which the excise guarantee becomes payable",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "5",
@@ -3955,8 +3683,7 @@
     {
       "id": "442",
       "name": "Excise duty amount",
-      "description": "Excise duty amount",
-      "mappingFormField": "",
+      "description": "Excise duty amountMaximum financial liability undertaken by the guarantor in case the business fails to fulfill its excise duty obligationsd",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
       "dataCategoryValue": "Amounts/charges/percentages"
@@ -3964,7 +3691,7 @@
     {
       "id": "443",
       "name": "Type of excise duty",
-      "description": "Type of excise duty",
+      "description": "The specific excise duty applicable to the goods (e.g., alcohol duty, tobacco duty)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -3972,17 +3699,8 @@
     },
     {
       "id": "444",
-      "name": "Documentary credit document issue date",
+      "name": "Documentary credit document issue date/Issue Date",
       "description": "Documentary credit document issue date",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates"
-    },
-    {
-      "id": "445",
-      "name": "Documentary credit document effective end date",
-      "description": "Documentary credit document effective end date",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3991,7 +3709,7 @@
     {
       "id": "446",
       "name": "Documentary Credit Applicant",
-      "description": "Documentary Credit Applicant",
+      "description": "Documentary Credit Applicant - Extract ONLY the applicant's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -3999,17 +3717,17 @@
     },
     {
       "id": "447",
-      "name": "Documentary Credit Available Bank",
-      "description": "Documentary Credit Available Bank",
+      "name": "Documentary Credit Available Bank/Applicant Bank",
+      "description": "EXTRACT Documentary Credit Available Bank name/Applicant Bank name ONLY. DO NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
-      "dataCategoryValue": "Parties"
+      "dataCategoryValue": "Parties/addresses/places/countries"
     },
     {
       "id": "448",
-      "name": "Documentary Credit Beneficiary",
-      "description": "Documentary Credit Beneficiary",
+      "name": "Documentary Credit Beneficiary/Beneficiary/Payee",
+      "description": "Documentary Credit Beneficiary - Extract ONLY the beneficiary's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -4018,7 +3736,7 @@
     {
       "id": "449",
       "name": "Documentary Credit Reimbursing Bank",
-      "description": "Documentary Credit Reimbursing Bank",
+      "description": "Reimbursing bank- Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -4035,8 +3753,8 @@
     },
     {
       "id": "451",
-      "name": "Documentary Credit Drawee",
-      "description": "Documentary Credit Drawee",
+      "name": "Documentary Credit Drawee / Drawee",
+      "description": "Documentary Credit Drawee - Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -4045,7 +3763,7 @@
     {
       "id": "452",
       "name": "Account holder",
-      "description": "Account holder",
+      "description": "Holder of an account",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -4054,10 +3772,622 @@
     {
       "id": "453",
       "name": "Buyer's bank",
-      "description": "Buyer's bank",
+      "description": "Bank employed by the buyer to make a payment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "455",
+      "name": "Form of Documentary Credit",
+      "description": "Form of Documentary Credit",
+      "mappingFormField": "Tag 40A",
+      "mappingFormDescription": "Form of Documentary Credit",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "456",
+      "name": "Applicable Rules",
+      "description": "Applicable Rules",
+      "mappingFormField": "Tag 40E",
+      "mappingFormDescription": "Applicable Rules",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "457",
+      "name": "Reference to Pre-Advice",
+      "description": "Reference to Pre-Advice",
+      "mappingFormField": "Tag 23",
+      "mappingFormDescription": "Reference to Pre-Advice",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "458",
+      "name": "Applicant Bank/Issuing Bank",
+      "description": "Applicant Bank",
+      "mappingFormField": "Tag 51A",
+      "mappingFormDescription": "Applicant Bank",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "459",
+      "name": "Percentage Credit Amount Tolerance",
+      "description": "Extract Percentage Credit Amount Tolerance value. Typically appears as '10/10', '5/5', or '10%'. If format is 'X/X' (like 10/10), extract only the first number as percentage. If format is 'X%', extract with percentage symbol. Do NOT extract as combined numbers like '1010' - extract only valid tolerance percentages.",
+      "mappingFormField": "Tag 39A",
+      "mappingFormDescription": "Percentage Credit Amount Tolerance",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "460",
+      "name": "Additional Amounts Covered",
+      "description": "Additional Amounts Covered",
+      "mappingFormField": "Tag 39C",
+      "mappingFormDescription": "Additional Amounts Covered",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "461",
+      "name": "Mixed Payment Details",
+      "description": "Mixed Payment Details",
+      "mappingFormField": "Tag 42M",
+      "mappingFormDescription": "Mixed Payment Details",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "462",
+      "name": "Negotiation/Deferred Payment Details",
+      "description": "Negotiation/Deferred Payment Details",
+      "mappingFormField": "Tag 42P",
+      "mappingFormDescription": "Negotiation/Deferred Payment Details",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "465",
+      "name": "Place of Taking in Charge/Dispatch/Receipt",
+      "description": "Place of Taking in Charge/Dispatch/Receipt",
+      "mappingFormField": "Tag 44A",
+      "mappingFormDescription": "Place of Taking in Charge / Dispatch / Receipt",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "468",
+      "name": "Place of Final Destination / Delivery",
+      "description": "Extract ONLY when the field is explicitly labeled as 'Place of Final Destination', 'Place of Delivery', 'For Transportation to' or corresponds to SWIFT Tag 44B. DO NOT extract from 'Port of Discharge' (44F) or any other location fields. Only extract if the field specifically indicates final destination/delivery point, not intermediate discharge ports.",
+      "mappingFormField": "Tag 44B",
+      "mappingFormDescription": "Place of Final Destination / Delivery - Extract only for explicit Tag 44B fields",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "470",
+      "name": "Documents Required",
+      "description": "Documents Required - Extract the COMPLETE list of required documents exactly as stated. This field contains detailed document requirements and can be very lengthy spanning multiple lines and paragraphs. Capture EVERYTHING regardless of character count or number of lines. Include all document names, specifications, quantities (originals/copies), conditions, and special instructions. Do not truncate, summarize, or omit any portion.",
+      "mappingFormField": "Tag 46A",
+      "mappingFormDescription": "Documents Required",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Documents"
+    },
+    {
+      "id": "471",
+      "name": "Additional Conditions",
+      "description": "Additional Conditions - Extract the COMPLETE text of all additional conditions and instructions. This field can be very lengthy spanning multiple lines and paragraphs. Include EVERYTHING regardless of character count. Do not truncate, summarize, or omit any portion of the conditions, special instructions, or requirements.",
+      "mappingFormField": "Tag 47A",
+      "mappingFormDescription": "Additional Conditions",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Documents"
+    },
+    {
+      "id": "472",
+      "name": "Special Payment Conditions for Beneficiary",
+      "description": "Special Payment Conditions for Beneficiary",
+      "mappingFormField": "Tag 49G",
+      "mappingFormDescription": "Special Payment Conditions for Beneficiary",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "473",
+      "name": "Special Payment Conditions for Receiving Bank",
+      "description": "Special Payment Conditions for Receiving Bank",
+      "mappingFormField": "Tag 49H",
+      "mappingFormDescription": "Special Payment Conditions for Receiving Bank",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "474",
+      "name": "Charges",
+      "description": "Charges",
+      "mappingFormField": "Tag 71D",
+      "mappingFormDescription": "Charges (6*35z)",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts"
+    },
+    {
+      "id": "475",
+      "name": "Period for Presentation",
+      "description": "Period for Presentation - Extract ONLY the numeric value representing the number of days. Return just the number (e.g., '21' not '21 days', 'within 21 days', or 'twenty-one days'). If multiple numbers appear, extract the one representing the presentation period in days. Ignore any descriptive text.",
+      "mappingFormField": "Tag 48",
+      "mappingFormDescription": "Period for Presentation in Days",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "476",
+      "name": "Requested Confirmation Party",
+      "description": "Requested Confirmation Party",
+      "mappingFormField": "Tag 58A",
+      "mappingFormDescription": "Requested Confirmation Party",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "477",
+      "name": "Instructions to Paying/Accepting/Negotiating Bank",
+      "description": "Instructions to Paying/Accepting/Negotiating Bank",
+      "mappingFormField": "Tag 78",
+      "mappingFormDescription": "Instructions to the Paying/Accepting/Negotiating Bank",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Instructions"
+    },
+    {
+      "id": "478",
+      "name": "Advise Through Bank",
+      "description": "Advise Through Bank",
+      "mappingFormField": "Tag 57A",
+      "mappingFormDescription": "'Advise Through' Bank",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "479",
+      "name": "Sequence of Total",
+      "description": "Sequence of Total",
+      "mappingFormField": "Tag 27",
+      "mappingFormDescription": "Sender to Receiver Information",
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Instructions"
+    },
+    {
+      "id": "481",
+      "name": "Shipment Period",
+      "description": "Shipment Period",
+      "mappingFormField": "doc_index",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "482",
+      "name": "Confirmation Instructions",
+      "description": "Confirmation Instructions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "483",
+      "name": "To (Receiver Bank)",
+      "description": "Name and address of the Advising / Confirming / Negotiating Bank",
+      "mappingFormField": "",
+      "mappingFormDescription": "To (Receiver Bank)",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "484",
+      "name": "From (Issuing Bank)",
+      "description": "Name and address of the Issuing or Transmitting Bank / Branch",
+      "mappingFormField": "",
+      "mappingFormDescription": "From (Issuing Bank)",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "485",
+      "name": "Through",
+      "description": "Intermediary or Reimbursing Bank (if applicable)",
+      "mappingFormField": "",
+      "mappingFormDescription": "Through (Intermediary or Reimbursing Bank)",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "486",
+      "name": "Mode of Dispatch",
+      "description": "Specifies how the covering schedule or LC documents are transmitted (e.g., SWIFT, Courier, Registered Mail, Email)",
+      "mappingFormField": "",
+      "mappingFormDescription": "Mode of Dispatch",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "487",
+      "name": "Subject",
+      "description": "Letter of Credit No. ____ issued in favour of ____",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "488",
+      "name": "Type of Credit",
+      "description": "Irrevocable / Confirmed / Transferable, etc.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "489",
+      "name": "Documents Enclosed",
+      "description": "Checklist of LC-related documents enclosed",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Documents"
+    },
+    {
+      "id": "490",
+      "name": "Special Instructions",
+      "description": "e.g., Advise LC without adding confirmation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "491",
+      "name": "Handling Instructions",
+      "description": "Return documents after expiry, etc.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "492",
+      "name": "Remarks / Notes",
+      "description": "Additional remarks or notes",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Clauses/conditions/instructions"
+    },
+    {
+      "id": "493",
+      "name": "Prepared By",
+      "description": "Officer name and designation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "494",
+      "name": "Checked By",
+      "description": "Officer name and designation",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "495",
+      "name": "Authorized Signatory",
+      "description": "Manager / Officer signing the schedule",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "496",
+      "name": "Bank Seal / Stamp",
+      "description": "Physical or digital seal",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "497",
+      "name": "Signature Date",
+      "description": "Date of authorization",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "498",
+      "name": "Document Title",
+      "description": "COVERING SCHEDULE FOR LETTER OF CREDIT",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "499",
+      "name": "Currency",
+      "description": "Three-letter currency code (ISO 4217)\n",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": ""
+    },
+    {
+      "id": "500",
+      "name": "Applicant Address",
+      "description": "Extract ONLY the applicant's company/person address. Include address, street, city, country, postal code. Only the address is required, DO NOT include emails,Contact or Telephone details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "501",
+      "name": "Buyer/Importer/Notify Party",
+      "description": "Buyer - Extract ONLY the buyer's company/person name. CRITICAL CLEANING RULES: Remove ALL special characters and symbols of any type including periods (.), commas (,), semicolons (;), colons (:), slashes (/), backslashes (\\), pipes (|), brackets, parentheses, quotation marks, apostrophes, asterisks, ampersands (&), hashes (#), at symbols (@), dollar signs ($), percent signs (%), carets (^), plus signs (+), equals signs (=), tildes (~), and any other non-alphanumeric symbols. Return ONLY clean, meaningful text containing letters, numbers, and spaces. Do NOT include address, street, city, country, postal code, phone numbers, email addresses, fax numbers, website URLs, or any contact information. Extract the pure company/person name only with no special symbols whatsoever.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": ""
+    },
+    {
+      "id": "515",
+      "name": "Gross Weight",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "516",
+      "name": "Weight Certificate Number",
+      "description": "Reference number identifying the weight certificate document",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "502",
+      "name": "Weight Certificate Issue Date",
+      "description": "Date when the weight certificate was issued",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "503",
+      "name": "Certifying Authority",
+      "description": "Organization or authority that issued the weight certificate",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "504",
+      "name": "Weighing Method",
+      "description": "Method or procedure used for weighing the goods",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "505",
+      "name": "Weighing Equipment Details",
+      "description": "Details of the weighing equipment used including calibration information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "506",
+      "name": "Vessel Certificate Number",
+      "description": "Reference number identifying the vessel certificate document",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "507",
+      "name": "Vessel Certificate Issue Date",
+      "description": "Date when the vessel certificate was issued",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "508",
+      "name": "Vessel Certificate Expiry Date",
+      "description": "Date when the vessel certificate expires",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "509",
+      "name": "Vessel Name",
+      "description": "Official name of the vessel",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Identifiers"
+    },
+    {
+      "id": "510",
+      "name": "Vessel IMO Number",
+      "description": "International Maritime Organization number assigned to the vessel",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "5",
+      "dataCategoryValue": "Identifiers"
+    },
+    {
+      "id": "511",
+      "name": "Vessel Flag State",
+      "description": "Country under whose laws the vessel is registered",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "512",
+      "name": "Certificate Type",
+      "description": "Type or class of the vessel certificate (safety, security, environmental, etc.)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "513",
+      "name": "Issuing Authority",
+      "description": "Organization or authority that issued the vessel certificate",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "514",
+      "name": "Vessel Classification Society",
+      "description": "Classification society that verified the vessel compliance",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties"
+    },
+    {
+      "id": "21",
+      "name": "Net Weight",
+      "description": "Net weight of the goods without packaging or container - Extract the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "50",
+      "name": "Gross Weight/Net Weight/Transport Means, gross weight",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "216",
+      "name": "Documentary Credit Drawee /Drawee",
+      "description": "Documentary Credit Drawee - Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "463",
+      "name": "Partial Shipments",
+      "description": "Indicates whether partial shipments are allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "464",
+      "name": "Transhipment",
+      "description": "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
+    },
+    {
+      "id": "467",
+      "name": "Port of Discharge/Airport of Destination",
+      "description": "Port where goods are unloaded or airport of final destination - Extract ONLY the port/airport name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port/airport name is required (e.g., 'Rotterdam' not 'Rotterdam, Netherlands').",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "469",
+      "name": "Latest Date of Shipment",
+      "description": "Latest date by which goods must be shipped as specified in the documentary credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "480",
+      "name": "Documentary Credit Number",
+      "description": "Reference number identifying the documentary credit/letter of credit",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "601",
+      "name": "Document Title",
+      "description": "Title or heading of the document (e.g., 'COVERING SCHEDULE FOR LETTER OF CREDIT', 'COMMERCIAL INVOICE')",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "618",
+      "name": "Place of Expiry",
+      "description": "Place where the documentary credit expires and documents must be presented",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "619",
+      "name": "Commodity Description",
+      "description": "Commodity Description - Extract the complete description of the goods or commodities involved in the transaction as stated in the documentary credit. Include all details such as type, quality, specifications, and any other descriptive information provided. Do NOT omit or summarize any part of the description; capture it in its entirety exactly as it appears in the document.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Goods"
+    },
+    {
+      "id": "620",
+      "name": "Documentary Credit Beneficiary/Consignor/Exporter/Seller",
+      "description": "Documentary Credit Beneficiary/Consignor/Exporter/Seller - Extract ONLY the beneficiary's/consignor's/exporter's/seller's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the company/person name is required.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
       "dataCategoryValue": "Parties/addresses/places/countries"
     }
   ]
