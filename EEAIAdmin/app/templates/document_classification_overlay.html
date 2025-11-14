@@ -3449,7 +3449,7 @@
                                 <!-- Title -->
                                 <div>
                                     <h1 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                                        Compliance Analysis Dashboard
+                                        SWIFT/UCP 600 Analysis Dashboard
                                         <span class="text-xs font-semibold px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
                                             AI-Powered
                                         </span>
@@ -3482,7 +3482,7 @@
                                     <i class="mdi mdi-shield-check text-lg"></i>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-semibold">Compliance Analysis</span>
+                                    <span class="text-sm font-semibold">Field Validations</span>
                                     <span v-if="selectedResult && selectedResult.discrepancies"
                                           :class="activeComplianceTab === 'compliance' ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-700 group-hover:bg-indigo-100 group-hover:text-indigo-700'"
                                           class="text-xs px-2.5 py-1 rounded-full font-bold transition-all duration-300">
@@ -3537,10 +3537,10 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm font-semibold">Required Documents</span>
-                                    <span :class="activeComplianceTab === 'documents' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 group-hover:bg-emerald-100 group-hover:text-emerald-700'"
+                                    <!--span :class="activeComplianceTab === 'documents' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 group-hover:bg-emerald-100 group-hover:text-emerald-700'"
                                           class="text-xs px-2.5 py-1 rounded-full font-bold transition-all duration-300">
-                                        {% raw %}{{ getRequiredDocumentsCount() }}{% endraw %}
-                                    </span>
+                                        //{% raw %}{{ getRequiredDocumentsCount() }}{% endraw %}
+                                    </span-->
                                 </div>
                                 <div v-if="activeComplianceTab === 'documents'" class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full"></div>
                             </button>
@@ -3559,7 +3559,7 @@
                                 <div v-if="!selectedComplianceDocType">
                                     <div class="mb-8">
                                         <h2 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
-                                            Compliance Analysis by Document Type
+                                            Field Validation Summary
                                         </h2>
                                         <p class="text-gray-600 text-lg">Select a document type to view detailed compliance analysis</p>
                                     </div>
@@ -3790,114 +3790,236 @@
 
                             <!-- Missing Values Tab Content -->
                             <div v-show="activeComplianceTab === 'missing'" class="animate-fade-in">
-                                <!-- Clean Header -->
-                                <div class="mb-10">
-                                    <h2 class="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-3">
-                                        Data Completeness Overview
-                                    </h2>
-                                    <p class="text-gray-500 text-lg">Track field population status across all documents</p>
-                                </div>
 
-                                <!-- Stats Dashboard - Spacious and Clean -->
-                                <div class="grid grid-cols-3 gap-8 mb-12">
-                                    <!-- Populated Card -->
-                                    <div class="group relative bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-green-400 transition-all duration-300 hover:shadow-2xl hover:shadow-green-100 hover:-translate-y-1">
-                                        <div class="absolute top-6 right-6">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-200 group-hover:scale-110 transition-transform">
-                                                <i class="mdi mdi-check-circle text-white text-3xl"></i>
+                                <!-- Document Type Selection View -->
+                                <div v-if="!selectedMissingDocType">
+                                    <div class="mb-8">
+                                        <h2 class="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-3">
+                                            Data Completeness by Document Type
+                                        </h2>
+                                        <p class="text-gray-600 text-lg">Select a document type to view detailed field population status</p>
+                                    </div>
+
+                                    <!-- Overall Stats Dashboard -->
+                                    <div class="grid grid-cols-3 gap-6 mb-8">
+                                        <!-- Populated Card -->
+                                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
+                                                    <i class="mdi mdi-check-circle text-white text-2xl"></i>
+                                                </div>
+                                                <p class="text-xs font-semibold text-green-700 uppercase tracking-wide">Populated</p>
                                             </div>
-                                        </div>
-                                        <div class="pr-20">
-                                            <p class="text-gray-500 text-sm font-semibold mb-3 uppercase tracking-wide">Populated Fields</p>
-                                            <p class="text-5xl font-bold text-gray-900 mb-2">{% raw %}{{ getMissingValueStats().populated }}{% endraw %}</p>
+                                            <p class="text-4xl font-bold text-green-700 mb-1">{% raw %}{{ getMissingValueStats().populated }}{% endraw %}</p>
                                             <p class="text-green-600 text-sm font-medium">Fields with valid data</p>
                                         </div>
-                                    </div>
 
-                                    <!-- Missing Card -->
-                                    <div class="group relative bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-amber-400 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-100 hover:-translate-y-1">
-                                        <div class="absolute top-6 right-6">
-                                            <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform">
-                                                <i class="mdi mdi-alert-circle text-white text-3xl"></i>
+                                        <!-- Missing Card -->
+                                        <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border-2 border-amber-200">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-200">
+                                                    <i class="mdi mdi-alert-circle text-white text-2xl"></i>
+                                                </div>
+                                                <p class="text-xs font-semibold text-amber-700 uppercase tracking-wide">Missing</p>
                                             </div>
-                                        </div>
-                                        <div class="pr-20">
-                                            <p class="text-gray-500 text-sm font-semibold mb-3 uppercase tracking-wide">Missing Fields</p>
-                                            <p class="text-5xl font-bold text-gray-900 mb-2">{% raw %}{{ getMissingValueStats().missing }}{% endraw %}</p>
+                                            <p class="text-4xl font-bold text-amber-700 mb-1">{% raw %}{{ getMissingValueStats().missing }}{% endraw %}</p>
                                             <p class="text-amber-600 text-sm font-medium">Requires attention</p>
                                         </div>
-                                    </div>
 
-                                    <!-- Completeness Card -->
-                                    <div class="group relative bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-300 hover:-translate-y-1">
-                                        <div class="absolute top-6 right-6">
-                                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                <i class="mdi mdi-chart-arc text-white text-3xl"></i>
+                                        <!-- Completeness Card -->
+                                        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 border-2 border-indigo-400">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                                    <i class="mdi mdi-chart-arc text-white text-2xl"></i>
+                                                </div>
+                                                <p class="text-xs font-semibold text-indigo-100 uppercase tracking-wide">Rate</p>
                                             </div>
-                                        </div>
-                                        <div class="pr-20">
-                                            <p class="text-indigo-100 text-sm font-semibold mb-3 uppercase tracking-wide">Completion Rate</p>
-                                            <p class="text-5xl font-bold text-white mb-2">{% raw %}{{ getMissingValueStats().completeness }}{% endraw %}%</p>
+                                            <p class="text-4xl font-bold text-white mb-1">{% raw %}{{ getMissingValueStats().completeness }}{% endraw %}%</p>
                                             <p class="text-indigo-200 text-sm font-medium">Overall data quality</p>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Document Cards - One per Row, Spacious -->
-                                <div class="space-y-8">
-                                    <div v-for="(result, index) in results" :key="index"
-                                         class="bg-white rounded-3xl border-2 border-gray-200 overflow-hidden hover:border-amber-300 hover:shadow-2xl transition-all duration-300">
+                                    <!-- Document Type Cards Grid -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <div v-for="(result, index) in results" :key="index"
+                                             @click="selectMissingDocument(result)"
+                                             class="group relative bg-white rounded-2xl border-2 border-gray-200 hover:border-amber-400 p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-amber-100 hover:-translate-y-1">
 
-                                        <!-- Document Header - Clean and Minimal -->
-                                        <div class="px-10 py-6 border-b border-gray-200 flex items-center justify-between">
-                                            <div class="flex items-center gap-5">
-                                                <div class="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-                                                    <i class="mdi mdi-file-document text-white text-2xl"></i>
-                                                </div>
-                                                <div>
-                                                    <h3 class="text-2xl font-bold text-gray-900 mb-1">{% raw %}{{ result.documentType }}{% endraw %}</h3>
-                                                    <p class="text-gray-500 text-sm">{% raw %}{{ result.fileName }}{% endraw %}</p>
-                                                </div>
-                                            </div>
+                                            <!-- Card Background Gradient -->
+                                            <div class="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                                            <!-- Completion Badge -->
-                                            <div class="flex items-center gap-6">
-                                                <div class="text-right">
-                                                    <p class="text-4xl font-bold text-indigo-600">{% raw %}{{ getDocumentCompleteness(result) }}{% endraw %}%</p>
-                                                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mt-1">Complete</p>
+                                            <!-- Content -->
+                                            <div class="relative">
+                                                <!-- Header -->
+                                                <div class="flex items-start justify-between mb-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-200 group-hover:scale-110 transition-transform duration-300">
+                                                            <i class="mdi mdi-file-document text-white text-2xl"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h3 class="font-bold text-lg text-gray-900 group-hover:text-amber-600 transition-colors">
+                                                                {% raw %}{{ result.documentType }}{% endraw %}
+                                                            </h3>
+                                                            <p class="text-xs text-gray-500 mt-0.5">{% raw %}{{ result.fileName }}{% endraw %}</p>
+                                                        </div>
+                                                    </div>
+                                                    <i class="mdi mdi-chevron-right text-2xl text-gray-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all duration-300"></i>
                                                 </div>
-                                                <div class="w-24 h-24 relative">
-                                                    <!-- Circular Progress -->
-                                                    <svg class="transform -rotate-90 w-24 h-24">
-                                                        <circle cx="48" cy="48" r="40" stroke="#e5e7eb" stroke-width="8" fill="none" />
-                                                        <circle cx="48" cy="48" r="40"
-                                                                :stroke-dasharray="251.2"
-                                                                :stroke-dashoffset="251.2 - (251.2 * getDocumentCompleteness(result) / 100)"
-                                                                :class="getDocumentCompleteness(result) >= 80 ? 'stroke-green-500' : getDocumentCompleteness(result) >= 50 ? 'stroke-amber-500' : 'stroke-red-500'"
-                                                                stroke-width="8"
-                                                                fill="none"
-                                                                class="transition-all duration-1000" />
-                                                    </svg>
+
+                                                <!-- Stats Grid -->
+                                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200">
+                                                        <div class="flex items-center gap-2 mb-1">
+                                                            <i class="mdi mdi-check-circle text-green-600 text-sm"></i>
+                                                            <span class="text-xs font-semibold text-green-700">Populated</span>
+                                                        </div>
+                                                        <div class="text-2xl font-bold text-green-700">
+                                                            {% raw %}{{ getDocumentPopulatedFields(result).length }}{% endraw %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-200">
+                                                        <div class="flex items-center gap-2 mb-1">
+                                                            <i class="mdi mdi-alert-circle text-amber-600 text-sm"></i>
+                                                            <span class="text-xs font-semibold text-amber-700">Missing</span>
+                                                        </div>
+                                                        <div class="text-2xl font-bold text-amber-700">
+                                                            {% raw %}{{ getDocumentMissingFields(result).length }}{% endraw %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Progress Bar -->
+                                                <div class="mb-3">
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <span class="text-xs font-semibold text-gray-600">Completion Rate</span>
+                                                        <span class="text-xs font-bold text-amber-600">
+                                                            {% raw %}{{ getDocumentCompleteness(result) }}{% endraw %}%
+                                                        </span>
+                                                    </div>
+                                                    <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                        <div class="h-full bg-gradient-to-r from-amber-500 to-orange-600 rounded-full transition-all duration-500"
+                                                             :style="{width: getDocumentCompleteness(result) + '%'}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Footer -->
+                                                <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                                    <span class="text-xs text-gray-500">
+                                                        <i class="mdi mdi-file-multiple text-amber-500"></i>
+                                                        {% raw %}{{ getDocumentPopulatedFields(result).length + getDocumentMissingFields(result).length }}{% endraw %} Total Fields
+                                                    </span>
+                                                    <span class="text-xs font-semibold text-amber-600 group-hover:text-amber-700">
+                                                        View Details →
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <!-- Fields Grid - Side by Side with Space -->
+                                    <!-- Information Notice - If Missing Values Exist -->
+                                    <div v-if="getMissingValueStats().missing > 0" class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
+                                        <div class="flex items-start gap-4">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                                                <i class="mdi mdi-information text-white text-xl"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h3 class="text-lg font-bold text-gray-900 mb-2">Missing Information Detected</h3>
+                                                <p class="text-gray-700 text-sm leading-relaxed">
+                                                    <span class="font-bold text-blue-600">{% raw %}{{ getMissingValueStats().missing }}{% endraw %} fields</span> could not be extracted from your documents.
+                                                    This is informational only - the system has identified which data points are unavailable in the source documents.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Detailed Document View -->
+                                <div v-else class="animate-fade-in">
+                                    <!-- Back Button & Header -->
+                                    <div class="mb-6">
+                                        <button @click="selectedMissingDocType = null"
+                                                class="group flex items-center gap-2 text-amber-600 hover:text-amber-700 font-semibold mb-4 transition-colors">
+                                            <i class="mdi mdi-arrow-left text-xl group-hover:-translate-x-1 transition-transform"></i>
+                                            Back to Document Types
+                                        </button>
+
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                                                    {% raw %}{{ selectedMissingDocType.documentType }}{% endraw %}
+                                                </h2>
+                                                <p class="text-gray-600">{% raw %}{{ selectedMissingDocType.fileName }}{% endraw %}</p>
+                                            </div>
+
+                                            <!-- Summary Stats -->
+                                            <div class="flex items-center gap-4">
+                                                <div class="text-center px-6 py-3 bg-green-50 rounded-xl border border-green-200">
+                                                    <div class="text-3xl font-bold text-green-600">
+                                                        {% raw %}{{ getDocumentPopulatedFields(selectedMissingDocType).length }}{% endraw %}
+                                                    </div>
+                                                    <div class="text-xs text-green-700 font-semibold mt-1">Populated</div>
+                                                </div>
+                                                <div class="text-center px-6 py-3 bg-amber-50 rounded-xl border border-amber-200">
+                                                    <div class="text-3xl font-bold text-amber-600">
+                                                        {% raw %}{{ getDocumentMissingFields(selectedMissingDocType).length }}{% endraw %}
+                                                    </div>
+                                                    <div class="text-xs text-amber-700 font-semibold mt-1">Missing</div>
+                                                </div>
+                                                <div class="text-center px-6 py-3 bg-indigo-50 rounded-xl border border-indigo-200">
+                                                    <div class="text-3xl font-bold text-indigo-600">
+                                                        {% raw %}{{ getDocumentCompleteness(selectedMissingDocType) }}{% endraw %}%
+                                                    </div>
+                                                    <div class="text-xs text-indigo-700 font-semibold mt-1">Complete</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Fields Display with Filter -->
+                                    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                                        <!-- Filter Buttons -->
+                                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <button @click="missingFilter = 'all'"
+                                                        :class="missingFilter === 'all' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                        class="px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                                                    All Fields
+                                                </button>
+                                                <button @click="missingFilter = 'populated'"
+                                                        :class="missingFilter === 'populated' ? 'bg-green-600 text-white shadow-lg shadow-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                        class="px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                                                    Populated Only
+                                                </button>
+                                                <button @click="missingFilter = 'missing'"
+                                                        :class="missingFilter === 'missing' ? 'bg-amber-600 text-white shadow-lg shadow-amber-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                        class="px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                                                    Missing Only
+                                                </button>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <i class="mdi mdi-magnify text-gray-400"></i>
+                                                <input type="text" v-model="missingSearchQuery" placeholder="Search fields..."
+                                                       class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none">
+                                            </div>
+                                        </div>
+
+                                        <!-- Fields Grid - Side by Side -->
                                         <div class="grid grid-cols-2 divide-x divide-gray-200">
                                             <!-- Populated Section -->
-                                            <div class="p-10">
+                                            <div class="p-8" v-show="missingFilter === 'all' || missingFilter === 'populated'">
                                                 <div class="flex items-center justify-between mb-6">
                                                     <h4 class="text-xl font-bold text-gray-900 flex items-center gap-3">
                                                         <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                                                             <i class="mdi mdi-check text-green-600 text-lg"></i>
                                                         </div>
-                                                        Populated
+                                                        Populated Fields
                                                     </h4>
-                                                    <span class="text-2xl font-bold text-green-600">{% raw %}{{ getDocumentPopulatedFields(result).length }}{% endraw %}</span>
+                                                    <span class="text-2xl font-bold text-green-600">{% raw %}{{ getFilteredPopulatedFields().length }}{% endraw %}</span>
                                                 </div>
 
-                                                <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                                                    <div v-for="field in getDocumentPopulatedFields(result)" :key="field.field_name"
+                                                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                                                    <div v-for="field in getFilteredPopulatedFields()" :key="field.field_name"
                                                          class="group p-4 bg-green-50 rounded-xl border border-green-200 hover:bg-green-100 hover:border-green-300 transition-all cursor-pointer">
                                                         <div class="flex items-start gap-3">
                                                             <div class="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
@@ -3910,7 +4032,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div v-if="getDocumentPopulatedFields(result).length === 0" class="text-center py-12">
+                                                    <div v-if="getFilteredPopulatedFields().length === 0" class="text-center py-12">
                                                         <i class="mdi mdi-information-outline text-gray-300 text-5xl mb-3"></i>
                                                         <p class="text-gray-400 font-medium">No populated fields found</p>
                                                     </div>
@@ -3918,19 +4040,19 @@
                                             </div>
 
                                             <!-- Missing Section -->
-                                            <div class="p-10 bg-gray-50">
+                                            <div class="p-8 bg-gray-50" v-show="missingFilter === 'all' || missingFilter === 'missing'">
                                                 <div class="flex items-center justify-between mb-6">
                                                     <h4 class="text-xl font-bold text-gray-900 flex items-center gap-3">
                                                         <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
                                                             <i class="mdi mdi-alert text-amber-600 text-lg"></i>
                                                         </div>
-                                                        Missing
+                                                        Missing Fields
                                                     </h4>
-                                                    <span class="text-2xl font-bold text-amber-600">{% raw %}{{ getDocumentMissingFields(result).length }}{% endraw %}</span>
+                                                    <span class="text-2xl font-bold text-amber-600">{% raw %}{{ getFilteredMissingFields().length }}{% endraw %}</span>
                                                 </div>
 
-                                                <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                                                    <div v-for="field in getDocumentMissingFields(result)" :key="field.field_name"
+                                                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                                                    <div v-for="field in getFilteredMissingFields()" :key="field.field_name"
                                                          class="group p-4 bg-white rounded-xl border border-amber-200 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer">
                                                         <div class="flex items-start gap-3">
                                                             <div class="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
@@ -3945,28 +4067,62 @@
                                                         </div>
                                                     </div>
 
-                                                    <div v-if="getDocumentMissingFields(result).length === 0" class="text-center py-12">
+                                                    <div v-if="getFilteredMissingFields().length === 0" class="text-center py-12">
                                                         <i class="mdi mdi-check-all text-green-400 text-5xl mb-3"></i>
                                                         <p class="text-green-600 font-semibold">All fields populated!</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Information Notice - If Missing Values Exist -->
-                                <div v-if="getMissingValueStats().missing > 0" class="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border-2 border-blue-200">
-                                    <div class="flex items-start gap-6">
-                                        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                                            <i class="mdi mdi-information text-white text-3xl"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h3 class="text-2xl font-bold text-gray-900 mb-3">Missing Information Detected</h3>
-                                            <p class="text-gray-700 text-lg leading-relaxed">
-                                                <span class="font-bold text-blue-600">{% raw %}{{ getMissingValueStats().missing }}{% endraw %} fields</span> could not be extracted from your documents.
-                                                This is informational only - the system has identified which data points are unavailable in the source documents.
-                                            </p>
+                                            <!-- Full Width View for Single Filter Selection -->
+                                            <div v-if="missingFilter !== 'all'" class="col-span-2 p-8" :class="missingFilter === 'populated' ? 'bg-white' : 'bg-gray-50'">
+                                                <div class="flex items-center justify-between mb-6">
+                                                    <h4 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+                                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                                             :class="missingFilter === 'populated' ? 'bg-green-100' : 'bg-amber-100'">
+                                                            <i class="mdi text-lg"
+                                                               :class="missingFilter === 'populated' ? 'mdi-check text-green-600' : 'mdi-alert text-amber-600'"></i>
+                                                        </div>
+                                                        {% raw %}{{ missingFilter === 'populated' ? 'Populated Fields' : 'Missing Fields' }}{% endraw %}
+                                                    </h4>
+                                                    <span class="text-2xl font-bold"
+                                                          :class="missingFilter === 'populated' ? 'text-green-600' : 'text-amber-600'">
+                                                        {% raw %}{{ missingFilter === 'populated' ? getFilteredPopulatedFields().length : getFilteredMissingFields().length }}{% endraw %}
+                                                    </span>
+                                                </div>
+
+                                                <div class="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-2">
+                                                    <!-- Populated Fields (Full Width) -->
+                                                    <div v-if="missingFilter === 'populated'" v-for="field in getFilteredPopulatedFields()" :key="field.field_name"
+                                                         class="group p-4 bg-green-50 rounded-xl border border-green-200 hover:bg-green-100 hover:border-green-300 transition-all cursor-pointer">
+                                                        <div class="flex items-start gap-3">
+                                                            <div class="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                                                                <i class="mdi mdi-check text-white text-sm"></i>
+                                                            </div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <p class="font-semibold text-gray-900 text-sm mb-1">{% raw %}{{ field.field_name }}{% endraw %}</p>
+                                                                <p class="text-xs text-gray-600 line-clamp-2">{% raw %}{{ field.field_value }}{% endraw %}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Missing Fields (Full Width) -->
+                                                    <div v-if="missingFilter === 'missing'" v-for="field in getFilteredMissingFields()" :key="field.field_name"
+                                                         class="group p-4 bg-white rounded-xl border border-amber-200 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer">
+                                                        <div class="flex items-start gap-3">
+                                                            <div class="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                                                                <i class="mdi mdi-alert text-white text-sm font-bold"></i>
+                                                            </div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <p class="font-semibold text-gray-900 text-sm mb-2">{% raw %}{{ field.field_name }}{% endraw %}</p>
+                                                                <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold">
+                                                                    No value detected
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -4041,23 +4197,23 @@
                                                 Discrepancy detection will be activated once you upload and register your documents
                                             </p>
 
-                                            <div class="pt-8 pb-4">
+                                            <!--div-- class="pt-8 pb-4">
                                                 <div class="inline-block bg-white/80 backdrop-blur rounded-2xl px-8 py-6 shadow-lg border border-purple-200">
                                                     <div class="flex items-center gap-4">
                                                         <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0">
                                                             <i class="mdi mdi-information text-white text-2xl"></i>
                                                         </div>
-                                                        <div class="text-left">
+                                                        div class="text-left">
                                                             <p class="text-gray-800 font-semibold text-lg mb-1">Next Step</p>
                                                             <p class="text-gray-600">Navigate to <span class="font-bold text-purple-600">Register Document</span> screen to begin analysis</p>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div-->
 
-                                            <!-- Feature Preview Cards -->
-                                            <div class="pt-8 grid grid-cols-3 gap-6">
-                                                <!-- Card 1 -->
+                                            <!-- Feature Preview Cards
+                                            <div-- class="pt-8 grid grid-cols-3 gap-6">
+                                                 Card 1
                                                 <div class="bg-white/60 backdrop-blur rounded-2xl p-6 border border-purple-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
                                                     <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                                                         <i class="mdi mdi-file-search text-white text-2xl"></i>
@@ -4066,7 +4222,7 @@
                                                     <p class="text-sm text-gray-600">Cross-check document fields against compliance rules</p>
                                                 </div>
 
-                                                <!-- Card 2 -->
+                                                 Card 2
                                                 <div class="bg-white/60 backdrop-blur rounded-2xl p-6 border border-indigo-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
                                                     <div class="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                                                         <i class="mdi mdi-alert-circle text-white text-2xl"></i>
@@ -4075,7 +4231,7 @@
                                                     <p class="text-sm text-gray-600">Identify non-compliant fields requiring correction</p>
                                                 </div>
 
-                                                <!-- Card 3 -->
+                                                Card 3
                                                 <div class="bg-white/60 backdrop-blur rounded-2xl p-6 border border-blue-100 hover:shadow-xl hover:scale-105 transition-all duration-300">
                                                     <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                                                         <i class="mdi mdi-chart-timeline-variant text-white text-2xl"></i>
@@ -4083,7 +4239,7 @@
                                                     <h3 class="font-bold text-gray-900 mb-2">Real-time Analysis</h3>
                                                     <p class="text-sm text-gray-600">Instant discrepancy reports during document upload</p>
                                                 </div>
-                                            </div>
+                                            </div-->
                                         </div>
                                     </div>
                                 </div>
@@ -4142,7 +4298,7 @@
                                             <div class="bg-orange-50 rounded-xl p-4 border border-orange-200">
                                                 <div class="flex items-center justify-between">
                                                     <div>
-                                                        <p class="text-sm text-orange-600 font-medium">High Severity</p>
+                                                        <!--p class="text-sm text-orange-600 font-medium">High Severity</p-->
                                                         <p class="text-3xl font-bold text-orange-700">{% raw %}{{ getDiscrepancies().filter(d => d.severity === 'high').length }}{% endraw %}</p>
                                                     </div>
                                                     <i class="mdi mdi-alert text-orange-500 text-3xl"></i>
@@ -4260,19 +4416,19 @@
                                                     LC-specific conditions validation will be available once you upload and register your documents
                                                 </p>
 
-                                                <div class="pt-8 pb-4">
+                                                <!--div class="pt-8 pb-4">
                                                     <div class="inline-block bg-white/80 backdrop-blur rounded-2xl px-8 py-6 shadow-lg border border-purple-200">
                                                         <div class="flex items-center gap-4">
                                                             <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
                                                                 <i class="mdi mdi-information text-white text-2xl"></i>
                                                             </div>
-                                                            <div class="text-left">
+                                                            div class="text-left">
                                                                 <p class="text-gray-800 font-semibold text-lg mb-1">Coming Soon</p>
                                                                 <p class="text-gray-600">LC-specific conditions will be parsed and validated automatically</p>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div-->
                                             </div>
                                         </div>
                                     </div>
@@ -4615,82 +4771,8 @@
                                     </p>
                                 </div>
 
-                                <!-- Loading Screen for Document Parsing -->
-                                <div v-if="loadingRequiredDocuments || parsingRequiredDocuments" class="text-center py-16">
-                                    <!-- Main Loading Container -->
-                                    <div class="max-w-md mx-auto">
-                                        <!-- Animated Icon Container -->
-                                        <div class="relative mb-8">
-                                            <!-- Spinning Border -->
-                                            <div class="w-24 h-24 mx-auto relative">
-                                                <div class="absolute inset-0 border-4 border-emerald-200 rounded-full animate-spin border-t-emerald-600"></div>
-                                                <div class="absolute inset-2 border-2 border-green-100 rounded-full animate-spin border-r-green-500" style="animation-delay: 0.3s; animation-direction: reverse;"></div>
-                                                <!-- Center Icon -->
-                                                <div class="absolute inset-0 flex items-center justify-center">
-                                                    <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
-                                                        <i class="mdi mdi-file-document-outline text-white text-lg"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Loading Text -->
-                                        <div class="space-y-4">
-                                            <h3 class="text-2xl font-bold bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-transparent">
-                                                Analyzing Required Documents
-                                            </h3>
-                                            <p class="text-gray-600 text-lg">
-                                                Our AI is processing your LC terms to identify all required documents...
-                                            </p>
-                                            
-                                            <!-- Progress Indicators -->
-                                            <div class="space-y-3 mt-6">
-                                                <!-- Animated Progress Bar -->
-                                                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                                    <div class="h-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-full animate-pulse"
-                                                         style="width: 100%; animation: progressFill 2s ease-in-out infinite;"></div>
-                                                </div>
-                                                
-                                                <!-- Status Steps -->
-                                                <div class="flex justify-between text-xs text-gray-500 px-2">
-                                                    <span class="flex items-center gap-1">
-                                                        <i class="mdi mdi-check-circle text-emerald-500"></i>
-                                                        Parsing LC Terms
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <i class="mdi mdi-loading mdi-spin text-emerald-500"></i>
-                                                        Extracting Documents
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <i class="mdi mdi-clock-outline text-gray-400"></i>
-                                                        Finalizing
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Helpful Tip -->
-                                            <div class="mt-8 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl">
-                                                <div class="flex items-start gap-3">
-                                                    <div class="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                        <i class="mdi mdi-lightbulb-outline text-emerald-600 text-sm"></i>
-                                                    </div>
-                                                    <div class="text-left">
-                                                        <p class="text-sm text-emerald-800 font-medium">Pro Tip</p>
-                                                        <p class="text-xs text-emerald-700 mt-1">
-                                                            This analysis will help ensure you have all the required documents for LC compliance.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Content (shown when not loading) -->
-                                <div v-else>
-
                                 <!-- Context Banner for LC Form (Not from Document Register) -->
-                                <div v-if="!isFromDocumentRegister && requiredDocuments.length > 0"
+                                <div v-if="!isFromDocumentRegister && getAllRequiredDocuments().length > 0"
                                      class="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 mb-8">
                                     <div class="flex items-start gap-4">
                                         <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -4710,11 +4792,13 @@
                                 </div>
 
                                 <!-- If documents found -->
-                                <div v-if="requiredDocuments.length > 0" class="space-y-6">
+                                <div v-if="getAllRequiredDocuments().length > 0" class="space-y-6">
                                     <!-- Stats Overview - Only show in Document Register context -->
                                     <div v-if="isFromDocumentRegister" class="grid grid-cols-4 gap-6 mb-10">
                                         <!-- Total Documents -->
-                                        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-3xl p-8 border-2 border-indigo-200 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                                        <div @click="documentsFilter = 'all'"
+                                             class="cursor-pointer bg-gradient-to-br from-indigo-50 to-blue-50 rounded-3xl p-8 border-2 transition-all duration-300 hover:shadow-2xl hover:scale-105"
+                                             :class="documentsFilter === 'all' ? 'border-indigo-500 shadow-2xl scale-105' : 'border-indigo-200'">
                                             <div class="flex items-center gap-4 mb-4">
                                                 <div class="w-16 h-16 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
                                                     <i class="mdi mdi-file-multiple text-white text-3xl"></i>
@@ -4727,7 +4811,9 @@
                                         </div>
 
                                         <!-- Uploaded Documents -->
-                                        <div class="bg-gradient-to-br from-emerald-50 to-green-50 rounded-3xl p-8 border-2 border-emerald-200 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                                        <div @click="documentsFilter = 'uploaded'"
+                                             class="cursor-pointer bg-gradient-to-br from-emerald-50 to-green-50 rounded-3xl p-8 border-2 transition-all duration-300 hover:shadow-2xl hover:scale-105"
+                                             :class="documentsFilter === 'uploaded' ? 'border-emerald-500 shadow-2xl scale-105' : 'border-emerald-200'">
                                             <div class="flex items-center gap-4 mb-4">
                                                 <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center shadow-lg">
                                                     <i class="mdi mdi-check-circle text-white text-3xl"></i>
@@ -4740,7 +4826,9 @@
                                         </div>
 
                                         <!-- Pending Upload -->
-                                        <div class="bg-gradient-to-br from-red-50 to-rose-50 rounded-3xl p-8 border-2 border-red-200 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                                        <div @click="documentsFilter = 'pending'"
+                                             class="cursor-pointer bg-gradient-to-br from-red-50 to-rose-50 rounded-3xl p-8 border-2 transition-all duration-300 hover:shadow-2xl hover:scale-105"
+                                             :class="documentsFilter === 'pending' ? 'border-red-500 shadow-2xl scale-105' : 'border-red-200'">
                                             <div class="flex items-center gap-4 mb-4">
                                                 <div class="w-16 h-16 bg-gradient-to-br from-red-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg">
                                                     <i class="mdi mdi-close-circle text-white text-3xl"></i>
@@ -4766,6 +4854,7 @@
                                         </div>
                                     </div>
 
+
                                     <!-- Info Banner for Multi-Page PDF Classification - Only in Document Register -->
                                     <div v-if="isFromDocumentRegister && getRequiredDocumentsStats().totalMatchedSections > getRequiredDocumentsStats().uploaded"
                                          class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-6 mb-8">
@@ -4787,20 +4876,24 @@
                                         </div>
                                     </div>
 
-                                    <!-- Documents Grid -->
+                                    <!-- Documents Grid - Filtered -->
                                     <div class="grid grid-cols-2 gap-6">
-                                        <div v-for="(doc, index) in requiredDocuments" :key="index"
+                                        <div v-for="(doc, index) in getFilteredDocuments()" :key="index"
                                              class="group bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden hover:shadow-xl"
                                              :class="isFromDocumentRegister ? (doc.uploaded ? 'border-emerald-300 bg-emerald-50/30' : 'border-red-300 bg-red-50/30') : 'border-gray-300 bg-gray-50/30'">
                                             <div class="p-6">
                                                 <!-- Document Header -->
                                                 <div class="flex items-start gap-4 mb-4">
                                                     <!-- Icon -->
-                                                    <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300"
-                                                         :class="doc.uploaded ? 'bg-gradient-to-br from-emerald-100 to-green-100 group-hover:from-emerald-400 group-hover:to-green-500' : 'bg-gradient-to-br from-red-100 to-rose-100 group-hover:from-red-400 group-hover:to-rose-500'">
-                                                        <i :class="getDocumentIcon(doc.name)"
-                                                           class="text-2xl transition-colors duration-300"
-                                                           :class="doc.uploaded ? 'text-emerald-600 group-hover:text-white' : 'text-red-600 group-hover:text-white'"></i>
+<!--                                                    <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300"-->
+<!--                                                         :class="doc.uploaded ? 'bg-gradient-to-br from-emerald-100 to-green-100 group-hover:from-emerald-400 group-hover:to-green-500' : 'bg-gradient-to-br from-red-100 to-rose-100 group-hover:from-red-400 group-hover:to-rose-500'">-->
+<!--                                                        <i :class="getDocumentIcon(doc.name)"-->
+<!--                                                           class="text-2xl transition-colors duration-300"-->
+<!--                                                           :class="doc.uploaded ? 'text-emerald-600 group-hover:text-white' : 'text-red-600 group-hover:text-white'"></i>-->
+<!--                                                    </div>-->
+                                                    <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                                                         :class="doc.uploaded ? 'bg-gradient-to-br from-emerald-400 to-green-500' : 'bg-gradient-to-br from-red-400 to-rose-500'">
+                                                        <i class="mdi mdi-file-document text-white text-3xl"></i>
                                                     </div>
 
                                                     <!-- Document Info -->
@@ -4928,22 +5021,22 @@
                                                         </div>
                                                     </div>
                                                 </div>
-
-                                                <!-- Source Info -->
-                                                <div class="flex items-center gap-2 text-sm text-gray-500 mt-3 pt-3 border-t border-gray-100">
-                                                    <i class="mdi mdi-file-document-outline text-gray-400"></i>
-                                                    <span>Required by: <span class="font-semibold text-gray-700">{% raw %}{{ doc.source }}{% endraw %}</span></span>
-                                                </div>
-
-                                                <!-- Will be validated info -->
-                                                <div class="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                                                    <div class="flex items-center gap-2 text-sm text-blue-700">
-                                                        <i class="mdi mdi-information-outline"></i>
-                                                        <span class="font-medium">Will be validated in Register Document screen</span>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <!-- Empty State for Filtered Results -->
+                                    <div v-if="getFilteredDocuments().length === 0" class="text-center py-16">
+                                        <div class="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                            <i class="mdi mdi-filter-off-outline text-gray-400 text-5xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-700 mb-2">No Documents Found</h3>
+                                        <p class="text-gray-500 mb-4">
+                                            No documents match the current filter criteria.
+                                        </p>
+                                        <button @click="documentsFilter = 'all'" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors">
+                                            Show All Documents
+                                        </button>
                                     </div>
 
                                     <!-- Information Banner -->
@@ -4988,8 +5081,8 @@
                                         Please ensure your LC document contains a "Required Documents" or "Documents Required" section.
                                     </p>
                                 </div>
-                                </div> <!-- End v-else for content (not loading) -->
                             </div>
+
 
                         </div>
                     </div>
@@ -5327,6 +5420,10 @@
         createApp({
             data() {
                 return {
+                    documentsFilter: 'all',
+                    selectedMissingDocType: null,
+                    missingFilter: 'all',
+                    missingSearchQuery: '',
                     dropdownStyle: {
                       top: '0px',
                       left: '0px',
@@ -5494,6 +5591,43 @@
                 }
             },
             methods: {
+                            getFilteredDocuments() {
+                                    const allDocs = this.getAllRequiredDocuments();
+
+                                    if (this.documentsFilter === 'uploaded') {
+                                        return allDocs.filter(doc => doc.uploaded === true);
+                                    } else if (this.documentsFilter === 'pending') {
+                                        return allDocs.filter(doc => !doc.uploaded);
+                                    }
+
+                                    return allDocs; // 'all' - show everything
+                                },
+                            selectMissingDocument(result) {
+                    this.selectedMissingDocType = result;
+                },
+
+                getFilteredPopulatedFields() {
+                    if (!this.selectedMissingDocType) return [];
+                    let fields = this.getDocumentPopulatedFields(this.selectedMissingDocType);
+                    if (this.missingSearchQuery) {
+                        return fields.filter(f =>
+                            f.field_name.toLowerCase().includes(this.missingSearchQuery.toLowerCase())
+                        );
+                    }
+                    return fields;
+                },
+
+                getFilteredMissingFields() {
+                    if (!this.selectedMissingDocType) return [];
+                    let fields = this.getDocumentMissingFields(this.selectedMissingDocType);
+                    if (this.missingSearchQuery) {
+                        return fields.filter(f =>
+                            f.field_name.toLowerCase().includes(this.missingSearchQuery.toLowerCase())
+                        );
+                    }
+                    return fields;
+                },
+                    
                 closeDropdownOnScroll(event) {
                     // Don't close if scrolling inside the dropdown itself
                   if (event.target.closest('.dropdown-container')) {
