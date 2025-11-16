@@ -479,20 +479,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "232",
-      "documentId": "Sea_Waybill",
-      "documentName": "Sea Waybill",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
       "id": "233",
       "documentId": "Sea_Waybill",
       "documentName": "Sea Waybill",

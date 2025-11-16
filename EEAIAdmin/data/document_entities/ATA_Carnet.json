@@ -647,20 +647,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "790",
-      "documentId": "ATA_Carnet",
-      "documentName": "ATA Carnet",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "791",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",

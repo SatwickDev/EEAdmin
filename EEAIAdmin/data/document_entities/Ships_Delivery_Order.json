@@ -409,20 +409,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "264",
-      "documentId": "Ships_Delivery_Order",
-      "documentName": "Ship's Delivery Order",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
       "id": "265",
       "documentId": "Ships_Delivery_Order",
       "documentName": "Ship's Delivery Order",

@@ -297,20 +297,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "118",
-      "documentId": "Shippers_Letter_of_Instructions",
-      "documentName": "Shipper's Letter of Instructions",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
       "id": "120",
       "documentId": "Shippers_Letter_of_Instructions",
       "documentName": "Shipper's Letter of Instructions",

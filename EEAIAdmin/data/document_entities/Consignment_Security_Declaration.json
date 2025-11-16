@@ -283,20 +283,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "441",
-      "documentId": "Consignment_Security_Declaration",
-      "documentName": "Consignment Security Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "442",
       "documentId": "Consignment_Security_Declaration",
       "documentName": "Consignment Security Declaration",
@@ -374,20 +360,6 @@
       "documentCategoryName": "Transport Processes",
       "entityId": "338",
       "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "450",
-      "documentId": "Consignment_Security_Declaration",
-      "documentName": "Consignment Security Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",

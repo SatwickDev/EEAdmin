@@ -339,20 +339,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "795",
-      "documentId": "TIR_Carnet",
-      "documentName": "TIR Carnet",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "796",
       "documentId": "TIR_Carnet",
       "documentName": "TIR Carnet",

@@ -227,20 +227,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "548",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "549",
       "documentId": "Preferential_Certificate_of_Origin",
       "documentName": "Preferential Certificate of Origin",

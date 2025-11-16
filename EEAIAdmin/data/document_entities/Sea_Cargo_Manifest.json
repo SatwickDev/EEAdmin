@@ -185,20 +185,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "315",
-      "documentId": "Sea_Cargo_Manifest",
-      "documentName": "Sea Cargo Manifest",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
       "id": "316",
       "documentId": "Sea_Cargo_Manifest",
       "documentName": "Sea Cargo Manifest",

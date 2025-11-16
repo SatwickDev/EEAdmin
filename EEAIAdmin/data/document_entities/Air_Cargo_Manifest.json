@@ -129,20 +129,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "330",
-      "documentId": "Air_Cargo_Manifest",
-      "documentName": "Air Cargo Manifest",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "331",
       "documentId": "Air_Cargo_Manifest",
       "documentName": "Air Cargo Manifest",

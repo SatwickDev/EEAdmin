@@ -378,7 +378,6 @@
       "dataCategoryValue": "Locations",
       "fieldType": "optional"
     },
-
     {
       "id": "32",
       "documentId": "Letter_of_Credit",
@@ -895,20 +894,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "67",
-      "documentId": "TIR_Carnet",
-      "documentName": "TIR Carnet",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
       "fieldType": "mandatory"
     },
     {
@@ -3502,20 +3487,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "255",
-      "documentId": "ATA_Carnet",
-      "documentName": "ATA Carnet",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "256",
       "documentId": "ATA_Carnet",
       "documentName": "ATA Carnet",
@@ -4916,20 +4887,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "361",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "362",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
       "documentName": "Certificate of Inspection for Organic Products",
@@ -5700,20 +5657,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "423",
-      "documentId": "Preferential_Certificate_of_Origin",
-      "documentName": "Preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "424",
       "documentId": "Preferential_Certificate_of_Origin",
       "documentName": "Preferential Certificate of Origin",
@@ -6344,20 +6287,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "471",
-      "documentId": "Air_Cargo_Manifest",
-      "documentName": "Air Cargo Manifest",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "472",
       "documentId": "Air_Cargo_Manifest",
       "documentName": "Air Cargo Manifest",
@@ -6818,20 +6747,6 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
-    },
-    {
-      "id": "506",
-      "documentId": "Air_Waybill",
-      "documentName": "Air Waybill",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
     },
     {
       "id": "508",
@@ -8248,20 +8163,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "618",
-      "documentId": "Consignment_Security_Declaration",
-      "documentName": "Consignment Security Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "619",
       "documentId": "Consignment_Security_Declaration",
       "documentName": "Consignment Security Declaration",
@@ -8367,20 +8268,6 @@
       "documentCategoryName": "Transport Processes",
       "entityId": "338",
       "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "627",
-      "documentId": "Consignment_Security_Declaration",
-      "documentName": "Consignment Security Declaration",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -9437,7 +9324,6 @@
       "dataCategoryValue": "Goods",
       "fieldType": "optional"
     },
-
     {
       "id": "707",
       "documentId": "Export_Import_License",
@@ -9677,20 +9563,6 @@
       "fieldType": "optional"
     },
     {
-      "id": "736",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "optional"
-    },
-    {
       "id": "737",
       "documentId": "Non-preferential_Certificate_of_Origin",
       "documentName": "Non-preferential Certificate of Origin",
@@ -9810,20 +9682,6 @@
       "documentCategoryName": "Transport Processes",
       "entityId": "338",
       "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "755",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -10041,20 +9899,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "773",
-      "documentId": "Rail_Consignment_Note",
-      "documentName": "Rail Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "774",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
@@ -10160,20 +10004,6 @@
       "documentCategoryName": "Transport Processes",
       "entityId": "338",
       "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
-      "id": "783",
-      "documentId": "Road_Consignment_Note",
-      "documentName": "Road Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -11105,20 +10935,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "852",
-      "documentId": "Sea_Cargo_Manifest",
-      "documentName": "Sea Cargo Manifest",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
       "id": "853",
       "documentId": "Sea_Cargo_Manifest",
       "documentName": "Sea Cargo Manifest",
@@ -11651,20 +11467,6 @@
       "fieldType": "conditional"
     },
     {
-      "id": "898",
-      "documentId": "Sea_Waybill",
-      "documentName": "Sea Waybill",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
       "id": "899",
       "documentId": "Sea_Waybill",
       "documentName": "Sea Waybill",
@@ -12013,7 +11815,7 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
       "fieldType": "conditional"
-    },    
+    },
     {
       "id": "925",
       "documentId": "Transit_Accompanying_Document",
@@ -12078,20 +11880,6 @@
       "documentCategoryName": "Transport Processes",
       "entityId": "338",
       "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "930",
-      "documentId": "Shippers_Letter_of_Instructions",
-      "documentName": "Shipper's Letter of Instructions",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -12582,20 +12370,6 @@
       "documentCategoryName": "Commercial Processes",
       "entityId": "128",
       "entityName": "Product Identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
-    },
-    {
-      "id": "967",
-      "documentId": "Ships_Delivery_Order",
-      "documentName": "Ship's Delivery Order",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -13161,7 +12935,7 @@
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
       "fieldType": "conditional"
-    },  
+    },
     {
       "id": "1009",
       "documentId": "Covering_Schedule",
@@ -13203,7 +12977,7 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates",
       "fieldType": "mandatory"
-    },    
+    },
     {
       "id": "1012",
       "documentId": "Covering_Schedule",
@@ -13301,7 +13075,7 @@
       "dataCategoryId": "5",
       "dataCategoryValue": "Clauses/conditions/instructions",
       "fieldType": "optional"
-    }, 
+    },
     {
       "id": "1019",
       "documentId": "Covering_Schedule",
@@ -13357,7 +13131,7 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms",
       "fieldType": "mandatory"
-    },  
+    },
     {
       "id": "1023",
       "documentId": "Covering_Schedule",
@@ -13665,7 +13439,7 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties",
       "fieldType": "mandatory"
-    }, 
+    },
     {
       "id": "1045",
       "documentId": "Commercial_Invoice",
@@ -15018,6 +14792,34 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "195",
+      "documentId": "Bill_of_Lading",
+      "documentName": "Bill of Lading",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "338",
+      "entityName": "Transport means identifier/Vehicle registration number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment",
+      "fieldType": "mandatory"
+    },
+    {
+      "id": "151",
+      "documentId": "Packing_List",
+      "documentName": "Packing List",
+      "documentCategoryId": "",
+      "documentCategoryName": "",
+      "entityId": "338",
+      "entityName": "Transport means identifier/Vehicle registration number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment",
       "fieldType": "mandatory"
     }
   ]

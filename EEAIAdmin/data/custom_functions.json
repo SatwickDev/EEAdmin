@@ -36,6 +36,50 @@
       "createdAt": "2025-10-07T07:00:00Z",
       "updatedAt": "2025-10-07T06:26:57.718693Z",
       "isActive": true
+    },
+    {
+      "id": "2",
+      "name": "LC Advising",
+      "description": "LC Advising",
+      "category": "Trade Finance",
+      "documentRequirements": [
+        {
+          "documentType": "Air_Waybill",
+          "documentName": "Air Waybill",
+          "requirementType": "mandatory",
+          "minCount": 0,
+          "maxCount": 1
+        },
+        {
+          "documentType": "Covering_Schedule",
+          "documentName": "Covering Schedule",
+          "requirementType": "mandatory",
+          "minCount": 1,
+          "maxCount": 1
+        },
+        {
+          "documentType": "Certificate_of_Weight",
+          "documentName": "Certificate of Weight",
+          "requirementType": "mandatory",
+          "minCount": 1,
+          "maxCount": 1
+        },
+        {
+          "documentType": "Cargo_Insurance_Document",
+          "documentName": "Cargo Insurance Document",
+          "requirementType": "mandatory",
+          "minCount": 1,
+          "maxCount": 1
+        }
+      ],
+      "llmPrompts": {
+        "customPrompt": ""
+      },
+      "workflowSteps": [],
+      "createdBy": "system",
+      "createdAt": "2025-11-16T08:54:43.828610Z",
+      "updatedAt": "2025-11-16T08:54:43.828610Z",
+      "isActive": true
     }
   ]
 }

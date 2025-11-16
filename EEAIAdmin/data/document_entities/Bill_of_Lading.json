@@ -638,12 +638,12 @@
       "documentName": "Bill of Lading",
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
-      "entityId": "369",
-      "entityName": "Vehicle registration number",
+      "entityId": "338",
+      "entityName": "Transport means identifier/Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
+      "dataCategoryId": "11",
+      "dataCategoryValue": "Transport modes/means/equipment",
       "fieldType": "mandatory"
     },
     {

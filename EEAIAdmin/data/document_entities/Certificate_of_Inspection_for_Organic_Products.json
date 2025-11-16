@@ -185,20 +185,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "716",
-      "documentId": "Certificate_of_Inspection_for_Organic_Products",
-      "documentName": "Certificate of Inspection for Organic Products",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "717",
       "documentId": "Certificate_of_Inspection_for_Organic_Products",
       "documentName": "Certificate of Inspection for Organic Products",

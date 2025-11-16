@@ -115,20 +115,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "345",
-      "documentId": "Rail_Consignment_Note",
-      "documentName": "Rail Consignment Note",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "339",
-      "entityName": "Vehicle registration number",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "346",
       "documentId": "Rail_Consignment_Note",
       "documentName": "Rail Consignment Note",
