@@ -23512,75 +23512,77 @@ def _save_document_categories(data):
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-    # ============================================================================
-    # CUSTOM FUNCTIONS ROUTES
-    # ============================================================================
+        
 
-    @app.route('/custom_functions')
-    @timing_aspect
-    def custom_functions_page():
-        """Render custom functions management page"""
-        return render_template('custom_functions.html')
+# ============================================================================
+# CUSTOM FUNCTIONS ROUTES
+# ============================================================================
 
-    @app.route('/custom_function_builder')
-    @timing_aspect
-    def custom_function_builder():
-        """Render custom function builder/editor page"""
-        return render_template('custom_function_builder.html')
+@app.route('/custom_functions')
+@timing_aspect
+def custom_functions_page():
+    """Render custom functions management page"""
+    return render_template('custom_functions.html')
 
-    @app.route('/api/custom_functions', methods=['GET'])
-    @timing_aspect
-    def get_all_custom_functions():
-        """Get all custom functions"""
-        try:
-            functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
+@app.route('/custom_function_builder')
+@timing_aspect
+def custom_function_builder():
+    """Render custom function builder/editor page"""
+    return render_template('custom_function_builder.html')
 
-            if os.path.exists(functions_file):
-                with open(functions_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-            else:
-                data = {'functions': []}
+@app.route('/api/custom_functions', methods=['GET'])
+@timing_aspect
+def get_all_custom_functions():
+    """Get all custom functions"""
+    try:
+        functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
 
-            functions = data.get('functions', [])
+        if os.path.exists(functions_file):
+            with open(functions_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        else:
+            data = {'functions': []}
 
-            # Optional filters
-            category = request.args.get('category')
-            active_only = request.args.get('active', 'false').lower() == 'true'
+        functions = data.get('functions', [])
 
-            if category:
-                functions = [f for f in functions if f.get('category') == category]
+        # Optional filters
+        category = request.args.get('category')
+        active_only = request.args.get('active', 'false').lower() == 'true'
 
-            if active_only:
-                functions = [f for f in functions if f.get('isActive', True)]
+        if category:
+            functions = [f for f in functions if f.get('category') == category]
 
-            return jsonify({'success': True, 'functions': functions}), 200
-        except Exception as e:
-            logger.error(f"Error getting custom functions: {e}")
-            return jsonify({'success': False, 'message': str(e)}), 500
+        if active_only:
+            functions = [f for f in functions if f.get('isActive', True)]
 
-    @app.route('/api/custom_functions/<function_id>', methods=['GET'])
-    @timing_aspect
-    def get_custom_function(function_id):
-        """Get a single custom function by ID"""
-        try:
-            functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
+        return jsonify({'success': True, 'functions': functions}), 200
+    except Exception as e:
+        logger.error(f"Error getting custom functions: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-            if os.path.exists(functions_file):
-                with open(functions_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    functions = data.get('functions', [])
-                    function = next((f for f in functions if f.get('id') == function_id), None)
+@app.route('/api/custom_functions/<function_id>', methods=['GET'])
+@timing_aspect
+def get_custom_function(function_id):
+    """Get a single custom function by ID"""
+    try:
+        functions_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'custom_functions.json')
 
-                    if function:
-                        return jsonify({'success': True, 'function': function}), 200
-                    else:
-                        return jsonify({'success': False, 'message': 'Function not found'}), 404
-            else:
-                return jsonify({'success': False, 'message': 'No functions found'}), 404
+        if os.path.exists(functions_file):
+            with open(functions_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                functions = data.get('functions', [])
+                function = next((f for f in functions if f.get('id') == function_id), None)
 
-        except Exception as e:
-            logger.error(f"Error getting custom function {function_id}: {e}")
-            return jsonify({'success': False, 'message': str(e)}), 500
+                if function:
+                    return jsonify({'success': True, 'function': function}), 200
+                else:
+                    return jsonify({'success': False, 'message': 'Function not found'}), 404
+        else:
+            return jsonify({'success': False, 'message': 'No functions found'}), 404
+
+    except Exception as e:
+        logger.error(f"Error getting custom function {function_id}: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 # new code added here
 def generate_mt700_message(lc_data):

@@ -4621,9 +4621,10 @@
 
             if (data.success) {
                 categories = data.categories || [];
-                {#renderDocumentCategories();#}
+                // {#renderDocumentCategories();#}
                 renderDocumentTypes();
                 populateProcessTypeFilter();
+                populateProcessTypeDropdown();
             } else {
                 showError('Failed to load categories');
             }
@@ -4631,8 +4632,8 @@
             console.error('Error loading categories:', error);
             showError('Error loading categories');
         } finally {
-            {#document.getElementById('loading').style.display = 'none';#}
-            {#document.getElementById('categoriesContainer').style.display = 'block';#}
+            // {#document.getElementById('loading').style.display = 'none';#}
+            // {#document.getElementById('categoriesContainer').style.display = 'block';#}
         }
     }
 
@@ -4667,7 +4668,6 @@
     }
 
     function addDocumentCategory() {
-        {#alert('Add Document Type functionality - Coming soon!');#}
         document.getElementById('DocumentmodalTitle').textContent = 'Add Document Type';
         document.getElementById('categoryForm').reset();
         document.getElementById('categoryId').value = '';
@@ -4677,9 +4677,8 @@
     }
 
     function editDocumentCategory(categoryId) {
-        {#alert('Edit Document Type: ' + categoryId + ' - Coming soon!');#}
         const Category = filteredDocumentTypes.find(c => c.id === categoryId);
-
+        console.log(filteredDocumentTypes)
         if (Category) {
             document.getElementById('DocumentmodalTitle').textContent = 'Edit';
             document.getElementById('categoryId').value = categoryId;
@@ -4741,8 +4740,8 @@
 
             if (categoryId) {
                 // Update existing category
-                {#if (resp.isConfirmed){#}
-                {#const newcategoryId = document.getElementById('categoryId').value;#}
+                // {#if (resp.isConfirmed){#}
+                // {#const newcategoryId = document.getElementById('categoryId').value;#}
                 const checker = documentcatagorycheck(categoryData, categoryId);
                 if (checker[0] || checker[1]) {
                     if (checker[0]) {
@@ -4833,12 +4832,12 @@
     async function loadAllData() {
         try {
             // Load documents
-            {#const docsResponse = await fetch('/api/documents');
-            const docsData = await docsResponse.json();
-            if (docsData.success) {
-                documents = docsData.documents || [];
-                populateDocuments();
-            }#}
+            // {#const docsResponse = await fetch('/api/documents');
+            // const docsData = await docsResponse.json();
+            // if (docsData.success) {
+            //     documents = docsData.documents || [];
+            //     populateDocuments();
+            // }#}
 
             //load entity mappings
             const response = await fetch('/api/document_entity_maintenance');
@@ -4885,45 +4884,45 @@
         }
     }
 
-    {#function populateDocuments() {
-      const select = document.getElementById('documentId');
-      select.innerHTML = '<option value="">Select document...</option>';
-      documents.forEach(doc => {
-        const option = document.createElement('option');
-        option.value = doc.id;
-        option.textContent = doc.name;
-        option.setAttribute('data-category-id', doc.categoryId || '');
-        option.setAttribute('data-category-name', doc.categoryName || '');
-        select.appendChild(option);
-      });
+    // {#function populateDocuments() {
+    //   const select = document.getElementById('documentId');
+    //   select.innerHTML = '<option value="">Select document...</option>';
+    //   documents.forEach(doc => {
+    //     const option = document.createElement('option');
+    //     option.value = doc.id;
+    //     option.textContent = doc.name;
+    //     option.setAttribute('data-category-id', doc.categoryId || '');
+    //     option.setAttribute('data-category-name', doc.categoryName || '');
+    //     select.appendChild(option);
+    //   });
 
-      // Also populate the filter dropdown
-      const filterSelect = document.getElementById('documentFilter');
-      filterSelect.innerHTML = '<option value="">All Documents</option>';
-      documents.forEach(doc => {
-        const option = document.createElement('option');
-        option.value = doc.id;
-        option.textContent = doc.name;
-        filterSelect.appendChild(option);
-      });
+    //   // Also populate the filter dropdown
+    //   const filterSelect = document.getElementById('documentFilter');
+    //   filterSelect.innerHTML = '<option value="">All Documents</option>';
+    //   documents.forEach(doc => {
+    //     const option = document.createElement('option');
+    //     option.value = doc.id;
+    //     option.textContent = doc.name;
+    //     filterSelect.appendChild(option);
+    //   });
 
-      // Add event listener to auto-fill document category
-      select.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const categoryId = selectedOption.getAttribute('data-category-id');
+    //   // Add event listener to auto-fill document category
+    //   select.addEventListener('change', function() {
+    //     const selectedOption = this.options[this.selectedIndex];
+    //     const categoryId = selectedOption.getAttribute('data-category-id');
 
-        const documentCategorySelect = document.getElementById('documentCategoryId');
-        if (categoryId) {
-          documentCategorySelect.value = categoryId;
-          documentCategorySelect.disabled = false;
-          documentCategorySelect.style.backgroundColor = '#f1f5f9';
-          documentCategorySelect.style.cursor = 'not-allowed';
-        } else {
-          documentCategorySelect.value = '';
-          documentCategorySelect.disabled = true;
-        }
-      });
-    }#}
+    //     const documentCategorySelect = document.getElementById('documentCategoryId');
+    //     if (categoryId) {
+    //       documentCategorySelect.value = categoryId;
+    //       documentCategorySelect.disabled = false;
+    //       documentCategorySelect.style.backgroundColor = '#f1f5f9';
+    //       documentCategorySelect.style.cursor = 'not-allowed';
+    //     } else {
+    //       documentCategorySelect.value = '';
+    //       documentCategorySelect.disabled = true;
+    //     }
+    //   });
+    // }#}
 
     function populateDocumentTypes() {
         const select = document.getElementById('documentId');
@@ -5822,9 +5821,9 @@
     }
 
     function editEntity(entityId2) {
-        {#alert('Edit Entity: ' + entityId2 + ' - Please use the standalone Entities page for full functionality.');#}
+        // {#alert('Edit Entity: ' + entityId2 + ' - Please use the standalone Entities page for full functionality.');#}
         const entity = filteredEntitiesTab.find(e => e.id === entityId2);
-        {#alert('Edit Entity: ' + entity);#}
+        // {#alert('Edit Entity: ' + entity);#}
         if (entity) {
             document.getElementById('entitymodalTitle').textContent = 'Edit Entity';
             document.getElementById('entityId2').value = entityId2;
