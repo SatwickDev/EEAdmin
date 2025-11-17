@@ -889,7 +889,8 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 28px;
             padding: 45px;
-            max-width: 900px;
+            /* increase max width so multiple tiles can fit side-by-side on desktop */
+            max-width: 1200px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -948,8 +949,12 @@
 
         .sub-tiles-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            /* allow more columns by lowering the minimum column width so tiles fit side-by-side
+               inside the overlay; keep flexible max width */
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 30px;
+            align-items: start;
+            justify-items: stretch;
         }
 
         .sub-tile {
@@ -1486,6 +1491,41 @@
                         </button>
                     </div>
                 </div>
+                <!-- Register Documents for LC Tile -->
+                <div class="sub-tile" onclick="navigateToForm('register_lc_docs')">
+                    <div class="sub-tile-icon">
+                        <i class="fas fa-file-import"></i>
+                    </div>
+                    <h3 class="sub-tile-title">Register Documents for LC</h3>
+                    <p class="sub-tile-description">
+                        Continue processing previously submitted LC documents with bank verification
+                    </p>
+                    <ul class="sub-tile-features">
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Document verification</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>Payment guarantee</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>International compliance</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-check"></i>
+                            <span>SWIFT messaging</span>
+                        </li>
+                    </ul>
+                    <div class="sub-tile-action">
+                        <button class="sub-tile-btn">
+                            <span>Continue LC Registration</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1538,6 +1578,7 @@
             const formUrls = {
                 'import_lc': '/trade_finance_lc_form',
                 'guarantee_form': '/bank_guarantee_form',
+                'register_lc_docs': '/register_lc_docs',
                 'trade_finance': '/trade_finance_lc_form',
                 'treasury': '/treasury_management_form',
                 'cash_management': '/cash_management_form'

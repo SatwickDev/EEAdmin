@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register LC Documents - Finstack AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%);
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .main-container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 120px auto 0;
+            padding: 40px 30px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header-section h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-section p {
+            font-size: 16px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Card Container */
+        .card-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title i {
+            color: #667eea;
+            font-size: 26px;
+        }
+
+        /* Form Section */
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .form-input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-input-wrapper label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-input-wrapper label .required {
+            color: #ef4444;
+        }
+
+        .form-input-wrapper input {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(248, 250, 252, 0.8);
+        }
+
+        .form-input-wrapper input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input-wrapper input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span,
+        .btn i {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(248, 250, 252, 0.8);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-confirm {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-confirm:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+
+        /* LC Data Display Section */
+        .lc-data-section {
+            display: none;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid var(--border-color);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .lc-data-section.active {
+            display: block;
+        }
+
+        .lc-data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .data-field {
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .data-field:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .data-field-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .data-field-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-color);
+            word-break: break-word;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .status-badge.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            gap: 12px;
+        }
+
+        .loading.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .alert.info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+
+        .alert i {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .alert-message {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Action Buttons Container */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-start;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Responsive */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 100px auto 0;
+                padding: 20px 15px;
+            }
+
+            .card {
+                padding: 24px 20px;
+            }
+
+            .header-section h1 {
+                font-size: 28px;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .lc-data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1><i class="fas fa-file-invoice"></i> Register LC Documents</h1>
+            <p>Continue processing your previously submitted Letter of Credit</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card-container">
+            <div class="card">
+                <!-- Alerts Container -->
+                <div id="alertsContainer"></div>
+
+                <!-- LC Number Lookup Form -->
+                <div class="form-section">
+                    <h3 class="card-title">
+                        <i class="fas fa-search"></i>
+                        Find Your LC
+                    </h3>
+
+                    <div class="form-group">
+                        <div class="form-input-wrapper" style="flex: 1;">
+                            <label for="lcNumberInput">
+                                LC Number <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="lcNumberInput" 
+                                placeholder="e.g., LC20241117123456"
+                                autocomplete="off"
+                            />
+                        </div>
+                        <button id="searchBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            <span>Search</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="loading">
+                    <div class="spinner"></div>
+                    <span class="loading-text">Retrieving LC data...</span>
+                </div>
+
+                <!-- LC Data Display Section -->
+                <div id="lcDataSection" class="lc-data-section">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt"></i>
+                        LC Details
+                    </h3>
+
+                    <div id="lcDataGrid" class="lc-data-grid">
+                        <!-- Data fields will be populated here -->
+                    </div>
+
+                    <!-- Confirmation Message -->
+                    <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <p style="font-size: 14px; color: #3b82f6; font-weight: 500;">
+                            <i class="fas fa-info-circle"></i>
+                            Please verify the LC information above. If correct, click "Confirm & Continue" to proceed with document registration.
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button id="swiftPreviewBtn" class="btn btn-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                            <i class="fas fa-envelope"></i>
+                            <span>Preview SWIFT</span>
+                        </button>
+                        <button id="confirmBtn" class="btn btn-confirm">
+                            <i class="fas fa-check"></i>
+                            <span>Confirm & Continue</span>
+                        </button>
+                        <button id="editBtn" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i>
+                            <span>Search Again</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentLCData = null;
+        const lcNumberInput = document.getElementById('lcNumberInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const editBtn = document.getElementById('editBtn');
+        const loadingState = document.getElementById('loadingState');
+        const lcDataSection = document.getElementById('lcDataSection');
+        const lcDataGrid = document.getElementById('lcDataGrid');
+        const alertsContainer = document.getElementById('alertsContainer');
+
+        // Show alert message
+        function showAlert(message, type = 'info', title = '') {
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            
+            const titleText = title || (type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Information');
+            
+            alert.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <div class="alert-content">
+                    <div class="alert-title">${titleText}</div>
+                    <div class="alert-message">${message}</div>
+                </div>
+            `;
+            
+            alertsContainer.appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alert.style.animation = 'slideDown 0.3s ease reverse';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        // Display LC data in grid
+        function displayLCData(lcData) {
+            lcDataGrid.innerHTML = '';
+            
+            // Define fields to display in order
+            const fieldsToDisplay = [
+                { key: 'lcNumber', label: 'LC Number' },
+                { key: 'lcType', label: 'LC Type' },
+                { key: 'status', label: 'Status' },
+                { key: 'applicant', label: 'Applicant' },
+                { key: 'beneficiary', label: 'Beneficiary' },
+                { key: 'issuingBank', label: 'Issuing Bank' },
+                { key: 'advisingBank', label: 'Advising Bank' },
+                { key: 'currency', label: 'Currency' },
+                { key: 'amount', label: 'Amount' },
+                { key: 'issueDate', label: 'Issue Date' },
+                { key: 'expiryDate', label: 'Expiry Date' },
+                { key: 'paymentTerms', label: 'Payment Terms' },
+                { key: 'goodsDescription', label: 'Goods Description' },
+                { key: 'incoterms', label: 'Incoterms' },
+                { key: 'portOfLoading', label: 'Port of Loading' },
+                { key: 'portOfDischarge', label: 'Port of Discharge' }
+            ];
+            
+            fieldsToDisplay.forEach(field => {
+                if (lcData[field.key] !== undefined && lcData[field.key] !== null) {
+                    let value = lcData[field.key];
+                    
+                    // Format dates
+                    if (field.key.includes('Date')) {
+                        value = formatDate(value);
+                    }
+                    
+                    const fieldElement = document.createElement('div');
+                    fieldElement.className = 'data-field';
+                    fieldElement.innerHTML = `
+                        <div class="data-field-label">${field.label}</div>
+                        <div class="data-field-value">${value}</div>
+                    `;
+                    lcDataGrid.appendChild(fieldElement);
+                }
+            });
+        }
+
+        // Search for LC
+        async function searchLC() {
+            const lcNumber = lcNumberInput.value.trim();
+            
+            if (!lcNumber) {
+                showAlert('Please enter an LC number', 'error', 'Required Field');
+                return;
+            }
+            
+            loadingState.classList.add('active');
+            lcDataSection.classList.remove('active');
+            
+            try {
+                const response = await fetch('/api/lc/retrieve', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ lcNumber })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentLCData = result.data;
+                    displayLCData(currentLCData);
+                    lcDataSection.classList.add('active');
+                    loadingState.classList.remove('active');
+                    showAlert(`LC ${lcNumber} found successfully`, 'success', 'LC Retrieved');
+                } else {
+                    loadingState.classList.remove('active');
+                    showAlert(result.message || 'LC not found', 'error', 'LC Not Found');
+                }
+            } catch (error) {
+                loadingState.classList.remove('active');
+                showAlert(`Error searching LC: ${error.message}`, 'error', 'Search Error');
+                console.error('Search error:', error);
+            }
+        }
+
+        // Confirm and continue
+        async function confirmAndContinue() {
+            if (!currentLCData) {
+                showAlert('No LC data to confirm', 'error');
+                return;
+            }
+            
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating SWIFT...</span>';
+            
+            try {
+                // First, fetch SWIFT message
+                let swiftMessage = '';
+                try {
+                    const swiftResponse = await fetch(`/api/lc/swift-message?lcNumber=${currentLCData.lcNumber}`);
+                    const swiftResult = await swiftResponse.json();
+                    if (swiftResult.success) {
+                        swiftMessage = swiftResult.swiftMessage;
+                    }
+                } catch (swiftError) {
+                    console.warn('Could not generate SWIFT message:', swiftError);
+                }
+                
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Registering...</span>';
+                
+                // Send confirmation data via form to /register_lc_docs POST
+                const formData = new FormData();
+                
+                // Add all LC data to form
+                Object.keys(currentLCData).forEach(key => {
+                    if (key !== '_id') {
+                        let value = currentLCData[key];
+                        if (typeof value === 'object') {
+                            value = JSON.stringify(value);
+                        }
+                        formData.append(key, value);
+                    }
+                });
+                
+                const response = await fetch('/register_lc_docs', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('LC registration confirmed! Redirecting to document upload...', 'success', 'Success');
+                    
+                    // Store LC context in sessionStorage for document_register page
+                    const lcContext = {
+                        lcNumber: currentLCData.lcNumber,
+                        transactionId: result.registrationId,
+                        formData: currentLCData,
+                        swiftMessage: swiftMessage,
+                        submissionTime: new Date().toISOString(),
+                        status: 'document_registration'
+                    };
+                    sessionStorage.setItem('lcContext', JSON.stringify(lcContext));
+                    
+                    // Redirect to document_register page with source parameter
+                    setTimeout(() => {
+                        window.location.href = `${result.redirectUrl}?source=register_lc_docs&registrationId=${result.registrationId}&lcNumber=${currentLCData.lcNumber}`;
+                    }, 1500);
+                } else {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-check"></i><span>Confirm & Continue</span>';
+                    showAlert(result.message || 'Error confirming LC', 'error', 'Confirmation Error');
+                }
+            } catch (error) {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-check"></i><span>Confirm & Continue</span>';
+                showAlert(`Error confirming LC: ${error.message}`, 'error', 'Error');
+                console.error('Confirmation error:', error);
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            lcNumberInput.value = '';
+            currentLCData = null;
+            lcDataSection.classList.remove('active');
+            loadingState.classList.remove('active');
+            alertsContainer.innerHTML = '';
+            lcNumberInput.focus();
+        }
+
+        // Event listeners
+        searchBtn.addEventListener('click', searchLC);
+        lcNumberInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchLC();
+        });
+        confirmBtn.addEventListener('click', confirmAndContinue);
+        editBtn.addEventListener('click', resetForm);
+        document.getElementById('swiftPreviewBtn').addEventListener('click', previewSwiftFromLcDocs);
+
+        // SWIFT Preview function for register_lc_docs
+        function previewSwiftFromLcDocs() {
+            if (!currentLCData) {
+                alert('Please search for an LC first');
+                return;
+            }
+
+            // Fetch SWIFT message if not already in currentLCData
+            if (!currentLCData.swiftMessage) {
+                fetchSwiftPreview();
+            } else {
+                displaySwiftPreview(currentLCData.swiftMessage);
+            }
+        }
+
+        async function fetchSwiftPreview() {
+            try {
+                const response = await fetch(`/api/lc/swift-message?lcNumber=${currentLCData.lcNumber}`);
+                const data = await response.json();
+
+                if (data.success && data.swiftMessage) {
+                    currentLCData.swiftMessage = data.swiftMessage;
+                    displaySwiftPreview(data.swiftMessage);
+                } else {
+                    alert('Could not generate SWIFT message: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error fetching SWIFT:', error);
+                alert('Error generating SWIFT preview');
+            }
+        }
+
+        function displaySwiftPreview(swiftMessage) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6); display: flex; align-items: center;
+                justify-content: center; z-index: 10000; backdrop-filter: blur(3px);
+            `;
+
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; max-width: 85%; max-height: 85%;
+                           padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #334155; font-size: 18px;">SWIFT MT700 Preview - LC ${currentLCData.lcNumber}</h3>
+                        <button id="closeSwiftModal" 
+                                style="background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
+                    </div>
+                    <pre style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px;
+                              font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
+                              white-space: pre-wrap; overflow-x: auto; max-height: 60vh; word-wrap: break-word;">${swiftMessage}</pre>
+                </div>
+            `;
+            modal.className = 'swift-modal';
+            document.body.appendChild(modal);
+
+            // Add close button event listener
+            const closeBtn = modal.querySelector('#closeSwiftModal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            }
+
+            // Close modal when clicking outside the content
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // Auto-focus input on load
+        window.addEventListener('load', () => {
+            lcNumberInput.focus();
+        });
+    </script>
+</body>
+</html>

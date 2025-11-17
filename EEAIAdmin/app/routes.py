@@ -1485,6 +1485,109 @@ def setup_auth_routes(app: Flask):
                         template_data[key] = request.args.get(key)
 
             return render_template('trade_finance_lc_form.html', **template_data)
+
+    @app.route('/api/lc/retrieve', methods=['POST'])
+    def retrieve_lc_data():
+        """Retrieve LC data by LC number from database"""
+        try:
+            data = request.get_json()
+            lc_number = data.get('lcNumber', '').strip()
+            
+            if not lc_number:
+                return jsonify({
+                    'success': False,
+                    'message': 'LC Number is required'
+                }), 400
+            
+            # Query database for LC with this LC number
+            lc_record = db.letter_of_credits.find_one({'lcNumber': lc_number})
+            lc_records = db.letter_of_credits.find()
+            logger.info(f"all lcs present in the db :")
+            for idx, record in enumerate(lc_records, start=1):
+                logger.info(f"lc {idx} present in the db: {record}")
+
+            logger.info(f"lc data requested:{lc_record}")
+            if not lc_record:
+                return jsonify({
+                    'success': False,
+                    'message': f'LC Number {lc_number} not found in the system'
+                }), 404
+            
+            # Remove MongoDB ObjectId from response (convert to string)
+            lc_record['_id'] = str(lc_record['_id'])
+            
+            # Convert datetime objects to ISO format strings
+            if 'timestamp' in lc_record and isinstance(lc_record['timestamp'], datetime):
+                lc_record['timestamp'] = lc_record['timestamp'].isoformat()
+            
+            return jsonify({
+                'success': True,
+                'message': 'LC data retrieved successfully',
+                'data': lc_record
+            }), 200
+            
+        except Exception as e:
+            logger.error(f"Error retrieving LC data: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Error retrieving LC data: {str(e)}'
+            }), 500
+
+    @app.route('/register_lc_docs', methods=['GET', 'POST'])
+    def register_lc_docs():
+        """Handle LC document registration continuation flow"""
+        if request.method == 'POST':
+            try:
+                # Get form data with confirmed LC information
+                form_data = request.form.to_dict()
+                form_data['user_id'] = session.get('user_id', 'anonymous')
+                form_data['timestamp'] = datetime.utcnow()
+                form_data['status'] = 'document_registration'
+                form_data['registration_timestamp'] = datetime.utcnow()
+                
+                # Store the registration data in letter_of_credits with registration status
+                form_data['registration_status'] = 'registered_for_documents'
+                lc_number = form_data.get('lcNumber')
+                
+                result = db.letter_of_credits.update_one(
+                    {'lcNumber': lc_number},
+                    {'$set': form_data}
+                )
+                
+                # Return success response and redirect to document_register
+                return jsonify({
+                    'success': True,
+                    'message': 'LC registration confirmed. Proceeding to document upload.',
+                    'registrationId': lc_number,
+                    'redirectUrl': '/document_register'
+                }), 200
+                
+            except Exception as e:
+                logger.error(f"Error submitting LC registration: {str(e)}")
+                return jsonify({
+                    'success': False,
+                    'message': f'Error submitting registration: {str(e)}'
+                }), 500
+        
+        else:
+            # Handle GET request - render the register LC docs page
+            return render_template('register_lc_docs.html')
+
+    @app.route('/document_register', methods=['GET'])
+    def document_register():
+        """Render the document registration page"""
+        try:
+            # Get registration context from query params or session
+            registration_id = request.args.get('registrationId', '')
+            lc_number = request.args.get('lcNumber', '')
+            
+            return render_template('document_register.html', 
+                                 registration_id=registration_id,
+                                 lc_number=lc_number)
+        except Exception as e:
+            logger.error(f"Error rendering document_register page: {str(e)}")
+            return render_template('document_register.html')
+
     @app.route('/document-classification')
     def document_classification():
         """Document classification and compliance page"""
@@ -3488,10 +3591,10 @@ Generate a query recipe for this request."""
             }), 500
 
 
-    @app.route('/document_register')
-    def document_register():
-        """Document registration page with supporting documents upload"""
-        return render_template('document_register.html')
+    # @app.route('/document_register')
+    # def document_register():
+    #     """Document registration page with supporting documents upload"""
+    #     return render_template('document_register.html')
     @app.route('/api/lc/swift-preview-form', methods=['POST'])
     def generate_swift_preview_from_form():
         """Generate Swift MT700 preview from form data without saving to database"""
@@ -3600,18 +3703,14 @@ Generate a query recipe for this request."""
                     'message': 'Invalid amount format'
                 }), 400
 
-            # Generate unique LC number if not provided or exists
+            # Validate LC number uniqueness
             lc_collection = db.letter_of_credits
+            submitted_lc_number = data['lcNumber']  # Keep original for response
 
             # Check if LC number already exists
             existing_lc = lc_collection.find_one({'lcNumber': data['lcNumber']})
-            if existing_lc:
-                # Generate new LC number
-                current_year = datetime.now().year
-                count = lc_collection.count_documents({'lcNumber': {'$regex': f'^LC{current_year}'}})
-                data['lcNumber'] = f"LC{current_year}{str(count + 1).zfill(4)}"
-
-            # Prepare LC document
+            
+            # Prepare LC document with new/updated fields
             lc_document = {
                 'lcNumber': data['lcNumber'],
                 'lcType': data['lcType'],
@@ -3646,18 +3745,33 @@ Generate a query recipe for this request."""
                 'updatedAt': datetime.utcnow()
             }
 
-            # Insert into database
-            result = lc_collection.insert_one(lc_document)
-
+            # Insert or update into database
+            if existing_lc:
+                # LC already exists - update with new fields only
+                result = lc_collection.update_one(
+                    {'lcNumber': data['lcNumber']},
+                    {'$set': lc_document}
+                )
+                logger.info(f"LC updated: {data['lcNumber']} (modified: {result.modified_count})")
+                transaction_id = str(existing_lc['_id'])
+            else:
+                # New LC - insert it
+                result = lc_collection.insert_one(lc_document)
+                if result.acknowledged:
+                    logger.info(f"LC inserted. MongoDB acknowledged the insert. _id: {result.inserted_id}")
+                else:
+                    logger.error("Insert operation not acknowledged by MongoDB.")
+                transaction_id = str(result.inserted_id)
+            
             logger.info(f"LC form submitted successfully: {data['lcNumber']}")
 
             return jsonify({
                 'success': True,
                 'message': 'Letter of Credit submitted successfully',
                 'lcNumber': data['lcNumber'],
-                'lcId': str(result.inserted_id),
-                'transactionId': str(result.inserted_id),
-                'redirect': f'/lc_success?lcNumber={data["lcNumber"]}&transactionId={str(result.inserted_id)}'
+                'lcId': transaction_id,
+                'transactionId': transaction_id,
+                'redirect': f'/lc_success?lcNumber={data["lcNumber"]}&transactionId={transaction_id}'
             }), 200
 
         except Exception as e:
@@ -3665,6 +3779,74 @@ Generate a query recipe for this request."""
             return jsonify({
                 'success': False,
                 'message': 'Internal server error during LC submission'
+            }), 500
+
+    @app.route('/api/lc/swift-message', methods=['GET', 'POST'])
+    @timing_aspect
+    def get_or_generate_swift():
+        """Get existing SWIFT message or generate if not exists"""
+        try:
+            if request.method == 'GET':
+                # GET request - retrieve SWIFT message
+                lc_number = request.args.get('lcNumber')
+                if not lc_number:
+                    return jsonify({
+                        'success': False,
+                        'message': 'LC Number is required'
+                    }), 400
+
+                lc_collection = db.letter_of_credits
+                lc_data = lc_collection.find_one({'lcNumber': lc_number})
+                
+                if not lc_data:
+                    return jsonify({
+                        'success': False,
+                        'message': 'LC not found'
+                    }), 404
+
+                # Generate SWIFT message from LC data
+                swift_message = generate_mt700_message(lc_data)
+                
+                return jsonify({
+                    'success': True,
+                    'swiftMessage': swift_message,
+                    'lcNumber': lc_number
+                }), 200
+            
+            else:
+                # POST request - generate and store SWIFT message
+                data = request.get_json()
+                lc_number = data.get('lcNumber')
+                
+                if not lc_number:
+                    return jsonify({
+                        'success': False,
+                        'message': 'LC Number is required'
+                    }), 400
+
+                lc_collection = db.letter_of_credits
+                lc_data = lc_collection.find_one({'lcNumber': lc_number})
+                
+                if not lc_data:
+                    return jsonify({
+                        'success': False,
+                        'message': 'LC not found'
+                    }), 404
+
+                # Generate SWIFT message
+                swift_message = generate_mt700_message(lc_data)
+                
+                return jsonify({
+                    'success': True,
+                    'swiftMessage': swift_message,
+                    'lcNumber': lc_number
+                }), 200
+                
+        except Exception as e:
+            logger.error(f"Error getting/generating SWIFT message: {e}")
+            return jsonify({
+                'success': False,
+                'message': f'Error: {str(e)}'
             }), 500
 
     @app.route('/api/lc/generate-swift', methods=['POST'])
@@ -9871,9 +10053,9 @@ Return compliance status for each field.'''
 
             refined_response = process_coordinate_response(response, word_ocr_data)
 
-            logger.error(f"=== AFTER REFINE ===")
-            logger.error(f"refined best_match type: {refined_response['best_match'].get('match_type')}")
-            logger.error(f"refined matched_text: {refined_response['best_match'].get('matched_text')}")
+            # logger.error(f"=== AFTER REFINE ===")
+            # logger.error(f"refined best_match type: {refined_response['best_match'].get('match_type')}")
+            # logger.error(f"refined matched_text: {refined_response['best_match'].get('matched_text')}")
             return jsonify(refined_response)
              
         except Exception as e:

@@ -2398,6 +2398,11 @@
 
                     <!-- Form Actions -->
                     <div class="form-actions">
+                        <button type="button" class="btn btn-info" onclick="viewSwiftMessageFromDocReg()"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                            <i class="fas fa-envelope"></i>
+                            <span>View SWIFT Preview</span>
+                        </button>
                         <button type="button" class="btn btn-warning" onclick="checkDiscrepancies()"
                             id="checkDiscrepanciesBtn" disabled>
                             <i class="mdi mdi-shield-search"></i>
@@ -2484,6 +2489,12 @@
 
         // Helper functions for LC context and SWIFT message
         function getLCContext() {
+            // Return the FULL LC data (formData) instead of just context wrapper
+            if (lcContext && lcContext.formData) {
+                // Return the full LC data with all fields
+                return lcContext.formData;
+            }
+            // Fallback to full lcContext if no formData property
             return lcContext;
         }
 
@@ -2516,7 +2527,7 @@
             const source = urlParams.get('source');
             const lcNumber = urlParams.get('lcNumber');
 
-            if (source === 'lc_success' && lcNumber) {
+            if ((source === 'lc_success' || source === 'register_lc_docs') && lcNumber) {
                 // Load LC context from session storage
                 try {
                     const storedContext = sessionStorage.getItem('lcContext');
@@ -2631,8 +2642,32 @@ later than expiry date of credit
         }
 
         function viewSwiftMessage() {
-            if (!lcContext || !lcContext.swiftMessage) {
-                alert('SWIFT message not available. Please generate it from the LC success page first.');
+            // Try to get SWIFT message from multiple sources
+            let swiftMessage = null;
+
+            // First, try lcContext
+            if (lcContext && lcContext.swiftMessage) {
+                swiftMessage = lcContext.swiftMessage;
+            }
+
+            // If not found, try sessionStorage
+            if (!swiftMessage) {
+                try {
+                    const storedContext = sessionStorage.getItem('lcContext');
+                    if (storedContext) {
+                        const context = JSON.parse(storedContext);
+                        if (context.swiftMessage) {
+                            swiftMessage = context.swiftMessage;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not load SWIFT from sessionStorage:', e);
+                }
+            }
+
+            // If still not found, alert user
+            if (!swiftMessage) {
+                alert('SWIFT message not available. Please complete the LC registration flow first.');
                 return;
             }
 
@@ -2645,20 +2680,121 @@ later than expiry date of credit
             `;
 
             modal.innerHTML = `
-                <div style="background: white; border-radius: 16px; max-width: 80%; max-height: 80%;
+                <div style="background: white; border-radius: 16px; max-width: 85%; max-height: 85%;
                            padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0; color: #334155;">SWIFT MT700 Message</h3>
-                        <button onclick="this.closest('.modal').remove()" 
-                                style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">×</button>
+                        <h3 style="margin: 0; color: #334155; font-size: 18px;">SWIFT MT700 Message Preview</h3>
+                        <button id="closeSwiftModal" 
+                                style="background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
                     </div>
                     <pre style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px;
-                              font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;
-                              white-space: pre-wrap; overflow-x: auto;">${lcContext.swiftMessage}</pre>
+                              font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
+                              white-space: pre-wrap; overflow-x: auto; max-height: 60vh; word-wrap: break-word;">${swiftMessage}</pre>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button onclick="copySwiftToClipboard('${swiftMessage.replace(/'/g, "\\'")}');" 
+                                style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            📋 Copy to Clipboard
+                        </button>
+                        <button onclick="downloadSwiftMessage('${swiftMessage.replace(/'/g, "\\'")}');" 
+                                style="padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            📥 Download
+                        </button>
+                    </div>
                 </div>
             `;
-            modal.className = 'modal';
+            modal.className = 'swift-modal';
             document.body.appendChild(modal);
+
+            // Add close button event listener
+            const closeBtn = modal.querySelector('#closeSwiftModal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            }
+
+            // Close modal when clicking outside the content
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function copySwiftToClipboard(message) {
+            navigator.clipboard.writeText(message).then(() => {
+                alert('SWIFT message copied to clipboard!');
+            }).catch(err => {
+                console.error('Could not copy:', err);
+                alert('Failed to copy SWIFT message');
+            });
+        }
+
+        function downloadSwiftMessage(message) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(message));
+            element.setAttribute('download', `SWIFT_MT700_${new Date().getTime()}.txt`);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        // SWIFT Preview function for document_register page
+        function viewSwiftMessageFromDocReg() {
+            if (!lcContext || !lcContext.swiftMessage) {
+                alert('SWIFT message not available. Please complete the LC registration flow first.');
+                return;
+            }
+
+            const swiftMessage = lcContext.swiftMessage;
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6); display: flex; align-items: center;
+                justify-content: center; z-index: 10000; backdrop-filter: blur(3px);
+            `;
+
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 16px; max-width: 85%; max-height: 85%;
+                           padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #334155; font-size: 18px;">SWIFT MT700 Message - LC ${lcContext.lcNumber}</h3>
+                        <button id="closeSwiftModal" 
+                                style="background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
+                    </div>
+                    <pre style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px;
+                              font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
+                              white-space: pre-wrap; overflow-x: auto; max-height: 60vh; word-wrap: break-word;">${swiftMessage}</pre>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button onclick="copySwiftToClipboard('${swiftMessage.replace(/'/g, "\\'")}');" 
+                                style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            📋 Copy to Clipboard
+                        </button>
+                        <button onclick="downloadSwiftMessage('${swiftMessage.replace(/'/g, "\\'")}');" 
+                                style="padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            📥 Download
+                        </button>
+                    </div>
+                </div>
+            `;
+            modal.className = 'swift-modal';
+            document.body.appendChild(modal);
+
+            // Add close button event listener
+            const closeBtn = modal.querySelector('#closeSwiftModal');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    modal.remove();
+                });
+            }
+
+            // Close modal when clicking outside the content
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
         }
 
         // New workflow variables
@@ -4528,39 +4664,25 @@ later than expiry date of credit
 
             // Set up onload handler BEFORE setting src to ensure it fires
             iframe.onload = function() {
-                console.log('🔌 Smart Capture iframe loaded, sending LC context...');
+                console.log('✅ Smart Capture iframe loaded successfully');
                 
                 // Remove loading state from modal
                 modal.classList.remove('loading');
                 
-                // Get LC context
+                // Send LC context via postMessage (SAME WAY AS FORM SUBMISSION)
                 const lcData = getLCContext();
-                
                 if (lcData) {
-                    console.log('📤 Sending LC context to iframe:', lcData);
-                    
-                    // Wait a bit for the iframe Vue app to be fully initialized
                     setTimeout(() => {
-                        try {
-                            if (iframe.contentWindow) {
-                                iframe.contentWindow.postMessage({
-                                    type: 'LC_CONTEXT',
-                                    lcData: lcData
-                                }, '*');
-                                console.log('✅ LC context sent successfully');
-                            } else {
-                                console.error('❌ iframe.contentWindow is not available');
-                            }
-                        } catch (error) {
-                            console.error('❌ Error sending LC context:', error);
-                        }
-                    }, 1000); // Longer delay to ensure Vue app is initialized
-                } else {
-                    console.warn('⚠️ No LC context available to send');
+                        iframe.contentWindow.postMessage({
+                            type: 'LC_CONTEXT',
+                            lcData: lcData
+                        }, '*');
+                        console.log('📤 LC context sent to iframe via postMessage:', lcData);
+                    }, 1000);
                 }
             };
             
-            // Now set the iframe source (this will trigger onload when ready)
+            // Now set the iframe source (will trigger onload when ready)
             iframe.src = `/document-classification-overlay?${params.toString()}`;
 
             // Show the modal with animation
