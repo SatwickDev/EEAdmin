@@ -8632,9 +8632,23 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                 // Extract entities that appear in multiple documents for cross-verification
                 extractEntitiesFromDocuments() {
+                    // Document types to exclude from discrepancy analysis
+                    const EXCLUDED_DOCUMENTS = [
+                        'EMCS_Administrative_Documents',
+                        'Covering_Schedule',
+                        'Covering Schedule',
+                        'Administrative Documents used in the Excise Movement Control System'
+                    ];
+
                     const entitiesMap = new Map();
 
                     this.results.forEach(result => {
+                        // Skip excluded document types
+                        const docType = result.documentType || '';
+                        if (EXCLUDED_DOCUMENTS.some(excluded => excluded.toLowerCase() === docType.toLowerCase())) {
+                            console.log(`🚫 Skipping discrepancy analysis for excluded document: ${docType}`);
+                            return;
+                        }
                         const complianceData = result?._rawResult?.compliance?.unified ||
                                              result?.compliance?.unified ||
                                              result?.unified_compliance ||
@@ -8699,6 +8713,14 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                 // Verify entity value against LC data using cross-verification rules
                 async verifyEntityAgainstLC(entity, lcData) {
+                    // Document types to exclude from discrepancy analysis
+                    const EXCLUDED_DOCUMENTS = [
+                        'EMCS_Administrative_Documents',
+                        'Covering_Schedule',
+                        'Covering Schedule',
+                        'Administrative Documents used in the Excise Movement Control System'
+                    ];
+
                     const fieldName = entity.fieldName;
 
                     // Find applicable LC field to compare against
@@ -8734,6 +8756,12 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                     // Check each document's value against LC value - SHOW ALL (compliant + non-compliant)
                     entity.documents.forEach(doc => {
+                        // Skip excluded document types
+                        if (EXCLUDED_DOCUMENTS.some(excluded => excluded.toLowerCase() === doc.documentType.toLowerCase())) {
+                            console.log(`🚫 Skipping LC verification for excluded document: ${doc.documentType}`);
+                            return;
+                        }
+
                         const docValue = doc.value;
 
                         // Compare values (case-insensitive, trim whitespace)
