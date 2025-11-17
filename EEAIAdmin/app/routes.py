@@ -9257,8 +9257,17 @@ Return compliance status for each field.'''
         
         first_line = expected_lines[0]
         
+        # Track used word indices across ALL lines to prevent reuse
+        global_used_words = set()
+        
         for first_candidate in all_candidates[first_line]:
             cluster = [first_candidate]
+            current_used_words = set()
+            
+            # Mark words from first candidate as used
+            for word in first_candidate.get('words', []):
+                word_id = id(word)
+                current_used_words.add(word_id)
             
             for line_text in expected_lines[1:]:
                 candidates = all_candidates.get(line_text, [])
@@ -9266,11 +9275,19 @@ Return compliance status for each field.'''
                 if not candidates:
                     break
                 
-                # Find candidate closest to current cluster
+                # Find candidate closest to current cluster AND doesn't reuse words
                 best_candidate = None
                 best_distance = float('inf')
                 
                 for candidate in candidates:
+                    # Check if this candidate reuses any words from previous lines
+                    candidate_word_ids = set(id(w) for w in candidate.get('words', []))
+                    
+                    if candidate_word_ids & current_used_words:
+                        # This candidate reuses words - skip it
+                        continue
+                    
+                    # Calculate distance
                     distances = [calculate_distance(candidate['bounding_box'], item['bounding_box']) 
                             for item in cluster]
                     avg_distance = sum(distances) / len(distances)
@@ -9281,6 +9298,9 @@ Return compliance status for each field.'''
                 
                 if best_candidate:
                     cluster.append(best_candidate)
+                    # Mark words from this candidate as used
+                    for word in best_candidate.get('words', []):
+                        current_used_words.add(id(word))
                 else:
                     break
             
@@ -9516,13 +9536,11 @@ Return compliance status for each field.'''
             logger.error("No field_value!")
             return {'best_match': best_match, 'matches': matches if matches else []}
         
-        if SequenceMatcher(None, field_value.lower(), "allowed".lower()).ratio() >= 0.85:
-            logger.info("default allowed is sent to frontend (fuzzy matched)")
-            return {'best_match': best_match, 'matches': matches if matches else []} 
-        # Skip if TOTAL field_value length is too long (>80 chars)
+        # Skip if TOTAL field_value length is too long (>200 chars)
         if len(field_value) > 200:
             logger.info(f"Field value too long ({len(field_value)} chars > 200) - skipping refinement")
             return {'best_match': best_match, 'matches': matches if matches else []}
+        
         # Parse lines
         expected_lines = [line.strip() for line in field_value.split('\n') if line.strip()]
         

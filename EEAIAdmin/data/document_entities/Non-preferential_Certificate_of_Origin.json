@@ -275,7 +275,7 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "338",
-      "entityName": "Transport means identifier",
+      "entityName": "Transport means identifier/Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -393,20 +393,6 @@
       "dataCategoryId": "9",
       "dataCategoryValue": "Goods",
       "fieldType": "optional"
-    },
-    {
-      "id": "516",
-      "documentId": "Non-preferential_Certificate_of_Origin",
-      "documentName": "Non-preferential Certificate of Origin",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "338",
-      "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "conditional"
     },
     {
       "id": "518",

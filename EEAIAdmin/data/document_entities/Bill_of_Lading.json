@@ -255,20 +255,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "166",
-      "documentId": "Bill_of_Lading",
-      "documentName": "Bill of Lading",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "338",
-      "entityName": "Transport means identifier",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "167",
       "documentId": "Bill_of_Lading",
       "documentName": "Bill of Lading",

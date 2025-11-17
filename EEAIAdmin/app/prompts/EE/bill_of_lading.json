@@ -160,7 +160,7 @@
         "category": "MANDATORY"
       },
       {
-        "name": "Transport Means Identifier",
+        "name": "Transport means identifier/Vehicle registration number",
         "fieldId": "transport_means_id",
         "type": "text",
         "required": true,
@@ -170,7 +170,7 @@
         "category": "MANDATORY"
       },
       {
-        "name": "Vehicle Registration Number",
+        "name": "Transport means identifier/Vehicle registration number",
         "fieldId": "vehicle_reg_number",
         "type": "text",
         "required": true,
@@ -548,7 +548,7 @@
         "category": "CONDITIONAL"
       },
       {
-        "name": "Freight and Charges Amount",
+        "name": "Freight and charges amount",
         "fieldId": "freight_charges",
         "type": "number",
         "required": false,
