@@ -23625,6 +23625,7 @@ def generate_mt700_message(lc_data):
         "{4:",
         ":20:" + lc_data['lcNumber'],  # Documentary Credit Number
         ":23:" + ("IRREVOCABLE" if lc_data['lcType'] == 'irrevocable' else lc_data['lcType'].upper()),
+        ":27:" + lc_data.get('sequenceOfTotal', '1/1'),  # Sequence of Total - NEW
         ":31C:" + issue_date,  # Date of Issue
         ":40A:IRREVOCABLE",  # Form of Documentary Credit
         ":31D:" + expiry_date + lc_data.get('finalDestination', 'ANY BANK').upper(),  # Date and Place of Expiry
@@ -23642,6 +23643,10 @@ def generate_mt700_message(lc_data):
     if lc_data.get('advisingBank'):
         swift_lines.append(":57A:" + format_bank_field(lc_data['advisingBank']))
 
+    # Add tolerance percentage
+    if lc_data.get('tolerancePercent'):
+        swift_lines.append(":39A:" + str(lc_data['tolerancePercent']))
+
     # Add payment terms
     if lc_data.get('paymentTerms') == 'sight':
         swift_lines.append(":42C:AT SIGHT")
@@ -23651,6 +23656,10 @@ def generate_mt700_message(lc_data):
         swift_lines.append(":42C:BY ACCEPTANCE")
     elif lc_data.get('paymentTerms') == 'negotiation':
         swift_lines.append(":42C:BY NEGOTIATION")
+
+    # Add drawee - NEW
+    if lc_data.get('drawee'):
+        swift_lines.append(":42A:" + format_bank_field(lc_data['drawee']))
 
     # Add shipment details
     if lc_data.get('latestShipmentDate'):
@@ -23664,7 +23673,7 @@ def generate_mt700_message(lc_data):
 
     if lc_data.get('placeOfTaking'):
         swift_lines.append(":44A:" + lc_data['placeOfTaking'].upper())
-    
+
     if lc_data.get('finalDestination'):
         swift_lines.append(":44B:" + lc_data['finalDestination'].upper())
 
@@ -23693,11 +23702,27 @@ def generate_mt700_message(lc_data):
     if lc_data.get('additionalConditions'):
         swift_lines.append(":47A:" + lc_data['additionalConditions'][:8500])  # Max 8500 chars
 
+    # Add period for presentation - NEW
+    if lc_data.get('periodForPresentation'):
+        swift_lines.append(":48:" + lc_data['periodForPresentation'])
+
+    # Add confirmation instructions - NEW
+    if lc_data.get('confirmationInstructions'):
+        swift_lines.append(":49:" + lc_data['confirmationInstructions'].upper())
+
     # Add charges
     if lc_data.get('charges') == 'beneficiary':
         swift_lines.append(":71B:ALL CHARGES OUTSIDE OPENING BANK'S COUNTRY FOR BENEFICIARY'S ACCOUNT")
     else:
         swift_lines.append(":71B:ALL CHARGES FOR APPLICANT'S ACCOUNT")
+
+    # Add instructions to bank - NEW
+    if lc_data.get('instructionsToBank'):
+        swift_lines.append(":78:" + lc_data['instructionsToBank'][:3500])
+
+    # Add sender to receiver information - NEW
+    if lc_data.get('senderToReceiver'):
+        swift_lines.append(":72:" + lc_data['senderToReceiver'][:4200])
 
     swift_lines.append("-}")
 
@@ -25820,11 +25845,14 @@ def extract_enhanced_swift_data(swift_message):
         # Common SWIFT field patterns
         swift_patterns = {
             '20': r':20:(.*?)(?=:|$)',  # LC Number
+            '27': r':27:(.*?)(?=:|$)',  # Sequence of Total - NEW
             '31C': r':31C:(.*?)(?=:|$)',  # Issue Date
             '31D': r':31D:(.*?)(?=:|$)',  # Expiry Date
             '32B': r':32B:(.*?)(?=:|$)',  # Currency/Amount
+            '39A': r':39A:(.*?)(?=:|$)',  # Tolerance Percentage - NEW
             '40A': r':40A:(.*?)(?=:|$)',  # Form of LC
             '41A': r':41A:(.*?)(?=:|$)',  # Applicable Rules
+            '42A': r':42A:(.*?)(?=:|$)',  # Drawee - NEW
             '42C': r':42C:(.*?)(?=:|$)',  # Drafts at
             '43P': r':43P:(.*?)(?=:|$)',  # Partial Shipment
             '43T': r':43T:(.*?)(?=:|$)',  # Transhipment
@@ -25835,11 +25863,15 @@ def extract_enhanced_swift_data(swift_message):
             '45A': r':45A:(.*?)(?=:|$)',  # Description of Goods
             '46A': r':46A:(.*?)(?=:|$)',  # Documents Required
             '47A': r':47A:(.*?)(?=:|$)',  # Additional Conditions
+            '48': r':48:(.*?)(?=:|$)',  # Period for Presentation - NEW
+            '49': r':49:(.*?)(?=:|$)',  # Confirmation Instructions - NEW
             '50': r':50:(.*?)(?=:|$)',  # Applicant
             '51A': r':51A:(.*?)(?=:|$)',  # Issuing Bank
             '53A': r':53A:(.*?)(?=:|$)',  # Advising Bank
             '59': r':59:(.*?)(?=:|$)',  # Beneficiary
             '71B': r':71B:(.*?)(?=:|$)',  # Charges
+            '72': r':72:(.*?)(?=:|$)',  # Sender to Receiver Info - NEW
+            '78': r':78:(.*?)(?=:|$)',  # Instructions to Bank - NEW
         }
 
         for field_code, pattern in swift_patterns.items():

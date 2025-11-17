@@ -9654,6 +9654,8 @@ populateFormFields() {
         'Documentary Credit Beneficiary': 'beneficiary',
         'Documentary Credit Available Bank': 'issuingBank', // This is correct
         'Documentary Credit Applicant Agent Bank': 'advisingBank',
+        'Advise Through Bank': 'adviseThroughBank',
+        'Requested Confirmation Party': 'confirmationParty',
         'Documentary Credit Drawee': 'drawee',
         'Documentary Credit Reimbursing Bank': 'reimbursingBank',
 
@@ -9676,9 +9678,7 @@ populateFormFields() {
         // Shipment Details
         'Original Loading Location/Port of Loading/Airport of Departure/Place or departure': 'portOfLoading', // UPDATED
         'Baseport Unloading Location': 'portOfDischarge',
-        'Latest pick-up date': 'latestShipmentDate',
-        'Latest Date of Shipment': 'latestShipmentDate', // ADD THIS MAPPING
-        'Latest Shipment Date': 'latestShipmentDate', // ADD THIS MAPPING
+        'Latest pick-up date/Latest Date of Shipment': 'latestShipmentDate', // ADD THIS MAPPING
         'Shipment Date': 'latestShipmentDate', // ADD THIS MAPPING
         'Despatch': 'dispatchLocation',
 
@@ -9698,7 +9698,7 @@ populateFormFields() {
 
         // 🔹 NEW MAPPINGS FOR FRONTEND FORM FIELDS
     'Place of Taking in Charge/Dispatch/Receipt': 'placeOfTaking',
-    'Original Loading Location/Port of Loading': 'portOfLoading',
+    'Original Loading Location/Port of Loading/Despatch': 'portOfLoading',
     'Baseport Unloading Location/Port of Discharge/Airport of Destination': 'portOfDischarge',
     'Place of the delivery of the goods (by the carrier)': 'finalDestination',
     'Applicant Address': 'applicantAddress',
@@ -9720,9 +9720,13 @@ populateFormFields() {
         'Sequence of Total': 'sequenceOfTotal',
         'Charges': 'charges',
         'Confirmation Instructions': 'confirmationInstructions',
-        'Documentary Credit Drawee': 'drawee',
+        'Documentary Credit Drawee/Drawee': 'drawee',
+        'Documentary Credit Drawee /Drawee': 'drawee',
+        'Documentary Credit Drawee / Drawee': 'drawee',
         'Instructions to Paying/Accepting/Negotiating Bank': 'instructionsToBank',
         'Period for Presentation': 'periodForPresentation',
+        'Reference to Pre-Advice': 'referenceToPreAdvice',
+        'Reference to Pre Advice': 'referenceToPreAdvice',
         'Sender to Receiver Information': 'senderToReceiver',
 
 

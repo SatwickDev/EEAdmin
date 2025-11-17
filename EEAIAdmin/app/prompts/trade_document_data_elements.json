@@ -198,7 +198,7 @@
       },
       {
         "uid": "2131",
-        "name": "Latest pick-up date",
+        "name": "Latest pick-up date/Latest Date of Shipment",
         "description": "Latest date and optionally time when a consignment of goods can been picked-up by a carrier",
         "requirements": {"CIM": "O", "LC": "O"}
       },
@@ -568,7 +568,7 @@
       },
       {
         "uid": "3150",
-        "name": "Despatch",
+        "name": "Original Loading Location/Port of Loading/Despatch",
         "description": "Place, from or at which despatch is to take place",
         "requirements": {"SLI": "M", "BoL": "O", "CIM": "O", "ePhyto": "M", "LC": "O"}
       },

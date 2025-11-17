@@ -885,33 +885,39 @@
 
         // Get SWIFT field information
         function getSWIFTFieldInfo(tag) {
-            const fieldMap = {
+           const fieldMap = {
                 '20': { name: 'Transaction Reference Number', description: 'Unique reference for this LC' },
                 '23': { name: 'Function Code', description: 'Type of LC operation (IRREVOCABLE/REVOCABLE)' },
+                '27': { name: 'Sequence of Total', description: 'Number of messages and sequence number' },
                 '31C': { name: 'Issue Date', description: 'Date when LC is issued' },
                 '40A': { name: 'Form of Documentary Credit', description: 'Type of documentary credit' },
                 '31D': { name: 'Expiry Date/Place', description: 'LC expiry date and location' },
                 '50': { name: 'Applicant', description: 'Party requesting the LC' },
                 '51A': { name: 'Applicant Bank', description: 'Bank of the applicant' },
+                '52A': { name: 'Issuing Bank', description: 'Bank issuing the LC' },
                 '57A': { name: 'Advising Bank', description: 'Bank advising the beneficiary' },
                 '59': { name: 'Beneficiary', description: 'Party who will receive payment' },
                 '32B': { name: 'Currency Code/Amount', description: 'LC currency and amount' },
+                '39A': { name: 'Percentage Credit Amount Tolerance', description: 'Tolerance percentage for amount' },
                 '41A': { name: 'Available With', description: 'Bank where LC is available' },
                 '41D': { name: 'Available By', description: 'Method of availability' },
+                '42A': { name: 'Drawee', description: 'Party who will pay the draft' },
                 '42C': { name: 'Drafts At', description: 'Tenor of drafts (AT SIGHT/USANCE)' },
+                '42D': { name: 'Drawee Details', description: 'Detailed drawee information' },
                 '43P': { name: 'Partial Shipments', description: 'Whether partial shipments allowed' },
                 '43T': { name: 'Transhipment', description: 'Whether transhipment allowed' },
                 '44A': { name: 'Loading on Board/Dispatch', description: 'Port of loading/dispatch' },
+                '44E': { name: 'Port of Loading', description: 'Port or place where goods are loaded' },
                 '44F': { name: 'Port of Discharge', description: 'Final destination port' },
-                '44E': { name: 'Port of Loading', description: 'port or place where goods are loaded' },
                 '44B': { name: 'Final Destination', description: 'Final delivery location' },
                 '44C': { name: 'Latest Date of Shipment', description: 'Last date for shipment' },
                 '45A': { name: 'Description of Goods', description: 'Detailed goods description' },
                 '46A': { name: 'Documents Required', description: 'Required documentation' },
                 '47A': { name: 'Additional Conditions', description: 'Special terms and conditions' },
-                '71B': { name: 'Charges', description: 'Details of charges' },
                 '48': { name: 'Period for Presentation', description: 'Time limit for document presentation' },
                 '49': { name: 'Confirmation Instructions', description: 'Confirmation requirements' },
+                '71B': { name: 'Charges', description: 'Details of charges' },
+                '72': { name: 'Sender to Receiver Information', description: 'Information between banks' },
                 '78': { name: 'Instructions to Paying Bank', description: 'Special instructions' }
             };
 

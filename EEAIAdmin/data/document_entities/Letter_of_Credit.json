@@ -121,7 +121,7 @@
       "documentCategoryId": "4",
       "documentCategoryName": "Financial Processes",
       "entityId": "451",
-      "entityName": "Documentary Credit Drawee",
+      "entityName": "Documentary Credit Drawee/Drawee",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "3",
@@ -149,27 +149,14 @@
       "documentCategoryId": "2",
       "documentCategoryName": "Transport Processes",
       "entityId": "373",
-      "entityName": "Latest pick-up date",
+      "entityName": "Latest pick-up date/Latest Date of Shipment",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
-    {
-      "id": "867",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "330",
-      "entityName": "Despatch",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "optional"
-    },
+ 
     {
       "id": "870",
       "documentId": "Letter_of_Credit",
@@ -345,7 +332,7 @@
       "documentCategoryId": "",
       "documentCategoryName": "",
       "entityId": "322",
-      "entityName": "Original Loading Location/Port of Loading",
+      "entityName": "Original Loading Location/Port of Loading/Despatch",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -378,20 +365,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations",
-      "fieldType": "optional"
-    },
-    {
-      "id": "869",
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "469",
-      "entityName": "Latest Date of Shipment",
-      "mappingFormField": "Tag 44C",
-      "mappingFormDescription": "Latest Date of Shipment",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
     {

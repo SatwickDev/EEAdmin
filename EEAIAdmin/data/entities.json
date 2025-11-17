@@ -171,15 +171,7 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
-    {
-      "id": "29",
-      "name": "Port of Loading / Place of loading / Port of Loading/Airport of Departure",
-      "description": "Port where goods are loaded for shipment - Extract ONLY the port name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port name is required (e.g., 'Shanghai' not 'Shanghai, China' or 'Port of Shanghai, Yangshan Port Area, China').",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
-    },
+ 
     {
       "id": "30",
       "name": "Port of Discharge / Place of discharge /Port of Discharge/Airport of Destination",
@@ -1773,15 +1765,7 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-    {
-      "id": "227",
-      "name": "Latest date of shipment",
-      "description": "Latest date of shipment",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates"
-    },
+  
     {
       "id": "228",
       "name": "Terms of delivery",
@@ -2603,7 +2587,7 @@
     },
     {
       "id": "322",
-      "name": "Original Loading Location/Port of Loading",
+      "name": "Original Loading Location/Port of Loading/Despatch",
       "description": "Seaport, airport, freight terminal, rail station or other location where the goods were first loaded onto the means of transport being utilised for their carriage",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2671,15 +2655,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
-    },
-    {
-      "id": "330",
-      "name": "Despatch",
-      "description": "lace, from or at which despatch is to take place",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
     },
     {
       "id": "331",
@@ -3052,8 +3027,8 @@
     },
     {
       "id": "373",
-      "name": "Latest pick-up date",
-      "description": "Latest date and optionally time when a consignment of goods can been picked-up by a carrier.",
+      "name": "Latest pick-up date/Latest Date of Shipment",
+      "description": "Latest date by which goods must be shipped as specified in the documentary credit.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
@@ -3753,7 +3728,7 @@
     },
     {
       "id": "451",
-      "name": "Documentary Credit Drawee / Drawee",
+      "name": "Documentary Credit Drawee/Drawee",
       "description": "Documentary Credit Drawee - Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -4300,15 +4275,7 @@
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure/Quantities"
     },
-    {
-      "id": "216",
-      "name": "Documentary Credit Drawee /Drawee",
-      "description": "Documentary Credit Drawee - Extract ONLY the drawee's name. Do NOT include address, street, city, country, postal code, or any other contact details. Only the bank/institution name is required.",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries"
-    },
+ 
     {
       "id": "463",
       "name": "Partial Shipments",
@@ -4327,15 +4294,7 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
-    {
-      "id": "469",
-      "name": "Latest Date of Shipment",
-      "description": "Latest date by which goods must be shipped as specified in the documentary credit",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates"
-    },
+   
     {
       "id": "480",
       "name": "Documentary Credit Number",

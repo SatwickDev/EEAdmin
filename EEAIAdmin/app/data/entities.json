@@ -173,7 +173,7 @@
     },
     {
       "id": "29",
-      "name": "Port of Loading / Place of loading / Port of Loading/Airport of Departure",
+      "name": "Original Loading Location/Port of Loading/Despatch",
       "description": "Port where goods are loaded for shipment - Extract ONLY the port name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port name is required (e.g., 'Shanghai' not 'Shanghai, China' or 'Port of Shanghai, Yangshan Port Area, China').",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -1773,15 +1773,7 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-    {
-      "id": "227",
-      "name": "Latest date of shipment",
-      "description": "Latest date of shipment",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "2",
-      "dataCategoryValue": "Dates"
-    },
+  
     {
       "id": "228",
       "name": "Terms of delivery",
@@ -2603,7 +2595,7 @@
     },
     {
       "id": "322",
-      "name": "Original Loading Location/Port of Loading",
+      "name": "Original Loading Location/Port of Loading/Despatch",
       "description": "Seaport, airport, freight terminal, rail station or other location where the goods were first loaded onto the means of transport being utilised for their carriage",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -2674,7 +2666,7 @@
     },
     {
       "id": "330",
-      "name": "Despatch",
+      "name": "Original Loading Location/Port of Loading/Despatch",
       "description": "lace, from or at which despatch is to take place",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -3052,7 +3044,7 @@
     },
     {
       "id": "373",
-      "name": "Latest pick-up date",
+      "name": "Latest pick-up date/Latest Date of Shipment",
       "description": "Latest date and optionally time when a consignment of goods can been picked-up by a carrier.",
       "mappingFormField": "",
       "mappingFormDescription": "",
@@ -4329,7 +4321,7 @@
     },
     {
       "id": "469",
-      "name": "Latest Date of Shipment",
+      "name": "Latest pick-up date/Latest Date of Shipment",
       "description": "Latest date by which goods must be shipped as specified in the documentary credit",
       "mappingFormField": "",
       "mappingFormDescription": "",

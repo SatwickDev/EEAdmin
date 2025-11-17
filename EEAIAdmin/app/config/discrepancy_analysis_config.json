@@ -73,7 +73,7 @@
       "43P": {"name": "Partial Shipments", "required": false, "format": "ALLOWED/NOT ALLOWED"},
       "43T": {"name": "Transhipment", "required": false, "format": "ALLOWED/NOT ALLOWED"},
       "44A": {"name": "Loading on Board", "required": false, "format": "text"},
-      "44C": {"name": "Latest Date of Shipment", "required": true, "format": "YYMMDD"},
+      "44C": {"name": "Latest pick-up date/Latest Date of Shipment", "required": true, "format": "YYMMDD"},
       "44E": {"name": "Port of Loading", "required": true, "format": "text"},
       "44F": {"name": "Port of Discharge", "required": true, "format": "text"},
       "45A": {"name": "Description of Goods", "required": true, "format": "text"},

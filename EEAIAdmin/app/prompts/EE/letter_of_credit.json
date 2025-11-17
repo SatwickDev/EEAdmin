@@ -79,7 +79,7 @@
     ],
     "optional": [
       {
-        "name": "Latest Pick-up Date",
+        "name": "Latest pick-up date/Latest Date of Shipment",
         "fieldId": "latest_pickup_date",
         "type": "date",
         "required": false,
@@ -139,8 +139,8 @@
         "category": "OPTIONAL"
       },
       {
-        "name": "Despatch",
-        "fieldId": "despatch",
+        "name": "Original Loading Location/Port of Loading/Despatch",
+        "fieldId": "Original Loading Location/Port of Loading/Despatch",
         "type": "text",
         "required": false,
         "description": "Place from which goods are dispatched",
