@@ -315,7 +315,7 @@
         "category": "CONDITIONAL"
       },
       {
-        "name": "Transport Means Identifier",
+        "name": "Transport means identifier/Vehicle registration number",
         "fieldId": "transport_means_id",
         "type": "text",
         "required": false,
@@ -326,7 +326,7 @@
         "category": "CONDITIONAL"
       },
       {
-        "name": "Vehicle Registration Number",
+        "name": "Transport means identifier/Vehicle registration number",
         "fieldId": "vehicle_reg_number",
         "type": "text",
         "required": false,

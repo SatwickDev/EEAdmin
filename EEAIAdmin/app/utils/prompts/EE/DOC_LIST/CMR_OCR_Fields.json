@@ -17,7 +17,7 @@
             "Place of Taking Over the Goods",
             "Place of Delivery",
             "Transport Route",
-            "Vehicle Registration Number",
+            "Transport means identifier/Vehicle registration number",
             "Means of Transport"
         ],
         "Cargo Information": [

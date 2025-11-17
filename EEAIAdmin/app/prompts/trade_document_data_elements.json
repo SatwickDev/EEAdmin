@@ -1182,13 +1182,13 @@
       },
       {
         "uid": "8212",
-        "name": "Transport means identifier",
+        "name": "Transport means identifier/Vehicle registration number",
         "description": "Name of a specific means of transport such as the vessel name",
         "requirements": {"SLI": "C", "PL": "M", "BoL": "M", "SW": "M", "SDO": "M", "AW": "M", "SCM": "M", "CIM": "M", "CMR": "M", "DGD": "C", "CoO": "O", "PCoO": "O", "CD": "C", "ATA": "M", "TIR": "M", "TAD": "M"}
       },
       {
         "uid": "8213",
-        "name": "Vehicle registration number",
+        "name": "Transport means identifier/Vehicle registration number",
         "description": "Identifier of a specific means of transport",
         "requirements": {"SLI": "C", "PL": "M", "BoL": "M", "SW": "C", "SDO": "C", "AW": "C", "SCM": "C", "CIM": "M", "CMR": "M", "DGD": "M", "CSD": "C", "CoO": "O", "PCoO": "O", "CODEX": "M", "WOAH": "M", "TIR": "M"}
       },

@@ -302,12 +302,12 @@
       "documentName": "Packing List",
       "documentCategoryId": "3",
       "documentCategoryName": "Transport Processes",
-      "entityId": "334",
-      "entityName": "Transport means identifier",
+      "entityId": "338",
+      "entityName": "Transport means identifier/Vehicle registration number",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "9",
-      "dataCategoryValue": "Goods",
+      "dataCategoryValue": "Transport modes/means/equipment",
       "fieldType": "mandatory"
     },
     {
@@ -328,15 +328,15 @@
       "id": "151",
       "documentId": "Packing_List",
       "documentName": "Packing List",
-      "documentCategoryId": "",
-      "documentCategoryName": "",
-      "entityId": "338",
-      "entityName": "Transport means identifier/Vehicle registration number",
+      "documentCategoryId": "3",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "336",
+      "entityName": "Baseport Unloading Location/Port of Discharge/Airport of Destination",
       "mappingFormField": "",
       "mappingFormDescription": "",
-      "dataCategoryId": "11",
-      "dataCategoryValue": "Transport modes/means/equipment",
-      "fieldType": "mandatory"
+      "dataCategoryId": "9",
+      "dataCategoryValue": "Goods",
+      "fieldType": "conditional"
     },
     {
       "id": "152",

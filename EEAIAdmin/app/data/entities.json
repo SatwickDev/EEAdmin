@@ -2746,17 +2746,8 @@
     },
     {
       "id": "338",
-      "name": "Transport means identifier",
+      "name": "Transport means identifier/Vehicle registration number",
       "description": "Unique identification of the vessel/aircraft/vehicle transporting goods. For ocean freight, extract the complete vessel name (e.g., \"MAERSK ESSEX\"). Include IMO number if stated (format: \"VESSEL NAME (IMO: 1234567)\"). For air freight, extract flight/aircraft registration. For multimodal transport, extract the ocean vessel name (primary transport). DO NOT extract carrier company names (e.g., \"Maersk Line\") - only extract the actual vessel/vehicle identifier. Commonly found in fields labeled \"Vessel Name\", \"Ocean Vessel\", \"Carrying Vessel\", or \"Vessel/Voy\". Extract complete name as stated, including any prefix like \"M.V.\" or \"S.S.\" if present",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "11",
-      "dataCategoryValue": "Transport modes/means/equipment"
-    },
-    {
-      "id": "339",
-      "name": "Vehicle registration number",
-      "description": "Identifier of a specific means of transport such as the International Maritime Organisation number of a vessel",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -4330,20 +4321,11 @@
     {
       "id": "464",
       "name": "Transhipment",
-      "description":  "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/ in exact_text feild give the feild name that is present in text given (***important)",
+      "description": "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/ in exact_text feild give the feild name that is present in text given (***important)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
-    },
-    {
-      "id": "467",
-      "name": "Port of Discharge/Airport of Destination",
-      "description": "Port where goods are unloaded or airport of final destination - Extract ONLY the port/airport name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port/airport name is required (e.g., 'Rotterdam' not 'Rotterdam, Netherlands').",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
     },
     {
       "id": "469",

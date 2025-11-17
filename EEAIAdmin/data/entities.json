@@ -2945,7 +2945,7 @@
     {
       "id": "361",
       "name": "Freight and charges amount",
-      "description": "Costs incurred by the shipper in moving goods, by whatever means, from one place to another under the terms of the contract of carriage. In addition to transport costs, this may include such elements as packing, documentation, loading, unloading, and insurance (to the extent that they relate to the freight cost)",
+      "description": "Costs incurred by the shipper in moving goods, by whatever means, from one place to another under the terms of the contract of carriage. In addition to transport costs, this may include such elements as packing, documentation, loading, unloading, and insurance (to the extent that they relate to the freight cost)- EXTRACT numerical values only.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -2954,7 +2954,7 @@
     {
       "id": "362",
       "name": "Prepaid amount",
-      "description": "Monetary amount of all of the consignment charges which have been paid in advance-EXTRACT numerical values only.",
+      "description": "EXTRACT numerical values only - Monetary amount of all of the consignment charges which have been paid in advance.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",
@@ -4326,15 +4326,6 @@
       "mappingFormDescription": "",
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
-    },
-    {
-      "id": "467",
-      "name": "Port of Discharge/Airport of Destination",
-      "description": "Port where goods are unloaded or airport of final destination - Extract ONLY the port/airport name. Do NOT include country, region, full address, coordinates, or any additional location details. Just the port/airport name is required (e.g., 'Rotterdam' not 'Rotterdam, Netherlands').",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations"
     },
     {
       "id": "469",
