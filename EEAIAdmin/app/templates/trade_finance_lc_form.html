@@ -1519,233 +1519,253 @@
 
                     <div id="statusMessage" class="status-message"></div>
 
-                    <form id="lcForm">
-                        <!-- Basic Information Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Basic Information</h2>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="lcNumber">LC Number <span class="required">*</span></label>
-                                    <input type="text" id="lcNumber" name="lcNumber" required
-                                        placeholder="e.g., LC2024001">
-                                </div>
-                                <div class="form-group">
-                                    <label for="lcType">LC Type <span class="required">*</span></label>
-                                    <select id="lcType" name="lcType" required>
-                                        <option value="">Select Type</option>
-                                        <option value="irrevocable">Irrevocable</option>
-                                        <option value="confirmed">Confirmed</option>
-                                        <option value="transferable">Transferable</option>
-                                        <option value="standby">Standby</option>
-                                        <option value="revolving">Revolving</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="issueDate">Issue Date <span class="required">*</span></label>
-                                    <input type="date" id="issueDate" name="issueDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="expiryDate">Expiry Date <span class="required">*</span></label>
-                                    <input type="date" id="expiryDate" name="expiryDate" required>
-                                </div>
-                            </div>
-                        </div>
+          <form id="lcForm">
+    <!-- Basic Information Section -->
+    <div class="form-section">
+        <h2 class="section-title">Basic Information</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="lcNumber">LC Number <span class="required">*</span></label>
+                <input type="text" id="lcNumber" name="lcNumber" required placeholder="e.g., LC2024001">
+            </div>
+            <div class="form-group">
+                <label for="lcIdentifier">Documentary Credit Identifier</label>
+                <input type="text" id="lcIdentifier" name="lcIdentifier" placeholder="e.g., 1619699496468609">
+            </div>
+            <div class="form-group">
+                <label for="sequenceOfTotal">Sequence of Total (27)</label>
+                <input type="text" id="sequenceOfTotal" name="sequenceOfTotal" placeholder="e.g., 1/1">
+            </div>
+            <div class="form-group">
+                <label for="lcType">LC Type <span class="required">*</span></label>
+                <select id="lcType" name="lcType" required>
+                    <option value="">Select Type</option>
+                    <option value="irrevocable">Irrevocable</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="transferable">Transferable</option>
+                    <option value="standby">Standby</option>
+                    <option value="revolving">Revolving</option>
+                </select>
+            </div>
+              <div class="form-group">
+            <label for="applicableRules">Applicable Rules</label>
+            <input type="text" id="applicableRules" name="applicableRules" placeholder="e.g., UCP LATEST VERSION">
+        </div>
+            <div class="form-group">
+                <label for="confirmationInstructions">Confirmation Instructions (49)</label>
+                <input type="text" id="confirmationInstructions" name="confirmationInstructions" placeholder="e.g., WITHOUT, CONFIRM, MAY ADD">
+            </div>
+            <div class="form-group">
+                <label for="issueDate">Issue Date <span class="required">*</span></label>
+                <input type="date" id="issueDate" name="issueDate" required>
+            </div>
+            <div class="form-group">
+                <label for="expiryDate">Expiry Date <span class="required">*</span></label>
+                <input type="date" id="expiryDate" name="expiryDate" required>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Parties Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Parties Information</h2>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="applicant">Applicant (50) <span class="required">*</span></label>
-                                    <input type="text" id="applicant" name="applicant" required
-                                        placeholder="Importer Name and Address">
-                                </div>
-                                <div class="form-group">
-                                    <label for="beneficiary">Beneficiary (59) <span class="required">*</span></label>
-                                    <input type="text" id="beneficiary" name="beneficiary" required
-                                        placeholder="Exporter Name and Address">
-                                </div>
-                                <div class="form-group">
-                                    <label for="issuingBank">Issuing Bank (51A) <span class="required">*</span></label>
-                                    <input type="text" id="issuingBank" name="issuingBank" required
-                                        placeholder="Bank Name and SWIFT Code">
-                                </div>
-                                <div class="form-group">
-                                    <label for="advisingBank">Advising Bank (57A)</label>
-                                    <input type="text" id="advisingBank" name="advisingBank"
-                                        placeholder="Bank Name and SWIFT Code (Optional)">
-                                </div>
-                            </div>
-                        </div>
+    <!-- Parties Section -->
+    <div class="form-section">
+        <h2 class="section-title">Parties Information</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="applicant">Applicant (50) <span class="required">*</span></label>
+                <input type="text" id="applicant" name="applicant" required placeholder="Importer Name and Address">
+            </div>
+            <div class="form-group">
+                <label for="applicantAddress">Applicant Address</label>
+                <input type="text" id="applicantAddress" name="applicantAddress" placeholder="Full address details">
+            </div>
+            <div class="form-group">
+                <label for="beneficiary">Beneficiary (59) <span class="required">*</span></label>
+                <input type="text" id="beneficiary" name="beneficiary" required placeholder="Exporter Name and Address">
+            </div>
+            <div class="form-group">
+                <label for="issuingBank">Issuing Bank (51A) <span class="required">*</span></label>
+                <input type="text" id="issuingBank" name="issuingBank" required placeholder="Bank Name and SWIFT Code">
+            </div>
+            <div class="form-group">
+                <label for="advisingBank">Advising Bank (57A)</label>
+                <input type="text" id="advisingBank" name="advisingBank" placeholder="Bank Name and SWIFT Code (Optional)">
+            </div>
+            <div class="form-group">
+                <label for="drawee">Drawee (42A)</label>
+                <input type="text" id="drawee" name="drawee" placeholder="Drawee Bank Details">
+            </div>
+        </div>
+    </div>
 
-                        <!-- Amount and Payment Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Amount and Payment Details</h2>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="currency">Currency (32B) <span class="required">*</span></label>
-                                    <select id="currency" name="currency" required>
-                                        <option value="">Select Currency</option>
-                                        <option value="USD">USD - US Dollar</option>
-                                        <option value="EUR">EUR - Euro</option>
-                                        <option value="GBP">GBP - British Pound</option>
-                                        <option value="JPY">JPY - Japanese Yen</option>
-                                        <option value="INR">INR - Indian Rupee</option>
-                                        <option value="AED">AED - UAE Dirham</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="amount">Amount (32B) <span class="required">*</span></label>
-                                    <input type="number" id="amount" name="amount" required placeholder="0.00"
-                                        step="0.01">
-                                </div>
-                                <div class="form-group">
-                                    <label for="tolerancePercent">Tolerance % (39A)</label>
-                                    <input type="number" id="tolerancePercent" name="tolerancePercent"
-                                        placeholder="e.g., 10" min="0" max="100">
-                                </div>
-                                <div class="form-group">
-                                    <label for="paymentTerms">Payment Terms (42C) <span
-                                            class="required">*</span></label>
-                                     <select id="paymentTerms" name="paymentTerms" required>
-                                        <option value="">Select Terms</option>
-                                        <option value="By Payment">By Payment</option>
-                                        <option value="deferred">By Def Payment</option>
-                                        <option value="mixedpayment">By Mixed Payment</option>
-                                        <option value="acceptance">By Acceptance</option>
-                                        <option value="negotiation">By Negotiation</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+    <!-- Amount and Payment Section -->
+    <div class="form-section">
+        <h2 class="section-title">Amount and Payment Details</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="currency">Currency (32B) <span class="required">*</span></label>
+                <select id="currency" name="currency" required>
+                    <option value="">Select Currency</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="JPY">JPY - Japanese Yen</option>
+                    <option value="INR">INR - Indian Rupee</option>
+                    <option value="AED">AED - UAE Dirham</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount (32B) <span class="required">*</span></label>
+                <input type="number" id="amount" name="amount" required placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="tolerancePercent">Tolerance % (39A)</label>
+                <input type="number" id="tolerancePercent" name="tolerancePercent" placeholder="e.g., 10" min="0" max="100">
+            </div>
+            <div class="form-group">
+                <label for="paymentTerms">Payment Terms (42C) <span class="required">*</span></label>
+                <select id="paymentTerms" name="paymentTerms" required>
+                    <option value="">Select Terms</option>
+                    <option value="By Payment">By Payment</option>
+                    <option value="deferred">By Def Payment</option>
+                    <option value="mixedpayment">By Mixed Payment</option>
+                    <option value="acceptance">By Acceptance</option>
+                    <option value="negotiation">By Negotiation</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="deferredPaymentDetails">Negotiation/Deferred Payment Details</label>
+                <input type="text" id="deferredPaymentDetails" name="deferredPaymentDetails" placeholder="e.g., 180 DAYS AFTER BILL OF LADING DATE">
+            </div>
+            <div class="form-group">
+                <label for="periodForPresentation">Period for Presentation (48)</label>
+                <input type="text" id="periodForPresentation" name="periodForPresentation" placeholder="e.g., 21 days">
+            </div>
+        </div>
+    </div>
 
-                        <!-- Shipment Details Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Shipment Details</h2>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="placeOfTaking">Place of Taking in Charge (44A)</label>
-                                    <input type="text" id="placeOfTaking" name="placeOfTaking"
-                                        placeholder="Port/City Name">
-                                </div>
-                                <div class="form-group">
-                                    <label for="portOfLoading">Port of Loading (44E)</label>
-                                    <input type="text" id="portOfLoading" name="portOfLoading" placeholder="Port Name">
-                                </div>
-                                <div class="form-group">
-                                    <label for="portOfDischarge">Port of Discharge (44F)</label>
-                                    <input type="text" id="portOfDischarge" name="portOfDischarge"
-                                        placeholder="Port Name">
-                                </div>
-                                <div class="form-group">
-                                    <label for="finalDestination">Final Destination (44B)</label>
-                                    <input type="text" id="finalDestination" name="finalDestination"
-                                        placeholder="City/Country">
-                                </div>
-                                <div class="form-group">
-                                    <label for="latestShipmentDate">Latest Shipment Date (44C) <span
-                                            class="required">*</span></label>
-                                    <input type="date" id="latestShipmentDate" name="latestShipmentDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="partialShipment">Partial Shipment (43P)</label>
-                                    <select id="partialShipment" name="partialShipment">
-                                        <option value="allowed">Allowed</option>
-                                        <option value="not_allowed">Not Allowed</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="transhipment">Transhipment (43T)</label>
-                                    <select id="transhipment" name="transhipment">
-                                        <option value="allowed">Allowed</option>
-                                        <option value="not_allowed">Not Allowed</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="incoterms">Incoterms</label>
-                                    <select id="incoterms" name="incoterms">
-                                        <option value="">Select Incoterms</option>
-                                        <option value="EXW">EXW - Ex Works</option>
-                                        <option value="FOB">FOB - Free On Board</option>
-                                        <option value="CFR">CFR - Cost and Freight</option>
-                                        <option value="CIF">CIF - Cost, Insurance and Freight</option>
-                                        <option value="DDP">DDP - Delivered Duty Paid</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+    <!-- Shipment Details Section -->
+    <div class="form-section">
+        <h2 class="section-title">Shipment Details</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="placeOfTaking">Place of Taking in Charge (44A)</label>
+                <input type="text" id="placeOfTaking" name="placeOfTaking" placeholder="Port/City Name">
+            </div>
+            <div class="form-group">
+                <label for="portOfLoading">Port of Loading (44E)</label>
+                <input type="text" id="portOfLoading" name="portOfLoading" placeholder="Port Name">
+            </div>
+            <div class="form-group">
+                <label for="portOfDischarge">Port of Discharge (44F)</label>
+                <input type="text" id="portOfDischarge" name="portOfDischarge" placeholder="Port Name">
+            </div>
+            <div class="form-group">
+                <label for="finalDestination">Final Destination (44B)</label>
+                <input type="text" id="finalDestination" name="finalDestination" placeholder="City/Country">
+            </div>
+            <div class="form-group">
+                <label for="latestShipmentDate">Latest Shipment Date (44C) <span class="required">*</span></label>
+                <input type="date" id="latestShipmentDate" name="latestShipmentDate" required>
+            </div>
+            <div class="form-group">
+                <label for="partialShipment">Partial Shipment (43P)</label>
+                <select id="partialShipment" name="partialShipment">
+                    <option value="allowed">Allowed</option>
+                    <option value="not_allowed">Not Allowed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transhipment">Transhipment (43T)</label>
+                <select id="transhipment" name="transhipment">
+                    <option value="allowed">Allowed</option>
+                    <option value="not_allowed">Not Allowed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="incoterms">Incoterms</label>
+                <select id="incoterms" name="incoterms">
+                    <option value="">Select Incoterms</option>
+                    <option value="EXW">EXW - Ex Works</option>
+                    <option value="FOB">FOB - Free On Board</option>
+                    <option value="CFR">CFR - Cost and Freight</option>
+                    <option value="CIF">CIF - Cost, Insurance and Freight</option>
+                    <option value="DDP">DDP - Delivered Duty Paid</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Goods Description Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Goods Description</h2>
-                            <div class="form-group">
-                                <label for="goodsDescription">Description of Goods (45A) <span
-                                        class="required">*</span></label>
-                                <textarea id="goodsDescription" name="goodsDescription" required
-                                    placeholder="Detailed description of goods/services"></textarea>
-                            </div>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="hsCode">HS Code</label>
-                                    <input type="text" id="hsCode" name="hsCode" placeholder="Harmonized System Code">
-                                </div>
-                                <div class="form-group">
-                                    <label for="quantity">Quantity</label>
-                                    <input type="text" id="quantity" name="quantity" placeholder="e.g., 1000 units">
-                                </div>
-                            </div>
-                        </div>
+    <!-- Goods Description Section -->
+    <div class="form-section">
+        <h2 class="section-title">Goods Description</h2>
+        <div class="form-group">
+            <label for="goodsDescription">Description of Goods (45A) <span class="required">*</span></label>
+            <textarea id="goodsDescription" name="goodsDescription" required placeholder="Detailed description of goods/services"></textarea>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="hsCode">HS Code</label>
+                <input type="text" id="hsCode" name="hsCode" placeholder="Harmonized System Code">
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="text" id="quantity" name="quantity" placeholder="e.g., 1000 units">
+            </div>
+        </div>
+    </div>
 
-                        <!-- Documents Required Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Documents Required (46A)</h2>
-                            <div class="form-group">
-                                <label for="documentsRequired">Documents Required <span class="required">*</span></label>
-                                <textarea id="documentsRequired" name="documentsRequired" required
-                                    placeholder="List all required documents, e.g., Commercial Invoice, Bill of Lading, Packing List, etc."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="additionalDocuments">Additional Documents</label>
-                                <textarea id="additionalDocuments" name="additionalDocuments"
-                                    placeholder="Specify any additional documents required"></textarea>
-                            </div>
-                        </div>
+    <!-- Documents Required Section -->
+    <div class="form-section">
+        <h2 class="section-title">Documents Required (46A)</h2>
+        <div class="form-group">
+            <label for="documentsRequired">Documents Required <span class="required">*</span></label>
+            <textarea id="documentsRequired" name="documentsRequired" required placeholder="List all required documents, e.g., Commercial Invoice, Bill of Lading, Packing List, etc."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="additionalDocuments">Additional Documents</label>
+            <textarea id="additionalDocuments" name="additionalDocuments" placeholder="Specify any additional documents required"></textarea>
+        </div>
+    </div>
 
-                        <!-- Additional Conditions Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Additional Conditions</h2>
-                            <div class="form-group">
-                                <label for="additionalConditions">Additional Conditions (47A)</label>
-                                <textarea id="additionalConditions" name="additionalConditions"
-                                    placeholder="Any special terms or conditions"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="charges">Charges (71B)</label>
-                                <select id="charges" name="charges">
-                                    <option value="beneficiary">All charges outside issuing bank's country for
-                                        beneficiary</option>
-                                    <option value="applicant">All charges for applicant</option>
-                                </select>
-                            </div>
-                        </div>
+    <!-- Additional Conditions Section -->
+    <div class="form-section">
+        <h2 class="section-title">Additional Conditions</h2>
+        <div class="form-group">
+            <label for="additionalConditions">Additional Conditions (47A)</label>
+            <textarea id="additionalConditions" name="additionalConditions" placeholder="Any special terms or conditions"></textarea>
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="charges">Charges (71B)</label>
+                <textarea id="charges" name="charges" placeholder="E.g. All charges outside issuing bank's country for beneficiary — or write custom charges here"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="instructionsToBank">Instructions to Bank (78)</label>
+                <textarea id="instructionsToBank" name="instructionsToBank" placeholder="Instructions to Paying/Accepting/Negotiating Bank"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="senderToReceiver">Sender to Receiver Info (72)</label>
+                <textarea id="senderToReceiver" name="senderToReceiver" placeholder="Sender to Receiver Information"></textarea>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Button Group -->
-                        <div class="button-group">
-                            <button type="button" class="btn btn-secondary" onclick="loadTemplateSample()">
-                                <i class="fas fa-file-import"></i> Load Template Sample
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="clearForm()">
-                                <i class="fas fa-times"></i> Clear
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="saveDraft()">
-                                <i class="fas fa-save"></i> Save Draft
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="submitLCButton"
-                                onclick="handleFormSubmission()">
-                                <i class="fas fa-paper-plane"></i> Submit LC
-                            </button>
-                        </div>
-                    </form>
+    <!-- Button Group -->
+    <div class="button-group">
+        <button type="button" class="btn btn-secondary" onclick="loadTemplateSample()">
+            <i class="fas fa-file-import"></i> Load Template Sample
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="clearForm()">
+            <i class="fas fa-times"></i> Clear
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+            <i class="fas fa-save"></i> Save Draft
+        </button>
+        <button type="submit" class="btn btn-primary" id="submitLCButton" onclick="handleFormSubmission()">
+            <i class="fas fa-paper-plane"></i> Submit LC
+        </button>
+    </div>
+</form>
                 </div>
             </div>
         </div>
