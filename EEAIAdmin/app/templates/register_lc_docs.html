@@ -419,6 +419,80 @@
             border-top: 1px solid var(--border-color);
         }
 
+        /* LC Table Styles */
+        .lc-table-container {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .lc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .lc-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        .lc-table th {
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .lc-table tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .lc-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+            transform: translateX(4px);
+        }
+
+        .lc-table td {
+            padding: 12px;
+            color: #334155;
+        }
+
+        .lc-table td.lc-number {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .lc-table td.lc-amount {
+            font-weight: 500;
+            color: #10b981;
+        }
+
+        .lc-table td.lc-date {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .lc-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .lc-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
         /* Responsive */
         @keyframes fadeInDown {
             from {
@@ -506,29 +580,51 @@
                 <!-- Alerts Container -->
                 <div id="alertsContainer"></div>
 
-                <!-- LC Number Lookup Form -->
+                <!-- LC Number Lookup Form with Dropdown List -->
                 <div class="form-section">
                     <h3 class="card-title">
                         <i class="fas fa-search"></i>
-                        Find Your LC
+                        Select Your LC
                     </h3>
 
-                    <div class="form-group">
+                    <div class="form-group" style="position: relative;">
                         <div class="form-input-wrapper" style="flex: 1;">
                             <label for="lcNumberInput">
-                                LC Number <span class="required">*</span>
+                                Search LC <span class="required">*</span>
                             </label>
                             <input 
                                 type="text" 
                                 id="lcNumberInput" 
-                                placeholder="e.g., LC20241117123456"
+                                placeholder="Type LC number, applicant name, or currency to filter..."
                                 autocomplete="off"
+                                style="width: 100%;"
                             />
                         </div>
-                        <button id="searchBtn" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
-                            <span>Search</span>
-                        </button>
+                    </div>
+
+                    <!-- LC Table List -->
+                    <div id="lcTableContainer" class="lc-table-container">
+                        <table class="lc-table">
+                            <thead>
+                                <tr>
+                                    <th>LC Number</th>
+                                    <th>Applicant</th>
+                                    <th>Beneficiary</th>
+                                    <th>Currency</th>
+                                    <th>Amount</th>
+                                    <th>Extracted Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lcTableBody">
+                                <!-- LC rows will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Loading indicator for LC list -->
+                    <div id="lcLoadingIndicator" style="text-align: center; padding: 20px; display: none;">
+                        <div class="spinner" style="width: 30px; height: 30px; margin: 0 auto;"></div>
+                        <p style="font-size: 14px; color: #64748b; margin-top: 8px;">Loading available LCs...</p>
                     </div>
                 </div>
 
@@ -580,14 +676,141 @@
     <script>
         // State management
         let currentLCData = null;
+        let allLCs = []; // Store all available LCs
         const lcNumberInput = document.getElementById('lcNumberInput');
-        const searchBtn = document.getElementById('searchBtn');
+        const lcTableBody = document.getElementById('lcTableBody');
+        const lcTableContainer = document.getElementById('lcTableContainer');
         const confirmBtn = document.getElementById('confirmBtn');
         const editBtn = document.getElementById('editBtn');
         const loadingState = document.getElementById('loadingState');
         const lcDataSection = document.getElementById('lcDataSection');
         const lcDataGrid = document.getElementById('lcDataGrid');
         const alertsContainer = document.getElementById('alertsContainer');
+
+        // Load LCs from database on page load
+        async function loadLCsFromDatabase() {
+            try {
+                const response = await fetch('/api/lc/list', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    allLCs = result.data.sort((a, b) => {
+                        // Sort by timestamp (latest first)
+                        const dateA = new Date(a.timestamp || 0);
+                        const dateB = new Date(b.timestamp || 0);
+                        return dateB - dateA;
+                    });
+                    console.log(`✅ Loaded ${allLCs.length} LCs from database`);
+                } else {
+                    console.warn('No LCs found in database');
+                    allLCs = [];
+                }
+                
+                displayAllLCs();
+            } catch (error) {
+                console.error('Error loading LCs:', error);
+            }
+        }
+
+        // Display all LCs in table
+        function displayAllLCs() {
+            if (allLCs.length === 0) {
+                lcTableBody.innerHTML = '<tr><td colspan="6" class="lc-empty">No LCs available in the system</td></tr>';
+                return;
+            }
+
+            lcTableBody.innerHTML = allLCs.map(lc => `
+                <tr onclick="selectLC('${lc.lcNumber}', event)" style="cursor: pointer;">
+                    <td class="lc-number">${lc.lcNumber}</td>
+                    <td>${lc.applicant ? lc.applicant.split('\n')[0].substring(0, 40) : 'N/A'}</td>
+                    <td>${lc.beneficiary ? lc.beneficiary.split('\n')[0].substring(0, 40) : 'N/A'}</td>
+                    <td>${lc.currency || 'N/A'}</td>
+                    <td class="lc-amount">${lc.currency} ${formatNumber(lc.amount) || 'N/A'}</td>
+                    <td class="lc-date">${formatDate(lc.updatedAt || lc.createdAt)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter LCs based on search text
+        function filterLCs(searchText) {
+            let filtered = allLCs;
+
+            // Text filter
+            if (searchText.trim()) {
+                filtered = filtered.filter(lc => 
+                    lc.lcNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+                    (lc.applicant && lc.applicant.toLowerCase().includes(searchText.toLowerCase())) ||
+                    (lc.beneficiary && lc.beneficiary.toLowerCase().includes(searchText.toLowerCase())) ||
+                    (lc.currency && lc.currency.toLowerCase().includes(searchText.toLowerCase()))
+                );
+            }
+
+            if (filtered.length === 0) {
+                lcTableBody.innerHTML = '<tr><td colspan="6" class="lc-empty">No matching LCs found</td></tr>';
+                return;
+            }
+
+            lcTableBody.innerHTML = filtered.map(lc => `
+                <tr onclick="selectLC('${lc.lcNumber}', event)" style="cursor: pointer;">
+                    <td class="lc-number">${lc.lcNumber}</td>
+                    <td>${lc.applicant ? lc.applicant.split('\n')[0].substring(0, 40) : 'N/A'}</td>
+                    <td>${lc.beneficiary ? lc.beneficiary.split('\n')[0].substring(0, 40) : 'N/A'}</td>
+                    <td>${lc.currency || 'N/A'}</td>
+                    <td class="lc-amount">${lc.currency} ${formatNumber(lc.amount) || 'N/A'}</td>
+                    <td class="lc-date">${formatDate(lc.updatedAt || lc.createdAt)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Select LC from table
+        function selectLC(lcNumber, event) {
+            if (event) event.stopPropagation();
+            lcNumberInput.value = lcNumber;
+            
+            // Find and load the LC data
+            const lc = allLCs.find(item => item.lcNumber === lcNumber);
+            if (lc) {
+                currentLCData = lc;
+                
+                // Show only the selected LC in the table
+                displaySingleLC(lc);
+                
+                displayLCData(currentLCData);
+                lcDataSection.classList.add('active');
+                loadingState.classList.remove('active');
+                showAlert(`LC ${lcNumber} selected successfully`, 'success', 'LC Selected');
+                // Scroll to data section
+                setTimeout(() => {
+                    lcDataSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            }
+        }
+
+        // Display only the selected LC in the table
+        function displaySingleLC(lc) {
+            lcTableBody.innerHTML = `
+                <tr style="background: rgba(99, 102, 241, 0.08); cursor: pointer;">
+                    <td class="lc-number">${lc.lcNumber}</td>
+                    <td>${lc.applicant ? lc.applicant.split('\n')[0].substring(0, 40) : 'N/A'}</td>
+                    <td>${lc.beneficiary ? lc.beneficiary.split('\n')[0].substring(0, 40) : 'N/A'}</td>
+                    <td>${lc.currency || 'N/A'}</td>
+                    <td class="lc-amount">${lc.currency} ${formatNumber(lc.amount) || 'N/A'}</td>
+                    <td class="lc-date">${formatDate(lc.updatedAt || lc.createdAt)}</td>
+                </tr>
+            `;
+        }
+
+        // Format number with thousand separators
+        function formatNumber(num) {
+            if (!num) return '';
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
 
         // Show alert message
         function showAlert(message, type = 'info', title = '') {
@@ -620,7 +843,7 @@
                 const date = new Date(dateString);
                 return date.toLocaleDateString('en-US', { 
                     year: 'numeric', 
-                    month: 'long', 
+                    month: 'short', 
                     day: 'numeric' 
                 });
             } catch (e) {
@@ -670,46 +893,6 @@
                     lcDataGrid.appendChild(fieldElement);
                 }
             });
-        }
-
-        // Search for LC
-        async function searchLC() {
-            const lcNumber = lcNumberInput.value.trim();
-            
-            if (!lcNumber) {
-                showAlert('Please enter an LC number', 'error', 'Required Field');
-                return;
-            }
-            
-            loadingState.classList.add('active');
-            lcDataSection.classList.remove('active');
-            
-            try {
-                const response = await fetch('/api/lc/retrieve', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ lcNumber })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    currentLCData = result.data;
-                    displayLCData(currentLCData);
-                    lcDataSection.classList.add('active');
-                    loadingState.classList.remove('active');
-                    showAlert(`LC ${lcNumber} found successfully`, 'success', 'LC Retrieved');
-                } else {
-                    loadingState.classList.remove('active');
-                    showAlert(result.message || 'LC not found', 'error', 'LC Not Found');
-                }
-            } catch (error) {
-                loadingState.classList.remove('active');
-                showAlert(`Error searching LC: ${error.message}`, 'error', 'Search Error');
-                console.error('Search error:', error);
-            }
         }
 
         // Confirm and continue
@@ -796,19 +979,25 @@
             lcDataSection.classList.remove('active');
             loadingState.classList.remove('active');
             alertsContainer.innerHTML = '';
+            displayAllLCs();
             lcNumberInput.focus();
         }
 
-        // Event listeners
-        searchBtn.addEventListener('click', searchLC);
-        lcNumberInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchLC();
+        // Event listeners for table filtering
+        lcNumberInput.addEventListener('input', (e) => {
+            filterLCs(e.target.value);
         });
+
+        // Other event listeners
         confirmBtn.addEventListener('click', confirmAndContinue);
         editBtn.addEventListener('click', resetForm);
         document.getElementById('swiftPreviewBtn').addEventListener('click', previewSwiftFromLcDocs);
 
-        // SWIFT Preview function for register_lc_docs
+        // Load LCs on page load
+        window.addEventListener('load', () => {
+            loadLCsFromDatabase();
+            lcNumberInput.focus();
+        });
         function previewSwiftFromLcDocs() {
             if (!currentLCData) {
                 alert('Please search for an LC first');
