@@ -49,29 +49,16 @@
   },
   "metadata": {
     "description": "Trade Finance Database Query Configuration - Module/Table Mapping, Recipes, and RBAC",
-    "lastUpdated": "2025-10-26T18:31:16.070440",
+    "lastUpdated": "2025-11-18T13:37:06.879051",
     "maintainer": "Finstack Tech"
   },
   "modules": {
     "collections": {
+      "name": "Documentary Collections",
       "description": "D/P and D/A collection transactions",
-      "entry_tables": [
-        "collections",
-        "collection_documents"
-      ],
       "icon": "mdi-inbox-multiple-outline",
-      "id": "collections",
-      "intents": {
-        "list_pending": {
-          "description": "Collections awaiting acceptance or payment",
-          "recipe": "collection_pending_view"
-        },
-        "status_tracking": {
-          "description": "Track collection status by reference",
-          "recipe": "collection_detail_view"
-        }
-      },
-      "name": "Documentary Collections"
+      "entry_tables": [],
+      "intents": {}
     },
     "guarantees": {
       "description": "SBLC and other guarantee instruments lifecycle",
@@ -519,6 +506,98 @@
         "lc_applications.tenant_id = :tenant_id"
       ]
     },
+    "lc_expired_view": {
+      "allowed_filters": [
+        {
+          "field": "applicant.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "beneficiary.name",
+          "ops": [
+            "=",
+            "ILIKE"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "lc_applications.currency",
+          "ops": [
+            "=",
+            "IN"
+          ],
+          "type": "string"
+        },
+        {
+          "field": "lc_applications.amount",
+          "ops": [
+            "=",
+            ">=",
+            "<=",
+            "BETWEEN"
+          ],
+          "type": "decimal"
+        }
+      ],
+      "base": "lc_applications",
+      "default_limit": 100,
+      "description": "Letters of Credit that have expired",
+      "id": "lc_expired_view",
+      "intent_patterns": [
+        "show.*expired.*lc",
+        "expired.*letter.*credit",
+        "list.*expired.*lc",
+        "get.*expired.*lc",
+        ".*lc.*expired"
+      ],
+      "joins": [
+        {
+          "alias": "applicant",
+          "from": "lc_applications.applicant_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        },
+        {
+          "alias": "beneficiary",
+          "from": "lc_applications.beneficiary_id",
+          "to": "parties.party_id",
+          "type": "inner"
+        }
+      ],
+      "keywords": [
+        "expired",
+        "lc",
+        "letter of credit",
+        "letters of credit",
+        "expiry"
+      ],
+      "module": "letters_of_credit",
+      "name": "Expired LCs View",
+      "order_by": [
+        "lc_applications.expiry_date DESC"
+      ],
+      "select": [
+        "lc_applications.lc_id",
+        "lc_applications.applicant_ref",
+        "lc_applications.currency",
+        "lc_applications.amount",
+        "lc_applications.status",
+        "lc_applications.issue_date",
+        "lc_applications.expiry_date",
+        "applicant.name as applicant_name",
+        "applicant.country as applicant_country",
+        "beneficiary.name as beneficiary_name",
+        "beneficiary.country as beneficiary_country"
+      ],
+      "where": [
+        "lc_applications.expiry_date < CURRENT_DATE",
+        "lc_applications.tenant_id = :tenant_id"
+      ]
+    },
     "lc_expiring_view": {
       "allowed_filters": [
         {
@@ -679,98 +758,6 @@
       ],
       "where": [
         "lc_applications.status IN ('approved', 'issued')",
-        "lc_applications.tenant_id = :tenant_id"
-      ]
-    },
-    "lc_expired_view": {
-      "allowed_filters": [
-        {
-          "field": "applicant.name",
-          "ops": [
-            "=",
-            "ILIKE"
-          ],
-          "type": "string"
-        },
-        {
-          "field": "beneficiary.name",
-          "ops": [
-            "=",
-            "ILIKE"
-          ],
-          "type": "string"
-        },
-        {
-          "field": "lc_applications.currency",
-          "ops": [
-            "=",
-            "IN"
-          ],
-          "type": "string"
-        },
-        {
-          "field": "lc_applications.amount",
-          "ops": [
-            "=",
-            ">=",
-            "<=",
-            "BETWEEN"
-          ],
-          "type": "decimal"
-        }
-      ],
-      "base": "lc_applications",
-      "default_limit": 100,
-      "description": "Letters of Credit that have expired",
-      "id": "lc_expired_view",
-      "intent_patterns": [
-        "show.*expired.*lc",
-        "expired.*letter.*credit",
-        "list.*expired.*lc",
-        "get.*expired.*lc",
-        ".*lc.*expired"
-      ],
-      "joins": [
-        {
-          "alias": "applicant",
-          "from": "lc_applications.applicant_id",
-          "to": "parties.party_id",
-          "type": "inner"
-        },
-        {
-          "alias": "beneficiary",
-          "from": "lc_applications.beneficiary_id",
-          "to": "parties.party_id",
-          "type": "inner"
-        }
-      ],
-      "keywords": [
-        "expired",
-        "lc",
-        "letter of credit",
-        "letters of credit",
-        "expiry"
-      ],
-      "module": "letters_of_credit",
-      "name": "Expired LCs View",
-      "order_by": [
-        "lc_applications.expiry_date DESC"
-      ],
-      "select": [
-        "lc_applications.lc_id",
-        "lc_applications.applicant_ref",
-        "lc_applications.currency",
-        "lc_applications.amount",
-        "lc_applications.status",
-        "lc_applications.issue_date",
-        "lc_applications.expiry_date",
-        "applicant.name as applicant_name",
-        "applicant.country as applicant_country",
-        "beneficiary.name as beneficiary_name",
-        "beneficiary.country as beneficiary_country"
-      ],
-      "where": [
-        "lc_applications.expiry_date < CURRENT_DATE",
         "lc_applications.tenant_id = :tenant_id"
       ]
     }
