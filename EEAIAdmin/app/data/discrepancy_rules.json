@@ -855,7 +855,7 @@
     {
       "id": "6fde49b0-a752-437c-8fd1-e56c16c3c1d5",
       "code": "R-0082",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "certificate must reference the invoice/BL number",
       "basis": "Bank Practice",
       "priority": "Mandatory",
@@ -1175,7 +1175,7 @@
     {
       "id": "859d16e8-afa2-4612-a90b-0ed3d22c713c",
       "code": "R-0116",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "notify party must match LC or be allowed by LC terms",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -1505,7 +1505,7 @@
     {
       "id": "d164c66d-3e87-46b4-96f5-4ff6b1dc344f",
       "code": "R-0150",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "port/place of destination must match LC; additionally, must reference LC number.",
       "basis": "UCP 600 Art. 20",
       "priority": "Mandatory",
@@ -1845,7 +1845,7 @@
     {
       "id": "1ded675a-bfb4-41ed-8242-2a88f445986f",
       "code": "R-0184",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "document must be stamped 'freight prepaid' where required",
       "basis": "Shipping Terms",
       "priority": "Mandatory",
@@ -2185,7 +2185,7 @@
     {
       "id": "a39ed5cd-a354-4779-97ed-5412dc7e91c0",
       "code": "R-0218",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "seal/stamp must be clear and not illegible",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -2525,7 +2525,7 @@
     {
       "id": "1037cd78-e14a-457a-b603-43421a4b88d2",
       "code": "R-0252",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "document must not be dated after shipment date; additionally, 100%.",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -2865,7 +2865,7 @@
     {
       "id": "44434043-0274-4882-a3a5-2f9611bbe99a",
       "code": "R-0286",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "quantity/weight must match packing list and invoice",
       "basis": "ISBP 821 A7 / Bank Policy",
       "priority": "Mandatory",
@@ -3205,7 +3205,7 @@
     {
       "id": "be1cc32b-8cfd-4630-bd47-d427bc7bbdea",
       "code": "R-0320",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "air waybill must be 'to order' when required",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -3545,7 +3545,7 @@
     {
       "id": "58aa9d93-3bfe-425c-b79c-048d0fa1ff71",
       "code": "R-0354",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "country-specific endorsement required must be present; additionally, certificate must be in English or translated.",
       "basis": "Local Regulation",
       "priority": "Mandatory",
@@ -3885,7 +3885,7 @@
     {
       "id": "a5d7740a-02cc-4368-b1a4-2fc4e6f898f9",
       "code": "R-0388",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "insurance must cover the risks named in the LC",
       "basis": "UCP 600 Art. 28",
       "priority": "Mandatory",
@@ -4225,7 +4225,7 @@
     {
       "id": "3e96a1ee-6038-4953-a711-46efc7f02c43",
       "code": "R-0422",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "amount/value must match across invoice and draft",
       "basis": "ISBP 821 A1",
       "priority": "Mandatory",
@@ -4565,7 +4565,7 @@
     {
       "id": "0361f6b1-e004-4e3d-a09f-577771c9ea7e",
       "code": "R-0456",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "document must show vessel name when required; additionally, incoterms must be consistent.",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -4905,7 +4905,7 @@
     {
       "id": "2bf3f03e-d7dc-4bd6-bfd2-59d63b6499f9",
       "code": "R-0490",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "originals must be notarized/endorsed where required",
       "basis": "Local Regulation",
       "priority": "Mandatory",
@@ -5245,7 +5245,7 @@
     {
       "id": "5bc0bc46-5ad4-4caa-a0c5-a43019320c12",
       "code": "R-0524",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "must be issued by the nominated/acceptable party",
       "basis": "ISBP 821 A2",
       "priority": "Mandatory",
@@ -5585,7 +5585,7 @@
     {
       "id": "f60d5df0-6e63-4653-9cb3-d046a344eb6e",
       "code": "R-0558",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "date must be consistent across all documents; additionally, signed and stamped by chamber of commerce.",
       "basis": "UCP 600 Art. 14(d)",
       "priority": "Mandatory",
@@ -5925,7 +5925,7 @@
     {
       "id": "58b1d2bd-dd3b-4abd-bed7-3286f87db24a",
       "code": "R-0592",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "country of origin must be declared and match CO",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -6265,7 +6265,7 @@
     {
       "id": "24786784-be09-4133-a0f5-c213e3d0017d",
       "code": "R-0626",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "signature must match specimen or authorized list",
       "basis": "Bank Policy",
       "priority": "Mandatory",
@@ -6605,7 +6605,7 @@
     {
       "id": "4382c5f9-dcb2-4cf6-b339-f1ea2dc0504b",
       "code": "R-0660",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "must bear an authenticated signature or stamp; additionally, must reference LC number.",
       "basis": "UCP 600 Art. 14 / Bank Policy",
       "priority": "Mandatory",
@@ -6945,7 +6945,7 @@
     {
       "id": "dd0160ef-c13c-48d1-9ee5-71d397e8bc3a",
       "code": "R-0694",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "number of originals/copies must match LC requirement",
       "basis": "Bank Practice",
       "priority": "Mandatory",
@@ -7285,7 +7285,7 @@
     {
       "id": "9a536f1f-95c2-4cfd-b64e-6afcb4c033d3",
       "code": "R-0728",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "transport document must show container number when relevant",
       "basis": "Shipping Practice",
       "priority": "Mandatory",
@@ -7625,7 +7625,7 @@
     {
       "id": "34f6a1d3-b462-4c73-b313-2085711aadee",
       "code": "R-0762",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "certificate must be issued by an authorized body (chamber/inspector); additionally, 100%.",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -7965,7 +7965,7 @@
     {
       "id": "6c1ca1f6-6b6f-4a7d-b417-c4bb788c5577",
       "code": "R-0796",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "must show 'Freight Prepaid' or 'Collect' as per LC instruction",
       "basis": "Shipping Terms",
       "priority": "Mandatory",
@@ -8305,7 +8305,7 @@
     {
       "id": "e894bc92-f83e-45ba-9c75-3dd1fda4cae0",
       "code": "R-0830",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "must be signed by the authorized signatory",
       "basis": "ISBP 821 A1",
       "priority": "Mandatory",
@@ -8645,7 +8645,7 @@
     {
       "id": "ee70d728-7c1e-44ca-8a72-1a2197bcd955",
       "code": "R-0864",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "certificate must reference the invoice/BL number; additionally, certificate must be in English or translated.",
       "basis": "Bank Practice",
       "priority": "Mandatory",
@@ -8985,7 +8985,7 @@
     {
       "id": "4f6d5424-1e98-4d5a-a1c5-1774f8338c0f",
       "code": "R-0898",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "notify party must match LC or be allowed by LC terms",
       "basis": "ISBP 821",
       "priority": "Mandatory",
@@ -9325,7 +9325,7 @@
     {
       "id": "ab0bf95e-aad8-4ab9-a2e4-eeeb89ea91fa",
       "code": "R-0932",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "port/place of destination must match LC",
       "basis": "UCP 600 Art. 20",
       "priority": "Mandatory",
@@ -9665,7 +9665,7 @@
     {
       "id": "06f8556d-b1d1-4104-9fe3-3e24653556ce",
       "code": "R-0966",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "document must be stamped 'freight prepaid' where required; additionally, incoterms must be consistent.",
       "basis": "Shipping Terms",
       "priority": "Mandatory",
@@ -10005,7 +10005,7 @@
     {
       "id": "d0ebd29e-e61d-4ee7-8996-43d512dd7037",
       "code": "R-1000",
-      "documentType": "Draft (Bill of Exchange)",
+      "documentType": "Bill of Exchange",
       "description": "seal/stamp must be clear and not illegible",
       "basis": "ISBP 821",
       "priority": "Mandatory",

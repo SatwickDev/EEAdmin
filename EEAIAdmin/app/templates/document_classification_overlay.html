@@ -4664,7 +4664,7 @@ button:focus {
     <div class="mb-6">
         <div class="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-2xl p-2 border-2 border-gray-200">
             <!-- Standard Rules Tab -->
-            <button @click="activeDiscrepancyTab = 'standard'"
+            <button @click="handleStandardRulesTabClick()"
                     :class="activeDiscrepancyTab === 'standard' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' : 'bg-transparent text-gray-600 hover:bg-gray-100'"
                     class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-300 relative group">
                 <div class="flex items-center justify-center gap-2">
@@ -6229,6 +6229,7 @@ button:focus {
                     loadingLCConditions: false, // Loading state for LC conditions parsing/validation
                     discrepancyResults: [], // Results of cross-verification checks
                     loadingDiscrepancies: false, // Loading state for discrepancy analysis
+                    llmRulesCheckCompleted: false, // Track if LLM-based rules classification has completed
                     requiredDocumentsCache: [], // Cache for required documents from LC context
                     loadingRequiredDocuments: false, // Loading state for required documents parsing
                     parsingRequiredDocuments: false, // Flag to prevent simultaneous parsing calls
@@ -7049,10 +7050,11 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                             // Trigger discrepancy check if from document register
                             if (this.isFromDocumentRegister && this.lcContext) {
-                                console.log('🔍 Triggering discrepancy check after revalidation');
-                                this.$nextTick(() => {
+                                console.log('⏳ Waiting 45 seconds before compliance check to avoid rate limits...');
+                                setTimeout(() => {
+                                    console.log('🔍 Starting discrepancy check after rate limit buffer');
                                     this.performDiscrepancyCheck();
-                                });
+                                }, 45000); // 45 second delay
                             }
                         } else {
                             throw new Error(data.error || 'Revalidation failed');
@@ -7589,7 +7591,13 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                 },
 
                 isComplianceReady(result) {
-                    return result && result.compliance_ready === true;
+                    // Check both:
+                    // 1. Backend compliance analysis is complete (compliance_ready flag)
+                    // 2. LLM-based rules classification has completed at least once (llmRulesCheckCompleted flag)
+                    const backendReady = result && result.compliance_ready === true;
+                    const llmCompleted = this.llmRulesCheckCompleted === true;
+                    
+                    return backendReady && llmCompleted;
                 },
 
                 selectComplianceDocument(result) {
@@ -8581,7 +8589,11 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                         // Automatically run discrepancy check if we have results
                         if (this.results && this.results.length > 0) {
-                            this.performDiscrepancyCheck();
+                            console.log('⏳ Waiting 45 seconds before compliance check to avoid rate limits...');
+                            setTimeout(() => {
+                                console.log('🔍 Starting discrepancy check after rate limit buffer');
+                                this.performDiscrepancyCheck();
+                            }, 45000); // 45 second delay
                         }
                     } catch (error) {
                         console.error('❌ Error loading cross-verification rules:', error);
@@ -8590,7 +8602,21 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     }
                 },
 
-                // Perform discrepancy check against LC data
+                // Handle Standard Rules tab click with rate limit delay
+                handleStandardRulesTabClick() {
+                    this.activeDiscrepancyTab = 'standard';
+                    
+                    // Only trigger compliance check if we have results
+                    if (this.results && this.results.length > 0 && this.isFromDocumentRegister && this.lcContext) {
+                        console.log('⏳ Waiting 45 seconds before compliance check to avoid rate limits...');
+                        setTimeout(() => {
+                            console.log('🔍 Starting discrepancy check after rate limit buffer');
+                            this.performDiscrepancyCheck();
+                        }, 45000); // 45 second delay
+                    }
+                },
+
+                // Perform discrepancy check against LC data using NEW LLM-based approach
                 async performDiscrepancyCheck() {
                     if (!this.isFromDocumentRegister || !this.lcContext) {
                         console.log('⚠️ Not from document register or no LC context available');
@@ -8606,196 +8632,133 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     this.discrepancyResults = [];
 
                     try {
-                        console.log('🔍 Performing discrepancy check against LC data...');
+                        console.log('🤖 Starting LLM-based discrepancy check in background...');
                         console.log('LC Context:', this.lcContext);
                         console.log('Document Results:', this.results);
 
                         const lcData = this.lcContext.formData || this.lcContext;
 
-                        // Extract entities from all classified documents
-                        const documentEntities = this.extractEntitiesFromDocuments();
+                        // Prepare documents data for LLM analysis
+                        const documentsData = this.results.map(result => {
+                            // Extract entities - use extractedFields if entities is empty
+                            let entities = result.entities || {};
+                            if (Object.keys(entities).length === 0 && result.extractedFields) {
+                                // Map extractedFields to entities (field name -> value)
+                                entities = {};
+                                for (const [fieldName, fieldData] of Object.entries(result.extractedFields)) {
+                                    if (fieldData && fieldData.value !== undefined && fieldData.value !== null) {
+                                        entities[fieldName] = fieldData.value;
+                                    }
+                                }
+                            }
+                            
+                            return {
+                                documentType: result.classification || result.documentType || 'Unknown',
+                                name: result.fileName || result.name || 'Unknown Document',
+                                hash: result.hash || result.file_hash || '',
+                                entities: entities,
+                                extractedFields: result.extractedFields || {}
+                            };
+                        });
 
-                        // Cross-verify each entity against LC data using rules
-                        for (const entity of documentEntities) {
-                            await this.verifyEntityAgainstLC(entity, lcData);
+                        console.log(`📤 Sending ${documentsData.length} documents to LLM compliance engine (background mode)...`);
+
+                        // Start background LLM compliance check
+                        const response = await fetch('/api/compliance/llm-standard-rules', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                documents: documentsData,
+                                lcContext: lcData
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
 
-                        console.log(`✅ Discrepancy check complete. Found ${this.discrepancyResults.length} issues`);
+                        const data = await response.json();
+
+                        if (!data.success) {
+                            throw new Error(data.error || 'Unknown error from compliance engine');
+                        }
+
+                        const requestId = data.request_id;
+                        console.log(`✅ Background job started with request ID: ${requestId}`);
+                        console.log(`⏳ Polling for status...`);
+
+                        // Poll for status
+                        const pollInterval = setInterval(async () => {
+                            try {
+                                const statusResponse = await fetch(`/api/compliance/llm-standard-rules/status/${requestId}`);
+                                
+                                if (!statusResponse.ok) {
+                                    clearInterval(pollInterval);
+                                    throw new Error(`Status check failed: ${statusResponse.status}`);
+                                }
+
+                                const statusData = await statusResponse.json();
+                                
+                                console.log(`📊 Status: ${statusData.status} - ${statusData.progress}`);
+
+                                if (statusData.status === 'completed') {
+                                    clearInterval(pollInterval);
+                                    
+                                    const results = statusData.results;
+                                    console.log('✅ LLM Compliance check complete:', results);
+                                    console.log(`   - Total checks: ${results.statistics.total_checks}`);
+                                    console.log(`   - Compliant: ${results.statistics.compliant}`);
+                                    console.log(`   - Non-compliant: ${results.statistics.non_compliant}`);
+                                    console.log(`   - Compliance rate: ${results.statistics.compliance_rate.toFixed(2)}%`);
+
+                                    // Map results to discrepancyResults format
+                                    this.discrepancyResults = results.results.map(result => ({
+                                        field: result.field,
+                                        documentType: result.documentType,
+                                        documentValue: result.documentValue,
+                                        lcValue: result.lcValue || result.expectedValue || '',
+                                        discrepancy: result.discrepancy,
+                                        severity: result.severity,
+                                        isCompliant: result.isCompliant,
+                                        rule: result.rule,
+                                        hash: result.hash
+                                    }));
+
+                                    console.log(`✅ Discrepancy check complete. Found ${this.discrepancyResults.length} results`);
+                                    this.loadingDiscrepancies = false;
+                                    
+                                    // Mark LLM rules check as completed - enables Compliance Analysis button
+                                    this.llmRulesCheckCompleted = true;
+                                    console.log('✅ LLM rules classification completed - Compliance Analysis button enabled');
+                                    
+                                } else if (statusData.status === 'failed') {
+                                    clearInterval(pollInterval);
+                                    throw new Error(statusData.error || 'Background job failed');
+                                }
+                                // Continue polling if status is 'queued' or 'processing'
+                                
+                            } catch (pollError) {
+                                clearInterval(pollInterval);
+                                console.error('❌ Error polling status:', pollError);
+                                this.showError('Failed to check compliance status: ' + pollError.message);
+                                this.loadingDiscrepancies = false;
+                            }
+                        }, 2000); // Poll every 2 seconds
 
                     } catch (error) {
-                        console.error('❌ Error performing discrepancy check:', error);
-                        this.showError('Failed to perform discrepancy analysis');
-                    } finally {
+                        console.error('❌ Error starting LLM discrepancy check:', error);
+                        this.showError('Failed to start discrepancy analysis: ' + error.message);
                         this.loadingDiscrepancies = false;
                     }
                 },
 
-                // Extract entities that appear in multiple documents for cross-verification
-                extractEntitiesFromDocuments() {
-                    // Document types to exclude from discrepancy analysis
-                    const EXCLUDED_DOCUMENTS = [
-                        'EMCS_Administrative_Documents',
-                        'Covering_Schedule',
-                        'Covering Schedule',
-                        'Administrative Documents used in the Excise Movement Control System'
-                    ];
-
-                    const entitiesMap = new Map();
-
-                    this.results.forEach(result => {
-                        // Skip excluded document types
-                        const docType = result.documentType || '';
-                        if (EXCLUDED_DOCUMENTS.some(excluded => excluded.toLowerCase() === docType.toLowerCase())) {
-                            console.log(`🚫 Skipping discrepancy analysis for excluded document: ${docType}`);
-                            return;
-                        }
-                        const complianceData = result?._rawResult?.compliance?.unified ||
-                                             result?.compliance?.unified ||
-                                             result?.unified_compliance ||
-                                             {};
-
-                        // Also check extractedFields if no compliance data
-                        const fieldsToCheck = Object.keys(complianceData).length > 0
-                            ? complianceData
-                            : (result?.extractedFields || {});
-
-                        // Extract relevant entities
-                        Object.entries(fieldsToCheck).forEach(([fieldKey, fieldData]) => {
-                            if (!fieldData || typeof fieldData !== 'object') return;
-
-                            const fieldName = (fieldData.field || fieldData.label || fieldKey || '').toLowerCase();
-                            const value = fieldData.value || fieldData.text || '';
-
-                            if (!value || value.trim() === '') return;
-
-                            // Track entities by field name
-                            if (!entitiesMap.has(fieldName)) {
-                                entitiesMap.set(fieldName, {
-                                    fieldName: fieldName,
-                                    displayName: fieldData.field || fieldData.label || fieldKey,
-                                    values: [],
-                                    documents: []
-                                });
-                            }
-
-                            const entity = entitiesMap.get(fieldName);
-                            entity.values.push(value);
-                            entity.documents.push({
-                                documentType: result.documentType || 'Unknown Document',
-                                value: value,
-                                hash: result.hash
-                            });
-                        });
-                    });
-
-                    // Return only entities that need cross-verification (common fields)
-                    return Array.from(entitiesMap.values()).filter(entity => {
-                        const fieldName = entity.fieldName;
-                        // Fields that should be cross-verified against LC
-                        return fieldName.includes('beneficiary') ||
-                               fieldName.includes('applicant') ||
-                               fieldName.includes('amount') ||
-                               fieldName.includes('currency') ||
-                               fieldName.includes('port') ||
-                               fieldName.includes('destination') ||
-                               fieldName.includes('shipment') ||
-                               fieldName.includes('goods') ||
-                               fieldName.includes('description') ||
-                               fieldName.includes('invoice') ||
-                               fieldName.includes('quantity') ||
-                               fieldName.includes('weight') ||
-                               fieldName.includes('consignee') ||
-                               fieldName.includes('shipper') ||
-                               fieldName.includes('freight') ||
-                               fieldName.includes('incoterms');
-                    });
-                },
-
-                // Verify entity value against LC data using cross-verification rules
-                async verifyEntityAgainstLC(entity, lcData) {
-                    // Document types to exclude from discrepancy analysis
-                    const EXCLUDED_DOCUMENTS = [
-                        'EMCS_Administrative_Documents',
-                        'Covering_Schedule',
-                        'Covering Schedule',
-                        'Administrative Documents used in the Excise Movement Control System'
-                    ];
-
-                    const fieldName = entity.fieldName;
-
-                    // Find applicable LC field to compare against
-                    const lcFieldMapping = {
-                        'beneficiary': lcData.beneficiary,
-                        'applicant': lcData.applicant,
-                        'amount': lcData.amount,
-                        'currency': lcData.currency,
-                        'port of loading': lcData.portOfLoading,
-                        'port of discharge': lcData.portOfDischarge,
-                        'destination': lcData.portOfDischarge,
-                        'goods description': lcData.goodsDescription,
-                        'description of goods': lcData.goodsDescription,
-                        'quantity': lcData.quantity,
-                        'consignee': lcData.beneficiary, // Often same as beneficiary
-                        'shipper': lcData.applicant, // Often same as applicant
-                        'incoterms': lcData.incoterms
-                    };
-
-                    // Get expected LC value
-                    let lcValue = null;
-                    for (const [key, value] of Object.entries(lcFieldMapping)) {
-                        if (fieldName.includes(key)) {
-                            lcValue = value;
-                            break;
-                        }
-                    }
-
-                    if (!lcValue) {
-                        console.log(`⚠️ No LC reference found for field: ${fieldName}`);
-                        return;
-                    }
-
-                    // Check each document's value against LC value - SHOW ALL (compliant + non-compliant)
-                    entity.documents.forEach(doc => {
-                        // Skip excluded document types
-                        if (EXCLUDED_DOCUMENTS.some(excluded => excluded.toLowerCase() === doc.documentType.toLowerCase())) {
-                            console.log(`🚫 Skipping LC verification for excluded document: ${doc.documentType}`);
-                            return;
-                        }
-
-                        const docValue = doc.value;
-
-                        // Compare values (case-insensitive, trim whitespace)
-                        const lcNormalized = String(lcValue).toLowerCase().trim();
-                        const docNormalized = String(docValue).toLowerCase().trim();
-
-                        const isMatch = lcNormalized === docNormalized;
-
-                        // Find applicable rule
-                        const applicableRule = this.crossVerificationRules.find(rule => {
-                            return rule.documentType === doc.documentType &&
-                                   rule.description.toLowerCase().includes(fieldName.split(' ')[0]);
-                        }) || this.crossVerificationRules[0]; // Fallback to first rule
-
-                        // Add BOTH compliant and non-compliant items
-                        this.discrepancyResults.push({
-                            field: entity.displayName,
-                            documentType: doc.documentType,
-                            documentValue: docValue,
-                            lcValue: lcValue,
-                            discrepancy: isMatch
-                                ? `Value matches LC requirement`
-                                : `Value in ${doc.documentType} does not match LC`,
-                            severity: isMatch ? 'low' : 'high',
-                            isCompliant: isMatch, // Add flag to identify compliant items
-                            rule: applicableRule ? {
-                                code: applicableRule.code,
-                                description: applicableRule.description,
-                                basis: applicableRule.basis
-                            } : null,
-                            hash: doc.hash
-                        });
-                    });
-                },
+                // ============ DISCREPANCY CHECKING - OLD CODE REMOVED ============
+                // extractEntitiesFromDocuments() - REMOVED (using LLM batch processing)
+                // verifyEntityAgainstLC() - REMOVED (using LLM batch processing)
+                // All manual field comparison logic has been replaced with performDiscrepancyCheck()
+                // which uses GPT-4o for intelligent semantic comparison in background
 
                 // Get discrepancies for display in the tab
                 getDiscrepancies() {

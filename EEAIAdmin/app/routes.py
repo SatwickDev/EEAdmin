@@ -15898,6 +15898,192 @@ Return compliance status for each field.'''
                 'error': str(e)
             }), 500
 
+    # In-memory storage for LLM compliance check status
+    llm_compliance_tracker = {}
+    
+    def run_llm_compliance_in_background(request_id, documents, lc_context, relevant_rules):
+        """Background worker for LLM compliance check"""
+        try:
+            # Update status to processing
+            llm_compliance_tracker[request_id] = {
+                'status': 'processing',
+                'progress': 'Classifying rules using GPT-4o...',
+                'results': None,
+                'error': None
+            }
+            
+            logger.info(f"🚀 Background LLM compliance check started for request: {request_id}")
+            
+            # Initialize LLM compliance engine
+            from app.llm_compliance_engine import LLMComplianceEngine
+            engine = LLMComplianceEngine()
+            
+            # Update progress
+            llm_compliance_tracker[request_id]['progress'] = 'Performing LC comparison...'
+            
+            # Run comprehensive compliance check
+            result = engine.run_comprehensive_compliance_check(
+                documents=documents,
+                lc_context=lc_context,
+                all_rules=relevant_rules
+            )
+            
+            # Update with results
+            llm_compliance_tracker[request_id] = {
+                'status': 'completed',
+                'progress': 'Compliance check complete',
+                'results': result,
+                'error': None
+            }
+            
+            logger.info(f"✅ Background LLM compliance check completed for request: {request_id}")
+            
+        except Exception as e:
+            logger.error(f"❌ Background LLM compliance check failed for {request_id}: {str(e)}", exc_info=True)
+            llm_compliance_tracker[request_id] = {
+                'status': 'failed',
+                'progress': 'Error occurred',
+                'results': None,
+                'error': str(e)
+            }
+    
+    @app.route('/api/compliance/llm-standard-rules', methods=['POST'])
+    def llm_standard_rules_check():
+        """
+        Start LLM-based compliance check in background for Tab 3, Sub-tab 1 (Standard Rules)
+        Returns immediately with request_id for status polling
+        """
+        try:
+            data = request.json
+            logger.info("🚀 Initiating LLM-based standard rules compliance check")
+            
+            documents = data.get('documents', [])
+            lc_context = data.get('lcContext', {})
+            
+            if not documents:
+                return jsonify({'success': False, 'error': 'No documents provided'}), 400
+            
+            # Generate unique request ID
+            import uuid
+            request_id = str(uuid.uuid4())
+            
+            # Debug: Log first document structure
+            if documents:
+                logger.info(f"📝 Request {request_id} - Sample document structure: {json.dumps(documents[0], indent=2)[:500]}")
+            
+            if not lc_context:
+                logger.warning(f"⚠️ Request {request_id} - No LC context provided")
+            
+            # Load rules from discrepancy_rules.json
+            rules_file = os.path.join(app.root_path, 'data', 'discrepancy_rules.json')
+            
+            if not os.path.exists(rules_file):
+                logger.error(f"❌ Rules file not found: {rules_file}")
+                return jsonify({'success': False, 'error': 'Rules file not found'}), 500
+            
+            with open(rules_file, 'r', encoding='utf-8') as f:
+                rules_data = json.load(f)
+                all_rules = rules_data.get('rules', [])
+            
+            logger.info(f"📚 Request {request_id} - Loaded {len(all_rules)} rules from discrepancy_rules.json")
+            
+            # Filter rules for classified document types - handle both string and dict
+            document_types = set()
+            for doc in documents:
+                # Get document type - could be string or dict object
+                doc_type = doc.get('documentType')
+                
+                # If documentType is a dict object, extract the document_type field
+                if isinstance(doc_type, dict):
+                    doc_type = doc_type.get('document_type', '')
+                
+                # If classification field exists and is dict, try that
+                if not isinstance(doc_type, str) or not doc_type:
+                    classification = doc.get('classification', '')
+                    if isinstance(classification, dict):
+                        doc_type = classification.get('document_type', '')
+                    elif isinstance(classification, str):
+                        doc_type = classification
+                
+                # Only add if we have a valid string
+                if isinstance(doc_type, str) and doc_type.strip():
+                    document_types.add(doc_type.strip())
+            
+            logger.info(f"📋 Request {request_id} - Document types found: {document_types}")
+            
+            relevant_rules = [
+                rule for rule in all_rules 
+                if rule.get('documentType', '').lower() in [dt.lower() for dt in document_types]
+            ]
+            
+            logger.info(f"🔍 Request {request_id} - Found {len(relevant_rules)} rules for document types: {document_types}")
+            
+            # Initialize tracker
+            llm_compliance_tracker[request_id] = {
+                'status': 'queued',
+                'progress': 'Starting background processing...',
+                'results': None,
+                'error': None
+            }
+            
+            # Start background thread
+            import threading
+            thread = threading.Thread(
+                target=run_llm_compliance_in_background,
+                args=(request_id, documents, lc_context, relevant_rules),
+                daemon=True
+            )
+            thread.start()
+            
+            logger.info(f"✅ Request {request_id} - Background thread started")
+            
+            # Return immediately with request_id
+            return jsonify({
+                'success': True,
+                'request_id': request_id,
+                'message': 'LLM compliance check started in background',
+                'status': 'queued'
+            }), 202
+            
+        except Exception as e:
+            logger.error(f"❌ Error initiating LLM compliance check: {str(e)}", exc_info=True)
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
+    @app.route('/api/compliance/llm-standard-rules/status/<request_id>', methods=['GET'])
+    def llm_compliance_status(request_id):
+        """
+        Check status of LLM compliance check
+        """
+        try:
+            if request_id not in llm_compliance_tracker:
+                return jsonify({
+                    'success': False,
+                    'error': 'Request ID not found'
+                }), 404
+            
+            status_info = llm_compliance_tracker[request_id]
+            
+            response = {
+                'success': True,
+                'request_id': request_id,
+                'status': status_info['status'],
+                'progress': status_info['progress']
+            }
+            
+            # Include results if completed
+            if status_info['status'] == 'completed':
+                response['results'] = status_info['results']
+            
+            # Include error if failed
+            if status_info['status'] == 'failed':
+                response['error'] = status_info['error']
+            
+            return jsonify(response), 200
+            
+        except Exception as e:
+            logger.error(f"❌ Error checking LLM compliance status: {str(e)}", exc_info=True)
+            return jsonify({'success': False, 'error': str(e)}), 500
+
     # Vetting Rule Engine API Routes
     def check_admin_access():
         """Helper function to check if current user is admin"""
@@ -17700,11 +17886,19 @@ Return compliance status for each field.'''
                 logger.error(traceback.format_exc())
                 results_queue.put((idx, None))
 
-        # Start all extraction threads
+        # Start all extraction threads with rate limiting (30s buffer every 3 documents)
         for idx, group in enumerate(document_groups, 1):
             thread = threading.Thread(target=extract_single_group, args=(idx, group), daemon=False)
             thread.start()
             threads.append(thread)
+            
+            # Add 30-second buffer after every 3 documents to prevent token limit
+            if idx % 3 == 0 and idx < len(document_groups):
+                logger.info(f"⏸️ Processed {idx} documents - Adding 30-second buffer to prevent rate limits...")
+                time.sleep(30)
+                logger.info(f"▶️ Resuming extraction for next batch...")
+        
+        logger.info(f"⏳ Waiting for all {len(threads)} extraction threads to complete...")
 
         # Wait for all threads to complete
         for thread in threads:
@@ -17721,6 +17915,12 @@ Return compliance status for each field.'''
         results = [results_dict[i] for i in sorted(results_dict.keys()) if i in results_dict]
 
         logger.info(f"✅ Parallel extraction complete: {len(results)} document groups processed")
+        
+        # Add 30-second buffer after entity extraction before returning to next step
+        logger.info(f"⏸️ Entity extraction complete - Adding 30-second buffer before proceeding...")
+        time.sleep(30)
+        logger.info(f"▶️ Proceeding to next processing step...")
+        
         return results
 
     def build_extraction_result(group, extracted_fields, field_mapping_data, file_name,
@@ -18472,6 +18672,9 @@ Return compliance status for each field.'''
                 'Certificate of Origin': 'Preferential Certificate of Origin',
                 'COO': 'Preferential Certificate of Origin',
                 'Origin Certificate': 'Preferential Certificate of Origin',
+                'Marine Insurance policy': 'cargo insurance document',
+                'Marine Insurance Policy': 'cargo insurance document',
+                'marine insurance policy': 'cargo insurance document',
                 # Add more aliases as needed
             }
             
