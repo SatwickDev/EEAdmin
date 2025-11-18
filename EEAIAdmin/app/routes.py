@@ -1533,6 +1533,33 @@ def setup_auth_routes(app: Flask):
                 'message': f'Error retrieving LC data: {str(e)}'
             }), 500
 
+    @app.route('/api/lc/list', methods=['GET'])
+    def get_all_lcs():
+        """Fetch all available LCs from database, sorted by latest first"""
+        try:
+            # Query all LCs and sort by timestamp descending (latest first)
+            lcs = list(db.letter_of_credits.find({}).sort('timestamp', -1))
+            
+            # Convert ObjectId to string and handle datetime objects for JSON serialization
+            for lc in lcs:
+                lc['_id'] = str(lc['_id'])
+                if 'timestamp' in lc and isinstance(lc['timestamp'], datetime):
+                    lc['timestamp'] = lc['timestamp'].isoformat()
+            
+            logger.info(f"Retrieved {len(lcs)} LCs from database")
+            
+            return jsonify({
+                'success': True,
+                'data': lcs
+            }), 200
+            
+        except Exception as e:
+            logger.error(f"Error fetching LC list: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': f'Error fetching LCs: {str(e)}'
+            }), 500
+
     @app.route('/register_lc_docs', methods=['GET', 'POST'])
     def register_lc_docs():
         """Handle LC document registration continuation flow"""
