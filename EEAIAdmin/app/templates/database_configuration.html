@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>\n  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
   
   <style>
     * {
@@ -1156,13 +1156,13 @@
           <!-- Generate Button -->
           <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
             <button 
-            class="btn btn-primary" 
-            @click="generateQueryWithAI"
-            :disabled="!aiQuery.prompt || !aiQuery.module || aiQuery.loading"
-            style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; flex: 1;">
-            <i class="mdi" :class="aiQuery.loading ? 'mdi-loading mdi-spin' : 'mdi-creation'"></i>
-            [[ aiQuery.loading ? 'Generating...' : 'Generate SQL Query with AI' ]]
-          </button>
+              class="btn btn-primary" 
+              @click="generateQueryWithAI"
+              :disabled="!aiQuery.prompt || !aiQuery.module || aiQuery.loading"
+              style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); flex: 1;">
+              <i class="mdi" :class="aiQuery.loading ? 'mdi-loading mdi-spin' : 'mdi-creation'"></i>
+              [[ aiQuery.loading ? 'Generating...' : 'Generate SQL Query with AI' ]]
+            </button>
             <button 
               class="btn btn-secondary" 
               @click="clearAIQuery"
@@ -1862,68 +1862,7 @@
       </div>
     </div>
   </div>
-    <!-- ✅ ADD THE MODULE DETAIL MODAL HERE ✅ -->
-<!-- Module Detail Modal -->
-<div v-if="showModuleDetailModal" class="modal-overlay" @click="closeModuleDetailModal">
-  <div class="modal-content" @click.stop style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; background: white; border-radius: 12px; padding: 0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
-    <div class="modal-header">
-      <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem;">
-        <i :class="viewingModuleDetail.icon" class="mdi"></i>
-        <span>Module Details: [[ viewingModuleDetail.name ]]</span>
-      </h2>
-      <button class="btn-close" @click="closeModuleDetailModal">&times;</button>
-    </div>
-    <div class="modal-body" style="overflow-y: auto; max-height: calc(90vh - 140px);">
-      <div class="form-group">
-        <label><strong>ID:</strong></label>
-        <div>[[ viewingModuleDetail.id ]]</div>
-      </div>
-      
-      <div class="form-group">
-        <label><strong>Description:</strong></label>
-        <div>[[ viewingModuleDetail.description || 'No description' ]]</div>
-      </div>
-      
-      <div class="form-group">
-        <label><strong>Entry Tables:</strong></label>
-        <div v-if="viewingModuleDetail.entry_tables && viewingModuleDetail.entry_tables.length > 0">
-          <span v-for="table in viewingModuleDetail.entry_tables" :key="table" 
-                class="badge badge-info" style="margin-right: 0.5rem;">
-            [[ table ]]
-          </span>
-        </div>
-        <div v-else class="text-muted">No entry tables</div>
-      </div>
-      
-      <div class="form-group">
-        <label><strong>Intents ([[ viewingModuleDetail.intents.length ]]):</strong></label>
-        <div v-if="viewingModuleDetail.intents && viewingModuleDetail.intents.length > 0">
-          <div v-for="intent in viewingModuleDetail.intents" :key="intent.id" 
-               class="card" style="margin-bottom: 0.5rem; padding: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; align-items: start;">
-              <div style="flex: 1;">
-                <strong>[[ intent.id ]]</strong>
-                <div class="text-muted" style="font-size: 0.9rem; margin-top: 0.25rem;">
-                  [[ intent.description || 'No description' ]]
-                </div>
-                <div v-if="intent.recipe" style="margin-top: 0.25rem;">
-                  <span class="badge badge-primary">Recipe: [[ intent.recipe ]]</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else class="text-muted">No intents defined</div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" @click="closeModuleDetailModal">Close</button>
-      <button class="btn btn-primary" @click="editModule(viewingModuleDetail.id); closeModuleDetailModal()">
-        <i class="mdi mdi-pencil"></i> Edit Module
-      </button>
-    </div>
-  </div>
-</div>
+
   <!-- Table Modal -->
   <div v-if="showTableModal" class="modal-overlay" @click.self="closeTableModal">
     <div class="modal-dialog" style="max-width: 900px;">
@@ -2611,9 +2550,6 @@ createApp({
       // CRUD modal states
       showModuleModal: false,
       showTableModal: false,
-      showModuleDetailModal: false,
-      viewingModuleDetail: null,
-      loadingModuleDetail: false, // Separate loading state for module details
       showRecipeModal: false,
       editingModule: null,
       editingTable: null,
@@ -2787,10 +2723,8 @@ createApp({
         const data = await response.json();
         
         if (data.success) {
-          await Swal.fire({ icon: 'success', title: 'Saved', text: 'Configuration saved successfully' });
           this.showAlert('success', 'Saved', 'Configuration saved successfully');
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'Failed to save configuration' });
           this.showAlert('error', 'Error', data.error);
         }
       } catch (error) {
@@ -3071,18 +3005,8 @@ createApp({
       };
       this.showModuleModal = true;
     },
-    async editModule(moduleId) {
-      const moduleName = (this.dbConfig && this.dbConfig.modules && this.dbConfig.modules[moduleId] && this.dbConfig.modules[moduleId].name) ? this.dbConfig.modules[moduleId].name : moduleId;
-      const confirmResult = await Swal.fire({
-        title: 'Edit module?',
-        text: `Are you sure you want to edit "${moduleName}"?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, edit',
-        cancelButtonText: 'Cancel'
-      });
-      if (!confirmResult.isConfirmed) return;
 
+    editModule(moduleId) {
       this.editingModule = moduleId;
       const module = this.dbConfig.modules[moduleId];
       this.moduleForm = {
@@ -3093,6 +3017,7 @@ createApp({
       };
       this.showModuleModal = true;
     },
+
     async saveModule() {
       try {
         if (!this.moduleForm.id || !this.moduleForm.name) {
@@ -3126,53 +3051,19 @@ createApp({
         const result = await response.json();
 
         if (result.success) {
-          await Swal.fire({ icon: 'success', title: 'Saved', text: result.message || 'Module saved successfully' });
           this.showAlert('success', 'Success', result.message);
           this.closeModuleModal();
           await this.loadConfig();
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: result.error || 'Failed to save module' });
           this.showAlert('error', 'Error', result.error);
         }
       } catch (error) {
         this.showAlert('error', 'Error', error.message);
       }
     },
-   async viewModuleDetails(moduleId) {
-  try {
-    this.loadingModuleDetail = true;
-    
-    const response = await fetch(`/api/database-config/modules/${moduleId}`);
-    const result = await response.json();
-    
-    if (result.success) {
-      this.viewingModuleDetail = result.module;
-      this.showModuleDetailModal = true;
-    } else {
-      this.showAlert('error', 'Error', result.error);
-    }
-  } catch (error) {
-    this.showAlert('error', 'Error', `Failed to load module details: ${error.message}`);
-  } finally {
-    this.loadingModuleDetail = false;
-  }
-},
 
-closeModuleDetailModal() {
-  this.showModuleDetailModal = false;
-  this.viewingModuleDetail = null;
-},
     async deleteModule(moduleId) {
-      const moduleName = (this.dbConfig && this.dbConfig.modules && this.dbConfig.modules[moduleId] && this.dbConfig.modules[moduleId].name) ? this.dbConfig.modules[moduleId].name : moduleId;
-      const confirmResult = await Swal.fire({
-        title: 'Delete module?',
-        text: `Are you sure you want to delete "${moduleName}"?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it',
-        cancelButtonText: 'Cancel'
-      });
-      if (!confirmResult.isConfirmed) {
+      if (!confirm(`Are you sure you want to delete module "${moduleId}"?`)) {
         return;
       }
 
@@ -3184,15 +3075,16 @@ closeModuleDetailModal() {
         const result = await response.json();
 
         if (result.success) {
-          await Swal.fire({ icon: 'success', title: 'Deleted', text: result.message });
+          this.showAlert('success', 'Success', result.message);
           await this.loadConfig();
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: result.error || 'Failed to delete module' });
+          this.showAlert('error', 'Error', result.error);
         }
       } catch (error) {
-        await Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+        this.showAlert('error', 'Error', error.message);
       }
     },
+
     closeModuleModal() {
       this.showModuleModal = false;
       this.editingModule = null;
@@ -3211,21 +3103,11 @@ closeModuleDetailModal() {
       };
       this.showTableModal = true;
     },
-    async editTable(tableId) {
-      const tableName = (this.dbConfig && this.dbConfig.tables && this.dbConfig.tables[tableId] && this.dbConfig.tables[tableId].name) ? this.dbConfig.tables[tableId].name : tableId;
-      const confirmResult = await Swal.fire({
-        title: 'Edit table?',
-        text: `Are you sure you want to edit "${tableName}"?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, edit',
-        cancelButtonText: 'Cancel'
-      });
-      if (!confirmResult.isConfirmed) return;
 
+    editTable(tableId) {
       this.editingTable = tableId;
       const table = this.dbConfig.tables[tableId];
-
+      
       // Find which modules link to this table
       const linkedModules = [];
       for (const [moduleId, module] of Object.entries(this.dbConfig.modules || {})) {
@@ -3233,7 +3115,7 @@ closeModuleDetailModal() {
           linkedModules.push(moduleId);
         }
       }
-
+      
       this.tableForm = {
         id: tableId,
         name: table.name || '',
@@ -3244,6 +3126,7 @@ closeModuleDetailModal() {
       };
       this.showTableModal = true;
     },
+
     addColumn() {
       this.tableForm.columns.push({
         name: '',
@@ -3305,7 +3188,6 @@ closeModuleDetailModal() {
         const result = await response.json();
 
         if (!result.success) {
-          await Swal.fire({ icon: 'error', title: 'Error', text: result.error || 'Failed to save table' });
           this.showAlert('error', 'Error', result.error);
           return;
         }
@@ -3360,17 +3242,9 @@ closeModuleDetailModal() {
         console.error(`Error updating module ${moduleId}:`, error);
       }
     },
+
     async deleteTable(tableId) {
-      const tableName = (this.dbConfig && this.dbConfig.tables && this.dbConfig.tables[tableId] && this.dbConfig.tables[tableId].name) ? this.dbConfig.tables[tableId].name : tableId;
-      const confirmResult = await Swal.fire({
-        title: 'Delete table?',
-        text: `Are you sure you want to delete table "${tableName}"?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it',
-        cancelButtonText: 'Cancel'
-      });
-      if (!confirmResult.isConfirmed) {
+      if (!confirm(`Are you sure you want to delete table "${tableId}"?`)) {
         return;
       }
 
@@ -3382,15 +3256,16 @@ closeModuleDetailModal() {
         const result = await response.json();
 
         if (result.success) {
-          await Swal.fire({ icon: 'success', title: 'Deleted', text: result.message });
+          this.showAlert('success', 'Success', result.message);
           await this.loadConfig();
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: result.error || 'Failed to delete table' });
+          this.showAlert('error', 'Error', result.error);
         }
       } catch (error) {
-        await Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+        this.showAlert('error', 'Error', error.message);
       }
     },
+
     closeTableModal() {
       this.showTableModal = false;
       this.editingTable = null;
@@ -3412,18 +3287,8 @@ closeModuleDetailModal() {
       };
       this.showRecipeModal = true;
     },
-    async editRecipe(recipeId) {
-      const recipeName = (this.dbConfig && this.dbConfig.recipes && this.dbConfig.recipes[recipeId] && this.dbConfig.recipes[recipeId].name) ? this.dbConfig.recipes[recipeId].name : recipeId;
-      const confirmResult = await Swal.fire({
-        title: 'Edit recipe?',
-        text: `Are you sure you want to edit "${recipeName}"?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, edit',
-        cancelButtonText: 'Cancel'
-      });
-      if (!confirmResult.isConfirmed) return;
 
+    editRecipe(recipeId) {
       this.editingRecipe = recipeId;
       const recipe = this.dbConfig.recipes[recipeId];
       this.recipeForm = {
@@ -3445,6 +3310,7 @@ closeModuleDetailModal() {
       });
       this.showRecipeModal = true;
     },
+
     async saveRecipe() {
       try {
         if (!this.recipeForm.id || !this.recipeForm.name || !this.recipeForm.base) {
@@ -3502,29 +3368,19 @@ closeModuleDetailModal() {
         const result = await response.json();
 
         if (result.success) {
-          await Swal.fire({ icon: 'success', title: 'Saved', text: result.message || 'Recipe saved successfully' });
           this.showAlert('success', 'Success', result.message);
           this.closeRecipeModal();
           await this.loadConfig();
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: result.error || 'Failed to save recipe' });
           this.showAlert('error', 'Error', result.error);
         }
       } catch (error) {
         this.showAlert('error', 'Error', error.message);
       }
     },
+
     async deleteRecipe(recipeId) {
-      const recipeName = (this.dbConfig && this.dbConfig.recipes && this.dbConfig.recipes[recipeId] && this.dbConfig.recipes[recipeId].name) ? this.dbConfig.recipes[recipeId].name : recipeId;
-      const confirmResult = await Swal.fire({
-        title: 'Delete recipe?',
-        text: `Are you sure you want to delete recipe "${recipeName}"?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it',
-        cancelButtonText: 'Cancel'
-      });
-      if (!confirmResult.isConfirmed) {
+      if (!confirm(`Are you sure you want to delete recipe "${recipeId}"?`)) {
         return;
       }
 
@@ -3536,15 +3392,16 @@ closeModuleDetailModal() {
         const result = await response.json();
 
         if (result.success) {
-          await Swal.fire({ icon: 'success', title: 'Deleted', text: result.message });
+          this.showAlert('success', 'Success', result.message);
           await this.loadConfig();
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: result.error || 'Failed to delete recipe' });
+          this.showAlert('error', 'Error', result.error);
         }
       } catch (error) {
-        await Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+        this.showAlert('error', 'Error', error.message);
       }
     },
+
     closeRecipeModal() {
       this.showRecipeModal = false;
       this.editingRecipe = null;
@@ -3824,35 +3681,29 @@ closeModuleDetailModal() {
         this.showAlert('error', 'Error', 'Failed to set default: ' + error.message);
       }
     },
+
     async deleteConnection(connectionName) {
-      const confirmResult = await Swal.fire({
-        title: 'Delete connection?',
-        text: `Are you sure you want to delete the connection "${connectionName}"?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, delete it',
-        cancelButtonText: 'Cancel'
-      });
-      if (!confirmResult.isConfirmed) {
+      if (!confirm(`Are you sure you want to delete the connection "${connectionName}"?`)) {
         return;
       }
-
+      
       try {
         const response = await fetch(`/api/database/connections/${connectionName}`, {
           method: 'DELETE'
         });
         const data = await response.json();
-
+        
         if (data.success) {
-          await Swal.fire({ icon: 'success', title: 'Deleted', text: data.message || 'Connection deleted' });
+          this.showAlert('success', 'Deleted', `Connection "${connectionName}" deleted successfully`);
           await this.loadConnections();
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'Failed to delete connection' });
+          this.showAlert('error', 'Error', data.error);
         }
       } catch (error) {
-        await Swal.fire({ icon: 'error', title: 'Error', text: error.message });
+        this.showAlert('error', 'Error', 'Failed to delete connection: ' + error.message);
       }
     },
+
     viewConnection(connection) {
       this.viewingConnection = connection;
       this.showConnectionModal = true;
@@ -3891,12 +3742,10 @@ closeModuleDetailModal() {
         const data = await response.json();
         
         if (data.success) {
-          await Swal.fire({ icon: 'success', title: 'Saved', text: `Connection "${this.connectionForm.name}" added successfully` });
           this.showAlert('success', 'Added', `Connection "${this.connectionForm.name}" added successfully`);
           this.closeConnectionModal();
           await this.loadConnections();
         } else {
-          await Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'Failed to add connection' });
           this.showAlert('error', 'Error', data.error);
         }
       } catch (error) {
