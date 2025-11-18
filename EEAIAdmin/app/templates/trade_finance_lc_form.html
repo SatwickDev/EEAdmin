@@ -2153,6 +2153,9 @@
                 }
 
                 console.log('Validation passed, submitting form...');
+                // Capture ALL LC form fields BEFORE submitting
+                window.formData = Object.fromEntries(new FormData(lcForm).entries());
+                console.log("Captured LC Form Data:", window.formData);
 
                 // Set submitting flag
                 lcForm.dataset.submitting = 'true';

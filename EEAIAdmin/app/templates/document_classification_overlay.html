@@ -827,177 +827,87 @@
             background: linear-gradient(135deg, #3730a3 0%, #6b21a8 50%, #be185d 100%);
         }
 
-        /* Premium Banking Field Card Styles */
-        .banking-field-card {
-            background: #FFFFFF;
+        /* //changed: Simple Field Card Styles - matching image design */
+        .simple-field-card {
+            background: white;
+            border: 1px solid #e5e7eb;
             border-radius: 10px;
-            padding: 18px 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-            border: 1px solid #E3E8EF;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 16px;
+            transition: all 0.2s ease;
             cursor: pointer;
-            margin-bottom: 12px;
         }
 
-        .banking-field-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-            transform: translateY(-1px);
-            border-color: #D9DEE6;
+        .simple-field-card:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        /* Verified Icon with Soft Green Glow */
-        .banking-field-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-radius: 8px;
+        /* //changed: Simple green checkmark icon in light green circle */
+        .simple-field-icon {
+            width: 32px;
+            height: 32px;
+            background: #d1fae5;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2), 0 0 0 3px rgba(16, 185, 129, 0.08);
             flex-shrink: 0;
         }
 
-        /* Field Title */
-        .banking-field-title {
-            font-size: 15px;
+        .simple-field-icon i {
+            color: #10b981;
+        }
+
+        /* //changed: Highlighted state when field is being searched */
+        .simple-field-icon-searching {
+            background: #10b981 !important;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(16, 185, 129, 0.4);
+            animation: pulse-highlight 1.5s ease-in-out infinite;
+        }
+
+        .simple-field-icon-searching i {
+            color: white !important;
+        }
+
+        @keyframes pulse-highlight {
+            0%, 100% {
+                box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(16, 185, 129, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.4), 0 6px 16px rgba(16, 185, 129, 0.5);
+            }
+        }
+
+        /* //changed: Field title - bold, dark grey */
+        .simple-field-title {
+            font-size: 14px;
             font-weight: 700;
             color: #1f2937;
             line-height: 1.4;
             margin: 0;
         }
 
-        /* Optional Badge */
-        .banking-optional-badge {
-            background: #DBEAFE;
-            color: #1e40af;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-        }
-
-        /* Labels */
-        .banking-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 600;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-
-        /* Field Value */
-        .banking-field-value {
-            background: #F9FAFB;
-            border: 1px solid #E3E8EF;
-            border-radius: 6px;
-            padding: 10px 14px;
-            color: #374151;
+        /* //changed: Field value - lighter grey, smaller font */
+        .simple-field-value {
+            color: #6b7280;
             font-size: 13px;
             line-height: 1.5;
-            min-height: 44px;
+            margin-top: 4px;
             cursor: text;
-            transition: all 0.2s ease;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
         }
 
-        .banking-field-value:hover {
-            border-color: #D9DFE6;
-            background: #FFFFFF;
-        }
-
-        /* Tags */
-        .banking-tag {
+        /* //changed: Confidence badge with green icon */
+        .simple-confidence-badge {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 6px 10px;
-            background: #F3F4F6;
-            border-radius: 8px;
             font-size: 12px;
-            color: #6b7280;
+            color: #10b981;
             font-weight: 500;
         }
 
-        .banking-tag-severity {
-            background: transparent;
-            padding: 0;
-            gap: 2px;
-        }
-
-        .banking-severity-label {
-            color: #3b82f6;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .banking-tag-located {
-            background: #ECFDF5;
-            color: #065f46;
-        }
-
-        /* Confidence Badge */
-        .banking-confidence-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        /* Compliance Section - Stacked layout for narrow panel */
-        .banking-compliance-section {
-            width: 100%;
-            padding-top: 16px;
-            margin-top: 16px;
-            border-top: 1px solid #E3E8EF;
-            border-left: none;
-        }
-
-        .banking-compliance-reason {
-            font-size: 13px;
-            color: #4b5563;
-            line-height: 1.5;
-            margin: 0;
-            padding-top: 4px;
-        }
-
-        /* Responsive adjustments for banking field cards */
-        @media (max-width: 1024px) {
-            .banking-field-card .flex.items-start {
-                flex-direction: column;
-            }
-
-            .banking-compliance-section {
-                width: 100%;
-                padding-left: 0;
-                padding-top: 16px;
-                margin-top: 16px;
-                border-left: none;
-                border-top: 1px solid #E3E8EF;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .banking-field-card {
-                padding: 20px;
-            }
-
-            .banking-field-icon {
-                width: 36px;
-                height: 36px;
-            }
-
-            .banking-field-title {
-                font-size: 15px;
-            }
+        .simple-confidence-badge i {
+            color: #10b981;
         }
 
         /* Animate float from index.html */
@@ -3655,8 +3565,9 @@ button:focus {
                         <!-- Single Document Image Viewer -->
                         <div class="flex-1 flex" style="min-height: 0;">
 
+                            <!-- //changed: Added ref for zoom centering calculation -->
                             <!-- Single Page - Larger Container for Better Readability -->
-                            <div class="flex-1 overflow-auto"
+                            <div ref="documentViewer" class="flex-1 overflow-auto"
                                  v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage]"
                                  @wheel.prevent="handleWheel"
                                  @mousedown="startPan"
@@ -3667,7 +3578,7 @@ button:focus {
                                 <div class="relative overflow-visible"
      :style="{
          transform: `translate(${panX}px, ${panY}px) scale(${zoomLevel})`,
-         transformOrigin: 'top left',
+         transformOrigin: 'center center',
          position: 'relative',
          display: 'block',
          margin: '0',
@@ -3792,16 +3703,40 @@ button:focus {
                             </div>
                         </div>
 
+                        <!-- //changed: Search bar for filtering entities -->
+                        <div class="px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="mdi mdi-magnify text-gray-400 text-lg"></i>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    v-model="fieldSearchQuery"
+                                    placeholder="Search entities..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                />
+                                <button 
+                                    v-if="fieldSearchQuery"
+                                    @click="fieldSearchQuery = ''"
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                    title="Clear search"
+                                >
+                                    <i class="mdi mdi-close-circle text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
 
                         <!-- Fields Content Area (Optimized for Scrolling) -->
                         <div class="panel-content flex-1 overflow-y-auto min-h-0 custom-scrollbar">
 
-                            <!-- Premium Banking-Style Fields Display -->
-                            <div class="p-4" style="background: #F7F9FC;">
-                                <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="space-y-3">
-                                    <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
+                            <!-- //changed: Simplified Fields Display to match image design -->
+                            <div class="p-4">
+                                <!-- //changed: Check filtered fields instead of all fields -->
+                                <div v-if="selectedResult?.extractedFields && Object.keys(getFilteredExtractedFields()).length > 0" class="space-y-3">
+                                    <!-- //changed: Use filtered fields based on search query -->
+                                    <div v-for="(fieldData, fieldKey, index) in getFilteredExtractedFields()"
                                          :key="fieldKey"
-                                         class="group banking-field-card"
+                                         class="group simple-field-card"
                                          :class="{
                                              'ring-2 ring-blue-500': activeFieldIndex === index && fieldData?.value && !manuallyEditedFields[fieldKey],
                                              'ring-2 ring-yellow-400': activeFieldIndex === index && manuallyEditedFields[fieldKey],
@@ -3809,83 +3744,46 @@ button:focus {
                                          }"
                                          @click="highlightField(index, fieldData)">
 
-                                        <!-- Card Content Container - Stacked Layout -->
-                                        <div class="flex flex-col">
-                                            <!-- Field Header with Icon and Name -->
-                                            <div class="flex items-start gap-3 mb-3">
-                                                    <!-- Verified Icon with Soft Green Glow -->
-                                                    <div class="banking-field-icon">
-                                                        <i class="mdi mdi-check text-white text-lg"></i>
-                                                    </div>
-                                                    
-                                                    <div class="flex-1 min-w-0">
-                                                        <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                                            <h4 class="banking-field-title">
-                                                                {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
-                                                            </h4>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Action Buttons (Hidden by default, shown on hover) -->
-                                                    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                        <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value,fieldData)"
-                                                                :disabled="!fieldData?.value || searchingField === fieldKey"
-                                                                class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
-                                                                :class="{
-                                                                    'bg-indigo-500 text-white': searchingField === fieldKey,
-                                                                    'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600': searchingField !== fieldKey
-                                                                }"
-                                                                title="Find in document">
-                                                            <i :class="searchingField === fieldKey ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-magnify'" class="text-sm"></i>
-                                                        </button>
-
-                                                        <button @click.stop="startFieldTextSelection(fieldKey)"
-                                                                class="w-8 h-8 bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
-                                                                title="Select text from document">
-                                                            <i class="mdi mdi-cursor-text text-sm"></i>
-                                                        </button>
-
-                                                <button v-if="!editingField || editingField !== fieldKey"
-                                                        @click.stop="startFieldEdit(fieldKey, fieldData?.value)"
-                                                                class="w-8 h-8 bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-600 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
-                                                        title="Edit field value">
-                                                            <i class="mdi mdi-pencil text-sm"></i>
-                                                </button>
-
-                                                <!-- Location Status -->
-                                                <div v-if="fieldData?.bounding_box"
-                                                     class="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
-                                                    <i class="mdi mdi-map-marker-check text-sm"></i>
-                                                    <span>Located</span>
-                                                </div>
+                                        <!-- //changed: Simplified card layout - vertical stack -->
+                                        <div class="flex items-start gap-3">
+                                            <!-- //changed: Simple green checkmark icon in light green circle -->
+                                            <!-- //changed: Added highlight when field is being searched -->
+                                            <div class="simple-field-icon" :class="{ 'simple-field-icon-searching': searchingField === fieldKey }">
+                                                <i class="mdi mdi-check text-white text-sm"></i>
                                             </div>
-                                        </div>
-
-                                            <!-- Field Value Section -->
-                                            <div class="mb-3">
-                                                <!--<label class="banking-label">Field Value</label>-->
-                                                    
+                                            
+                                            <div class="flex-1 min-w-0">
+                                                <!-- //changed: Field name in bold -->
+                                                <h4 class="simple-field-title">
+                                                    {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
+                                                </h4>
+                                                
+                                                <!-- //changed: Field value in lighter grey below name -->
+                                                <div class="mt-2">
                                                     <!-- Editable Field Value -->
-                                                    <div v-if="editingField === fieldKey" class="relative mt-1">
+                                                    <div v-if="editingField === fieldKey" class="relative">
+                                                        <!-- //changed: Updated ESC key handler to pass fieldKey for proper cancel -->
+                                                        <!-- //changed: Removed @blur to prevent interference with button clicks -->
                                                         <textarea v-model="editedFields[fieldKey]"
-                                                                 @blur="saveFieldEdit(fieldKey)"
                                                                  @keyup.enter="saveFieldEdit(fieldKey)"
-                                                                 @keyup.esc="cancelFieldEdit()"
+                                                                 @keyup.esc="cancelFieldEdit(fieldKey)"
                                                                  class="w-full bg-white border-2 border-indigo-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-indigo-500 resize-none"
                                                                  :ref="'fieldInput_' + fieldKey"
                                                                  rows="3"></textarea>
                                                         <div class="absolute top-2 right-2 flex gap-1">
-                                                            <button @click="saveFieldEdit(fieldKey)" class="w-6 h-6 bg-green-500 text-white rounded-md flex items-center justify-center hover:bg-green-600">
+                                                            <!-- //changed: Ensure tick mark button saves and closes edit box -->
+                                                            <button type="button" @click.stop.prevent="saveFieldEdit(fieldKey)" class="w-6 h-6 bg-green-500 text-white rounded-md flex items-center justify-center hover:bg-green-600">
                                                                 <i class="mdi mdi-check text-sm"></i>
                                                             </button>
-                                                            <button @click="cancelFieldEdit()" class="w-6 h-6 bg-gray-500 text-white rounded-md flex items-center justify-center hover:bg-gray-600">
+                                                            <!-- //changed: Ensure X button cancels and closes edit box -->
+                                                            <button @click.stop.prevent="cancelFieldEdit(fieldKey)" class="w-6 h-6 bg-gray-500 text-white rounded-md flex items-center justify-center hover:bg-gray-600">
                                                                 <i class="mdi mdi-close text-sm"></i>
                                                             </button>
                                                         </div>
                                                     </div>
 
-                                                <div v-else @click="startFieldEdit(fieldKey, fieldData?.value)"
-                                                         class="banking-field-value">
+                                                    <div v-else @click="startFieldEdit(fieldKey, fieldData?.value)"
+                                                         class="simple-field-value">
                                                         <div v-if="fieldData?.value" class="whitespace-pre-wrap">
                                                             {% raw %}{{ fieldData.value }}{% endraw %}
                                                         </div>
@@ -3896,20 +3794,55 @@ button:focus {
                                                     </div>
                                                 </div>
 
-                                            <!-- Confidence Badge (if available) -->
-                                            <div v-if="fieldData?.confidence && !manuallyEditedFields[fieldKey]"
-                                                 class="flex items-center gap-2 flex-wrap mb-3">
-                                                <div class="banking-confidence-badge"
-                                                     :class="getConfidenceClass(fieldData.confidence)">
-                                                    <i class="mdi mdi-chart-donut mr-1 text-xs"></i>
-                                                    {% raw %}{{ Math.round(fieldData.confidence) }}{% endraw %}%
+                                                <!-- //changed: Confidence score with green icon below value -->
+                                                <div v-if="fieldData?.confidence && !manuallyEditedFields[fieldKey]"
+                                                     class="mt-2 flex items-center gap-1">
+                                                    <div class="simple-confidence-badge"
+                                                         :class="getConfidenceClass(fieldData.confidence)">
+                                                        <i class="mdi mdi-check-circle text-xs"></i>
+                                                        <span>{% raw %}{{ Math.round(fieldData.confidence) }}{% endraw %}%</span>
+                                                    </div>
                                                 </div>
+                                            </div>
+
+                                            <!-- //changed: Action buttons on hover (preserved functionality) -->
+                                            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value,fieldData)"
+                                                        :disabled="!fieldData?.value || searchingField === fieldKey"
+                                                        class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+                                                        :class="{
+                                                            'bg-indigo-500 text-white': searchingField === fieldKey,
+                                                            'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600': searchingField !== fieldKey
+                                                        }"
+                                                        title="Find in document">
+                                                    <i :class="searchingField === fieldKey ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-magnify'" class="text-sm"></i>
+                                                </button>
+
+                                                        <button @click.stop="startFieldTextSelection(fieldKey)"
+                                                                class="w-8 h-8 bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+                                                                title="Select text from document">
+                                                            <i class="mdi mdi-cursor-text text-sm"></i>
+                                                        </button>
+
+                                                <button v-if="editingField !== fieldKey"
+                                                        @click.stop="startFieldEdit(fieldKey, fieldData?.value)"
+                                                                class="w-8 h-8 bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-600 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+                                                        title="Edit field value">
+                                                            <i class="mdi mdi-pencil text-sm"></i>
+                                                </button>
+
+                                                <!-- Location Status -->
+                                                <!-- <div v-if="fieldData?.bounding_box"
+                                                     class="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
+                                                    <i class="mdi mdi-map-marker-check text-sm"></i>
+                                                    <span>Located</span>
+                                                </div> -->
                                             </div>
                                         </div>
 
-                                        <!-- Field Metadata (Page/Method) - Subtle Footer -->
+                                        <!-- //changed: Field metadata preserved (page/method) -->
                                         <div v-if="fieldData?.page !== undefined || fieldData?.method"
-                                             class="mt-4 pt-4 border-t border-gray-200 flex items-center gap-4 text-xs text-gray-500">
+                                             class="mt-3 pt-3 border-t border-gray-200 flex items-center gap-4 text-xs text-gray-500">
                                             <span v-if="fieldData?.page !== undefined" class="flex items-center gap-1">
                                                 <i class="mdi mdi-file-document-outline"></i>
                                                 Page {% raw %}{{ fieldData.page + 1 }}{% endraw %}
@@ -3923,12 +3856,22 @@ button:focus {
                                 </div>
 
                                 <!-- Enhanced No Fields State -->
+                                <!-- //changed: Updated empty state to handle search results -->
                                 <div v-else class="text-center py-16">
                                     <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                                        <i class="mdi mdi-format-list-bulleted text-3xl text-gray-400"></i>
+                                        <i :class="fieldSearchQuery ? 'mdi mdi-magnify text-3xl text-gray-400' : 'mdi mdi-format-list-bulleted text-3xl text-gray-400'"></i>
                                     </div>
-                                    <h3 class="text-xl font-bold text-gray-700 mb-3">No Fields Extracted</h3>
-                                    <p class="text-gray-500 max-w-sm mx-auto">No extractable fields were found in this document. The document may not contain structured data or may need manual review.</p>
+                                    <h3 class="text-xl font-bold text-gray-700 mb-3">
+                                        {% raw %}{{ fieldSearchQuery ? 'No Matching Fields Found' : 'No Fields Extracted' }}{% endraw %}
+                                    </h3>
+                                    <p class="text-gray-500 max-w-sm mx-auto">
+                                        {% raw %}{{ fieldSearchQuery ? 'No fields match your search query. Try a different search term.' : 'No extractable fields were found in this document. The document may not contain structured data or may need manual review.' }}{% endraw %}
+                                    </p>
+                                    <button v-if="fieldSearchQuery" 
+                                            @click="fieldSearchQuery = ''"
+                                            class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+                                        Clear Search
+                                    </button>
                                 </div>
                             </div>
 
@@ -6162,6 +6105,8 @@ button:focus {
                     complianceSearchQuery: '', // Search query for filtering fields
                     selectedComplianceField: null, // Track selected field for details modal
                     showFieldDetailsModal: false, // Control field details modal visibility
+                    // //changed: Added search query for filtering entities in right panel
+                    fieldSearchQuery: '', // Search query for filtering extracted fields
                     // Enhanced modal properties
                     currentPage: 0,
                     zoomLevel: 1,
@@ -6846,6 +6791,25 @@ console.log("lcContext truthy?", !!this.lcContext);
                       this.selectedDocTypes[doc.page_range] = doc.document_type;
                     });
 
+                     // ⭐ STORE DOCUMENT TYPES INTO SESSION STORAGE FOR DOCUMENT REGISTER PAGE
+                    // ⭐ Append NEW document groups to existing stored list
+                    if (data.document_groups) {
+
+                    // Step 1: Extract ONLY the new document types
+                    const newDocs = data.document_groups.map(doc => doc.document_type);
+
+                    // Step 2: Remove duplicates from new list
+                    const uniqueDocs = [...new Set(newDocs)];
+
+                    // Step 3: Add numbering
+                    const finalList = uniqueDocs.map((doc, i) => `${i + 1}. ${doc}`);
+
+                    // Step 4: Overwrite sessionStorage (NOT merge)
+                    sessionStorage.setItem("documentReceivedList", finalList.join("\n"));
+
+                    console.log("📄 Updated documentReceivedList (overwrite):", finalList);
+                }
+
                     console.log('📄 Grouped Documents:', this.groupedDocuments);
                     console.log('🎯 Preselected Doc Types:', this.selectedDocTypes);
 
@@ -6887,6 +6851,19 @@ console.log("lcContext truthy?", !!this.lcContext);
                         }else{
                             this.showReviewModal = false;
                         }
+                     // ✅ ADD THE REQUIRED BLOCK HERE (RIGHT AFTER MODAL CLOSE)
+                    if (this.functionName === "Register Document") {
+                        // Save Document Received
+                        window.parent.updateDocumentReceived && window.parent.updateDocumentReceived();
+
+                        // Save Discrepancy Details
+                        //window.parent.updateDiscrepancyTextarea && window.parent.updateDiscrepancyTextarea();
+
+                        // Populate Register Document form
+                        window.parent.populateRegisterDocumentForm && window.parent.populateRegisterDocumentForm();
+
+                        console.log("✔ Document Register fields updated from Smart Capture");
+                    }
                     this.processing = true;
                     if (window.progressLoader) window.progressLoader.show();
 
@@ -8662,6 +8639,7 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         });
 
                         console.log(`📤 Sending ${documentsData.length} documents to LLM compliance engine (background mode)...`);
+                        console.log("Documents Result : ", documentsData);
 
                         // Start background LLM compliance check
                         const response = await fetch('/api/compliance/llm-standard-rules', {
@@ -8712,6 +8690,20 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                                     console.log(`   - Compliant: ${results.statistics.compliant}`);
                                     console.log(`   - Non-compliant: ${results.statistics.non_compliant}`);
                                     console.log(`   - Compliance rate: ${results.statistics.compliance_rate.toFixed(2)}%`);
+                                    // ⭐ Save results for Register Document tab
+                                        sessionStorage.setItem(
+                                            "registerDocumentDiscrepancies",
+                                            JSON.stringify(results.results || [])
+                                        );
+
+
+                                        console.log("Saved new discrepancy list:", results.results || []);
+
+                                        // ⭐⭐⭐ CALL PARENT UPDATE FUNCTIONS HERE (after saving)
+                                        if (this.functionName === "Register Document" && window.parent) {
+                                            window.parent.updateDiscrepancyTextarea &&
+                                                window.parent.updateDiscrepancyTextarea();
+                                        }
 
                                     // Map results to discrepancyResults format
                                     this.discrepancyResults = results.results.map(result => ({
@@ -10288,15 +10280,89 @@ splitCurrencyAndAmount(combinedValue) {
                         this.panY = 0;
                     }
                 },
-                // Zoom methods
+                // //changed: Zoom methods - fixed to properly maintain viewport center when zooming
                 zoomIn() {
                     if (this.zoomLevel < 3) {
-                        this.zoomLevel = Math.min(3, this.zoomLevel + 0.25);
+                        const oldZoom = this.zoomLevel;
+                        const newZoom = Math.min(3, this.zoomLevel + 0.25);
+                        
+                        // Get container and image elements
+                        const container = this.$refs.documentViewer || (this.$el?.querySelector('.flex-1.overflow-auto'));
+                        const image = this.$refs.documentImage;
+                        
+                        if (container && container.clientWidth > 0 && container.clientHeight > 0 && image) {
+                            // Get viewport center
+                            const viewportCenterX = container.clientWidth / 2;
+                            const viewportCenterY = container.clientHeight / 2;
+                            
+                            // Get image container div (the one with the transform)
+                            const imageContainer = image.parentElement;
+                            const imageWidth = imageContainer ? imageContainer.offsetWidth : (image.offsetWidth || image.naturalWidth);
+                            const imageHeight = imageContainer ? imageContainer.offsetHeight : (image.offsetHeight || image.naturalHeight);
+                            
+                            // With transformOrigin 'center center', the element scales from its own center
+                            const elementCenterX = imageWidth / 2;
+                            const elementCenterY = imageHeight / 2;
+                            
+                            // Calculate what point in the image is at viewport center (reverse transform)
+                            const imagePointX = ((viewportCenterX - this.panX - elementCenterX) / oldZoom) + elementCenterX;
+                            const imagePointY = ((viewportCenterY - this.panY - elementCenterY) / oldZoom) + elementCenterY;
+                            
+                            // Update zoom
+                            this.zoomLevel = newZoom;
+                            
+                            // Calculate new pan to keep the same image point at viewport center (forward transform)
+                            this.panX = viewportCenterX - ((imagePointX - elementCenterX) * newZoom) - elementCenterX;
+                            this.panY = viewportCenterY - ((imagePointY - elementCenterY) * newZoom) - elementCenterY;
+                        } else {
+                            // Fallback: simple ratio adjustment if elements not available
+                            const zoomRatio = newZoom / oldZoom;
+                            this.zoomLevel = newZoom;
+                            this.panX = this.panX * zoomRatio;
+                            this.panY = this.panY * zoomRatio;
+                        }
                     }
                 },
                 zoomOut() {
                     if (this.zoomLevel > 0.5) {
-                        this.zoomLevel = Math.max(0.5, this.zoomLevel - 0.25);
+                        const oldZoom = this.zoomLevel;
+                        const newZoom = Math.max(0.5, this.zoomLevel - 0.25);
+                        
+                        // Get container and image elements
+                        const container = this.$refs.documentViewer || (this.$el?.querySelector('.flex-1.overflow-auto'));
+                        const image = this.$refs.documentImage;
+                        
+                        if (container && container.clientWidth > 0 && container.clientHeight > 0 && image) {
+                            // Get viewport center
+                            const viewportCenterX = container.clientWidth / 2;
+                            const viewportCenterY = container.clientHeight / 2;
+                            
+                            // Get image container div (the one with the transform)
+                            const imageContainer = image.parentElement;
+                            const imageWidth = imageContainer ? imageContainer.offsetWidth : (image.offsetWidth || image.naturalWidth);
+                            const imageHeight = imageContainer ? imageContainer.offsetHeight : (image.offsetHeight || image.naturalHeight);
+                            
+                            // With transformOrigin 'center center', the element scales from its own center
+                            const elementCenterX = imageWidth / 2;
+                            const elementCenterY = imageHeight / 2;
+                            
+                            // Calculate what point in the image is at viewport center (reverse transform)
+                            const imagePointX = ((viewportCenterX - this.panX - elementCenterX) / oldZoom) + elementCenterX;
+                            const imagePointY = ((viewportCenterY - this.panY - elementCenterY) / oldZoom) + elementCenterY;
+                            
+                            // Update zoom
+                            this.zoomLevel = newZoom;
+                            
+                            // Calculate new pan to keep the same image point at viewport center (forward transform)
+                            this.panX = viewportCenterX - ((imagePointX - elementCenterX) * newZoom) - elementCenterX;
+                            this.panY = viewportCenterY - ((imagePointY - elementCenterY) * newZoom) - elementCenterY;
+                        } else {
+                            // Fallback: simple ratio adjustment if elements not available
+                            const zoomRatio = newZoom / oldZoom;
+                            this.zoomLevel = newZoom;
+                            this.panX = this.panX * zoomRatio;
+                            this.panY = this.panY * zoomRatio;
+                        }
                     }
                 },
                 resetZoom() {
@@ -10334,6 +10400,36 @@ splitCurrencyAndAmount(combinedValue) {
                     this.isPanning = false;
                 },
                 // Field methods
+                // //changed: Added method to filter extracted fields based on search query
+                getFilteredExtractedFields() {
+                    const allFields = this.getExtractedFieldsWithDetails();
+                    
+                    // If no search query, return all fields
+                    if (!this.fieldSearchQuery || this.fieldSearchQuery.trim() === '') {
+                        return allFields;
+                    }
+                    
+                    const searchQuery = this.fieldSearchQuery.toLowerCase().trim();
+                    const filteredFields = {};
+                    
+                    for (const [key, fieldData] of Object.entries(allFields)) {
+                        // Search in field name (formatted)
+                        const fieldName = this.formatFieldName(key).toLowerCase();
+                        // Search in field value
+                        const fieldValue = (fieldData?.value || '').toString().toLowerCase();
+                        // Search in original key
+                        const originalKey = key.toLowerCase();
+                        
+                        // Check if search query matches any of these
+                        if (fieldName.includes(searchQuery) || 
+                            fieldValue.includes(searchQuery) || 
+                            originalKey.includes(searchQuery)) {
+                            filteredFields[key] = fieldData;
+                        }
+                    }
+                    
+                    return filteredFields;
+                },
                 getExtractedFieldsWithDetails() {
                     if (!this.selectedResult?.extractedFields) return {};
 
@@ -11419,6 +11515,7 @@ splitCurrencyAndAmount(combinedValue) {
                 // Field editing methods
                 startFieldEdit(fieldKey, value) {
                     this.editingField = fieldKey;
+                    // //changed: Store original value for cancel functionality
                     this.editedFields[fieldKey] = value || '';
                     this.manuallyEditedFields[fieldKey] = true; // Mark as manually edited to hide confidence
 
@@ -11430,18 +11527,27 @@ splitCurrencyAndAmount(combinedValue) {
                         }
                     });
                 },
+                // //changed: Fixed saveFieldEdit to properly save and close edit box
                 saveFieldEdit(fieldKey) {
-                    if (this.editingField === fieldKey) {
+                    // //changed: Store values before any operations
+                    const wasEditing = this.editingField === fieldKey;
+                    const currentValue = this.editedFields[fieldKey] || '';
+
+                    // //changed: Save the value if field is being edited
+                    if (wasEditing) {
                         const fields = this.getExtractedFieldsWithDetails();
 
                         if (fields[fieldKey]) {
-                            const newValue = this.editedFields[fieldKey]?.trim() || '';
+                            const newValue = currentValue.trim();
 
                             // Update displayed field value
                             fields[fieldKey].value = newValue;
 
                             // Update original selected result
-                            if (this.selectedResult.extractedFields[fieldKey]) {
+                            if (this.selectedResult &&
+                                this.selectedResult.extractedFields &&
+                                this.selectedResult.extractedFields[fieldKey]) {
+
                                 if (typeof this.selectedResult.extractedFields[fieldKey] === 'object') {
                                     this.selectedResult.extractedFields[fieldKey].value = newValue;
                                 } else {
@@ -11449,23 +11555,36 @@ splitCurrencyAndAmount(combinedValue) {
                                 }
                             }
 
-                            // 🔴🟡 Keep track of manual edits
-                            if (!newValue) {
-                                // If value was cleared, mark as NOT manually edited → stays RED
-                                this.$set(this.manuallyEditedFields, fieldKey, false);
-                            } else {
-                                // If user entered something new, mark as manually edited → YELLOW
-                                this.$set(this.manuallyEditedFields, fieldKey, true);
-                            }
+                            // Track manual edits - Vue 3: direct assignment (no $set needed)
+                            this.manuallyEditedFields[fieldKey] = !!newValue;
                         }
+                    }
 
-                        // Exit edit mode
+                    // //changed: Remove temporary edited value to avoid re-render issues
+                    if (this.editedFields[fieldKey]) {
+                        delete this.editedFields[fieldKey];
+                    }
+
+                    // //changed: Close edit mode immediately - Vue 3: direct assignment (no $set needed)
+                    this.editingField = null;
+                    
+                    // //changed: Force Vue to update the view immediately to ensure edit box closes
+                    this.$nextTick(() => {
+                        this.$forceUpdate();
+                    });
+                },
+
+                // //changed: Fixed cancelFieldEdit to not save and close edit box
+                cancelFieldEdit(fieldKey) {
+                    // //changed: Only cancel if this is the field being edited
+                    if (this.editingField === fieldKey || !fieldKey) {
+                        // //changed: Clear the edited value for this field before closing
+                        if (fieldKey && this.editedFields[fieldKey]) {
+                            delete this.editedFields[fieldKey];
+                        }
+                        // //changed: Close edit mode immediately without saving changes
                         this.editingField = null;
                     }
-                },
-                cancelFieldEdit() {
-                    this.editingField = null;
-                    this.editedFields = {};
                 },
                 // Text extraction methods
                 async extractTextFromRegion() {
@@ -13658,7 +13777,7 @@ splitCurrencyAndAmount(combinedValue) {
                                         } else if (value >= 80) {
                                             return '\n📊 Above industry standard';
                                         } else {
-                                            return '\n� Room for optimization';
+                                            return '\n  Room for optimization';
                                         }
                                     }
                                 }
