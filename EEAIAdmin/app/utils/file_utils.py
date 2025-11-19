@@ -222,64 +222,110 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
                 "text_data": []
             }
 
-        # Extract text, bounding boxes, and page numbers with optimized processing
+        # ANTI-HALLUCINATION: Extract text with confidence filtering and validation
         text_data = []
+        word_data = []
         total_confidence = 0
         line_count = 0
+        filtered_out_count = 0
+        
+        # ANTI-HALLUCINATION SETTINGS
+        MIN_CONFIDENCE_THRESHOLD = 0.5  # Filter out low-confidence text
+        MIN_WORD_LENGTH = 1  # Filter out single characters that are often noise
+        SUSPICIOUS_PATTERNS = [r'^[^a-zA-Z0-9\s]+$', r'^\s*$', r'^[.,;:!?\-_=+(){}\[\]"\'`~@#$%^&*/<>\\|]*$']
         
         for page_num, read_result in enumerate(result.analyze_result.read_results, start=1):
             for line in read_result.lines:
                 words = line.words
-                if words:
-                    if "word_data" not in locals():
-                        word_data = []  # Initialize only once
-
-                    for word in words:
-                        word_data.append({
-                            "text": word.text,
-                            "bounding_box": getattr(word, "bounding_box", None),
-                            "bounding_page": page_num,
-                            "confidence": getattr(word, "confidence", 1.0)
-                        })                
-                # OPTIMIZATION 7: Optimized confidence calculation
+                
+                # OPTIMIZATION 7: Enhanced confidence calculation with validation
                 if words:
                     confidence_scores = [word.confidence for word in words if hasattr(word, "confidence")]
                     avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 1.0
+                    
+                    # ANTI-HALLUCINATION: Filter high-confidence words only
+                    valid_words = []
+                    for word in words:
+                        word_confidence = getattr(word, "confidence", 1.0)
+                        word_text = word.text.strip()
+                        
+                        # Skip low-confidence words
+                        if word_confidence < MIN_CONFIDENCE_THRESHOLD:
+                            continue
+                            
+                        # Skip very short words that are often noise
+                        if len(word_text) < MIN_WORD_LENGTH:
+                            continue
+                            
+                        # Skip suspicious patterns (only symbols, empty, etc.)
+                        is_suspicious = any(__import__('re').match(pattern, word_text) for pattern in SUSPICIOUS_PATTERNS)
+                        if is_suspicious:
+                            continue
+                            
+                        valid_words.append(word)
+                        word_data.append({
+                            "text": word_text,
+                            "bounding_box": getattr(word, "bounding_box", None),
+                            "bounding_page": page_num,
+                            "confidence": word_confidence
+                        })
+                    
+                    # Reconstruct line text from valid words only
+                    if valid_words:
+                        validated_line_text = " ".join([w.text for w in valid_words])
+                        # Recalculate confidence based on valid words only
+                        valid_confidences = [getattr(w, "confidence", 1.0) for w in valid_words]
+                        avg_confidence = sum(valid_confidences) / len(valid_confidences) if valid_confidences else 1.0
+                    else:
+                        validated_line_text = ""
+                        avg_confidence = 0.0
                 else:
+                    validated_line_text = line.text
                     avg_confidence = 1.0
 
-                text_data.append({
-                    "text": line.text,
-                    "bounding_box": line.bounding_box,
-                    "bounding_page": page_num,
-                    "confidence": avg_confidence
-                })
-                
-                total_confidence += avg_confidence
-                line_count += 1
+                # ANTI-HALLUCINATION: Only include lines with sufficient confidence and content
+                if avg_confidence >= MIN_CONFIDENCE_THRESHOLD and validated_line_text.strip():
+                    text_data.append({
+                        "text": validated_line_text,
+                        "bounding_box": line.bounding_box,
+                        "bounding_page": page_num,
+                        "confidence": avg_confidence
+                    })
+                    
+                    total_confidence += avg_confidence
+                    line_count += 1
+                else:
+                    filtered_out_count += 1
 
         if not text_data:
             logging.warning("Azure OCR returned no text.")
             return {"error": "No text extracted", "text_data": []}
 
-        # OPTIMIZATION 8: Quality metrics for performance monitoring
+        # OPTIMIZATION 8: Quality metrics with anti-hallucination stats
         overall_confidence = total_confidence / line_count if line_count > 0 else 0.0
         processing_time = time.time() - start_time
         
         logging.info(f"OCR Results: {len(text_data)} lines, avg confidence: {overall_confidence:.3f}")
+        logging.info(f"ANTI-HALLUCINATION: Filtered out {filtered_out_count} low-confidence/suspicious lines")
         logging.info(f"Total processing time: {processing_time:.2f}s")
         
         return {
             "text_data": text_data,
             "processing_time": processing_time,
             "overall_confidence": overall_confidence,
+            "anti_hallucination_stats": {
+                "filtered_lines": filtered_out_count,
+                "valid_lines": len(text_data),
+                "confidence_threshold": MIN_CONFIDENCE_THRESHOLD,
+                "total_words": len(word_data)
+            },
             "optimization_stats": {
                 "fast_mode": fast_mode,
                 "dynamic_timeout": dynamic_timeout,
                 "poll_count": poll_count,
                 "adaptive_polling": OCR_ADAPTIVE_POLLING
             },
-            "word_data": word_data if 'word_data' in locals() else []
+            "word_data": word_data
         }
 
     except Exception as e:

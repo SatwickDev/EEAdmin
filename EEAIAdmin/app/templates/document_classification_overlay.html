@@ -6264,38 +6264,64 @@ matchRequiredWithGrouped() {
 
     // Iterate through required documents
     requiredDocs.forEach(reqDoc => {
-        const matchedType = (reqDoc.matchedType || reqDoc.name || '').toLowerCase().trim();
+        // Normalize the required document name
+        const requiredDocName = (reqDoc.name || '').toLowerCase().trim();
 
-        // Try to find a match in grouped documents
+        console.log(`🔍 Looking for match: "${reqDoc.name}"`);
+
+        // Try to find a match in grouped documents using SAME logic as validateDocumentUploadStatus
         const match = this.groupedDocuments.find(groupedDoc => {
             const docType = (groupedDoc.document_type || '').toLowerCase().trim();
+            const fileName = (groupedDoc.file_name || groupedDoc.fileName || '').toLowerCase().trim();
 
-            // Exact match
-            if (docType === matchedType) return true;
+            console.log(`  Checking against: "${groupedDoc.document_type}" (file: ${fileName})`);
 
-            // Partial match (contains)
-            if (docType.includes(matchedType) || matchedType.includes(docType)) return true;
+            // Check for various matching patterns (SAME as validateDocumentUploadStatus)
+            const isMatch =
+                // Direct type match
+                docType === requiredDocName ||
+                // Type contains required name
+                docType.includes(requiredDocName) ||
+                // Required name contains type
+                requiredDocName.includes(docType) ||
+                // Filename match
+                fileName.includes(requiredDocName) ||
+                // Common document type aliases
+                this.checkDocumentTypeAlias(requiredDocName, docType) ||
+                // Check subtype if available
+                (groupedDoc.document_subtype &&
+                 groupedDoc.document_subtype.toLowerCase().includes(requiredDocName));
 
-            return false;
+            if (isMatch) {
+                console.log(`  ✅ MATCH FOUND via ${this.getMatchReason(requiredDocName, docType, fileName, groupedDoc)}`);
+            }
+
+            return isMatch;
         });
 
         if (match) {
             foundDocuments.push({
                 required: reqDoc,
                 grouped: match,
-                matchStatus: 'found'
+                matchStatus: 'found',
+                matchedBy: this.getMatchReason(requiredDocName,
+                    (match.document_type || '').toLowerCase().trim(),
+                    (match.file_name || match.fileName || '').toLowerCase().trim(),
+                    match)
             });
+            console.log(`✅ Found: "${reqDoc.name}" → "${match.document_type}"`);
         } else {
             notFoundDocuments.push({
                 required: reqDoc,
                 grouped: null,
                 matchStatus: 'not_found'
             });
+            console.log(`❌ Not Found: "${reqDoc.name}"`);
         }
     });
 
-    console.log('✅ Found Documents:', foundDocuments);
-    console.log('❌ Not Found Documents:', notFoundDocuments);
+    console.log('✅ Total Found Documents:', foundDocuments.length);
+    console.log('❌ Total Not Found Documents:', notFoundDocuments.length);
 
     // Store in component data
     this.foundDocuments = foundDocuments;
@@ -6305,6 +6331,18 @@ matchRequiredWithGrouped() {
         found: foundDocuments,
         notFound: notFoundDocuments
     };
+},
+
+// Helper function to identify how the match was made (useful for debugging)
+getMatchReason(requiredDocName, docType, fileName, groupedDoc) {
+    if (docType === requiredDocName) return 'exact match';
+    if (docType.includes(requiredDocName)) return 'type contains required';
+    if (requiredDocName.includes(docType)) return 'required contains type';
+    if (fileName.includes(requiredDocName)) return 'filename match';
+    if (this.checkDocumentTypeAlias(requiredDocName, docType)) return 'alias match';
+    if (groupedDoc.document_subtype &&
+        groupedDoc.document_subtype.toLowerCase().includes(requiredDocName)) return 'subtype match';
+    return 'unknown';
 },
 /**
  * Wait for required documents parsing to complete
@@ -8473,7 +8511,8 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         'weight certificate': ['weight list', 'weighing certificate'],
                         'quality certificate': ['quality report', 'inspection certificate'],
                         'bank guarantee': ['bg', 'guarantee', 'standby letter of credit'],
-                        'letter of credit': ['lc', 'l/c', 'documentary credit']
+                        'letter of credit': ['lc', 'l/c', 'documentary credit'],
+                        'cargo insurance document': ['marine insurance policy']
                     };
 
                     // Check if requiredType has aliases and if classifiedType matches any

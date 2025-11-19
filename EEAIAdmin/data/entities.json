@@ -2929,7 +2929,7 @@
     {
       "id": "362",
       "name": "Prepaid amount",
-      "description": "EXTRACT numerical values only - Monetary amount of all of the consignment charges which have been paid in advance.",
+      "description": "EXTRACT ONLY numerical amounts (digits and decimal points). If you find text like 'Freight prepaid' or 'Prepaid' or similar descriptive text without actual numbers, return empty/null. Only extract actual monetary numerical values like '1500.00' or '2500'. Ignore any non-numerical text.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "7",

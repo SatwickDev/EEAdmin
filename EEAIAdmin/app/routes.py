@@ -13660,7 +13660,15 @@ Return compliance status for each field.'''
                 if "error" not in result:
                     processing_time = result.get("processing_time", 0)
                     confidence = result.get("overall_confidence", 0)
+                    
+                    # Log anti-hallucination statistics
+                    anti_hall_stats = result.get("anti_hallucination_stats", {})
+                    filtered_lines = anti_hall_stats.get("filtered_lines", 0)
+                    valid_lines = anti_hall_stats.get("valid_lines", 0)
+                    
                     logger.info(f"SUCCESS:OPTIMIZED OCR succeeded on attempt {attempt + 1} in {processing_time:.2f}s (confidence: {confidence:.3f})")
+                    if filtered_lines > 0:
+                        logger.info(f"🛡️ ANTI-HALLUCINATION: {valid_lines} valid lines, {filtered_lines} suspicious lines filtered")
                     return result
 
                 # If it's the last attempt, return the error
