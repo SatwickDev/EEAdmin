@@ -1576,14 +1576,12 @@ def setup_auth_routes(app: Flask):
                 # Only update fields that have non-empty values
                 update_data = {}
                 for key, value in form_data.items():
-                    # Skip empty values, MongoDB ID, timestamp fields, and lcNumber (already in filter)
-                    if value and key != '_id' and key not in ['createdAt', 'updatedAt', 'lcNumber']:
+                    if value and key != '_id':  # Skip empty values and MongoDB ID
                         update_data[key] = value
                 
                 # Add metadata
                 update_data['user_id'] = user_id
                 update_data['registration_timestamp'] = current_timestamp
-                update_data['updatedAt'] = current_timestamp
                 update_data['registration_status'] = 'registered_for_documents'
                 update_data['status'] = 'document_registration'
                 
@@ -19155,9 +19153,9 @@ Return compliance status for each field.'''
         Pause for user classification correction (no extraction yet)
         """
         logger.info("=== API CALL: /api/document/classify-initial (Stage 1) ===")
-        from app.utils.reload_helper import reload_all_jsons
+        from app.utils.reload_helper import reload_all_jsons,reload_app_data
         reload_all_jsons()
-
+        reload_app_data()
         try:
             # === INPUT VALIDATION ===
             uploaded_files = request.files.getlist('files')
@@ -19239,9 +19237,9 @@ Return compliance status for each field.'''
         import json
         from datetime import datetime
 
-        from app.utils.reload_helper import reload_all_jsons
+        from app.utils.reload_helper import reload_all_jsons,reload_app_data
         reload_all_jsons()
-
+        reload_app_data()
         try:
             # === INPUT VALIDATION ===
             data = request.get_json()
@@ -19681,8 +19679,7 @@ Return compliance status for each field.'''
 
             # === RETURN FINAL RESULTS ===
             logger.info(f"✅ Stage 2 completed - Returning {len(results)} results")
-            with open("wlastoutput.json", "w") as f:
-                json.dump(results, f, indent=4)
+
             return jsonify({
                 "success": True,
                 "results": results,
