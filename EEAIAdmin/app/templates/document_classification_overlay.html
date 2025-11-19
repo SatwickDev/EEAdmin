@@ -6834,6 +6834,7 @@ console.log("lcContext truthy?", !!this.lcContext);
                   }
                 },
                 async confirmAndRevalidate() {
+
                     const urlParams = new URLSearchParams(window.location.search);
                   const functionName = urlParams.get('functionName');
                   const productName = urlParams.get('productName');
@@ -6851,19 +6852,6 @@ console.log("lcContext truthy?", !!this.lcContext);
                         }else{
                             this.showReviewModal = false;
                         }
-                     // ✅ ADD THE REQUIRED BLOCK HERE (RIGHT AFTER MODAL CLOSE)
-                    if (this.functionName === "Register Document") {
-                        // Save Document Received
-                        window.parent.updateDocumentReceived && window.parent.updateDocumentReceived();
-
-                        // Save Discrepancy Details
-                        //window.parent.updateDiscrepancyTextarea && window.parent.updateDiscrepancyTextarea();
-
-                        // Populate Register Document form
-                        window.parent.populateRegisterDocumentForm && window.parent.populateRegisterDocumentForm();
-
-                        console.log("✔ Document Register fields updated from Smart Capture");
-                    }
                     this.processing = true;
                     if (window.progressLoader) window.progressLoader.show();
 
@@ -10149,6 +10137,19 @@ confirmFieldPopulation() {
 
         // Show success message
         this.showNotification('Fields populated successfully!', 'success');
+         // ✅ ADD THE REQUIRED BLOCK HERE (RIGHT AFTER MODAL CLOSE)
+        if (this.functionName === "Register Document") {
+            // Save Document Received
+            window.parent.updateDocumentReceived && window.parent.updateDocumentReceived();
+
+            // Save Discrepancy Details
+         //window.parent.updateDiscrepancyTextarea && window.parent.updateDiscrepancyTextarea();
+
+            // Populate Register Document form
+            window.parent.populateRegisterDocumentForm && window.parent.populateRegisterDocumentForm();
+
+            console.log("✔ Document Register fields updated from Smart Capture");
+        }
 
         // Close ALL modals
         setTimeout(() => {

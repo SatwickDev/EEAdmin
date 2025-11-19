@@ -2604,20 +2604,21 @@ function updateDiscrepancyTextarea() {
 `-----------------------------------------
 Discrepancy #${i + 1}
 -----------------------------------------
-📌 Field                : ${d.field || 'N/A'}
-📄 Document Type        : ${d.documentType || 'N/A'}
-📘 Document Name        : ${d.documentName || 'N/A'}
+ Field                : ${d.field || 'N/A'}
+ Document Type        : ${d.documentType || 'N/A'}
+ Document Name        : ${d.documentName || 'N/A'}
 
-📝 Document Value       : ${d.documentValue || 'N/A'}
+ Document Value       : ${d.documentValue || 'N/A'}
+ Expected Value       : ${d.expectedValue || 'N/A'}
 
-⚠️ Discrepancy
+ Discrepancy
 ${d.discrepancy || 'N/A'}
 
-📚 Rule Information
-• Description      : ${d.ruleDescription || 'N/A'}
+ Rule Information
+ Description      : ${d.ruleDescription || 'N/A'}
 
-🔎 Status: ${d.isCompliant ? "COMPLIANT ✅" : "NON-COMPLIANT ❌"}
-🌡 Severity: ${d.severity || 'N/A'}
+ Status: ${d.isCompliant ? "COMPLIANT ✅" : "NON-COMPLIANT ❌"}
+ Severity: ${d.severity || 'N/A'}
 
 `;
     });
