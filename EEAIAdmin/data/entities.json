@@ -4279,7 +4279,7 @@
     {
       "id": "463",
       "name": "Partial Shipments",
-      "description": "Indicates whether partial shipments are allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/ in exact_text give the feild name that is present in text given (***important)",
+      "description": "Indicates whether partial shipments are allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/In exact_text field, include both the label and value as they appear together(***important)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
@@ -4288,7 +4288,7 @@
     {
       "id": "464",
       "name": "Transhipment",
-      "description": "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/ in exact_text feild give the feild name that is present in text given (***important)",
+      "description": "Indicates whether transhipment is allowed or prohibited (e.g., 'Allowed', 'Prohibited', 'Not Allowed')/In exact_text field, include both the label and value as they appear together (***important)",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "6",
