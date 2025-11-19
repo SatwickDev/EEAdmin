@@ -19153,9 +19153,9 @@ Return compliance status for each field.'''
         Pause for user classification correction (no extraction yet)
         """
         logger.info("=== API CALL: /api/document/classify-initial (Stage 1) ===")
-        from app.utils.reload_helper import reload_all_jsons
+        from app.utils.reload_helper import reload_all_jsons,reload_app_data
         reload_all_jsons()
-
+        reload_app_data()
         try:
             # === INPUT VALIDATION ===
             uploaded_files = request.files.getlist('files')
@@ -19237,9 +19237,9 @@ Return compliance status for each field.'''
         import json
         from datetime import datetime
 
-        from app.utils.reload_helper import reload_all_jsons
+        from app.utils.reload_helper import reload_all_jsons,reload_app_data
         reload_all_jsons()
-
+        reload_app_data()
         try:
             # === INPUT VALIDATION ===
             data = request.get_json()

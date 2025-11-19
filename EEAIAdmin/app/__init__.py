@@ -84,8 +84,9 @@ def create_app():
 
         try:
             if request.method in ['POST', 'PUT', 'DELETE'] and response.status_code in [200, 201]:
-                from app.utils.reload_helper import reload_all_jsons
+                from app.utils.reload_helper import reload_all_jsons,reload_app_data
                 reload_all_jsons()
+                reload_app_data()  # Also reload YAML/XML data
                 logger.info("✅ Auto JSON reload triggered after data change")
         except Exception as e:
             logger.warning(f"⚠️ Auto reload failed: {e}")
