@@ -1576,12 +1576,14 @@ def setup_auth_routes(app: Flask):
                 # Only update fields that have non-empty values
                 update_data = {}
                 for key, value in form_data.items():
-                    if value and key != '_id':  # Skip empty values and MongoDB ID
+                    # Skip empty values, MongoDB ID, timestamp fields, and lcNumber (already in filter)
+                    if value and key != '_id' and key not in ['createdAt', 'updatedAt', 'lcNumber']:
                         update_data[key] = value
-                
+
                 # Add metadata
                 update_data['user_id'] = user_id
                 update_data['registration_timestamp'] = current_timestamp
+                update_data['updatedAt'] = current_timestamp
                 update_data['registration_status'] = 'registered_for_documents'
                 update_data['status'] = 'document_registration'
                 
