@@ -168,6 +168,32 @@
             color: #94a3b8;
         }
 
+        /* Select/Form Control Styles */
+        .form-control {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(248, 250, 252, 0.8);
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control option {
+            background: white;
+            color: var(--text-color);
+            padding: 8px;
+        }
+
         /* Button Styles */
         .btn {
             padding: 12px 28px;
@@ -182,6 +208,11 @@
             gap: 8px;
             position: relative;
             overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn::before {
@@ -527,6 +558,215 @@
             }
         }
 
+        /* Pagination Controls */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .pagination-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Date Filter Buttons */
+        .date-filter-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(6, 182, 212, 0.05);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 12px;
+        }
+
+        .date-filter-container label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .date-filter-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .date-filter-btn {
+            padding: 10px 18px;
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            background: white;
+            color: #06b6d4;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .date-filter-btn:hover {
+            background: rgba(6, 182, 212, 0.1);
+            border-color: #06b6d4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+        }
+
+        .date-filter-btn.active {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+            border-color: #06b6d4;
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .date-filter-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Sort Buttons in Table Header */
+        .sort-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            line-height: 1;
+        }
+
+        .sort-btn:hover {
+            opacity: 1;
+            color: #06b6d4;
+            transform: scale(1.15);
+        }
+
+        .sort-btn.active {
+            opacity: 1;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        /* Sort Toggle Button Group */
+        .sort-toggle-group {
+            display: inline-flex;
+            background: rgba(148, 163, 184, 0.1);
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 2px;
+            gap: 0;
+            align-items: center;
+        }
+
+        .sort-toggle-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            flex: 1;
+            min-width: 32px;
+        }
+
+        .sort-toggle-btn:hover {
+            color: #06b6d4;
+        }
+
+        .sort-toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Date Header Container */
+        .date-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .sort-buttons-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .search-filter-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-field-select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: var(--text-color);
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .search-field-select:hover,
+        .search-field-select:focus {
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+
         @media (max-width: 768px) {
             .main-container {
                 margin: 100px auto 0;
@@ -556,6 +796,29 @@
             }
 
             .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .pagination-container {
+                flex-direction: column;
+            }
+
+            .search-filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-field-select {
+                width: 100%;
+            }
+
+            .date-filter-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .date-filter-btn {
                 width: 100%;
                 justify-content: center;
             }
@@ -589,20 +852,30 @@
 
                     <div class="form-group" style="position: relative;">
                         <div class="form-input-wrapper" style="flex: 1;">
+                            <label for="searchFieldSelect">
+                                Search By <span class="required">*</span>
+                            </label>
+                            <select id="searchFieldSelect" style="width: 100%;" class="form-control">
+                                <option value="lcNumber">LC Number</option>
+                                <option value="applicant">Applicant Name</option>
+                                <option value="beneficiary">Beneficiary Name</option>
+                            </select>
+                        </div>
+                        <div class="form-input-wrapper" style="flex: 1.5;">
                             <label for="lcNumberInput">
-                                Search LC <span class="required">*</span>
+                                Search Value <span class="required">*</span>
                             </label>
                             <input 
                                 type="text" 
                                 id="lcNumberInput" 
-                                placeholder="Type LC number, applicant name, or currency to filter..."
+                                placeholder="Enter search value..."
                                 autocomplete="off"
                                 style="width: 100%;"
                             />
                         </div>
                     </div>
 
-                    <!-- LC Table List -->
+                    <!-- LC Table List with Pagination -->
                     <div id="lcTableContainer" class="lc-table-container">
                         <table class="lc-table">
                             <thead>
@@ -612,13 +885,41 @@
                                     <th>Beneficiary</th>
                                     <th>Currency</th>
                                     <th>Amount</th>
-                                    <th>Extracted Date</th>
+                                    <th>
+                                        <div class="date-header">
+                                            <span>Created Date</span>
+                                            <div class="sort-toggle-group">
+                                                <button id="sortDateAsc" class="sort-toggle-btn active" title="Sort oldest first">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>
+                                                <button id="sortDateDesc" class="sort-toggle-btn" title="Sort newest first">
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="lcTableBody">
                                 <!-- LC rows will be populated here -->
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div id="paginationContainer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px 0;">
+                        <div style="font-size: 13px; color: #64748b;">
+                            Showing <span id="pageInfo">0-0</span> of <span id="totalInfo">0</span> LCs
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="prevBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" disabled>
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>
+                            <span id="pageNumber" style="padding: 8px 12px; font-weight: 600; color: #667eea;">Page 1</span>
+                            <button id="nextBtn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;" disabled>
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Loading indicator for LC list -->
@@ -677,9 +978,20 @@
         // State management
         let currentLCData = null;
         let allLCs = []; // Store all available LCs
+        let filteredLCs = []; // Store filtered LCs
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
         const lcNumberInput = document.getElementById('lcNumberInput');
+        const searchFieldSelect = document.getElementById('searchFieldSelect');
         const lcTableBody = document.getElementById('lcTableBody');
         const lcTableContainer = document.getElementById('lcTableContainer');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageNumber = document.getElementById('pageNumber');
+        const pageInfo = document.getElementById('pageInfo');
+        const totalInfo = document.getElementById('totalInfo');
         const confirmBtn = document.getElementById('confirmBtn');
         const editBtn = document.getElementById('editBtn');
         const loadingState = document.getElementById('loadingState');
@@ -718,45 +1030,65 @@
             }
         }
 
-        // Display all LCs in table
+        // Display all LCs in table (first page)
         function displayAllLCs() {
             if (allLCs.length === 0) {
                 lcTableBody.innerHTML = '<tr><td colspan="6" class="lc-empty">No LCs available in the system</td></tr>';
+                paginationContainer.style.display = 'none';
                 return;
             }
-
-            lcTableBody.innerHTML = allLCs.map(lc => `
-                <tr onclick="selectLC('${lc.lcNumber}', event)" style="cursor: pointer;">
-                    <td class="lc-number">${lc.lcNumber}</td>
-                    <td>${lc.applicant ? lc.applicant.split('\n')[0].substring(0, 40) : 'N/A'}</td>
-                    <td>${lc.beneficiary ? lc.beneficiary.split('\n')[0].substring(0, 40) : 'N/A'}</td>
-                    <td>${lc.currency || 'N/A'}</td>
-                    <td class="lc-amount">${lc.currency} ${formatNumber(lc.amount) || 'N/A'}</td>
-                    <td class="lc-date">${formatDate(lc.updatedAt || lc.createdAt)}</td>
-                </tr>
-            `).join('');
+            
+            filteredLCs = allLCs;
+            currentPage = 1;
+            displayPage();
         }
 
-        // Filter LCs based on search text
+        // Filter LCs based on search field and text
         function filterLCs(searchText) {
-            let filtered = allLCs;
+            if (!searchText.trim()) {
+                filteredLCs = allLCs;
+            } else {
+                const searchField = searchFieldSelect.value;
+                const searchLower = searchText.toLowerCase();
 
-            // Text filter
-            if (searchText.trim()) {
-                filtered = filtered.filter(lc => 
-                    lc.lcNumber.toLowerCase().includes(searchText.toLowerCase()) ||
-                    (lc.applicant && lc.applicant.toLowerCase().includes(searchText.toLowerCase())) ||
-                    (lc.beneficiary && lc.beneficiary.toLowerCase().includes(searchText.toLowerCase())) ||
-                    (lc.currency && lc.currency.toLowerCase().includes(searchText.toLowerCase()))
-                );
+                filteredLCs = allLCs.filter(lc => {
+                    switch(searchField) {
+                        case 'lcNumber':
+                            return lc.lcNumber.toLowerCase().includes(searchLower);
+                        case 'applicant':
+                            return lc.applicant && lc.applicant.toLowerCase().includes(searchLower);
+                        case 'beneficiary':
+                            return lc.beneficiary && lc.beneficiary.toLowerCase().includes(searchLower);
+                        case 'createdAt':
+                            return formatDate(lc.updatedAt || lc.createdAt).toLowerCase().includes(searchLower);
+                        default:
+                            return true;
+                    }
+                });
             }
 
-            if (filtered.length === 0) {
+            currentPage = 1;
+            displayPage();
+        }
+
+        // Display current page of LCs
+        function displayPage() {
+            if (filteredLCs.length === 0) {
                 lcTableBody.innerHTML = '<tr><td colspan="6" class="lc-empty">No matching LCs found</td></tr>';
+                paginationContainer.style.display = 'none';
                 return;
             }
 
-            lcTableBody.innerHTML = filtered.map(lc => `
+            paginationContainer.style.display = 'flex';
+
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredLCs.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredLCs.length);
+            const pageItems = filteredLCs.slice(startIndex, endIndex);
+
+            // Display rows for current page
+            lcTableBody.innerHTML = pageItems.map(lc => `
                 <tr onclick="selectLC('${lc.lcNumber}', event)" style="cursor: pointer;">
                     <td class="lc-number">${lc.lcNumber}</td>
                     <td>${lc.applicant ? lc.applicant.split('\n')[0].substring(0, 40) : 'N/A'}</td>
@@ -766,6 +1098,72 @@
                     <td class="lc-date">${formatDate(lc.updatedAt || lc.createdAt)}</td>
                 </tr>
             `).join('');
+
+            // Update pagination info
+            pageNumber.textContent = `Page ${currentPage} of ${totalPages}`;
+            pageInfo.textContent = `${startIndex + 1}-${endIndex}`;
+            totalInfo.textContent = filteredLCs.length;
+
+            // Update button states
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+        }
+
+        // Date filter function - Sort by date (oldest first)
+        // Date filter function - Sort by date (oldest first - ascending)
+        function filterByDateFirst() {
+            filteredLCs.sort((a, b) => {
+                const dateA = new Date(a.updatedAt || a.createdAt);
+                const dateB = new Date(b.updatedAt || b.createdAt);
+                return dateA - dateB; // Oldest first
+            });
+            
+            currentPage = 1;
+            
+            // Update active button state
+            const ascBtn = document.getElementById('sortDateAsc');
+            const descBtn = document.getElementById('sortDateDesc');
+            ascBtn.classList.add('active');
+            descBtn.classList.remove('active');
+            
+            displayPage();
+        }
+
+        // Date filter function - Sort by date (newest first - descending)
+        function filterByDateLast() {
+            filteredLCs.sort((a, b) => {
+                const dateA = new Date(a.updatedAt || a.createdAt);
+                const dateB = new Date(b.updatedAt || b.createdAt);
+                return dateB - dateA; // Newest first
+            });
+            
+            currentPage = 1;
+            
+            // Update active button state
+            const ascBtn = document.getElementById('sortDateAsc');
+            const descBtn = document.getElementById('sortDateDesc');
+            descBtn.classList.add('active');
+            ascBtn.classList.remove('active');
+            
+            displayPage();
+        }
+
+
+        function goToPreviousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayPage();
+                lcTableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function goToNextPage() {
+            const totalPages = Math.ceil(filteredLCs.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayPage();
+                lcTableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         // Select LC from table
@@ -984,9 +1382,22 @@
         }
 
         // Event listeners for table filtering
+        // Event listeners for search and filtering
+        searchFieldSelect.addEventListener('change', () => {
+            filterLCs(lcNumberInput.value);
+        });
+
         lcNumberInput.addEventListener('input', (e) => {
             filterLCs(e.target.value);
         });
+
+        // Pagination event listeners
+        prevBtn.addEventListener('click', goToPreviousPage);
+        nextBtn.addEventListener('click', goToNextPage);
+
+        // Date sort button listeners
+        document.getElementById('sortDateAsc').addEventListener('click', filterByDateFirst);
+        document.getElementById('sortDateDesc').addEventListener('click', filterByDateLast);
 
         // Other event listeners
         confirmBtn.addEventListener('click', confirmAndContinue);

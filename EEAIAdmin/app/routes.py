@@ -1567,19 +1567,41 @@ def setup_auth_routes(app: Flask):
             try:
                 # Get form data with confirmed LC information
                 form_data = request.form.to_dict()
-                form_data['user_id'] = session.get('user_id', 'anonymous')
-                form_data['timestamp'] = datetime.utcnow()
-                form_data['status'] = 'document_registration'
-                form_data['registration_timestamp'] = datetime.utcnow()
+                user_id = session.get('user_id', 'anonymous')
+                current_timestamp = datetime.utcnow()
                 
-                # Store the registration data in letter_of_credits with registration status
-                form_data['registration_status'] = 'registered_for_documents'
                 lc_number = form_data.get('lcNumber')
                 
+                # Prepare update data
+                # Only update fields that have non-empty values
+                update_data = {}
+                for key, value in form_data.items():
+                    if value and key != '_id':  # Skip empty values and MongoDB ID
+                        update_data[key] = value
+                
+                # Add metadata
+                update_data['user_id'] = user_id
+                update_data['registration_timestamp'] = current_timestamp
+                update_data['registration_status'] = 'registered_for_documents'
+                update_data['status'] = 'document_registration'
+                
+                # Use update_one with upsert to:
+                # 1. Add new values if LC doesn't exist
+                # 2. Update existing values if they're different
+                # 3. Keep existing values if not provided in update
                 result = db.letter_of_credits.update_one(
                     {'lcNumber': lc_number},
-                    {'$set': form_data}
+                    {
+                        '$set': update_data,  # Set/update provided values
+                        '$setOnInsert': {      # Only set on insert (if document doesn't exist)
+                            'createdAt': current_timestamp,
+                            'lcNumber': lc_number
+                        }
+                    },
+                    upsert=True  # Create new document if doesn't exist
                 )
+                
+                logger.info(f"LC {lc_number} registration processed - Matched: {result.matched_count}, Modified: {result.modified_count}, Upserted ID: {result.upserted_id}")
                 
                 # Return success response and redirect to document_register
                 return jsonify({
@@ -3768,27 +3790,32 @@ Generate a query recipe for this request."""
                 'additionalConditions': data.get('additionalConditions', ''),
                 'charges': data.get('charges', 'beneficiary'),
                 'status': 'submitted',
-                'createdAt': datetime.utcnow(),
+                'createdAt': existing_lc['createdAt'] if existing_lc else datetime.utcnow(),  # Preserve createdAt for existing LCs
                 'updatedAt': datetime.utcnow()
             }
 
-            # Insert or update into database
-            if existing_lc:
-                # LC already exists - update with new fields only
-                result = lc_collection.update_one(
-                    {'lcNumber': data['lcNumber']},
-                    {'$set': lc_document}
-                )
-                logger.info(f"LC updated: {data['lcNumber']} (modified: {result.modified_count})")
-                transaction_id = str(existing_lc['_id'])
+            # Remove empty string values to avoid overwriting with blanks
+            lc_document = {k: v for k, v in lc_document.items() if v != ''}
+
+            # Insert or update into database with smart merge logic
+            # All fields in $set will be updated/created, createdAt is preserved for existing LCs
+            result = lc_collection.update_one(
+                {'lcNumber': data['lcNumber']},
+                {
+                    '$set': lc_document,  # Update all provided fields including createdAt (preserved or new)
+                },
+                upsert=True  # Create new document if doesn't exist
+            )
+
+            if result.upserted_id:
+                # New LC was created
+                transaction_id = str(result.upserted_id)
+                logger.info(f"LC inserted: {data['lcNumber']} - ID: {transaction_id}")
             else:
-                # New LC - insert it
-                result = lc_collection.insert_one(lc_document)
-                if result.acknowledged:
-                    logger.info(f"LC inserted. MongoDB acknowledged the insert. _id: {result.inserted_id}")
-                else:
-                    logger.error("Insert operation not acknowledged by MongoDB.")
-                transaction_id = str(result.inserted_id)
+                # LC was updated or already exists
+                existing_lc = lc_collection.find_one({'lcNumber': data['lcNumber']})
+                transaction_id = str(existing_lc['_id'])
+                logger.info(f"LC updated: {data['lcNumber']} (modified: {result.modified_count}) - ID: {transaction_id}")
             
             logger.info(f"LC form submitted successfully: {data['lcNumber']}")
 
