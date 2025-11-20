@@ -3689,6 +3689,8 @@ Generate a query recipe for this request."""
         lc_number = request.args.get('lcNumber')
         transaction_id = request.args.get('transactionId')
         return render_template('lc_success.html', lcNumber=lc_number, transactionId=transaction_id)
+    
+    
     # =========================
     # LC FORM SUBMISSION & SWIFT MT700 GENERATION
     # =========================
@@ -18739,6 +18741,44 @@ Return compliance status for each field.'''
                 'Marine Insurance policy': 'cargo insurance document',
                 'Marine Insurance Policy': 'cargo insurance document',
                 'marine insurance policy': 'cargo insurance document',
+ 
+                'Shipment Consignment Advice': 'cargo insurance document',
+                'shipment consignment advice': 'cargo insurance document',
+                'Shipment consignment advice': 'cargo insurance document',
+                'shipment Consignment Advice': 'cargo insurance document',
+ 
+                'Insurance Consignment Advice': 'cargo insurance document',
+                'insurance consignment advice': 'cargo insurance document',
+                'Insurance consignment advice': 'cargo insurance document',
+                'insurance Consignment Advice': 'cargo insurance document',
+                'Insurance Advice': 'cargo insurance document',
+                'insurance Advice': 'cargo insurance document',
+                'Insurance advice': 'cargo insurance document',
+                'insurance advice': 'cargo insurance document',
+ 
+                'Certificate from Ship-Owner': 'Vessel Certificate',
+                'certificate from ship-owner': 'Vessel Certificate',
+                'Certificate From Ship-Owner': 'Vessel Certificate',
+                'Certificate from Ship Owner': 'Vessel Certificate',
+                'certificate from ship owner': 'Vessel Certificate',
+                'Certificate From Ship Owner': 'Vessel Certificate',
+                'certificate from Ship-OwneR': 'Vessel Certificate',
+                'CERTIFICATE FROM SHIP OWNER': 'Vessel Certificate',
+ 
+                'Certificate from Ship-Owner or Vessel Agent': 'Vessel Certificate',
+                'certificate from ship-owner or vessel agent': 'Vessel Certificate',
+ 
+                'Certificate from Ship-owner or Agent': 'Vessel Certificate',
+                'certificate from ship-owner or agent': 'Vessel Certificate',
+ 
+                'certificate from ship-owner': 'Vessel Certificate',
+                'Certificate from Ship-Owner': 'Vessel Certificate',
+                'Certificate From Ship-Owner': 'Vessel Certificate',
+                'certificate From Ship-Owner': 'Vessel Certificate',
+                'certificate from Ship-Owner': 'Vessel Certificate',
+                'certificate from ship-Owner': 'Vessel Certificate',
+                'Certificate from ship-Owner': 'Vessel Certificate',
+                'CERTIFICATE FROM SHIP-OWNER': 'Vessel Certificate'
                 # Add more aliases as needed
             }
             
@@ -24081,7 +24121,6 @@ def generate_mt700_message(lc_data):
         ":50:" + format_address_field(lc_data['applicant']),  # Applicant
         ":59:" + format_address_field(lc_data['beneficiary']),  # Beneficiary
         ":32B:" + currency + amount,  # Currency Code, Amount
-        ""
     ]
 
     # Add issuing bank

@@ -1,0 +1,503 @@
+/* =============================================================================
+   VIBRANT LITE THEME - Global Color Palette
+   A modern, vibrant, and professional color scheme for all templates
+   ============================================================================= */
+
+/* CSS Variables for Easy Theme Management */
+:root {
+    /* Primary Colors - Vibrant Blues */
+    --primary-blue: #3b82f6;
+    --primary-blue-hover: #2563eb;
+    --primary-blue-light: #60a5fa;
+    --primary-blue-dark: #1e40af;
+    
+    /* Secondary Colors - Indigo & Purple */
+    --secondary-indigo: #6366f1;
+    --secondary-indigo-hover: #4f46e5;
+    --secondary-purple: #8b5cf6;
+    --secondary-purple-hover: #7c3aed;
+    
+    /* Success Colors - Vibrant Greens */
+    --success-green: #22c55e;
+    --success-green-hover: #16a34a;
+    --success-green-light: #4ade80;
+    --success-emerald: #10b981;
+    
+    /* Warning Colors - Amber & Orange */
+    --warning-amber: #f59e0b;
+    --warning-amber-hover: #d97706;
+    --warning-orange: #fb923c;
+    
+    /* Error/Danger Colors - Vibrant Reds */
+    --danger-red: #ef4444;
+    --danger-red-hover: #dc2626;
+    --danger-rose: #f43f5e;
+    
+    /* Info Colors - Cyan & Teal */
+    --info-cyan: #06b6d4;
+    --info-teal: #14b8a6;
+    --info-sky: #0ea5e9;
+    
+    /* Background Colors - Light & Clean */
+    --bg-white: #ffffff;
+    --bg-slate-50: #f8fafc;
+    --bg-gray-50: #f9fafb;
+    --bg-blue-50: #eff6ff;
+    --bg-indigo-50: #eef2ff;
+    
+    /* Text Colors - Clear & Readable */
+    --text-gray-900: #111827;
+    --text-gray-800: #1f2937;
+    --text-gray-700: #374151;
+    --text-gray-600: #4b5563;
+    --text-gray-500: #6b7280;
+    
+    /* Border Colors - Subtle & Elegant */
+    --border-gray-200: #e5e7eb;
+    --border-gray-300: #d1d5db;
+    --border-blue-200: rgba(59, 130, 246, 0.2);
+    --border-blue-300: rgba(59, 130, 246, 0.35);
+    
+    /* Shadow Colors */
+    --shadow-blue: rgba(59, 130, 246, 0.15);
+    --shadow-indigo: rgba(99, 102, 241, 0.15);
+    --shadow-gray: rgba(0, 0, 0, 0.1);
+}
+
+/* =============================================================================
+   GRADIENT BACKGROUNDS
+   ============================================================================= */
+
+/* Header Gradients */
+.gradient-header {
+    background: linear-gradient(135deg, var(--bg-slate-50) 0%, var(--bg-blue-50) 50%, var(--bg-indigo-50) 100%);
+}
+
+.gradient-header-vibrant {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-indigo) 50%, var(--secondary-purple) 100%);
+}
+
+/* Card Gradients */
+.gradient-card {
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-slate-50) 100%);
+}
+
+.gradient-card-blue {
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-blue-50) 100%);
+}
+
+/* Button Gradients */
+.gradient-primary {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-indigo) 50%, var(--secondary-purple) 100%);
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, var(--success-green) 0%, var(--success-emerald) 100%);
+}
+
+/* Overlay Gradients */
+.gradient-overlay-light {
+    background: linear-gradient(to bottom right, rgba(248, 250, 252, 0.98) 0%, rgba(239, 246, 255, 0.95) 100%);
+}
+
+.gradient-overlay-dark {
+    background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 50%, rgba(59, 130, 246, 0.2) 100%);
+}
+
+/* =============================================================================
+   BUTTON STYLES
+   ============================================================================= */
+
+.btn-primary-vibrant {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-indigo) 50%, var(--secondary-purple) 100%);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px var(--shadow-blue);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primary-vibrant:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, var(--primary-blue-hover) 0%, var(--secondary-indigo-hover) 50%, var(--secondary-purple-hover) 100%);
+}
+
+.btn-secondary-vibrant {
+    background: var(--bg-white);
+    color: var(--primary-blue);
+    border: 2px solid var(--border-blue-300);
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-secondary-vibrant:hover {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: var(--primary-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow-blue);
+}
+
+.btn-success-vibrant {
+    background: linear-gradient(135deg, var(--success-green) 0%, var(--success-emerald) 100%);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+}
+
+.btn-success-vibrant:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
+}
+
+/* =============================================================================
+   CARD STYLES
+   ============================================================================= */
+
+.card-vibrant {
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-slate-50) 100%);
+    border: 1px solid var(--border-gray-200);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 2px 8px var(--shadow-blue);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-vibrant:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+    border-color: var(--border-blue-300);
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-blue-50) 100%);
+}
+
+.card-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(203, 213, 225, 0.4);
+    box-shadow: 0 4px 16px var(--shadow-blue);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-glass:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
+    border-color: var(--border-blue-300);
+}
+
+/* =============================================================================
+   STAT CARDS
+   ============================================================================= */
+
+.stat-card-vibrant {
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-slate-50) 100%);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 2px 8px var(--shadow-blue);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(203, 213, 225, 0.4);
+}
+
+.stat-card-vibrant:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
+    border-color: var(--border-blue-300);
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-blue-50) 100%);
+}
+
+.stat-number-vibrant {
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-indigo) 50%, var(--secondary-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 4px 0;
+    display: inline-block;
+}
+
+/* =============================================================================
+   ICON CONTAINERS
+   ============================================================================= */
+
+.icon-container-vibrant {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-indigo) 100%);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 12px var(--shadow-blue);
+}
+
+.icon-container-success {
+    background: linear-gradient(135deg, var(--success-green) 0%, var(--success-emerald) 100%);
+    box-shadow: 0 3px 12px rgba(34, 197, 94, 0.25);
+}
+
+.icon-container-warning {
+    background: linear-gradient(135deg, var(--warning-amber) 0%, var(--warning-orange) 100%);
+    box-shadow: 0 3px 12px rgba(245, 158, 11, 0.25);
+}
+
+/* =============================================================================
+   MODAL STYLES
+   ============================================================================= */
+
+.modal-overlay-vibrant {
+    background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.95) 0%, rgba(59, 130, 246, 0.2) 100%);
+    backdrop-filter: blur(12px);
+}
+
+.modal-header-vibrant {
+    background: linear-gradient(135deg, var(--bg-slate-50) 0%, var(--bg-white) 100%);
+    border-bottom: 1px solid var(--border-gray-200);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.modal-footer-vibrant {
+    background: linear-gradient(135deg, var(--bg-slate-50) 0%, var(--bg-gray-50) 100%);
+    border-top: 1px solid var(--border-gray-200);
+}
+
+/* =============================================================================
+   BADGE STYLES
+   ============================================================================= */
+
+.badge-primary-vibrant {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary-blue);
+    border: 1px solid var(--border-blue-200);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-success-vibrant {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success-green);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-warning-vibrant {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning-amber);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* =============================================================================
+   FORM STYLES
+   ============================================================================= */
+
+.input-vibrant {
+    background: var(--bg-white);
+    border: 2px solid var(--border-gray-200);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-gray-800);
+}
+
+.input-vibrant:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: var(--bg-blue-50);
+}
+
+.select-vibrant {
+    background: var(--bg-white);
+    border: 2px solid var(--border-gray-200);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.select-vibrant:hover {
+    border-color: var(--border-blue-300);
+}
+
+.select-vibrant:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* =============================================================================
+   TEXT STYLES
+   ============================================================================= */
+
+.text-gradient-vibrant {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-indigo) 50%, var(--secondary-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.text-primary-vibrant {
+    color: var(--primary-blue);
+}
+
+.text-success-vibrant {
+    color: var(--success-green);
+}
+
+.text-warning-vibrant {
+    color: var(--warning-amber);
+}
+
+.text-danger-vibrant {
+    color: var(--danger-red);
+}
+
+/* =============================================================================
+   ANIMATION UTILITIES
+   ============================================================================= */
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-up {
+    animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.animate-shimmer {
+    animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+
+.shadow-vibrant {
+    box-shadow: 0 4px 12px var(--shadow-blue);
+}
+
+.shadow-vibrant-lg {
+    box-shadow: 0 8px 24px var(--shadow-blue);
+}
+
+.border-vibrant {
+    border: 1px solid var(--border-gray-200);
+}
+
+.border-vibrant-thick {
+    border: 2px solid var(--border-gray-200);
+}
+
+.rounded-vibrant {
+    border-radius: 12px;
+}
+
+.rounded-vibrant-lg {
+    border-radius: 16px;
+}
+
+/* =============================================================================
+   HOVER EFFECTS
+   ============================================================================= */
+
+.hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px var(--shadow-blue);
+}
+
+.hover-glow {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* =============================================================================
+   RESPONSIVE UTILITIES
+   ============================================================================= */
+
+@media (max-width: 768px) {
+    .btn-primary-vibrant,
+    .btn-secondary-vibrant,
+    .btn-success-vibrant {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+    
+    .card-vibrant {
+        padding: 12px;
+        border-radius: 12px;
+    }
+    
+    .stat-card-vibrant {
+        padding: 10px;
+    }
+}

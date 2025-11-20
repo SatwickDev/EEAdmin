@@ -1,20 +1,25 @@
 /* Global Floating Header Styles */
 /* Import this in your pages: <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}"> */
 
-/* Modern Floating Header */
+/* Modern Floating Header - Corporate Style */
 .floating-header {
     position: fixed;
     top: 20px;
     left: 20px;
     right: 20px;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+    z-index: 2000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
     animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s ease;
+}
+
+.floating-header:hover {
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
 }
 
 .floating-header-content {
@@ -38,43 +43,51 @@
 }
 
 .modern-logo {
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    width: 52px;
+    height: 52px;
+    background: #FFFFFF;
+    border: 2px solid #047857;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: logoFloat 4s ease-in-out infinite;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+    padding: 6px;
 }
 
 .modern-logo:hover {
-    transform: scale(1.05) rotate(2deg);
-    border-color: rgba(99, 102, 241, 0.3);
-    background: rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(4, 120, 87, 0.3);
+    border-color: #059669;
+}
+
+.modern-logo i {
+    color: #FFFFFF;
+    font-size: 26px;
 }
 
 .status-pulse {
     position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 12px;
-    height: 12px;
-    background: linear-gradient(135deg, #10b981, #059669);
+    top: -3px;
+    right: -3px;
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #D97706, #F59E0B);
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.9);
+    border: 3px solid #FFFFFF;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    box-shadow: 0 0 12px rgba(217, 119, 6, 0.5);
 }
 
 .brand-info h1,
 .brand-title {
-    font-size: 24px !important;
-    font-weight: 800 !important;
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 26px !important;
+    font-weight: 700 !important;
     margin: 0 !important;
-    background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     background-clip: text !important;
@@ -84,12 +97,13 @@
 .brand-info p,
 .brand-subtitle {
     font-size: 13px !important;
-    color: rgba(100, 116, 139, 0.8) !important;
+    color: #475569 !important;
     margin: 0 !important;
     font-weight: 500 !important;
+    letter-spacing: 0.3px;
 }
 
-/* Navigation Pills */
+/* Navigation Pills - Professional */
 .nav-pills {
     display: flex;
     align-items: center;
@@ -122,9 +136,9 @@
 }
 
 .nav-pill.active {
-    background: rgba(255, 255, 255, 0.9) !important;
-    color: #1e293b !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3);
 }
 
 .nav-pill i {
@@ -141,22 +155,23 @@
 .status-indicator-modern {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(4, 120, 87, 0.1) 0%, rgba(5, 150, 105, 0.15) 100%);
+    border: 1px solid rgba(4, 120, 87, 0.25);
     border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #059669;
+    font-size: 13px;
+    font-weight: 600;
+    color: #047857;
 }
 
 .pulse-dot {
-    width: 6px;
-    height: 6px;
-    background: #10b981;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, #047857, #059669);
     border-radius: 50%;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    box-shadow: 0 0 8px rgba(4, 120, 87, 0.5);
 }
 
 .action-button {
@@ -176,27 +191,31 @@
 }
 
 .action-button.primary {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important;
     color: white !important;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    font-weight: 600 !important;
 }
 
 .action-button.primary:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.35) !important;
+    background: linear-gradient(135deg, #1E293B 0%, #334155 100%) !important;
 }
 
 .action-button.secondary {
-    background: rgba(255, 255, 255, 0.9) !important;
-    color: #374151 !important;
-    border: 1px solid rgba(229, 231, 235, 0.8) !important;
+    background: #FFFFFF !important;
+    color: #475569 !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 .action-button.secondary:hover {
-    background: rgba(255, 255, 255, 1) !important;
-    color: #1f2937 !important;
+    background: #F8FAFC !important;
+    color: #0F172A !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12) !important;
+    border-color: #CBD5E1 !important;
 }
 
 /* Profile Modal */

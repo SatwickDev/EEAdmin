@@ -10,17 +10,17 @@
 
 :root {
   /* Primary Color Palette */
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-gradient: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-indigo) 100%);
   --primary-gradient-hover: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
   --primary-50: rgba(102, 126, 234, 0.05);
   --primary-100: rgba(102, 126, 234, 0.1);
   --primary-200: rgba(102, 126, 234, 0.2);
-  --primary-500: #667eea;
+  --primary-500: var(--primary-blue);
   --primary-600: #5a6fd8;
   --primary-700: #4c63d2;
   
   /* Secondary Colors */
-  --secondary-gradient: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  --secondary-gradient: linear-gradient(135deg, var(--secondary-indigo) 0%, var(--primary-blue) 100%);
   --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   
   /* Success/Warning/Error Colors */
@@ -45,10 +45,10 @@
   --gray-900: #111827;
   
   /* Glass Morphism Standards */
-  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-bg: var(--bg-white);
   --glass-bg-dark: rgba(0, 0, 0, 0.2);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-border-dark: rgba(255, 255, 255, 0.1);
+  --glass-border: var(--bg-white);
+  --glass-border-dark: var(--bg-white);
   --glass-blur: 25px;
   --glass-blur-lg: 40px;
   
@@ -128,7 +128,7 @@
 
 [data-theme="dark"] {
   --glass-bg: rgba(0, 0, 0, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border: var(--bg-white);
   --text-primary: var(--white);
   --text-secondary: var(--gray-300);
   --text-muted: var(--gray-400);

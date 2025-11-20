@@ -7,48 +7,42 @@
     <title>Trade Finance - Document Registration</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-discrepancy-ui.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/advanced-discrepancy-ui.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/professional-discrepancy-ui.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-features.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-validation-transparency.css') }}">
 
-    <!-- Professional Muted UI for Discrepancy Analysis Results Only -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/professional-muted-discrepancy-ui.css') }}">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- jsQR library for QR code scanning from camera -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    <script src="{{ url_for('static', filename='js/enhanced-discrepancy-ui.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/advanced-discrepancy-ui.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/professional-discrepancy-ui.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/enhanced-features.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/enhanced-validation-transparency.js') }}" defer></script>
-
-    <!-- Professional Muted UI for Discrepancy Results Only -->
-    <script src="{{ url_for('static', filename='js/professional-muted-discrepancy-ui.js') }}"></script>
+    
     <style>
+        /* ============================================
+           DOCUMENT REGISTER PROFESSIONAL THEME
+           Primary: Deep Navy (#0F172A)
+           Accent: Emerald Green (#047857)
+           Highlight: Warm Gold (#D97706)
+           Document: Teal (#0D9488)
+           ============================================ */
+        
         :root {
-            --primary-color: #6366f1;
-            --secondary-color: #8b5cf6;
-            --accent-color: #06b6d4;
-            --success-color: #10b981;
-            --bg-color: #f8f9fa;
-            --text-color: #2d3748;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --border-muted: #cbd5e1;
-            --surface: rgba(255, 255, 255, 0.95);
-            --surface-elevated: rgba(248, 250, 252, 0.9);
-            --slate-100: #f1f5f9;
-            --slate-200: #e2e8f0;
-            --slate-400: #94a3b8;
-            --slate-600: #475569;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-            --focus-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            --corporate-navy: #0F172A;
+            --corporate-navy-light: #1E293B;
+            --corporate-emerald: #047857;
+            --corporate-emerald-light: #059669;
+            --corporate-gold: #D97706;
+            --corporate-gold-light: #F59E0B;
+            --document-teal: #0D9488;
+            --document-teal-light: #14B8A6;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --bg-tertiary: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --border-light: #F1F5F9;
+            --shadow-corporate: 0 4px 20px rgba(15, 23, 42, 0.08);
+            --shadow-hover: 0 8px 32px rgba(15, 23, 42, 0.12);
+            --shadow-table: 0 2px 12px rgba(15, 23, 42, 0.06);
         }
 
         * {
@@ -59,25 +53,56 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 50%, #F0FDF4 100%);
             min-height: 100vh;
             padding-top: 120px;
             position: relative;
             overflow-x: hidden;
-            color: var(--text-color);
+            color: var(--text-primary);
         }
 
         body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTE2djJIMjR2LTJoMTJ6Ii8+PC9nPjwvZz48L3N2Zz4=');
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(4, 120, 87, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(217, 119, 6, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(15, 23, 42, 0.02) 0%, transparent 30%);
             pointer-events: none;
-            opacity: 0.5;
-            z-index: 0;
+            z-index: -1;
+        }
+
+        /* Professional Scrollbar - Navy/Emerald Theme */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            border-radius: 10px;
+            border: 2px solid var(--bg-secondary);
+            transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-emerald) 100%);
+            box-shadow: 0 0 12px rgba(4, 120, 87, 0.4);
+        }
+
+        /* Firefox Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--corporate-emerald) var(--bg-secondary);
         }
 
         .container {
@@ -85,22 +110,29 @@
             max-width: none;
             margin: 0 auto;
             padding: 24px;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Modern Floating Header with Muted Design */
+        /* Modern Floating Header - Corporate Document Style */
         .floating-header {
             position: fixed;
             top: 20px;
             left: 20px;
             right: 20px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 2000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: var(--shadow-corporate);
             animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s ease;
+        }
+
+        .floating-header:hover {
+            box-shadow: var(--shadow-hover);
         }
 
         .floating-header-content {
@@ -113,7 +145,7 @@
             margin: 0 auto;
         }
 
-        /* Brand Section */
+        /* Brand Section - Premium Look (Matching Index.html) */
         .brand-section {
             display: flex;
             align-items: center;
@@ -125,17 +157,164 @@
         }
 
         .modern-logo {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
+            width: 48px !important;
+            height: 48px !important;
+            background: white !important;
+            border: 2px solid #047857 !important;
+            border-radius: 14px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+            padding: 0 !important;
+        }
+
+        .modern-logo:hover {
+            transform: translateY(-1px) scale(1.03) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+            border-color: #059669 !important;
+        }
+
+        .modern-logo i {
+            color: #047857 !important;
+            font-size: 22px !important;
+        }
+
+        .status-pulse {
+            width: 11px !important;
+            height: 11px !important;
+            background: var(--corporate-gold) !important;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.4) !important;
+        }
+
+        .brand-info h1,
+        .brand-title {
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 22px !important;
+            font-weight: 700 !important;
+            color: var(--text-primary) !important;
+            letter-spacing: -0.3px !important;
+        }
+
+        .brand-info p,
+        .brand-subtitle {
+            font-size: 12px !important;
+            color: var(--text-secondary) !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.2px !important;
+        }
+
+        /* Navigation Pills - Professional (Matching Index.html) */
+        .nav-pills {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: none !important;
+            border-radius: 16px !important;
+            padding: 6px !important;
+            gap: 8px !important;
+            display: flex !important;
+        }
+
+        .nav-pill {
+            padding: 8px 16px !important;
+            border-radius: 12px !important;
+            color: rgba(15, 23, 42, 0.7) !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            gap: 8px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .nav-pill:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: rgba(15, 23, 42, 0.9) !important;
+            transform: translateY(0px) !important;
+        }
+
+        .nav-pill.active {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.3) !important;
+        }
+
+        .nav-pill i {
+            font-size: 16px !important;
+        }
+
+        /* Header Actions - Corporate Style (Matching Index.html) */
+        .header-actions {
             display: flex;
             align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: logoFloat 4s ease-in-out infinite;
+            gap: 12px;
+        }
+
+        .status-indicator-modern {
+            padding: 7px 14px !important;
+            background: rgba(13, 148, 136, 0.08) !important;
+            border: 1px solid rgba(13, 148, 136, 0.2) !important;
+            border-radius: 10px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: var(--corporate-emerald) !important;
+        }
+
+        .pulse-dot {
+            width: 7px !important;
+            height: 7px !important;
+            background: var(--corporate-emerald) !important;
+            box-shadow: 0 0 6px rgba(13, 148, 136, 0.4) !important;
+        }
+
+        .action-button {
+            padding: 10px 17px !important;
+            border-radius: 10px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            gap: 7px !important;
+            letter-spacing: 0.2px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            letter-spacing: 0.3px;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%) !important;
+            color: white !important;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
+        }
+
+        .action-button.primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 28px rgba(15, 23, 42, 0.35) !important;
+        }
+
+        .action-button.primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-button.primary:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .action-button.secondary {
+            background: #FFFFFF !important;
+            color: var(--corporate-navy) !important;
+            border: 2px solid var(--border-color) !important;
+        }
+
+        .action-button.secondary:hover {
+            background: var(--bg-secondary) !important;
+            color: var(--corporate-emerald) !important;
+            border-color: var(--corporate-emerald) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important;
         }
 
         .header {
@@ -146,10 +325,7 @@
         .header h1 {
             font-size: 28px;
             font-weight: 800;
-            background: linear-gradient(135deg, #1e293b, #475569, #64748b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #111827;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -181,177 +357,248 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color), var(--primary-color));
-            background-size: 200% 100%;
-            animation: gradientShift 3s linear infinite;
+            height: 3px;
+            background: linear-gradient(90deg, var(--corporate-navy) 0%, var(--corporate-emerald) 100%);
         }
 
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 0%;
-            }
-
-            100% {
-                background-position: 200% 0%;
-            }
-        }
-
-        /* Smart Capture Section */
-        .smart-capture-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Smart Tools Section - Unified Card with Compact Tiles */
+        .smart-tools-section {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB;
             position: relative;
             overflow: hidden;
         }
 
-        .smart-capture-section::before {
+        .smart-tools-section::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            background: linear-gradient(90deg, var(--corporate-navy) 0%, var(--corporate-emerald) 100%);
         }
 
-        .smart-capture-info {
+        .smart-tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .smart-tool-tile {
+            background: #FFFFFF;
+            border-radius: 10px;
+            padding: 16px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 16px;
+            text-align: center;
+            gap: 12px;
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .smart-capture-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-            border-radius: 16px;
+        .smart-tool-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .smart-capture-tile::before {
+            background: #2563EB;
+        }
+
+        .qr-scanner-tile::before {
+            background: #10b981;
+        }
+
+        .smart-tool-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            border-color: #2563EB;
+        }
+
+        .qr-scanner-tile:hover {
+            border-color: #10b981;
+        }
+
+        .smart-tool-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary-color);
-            font-size: 28px;
+            font-size: 24px;
+            border: 2px solid;
+            transition: all 0.3s ease;
         }
 
-        .smart-capture-text h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 4px;
+        .smart-capture-tile .smart-tool-icon {
+            background: #EFF6FF;
+            color: #2563EB;
+            border-color: #E5E7EB;
         }
 
-        .smart-capture-text p {
-            font-size: 14px;
-            color: #64748b;
+        .qr-scanner-tile .smart-tool-icon {
+            background: #F0FDF4;
+            color: #10b981;
+            border-color: #E5E7EB;
         }
 
-        .btn-smart-capture {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
-            color: white;
-            padding: 14px 32px;
-            border: none;
-            border-radius: 16px;
+        .smart-tool-tile:hover .smart-tool-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .smart-tool-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .smart-tool-content h3 {
             font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+        }
+
+        .smart-tool-content p {
+            font-size: 12px;
+            color: #6B7280;
+            font-weight: 500;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .btn-smart-tool {
+            background: var(--corporate-navy);
+            color: white;
+            padding: 11px 22px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
             position: relative;
             overflow: hidden;
+            letter-spacing: 0.2px;
         }
 
-        .btn-smart-capture::before {
+        .btn-smart-tool::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
         }
 
-        .btn-smart-capture:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        .btn-smart-tool:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .btn-smart-capture:hover::before {
-            left: 100%;
+        .btn-smart-tool:hover::after {
+            width: 300px;
+            height: 300px;
         }
 
-        .btn-smart-capture i {
-            font-size: 20px;
+        .btn-smart-tool.btn-capture {
+            background: var(--corporate-navy);
         }
 
-        /* Smart Capture Modal - make full-screen and use entire viewport */
+        .btn-scanner {
+            background: var(--corporate-emerald);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-scanner:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: var(--corporate-emerald-light);
+        }
+
+        .btn-smart-tool i {
+            font-size: 15px;
+        }
+
+        /* Responsive Layout for Smart Tools */
+        @media (max-width: 768px) {
+            .smart-tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modal Overlay for Smart Capture - make full-screen */
         .smart-capture-modal {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            z-index: 10000;
-            animation: fadeIn 0.2s ease;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-            display: flex;
-            align-items: stretch;
+            display: none;
+            align-items: center;
             justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            overflow: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         .smart-capture-modal.active {
-            opacity: 1;
-            visibility: visible;
+            display: flex;
         }
 
         .smart-capture-iframe-container {
-            position: relative;
             width: 100%;
             height: 100%;
             max-width: 100%;
             max-height: 100%;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
-            backdrop-filter: blur(12px) saturate(1.2);
-            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            background: #FFFFFF;
+            backdrop-filter: blur(20px) saturate(1.3);
+            -webkit-backdrop-filter: blur(20px) saturate(1.3);
             border-radius: 0;
             overflow: hidden;
             box-shadow: none;
             border: none;
             display: flex;
             flex-direction: column;
-            transform: none;
-            opacity: 1;
-            transition: none;
+            position: relative;
         }
 
         .smart-capture-header {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
-            backdrop-filter: blur(24px) saturate(1.2);
-            -webkit-backdrop-filter: blur(24px) saturate(1.2);
-            padding: 24px 32px;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px) saturate(1.1);
+            -webkit-backdrop-filter: blur(20px) saturate(1.1);
+            padding: 22px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
-            border-radius: 24px 24px 0 0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             position: relative;
             z-index: 1;
         }
@@ -364,68 +611,60 @@
         }
 
         .smart-capture-header-title i {
-            font-size: 28px;
+            font-size: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(13, 148, 136, 0.08);
+            color: var(--corporate-emerald);
             position: relative;
-        }
-
-        .smart-capture-header-title i::before {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .smart-capture-header-title h3 {
             margin: 0;
-            font-size: 22px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #1e293b, #475569);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text-primary);
             background-clip: text;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
         }
 
         .smart-capture-header-subtitle {
-            font-size: 14px;
-            color: #64748b;
+            font-size: 13px;
+            color: var(--text-secondary);
             margin-top: 2px;
             font-weight: 500;
         }
 
         .smart-capture-close {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
-            border: 1px solid rgba(229, 231, 235, 0.5);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            color: #64748b;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            color: var(--text-secondary);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-size: 19px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
         .smart-capture-close:hover {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: #DC2626;
             color: white;
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
-            border-color: transparent;
+            transform: scale(1.03);
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+            border-color: #DC2626;
         }
 
         .smart-capture-close:active {
-            transform: scale(0.95);
+            transform: scale(0.97);
         }
 
         .smart-capture-iframe {
@@ -458,10 +697,10 @@
         }
 
         .smart-capture-spinner {
-            width: 48px;
-            height: 48px;
-            border: 3px solid rgba(99, 102, 241, 0.2);
-            border-top-color: var(--primary-color);
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(156, 163, 175, 0.25);
+            border-top-color: var(--corporate-emerald);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -473,7 +712,7 @@
         }
 
         .smart-capture-loading-text {
-            color: #64748b;
+            color: var(--text-secondary);
             font-size: 14px;
             font-weight: 500;
         }
@@ -483,15 +722,16 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%);
+            border: 2px solid rgba(4, 120, 87, 0.3);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
             transition: all 0.3s ease;
             z-index: 1000;
             animation: pulse 2s infinite;
@@ -499,15 +739,15 @@
 
         @keyframes pulse {
             0% {
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
             }
 
             50% {
-                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+                box-shadow: 0 4px 20px rgba(4, 120, 87, 0.4), 0 0 20px rgba(4, 120, 87, 0.2);
             }
 
             100% {
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
             }
         }
 
@@ -526,11 +766,14 @@
         .chatbot-icon:hover {
             transform: scale(1.1);
             animation: none;
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            border-color: var(--corporate-gold);
+            box-shadow: 0 8px 24px rgba(4, 120, 87, 0.35);
         }
 
         .chatbot-icon i {
             color: white;
-            font-size: 26px;
+            font-size: 24px;
         }
 
         /* Enhanced Chatbot Overlay */
@@ -609,14 +852,15 @@
 
         /* Enhanced Chatbot Header */
         .chatbot-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%);
             color: white;
-            padding: 20px;
+            padding: 18px;
             border-radius: 16px 16px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: move;
+            border-bottom: 2px solid rgba(4, 120, 87, 0.2);
         }
 
         .chatbot-header-left {
@@ -632,6 +876,7 @@
         .chatbot-header h3 {
             font-size: 16px;
             font-weight: 600;
+            font-family: 'Poppins', sans-serif;
         }
 
         .chatbot-status {
@@ -639,13 +884,13 @@
             align-items: center;
             gap: 6px;
             font-size: 12px;
-            opacity: 0.9;
+            opacity: 0.95;
         }
 
         .status-dot {
             width: 8px;
             height: 8px;
-            background: #10b981;
+            background: var(--corporate-emerald);
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
@@ -659,7 +904,7 @@
         .control-btn {
             width: 32px;
             height: 32px;
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--bg-white);
             border: none;
             border-radius: 8px;
             color: white;
@@ -671,7 +916,7 @@
         }
 
         .control-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--bg-white);
             transform: scale(1.1);
         }
 
@@ -696,103 +941,7 @@
             border: none;
         }
 
-        /* QR Scanner Section - Premium Card (matching Smart Capture style) */
-        .qr-scanner-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
 
-        .qr-scanner-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #10b981, #059669, #047857);
-        }
-
-        .qr-scanner-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .qr-scanner-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #10b981;
-            font-size: 28px;
-        }
-
-        .qr-scanner-text h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 4px;
-        }
-
-        .qr-scanner-text p {
-            font-size: 14px;
-            color: #64748b;
-        }
-
-        .btn-qr-scanner {
-            background: linear-gradient(135deg, #10b981 0%, #059669 70%, #047857 100%) !important;
-            color: white !important;
-            padding: 14px 32px !important;
-            border: none !important;
-            border-radius: 16px !important;
-            font-size: 15px !important;
-            font-weight: 600 !important;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 10px !important;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-qr-scanner::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s;
-        }
-
-        .btn-qr-scanner:hover {
-            transform: translateY(-3px) scale(1.02) !important;
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4) !important;
-        }
-
-        .btn-qr-scanner:hover::before {
-            left: 100%;
-        }
-
-        .btn-qr-scanner i {
-            font-size: 20px;
-        }
 
         .form-section {
             margin-bottom: 30px;
@@ -869,36 +1018,60 @@
         }
 
         .btn {
-            padding: 12px 30px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 8px 28px rgba(15, 23, 42, 0.35);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover::after {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-secondary {
-            background: var(--surface);
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
+            background: #FFFFFF;
+            color: var(--corporate-navy);
+            border: 2px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: var(--primary-color);
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--corporate-emerald);
+            border-color: var(--corporate-emerald);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
         }
 
         /* Status Message */
@@ -912,13 +1085,13 @@
         }
 
         .status-message.success {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.15);
             color: var(--success-color);
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .status-message.error {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
             color: #ef4444;
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
@@ -968,215 +1141,201 @@
             }
         }
 
-        /* LC Context Styles - Matches Your Existing Theme */
+        /* LC Context Styles - Compact Modern Design with Clean White Theme */
         .lc-context-section {
-            margin: 24px 0;
-            animation: slideInDown 0.5s ease-out;
+            margin: 16px 0;
+            animation: slideInDown 0.4s ease-out;
         }
 
         .lc-context-card {
-            background: var(--surface);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lc-context-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
         .lc-context-header {
             display: flex;
             align-items: center;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
-            color: white;
+            padding: 14px 18px;
+            background: #EFF6FF;
+            color: #111827;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
-        }
-
-        .lc-context-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-            transition: left 0.6s;
-        }
-
-        .lc-context-header:hover::before {
-            left: 100%;
+            border-bottom: 1px solid #E5E7EB;
         }
 
         .lc-context-header:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            background: #DBEAFE;
         }
 
         .lc-context-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 16px;
-            backdrop-filter: blur(4px);
-        }
-
-        .lc-context-icon i {
-            font-size: 24px;
-        }
-
-        .lc-context-info {
-            flex: 1;
-        }
-
-        .lc-context-info h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .lc-context-info p {
-            font-size: 14px;
-            opacity: 0.95;
-        }
-
-        #lcContextDescription {
-            color: rgba(255, 255, 255, 0.95) !important;
-            font-weight: 500;
-            font-size: 14.5px;
-            margin: 0;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .lc-context-toggle {
-            background: rgba(255, 255, 255, 0.25);
-            border: none;
-            color: white;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
+            background: #2563EB;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .lc-context-icon i {
+            font-size: 18px;
+            color: #FFFFFF;
+        }
+
+        .lc-context-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lc-context-info h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 2px 0;
+            color: #111827;
+        }
+
+        .lc-context-info p {
+            font-size: 12px;
+            color: #6B7280;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        #lcContextDescription {
+            color: #6B7280;
+            font-weight: 500;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .lc-context-toggle {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            color: #6B7280;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(4px);
+            flex-shrink: 0;
         }
 
         .lc-context-toggle:hover {
-            background: rgba(255, 255, 255, 0.35);
+            background: #F7F9FC;
+            border-color: #2563EB;
+            color: #2563EB;
         }
 
         .lc-context-toggle.expanded i {
             transform: rotate(180deg);
         }
 
+        .lc-context-toggle i {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
         .lc-context-details {
-            padding: 24px;
-            background: var(--surface);
+            padding: 16px 18px;
+            background: #FFFFFF;
         }
 
         .lc-details-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
         }
 
         .lc-detail-item {
             display: flex;
             flex-direction: column;
             gap: 4px;
+            background: #F7F9FC;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
         }
 
         .lc-detail-item label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
+            color: #6B7280;
+            letter-spacing: 0.3px;
         }
 
         .lc-detail-item span {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-color);
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success-color);
-            padding: 4px 8px;
+            background: #F0FDF4;
+            color: #10b981;
+            padding: 4px 10px;
             border-radius: 6px;
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-weight: 600 !important;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 1px solid #A7F3D0;
         }
 
         .status-badge::before {
             content: '';
             width: 6px;
             height: 6px;
-            background: var(--success-color);
+            background: #10b981;
             border-radius: 50%;
         }
 
         .lc-actions {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .btn-lc-action {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            background: #2563EB;
             color: white;
             border: none;
-            padding: 10px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-lc-action::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s;
-        }
-
-        .btn-lc-action:hover::before {
-            left: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
         }
 
         .btn-lc-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
         }
 
         .btn-lc-action i {
-            font-size: 13px;
+            font-size: 12px;
         }
 
         /* Document Upload Enhancement */
@@ -1352,7 +1511,7 @@
         }
 
         .summary-card.token-info {
-            border-color: #6366f1;
+            border-color: var(--primary-blue-light);
             background: #f0f9ff;
         }
 
@@ -1569,7 +1728,7 @@
         }
 
         .btn-upload {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 70%, var(--accent-color) 100%);
+            background: #2563EB;
             color: white;
             border: none;
             padding: 12px 24px;
@@ -1581,7 +1740,7 @@
 
         .btn-upload:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(165, 180, 252, 0.3);
         }
 
         /* Upload Progress Styles */
@@ -1682,7 +1841,7 @@
         }
 
         .document-type-badge {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: #2563EB;
             color: white;
             padding: 2px 6px;
             border-radius: 4px;
@@ -1838,7 +1997,7 @@
         }
 
         .qr-scanner-modal-container {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+            background: linear-gradient(135deg, var(--bg-white), rgba(248, 250, 252, 0.95));
             backdrop-filter: blur(24px) saturate(1.5);
             -webkit-backdrop-filter: blur(24px) saturate(1.5);
             border-radius: 24px;
@@ -1846,7 +2005,7 @@
             box-shadow:
                 0 24px 48px rgba(16, 185, 129, 0.15),
                 0 12px 24px rgba(0, 0, 0, 0.1),
-                0 0 0 1px rgba(255, 255, 255, 0.5);
+                0 0 0 1px var(--bg-white);
             border: 1px solid rgba(229, 231, 235, 0.3);
             animation: qrModalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             width: 90%;
@@ -1866,7 +2025,7 @@
         }
 
         .qr-scanner-header {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            background: linear-gradient(135deg, var(--bg-white), rgba(248, 250, 252, 0.9));
             backdrop-filter: blur(24px) saturate(1.2);
             -webkit-backdrop-filter: blur(24px) saturate(1.2);
             padding: 24px 32px;
@@ -1907,7 +2066,7 @@
         }
 
         .qr-scanner-close {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            background: linear-gradient(135deg, var(--bg-white), rgba(248, 250, 252, 0.9));
             border: 1px solid rgba(229, 231, 235, 0.5);
             width: 40px;
             height: 40px;
@@ -1944,7 +2103,7 @@
         }
 
         .qr-option-btn {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8));
+            background: linear-gradient(135deg, var(--bg-white), rgba(248, 250, 252, 0.8));
             border: 2px solid rgba(16, 185, 129, 0.2);
             border-radius: 16px;
             padding: 32px 20px;
@@ -2111,30 +2270,8 @@
 </head>
 
 <body>
-    <!-- Floating Header (same as LC form) -->
-    <div class="floating-header">
-        <div class="floating-header-content">
-            <div class="brand-section">
-                <div class="logo-container">
-                    <div class="modern-logo">
-                        <i class="mdi mdi-bank" style="font-size: 20px; color: var(--primary-color);"></i>
-                    </div>
-                </div>
-                <div class="brand-text">
-                    <h2 style="font-size: 16px; font-weight: 700; color: var(--text-color); margin: 0;">Finstack</h2>
-                    <p style="font-size: 11px; color: var(--text-muted); margin: 0; font-weight: 500;">Trade Finance
-                        Platform</p>
-                </div>
-            </div>
-
-            <div class="header-actions">
-                <div class="status-indicator-modern">
-                    <div class="pulse-dot"></div>
-                    <span>System Online</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Global Floating Header -->
+    {% include 'components/floating_header.html' %}
 
     <div class="container">
         <div class="main-content">
@@ -2189,273 +2326,264 @@
             </div>
 
             <div class="form-container">
-                <!-- Enhanced Smart Capture Section -->
-                <div class="smart-capture-section">
-                    <div class="smart-capture-info">
-                        <div class="smart-capture-icon">
-                            <i class="mdi mdi-scan-helper"></i>
-                        </div>
-                        <div class="smart-capture-text">
-                            <h3>Smart Document Capture</h3>
-                            <p>Upload and register trade finance documents automatically</p>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-smart-capture" onclick="openSmartCapture()">
-                        <i class="mdi mdi-scan-helper"></i>
-                        <span>Start Smart Capture</span>
-                    </button>
-                </div>
 
-                <!-- QR Scanner Section -->
-                <div class="qr-scanner-section">
-                    <div class="qr-scanner-info">
-                        <div class="qr-scanner-icon">
+                <!-- Smart Tools Section - Compact Buttons Only -->
+                <div class="smart-tools-section" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button type="button" class="btn btn-smart-tool btn-capture" onclick="openSmartCapture()" style="flex: 1; max-width: 300px;">
+                            <i class="mdi mdi-scan-helper"></i>
+                            <span>FS CaptureX</span>
+                        </button>
+                        <button type="button" class="btn btn-smart-tool btn-scanner" onclick="openQRScanner()" style="flex: 1; max-width: 300px;">
                             <i class="mdi mdi-qrcode-scan"></i>
-                        </div>
-                        <div class="qr-scanner-text">
-                            <h3>QR Document Scanner</h3>
-                            <p>Scan or upload QR code to extract document information</p>
-                        </div>
+                            <span>FS ScanX</span>
+                        </button>
                     </div>
-                    <button type="button" class="btn btn-qr-scanner" onclick="openQRScanner()">
-                        <i class="mdi mdi-qrcode-scan"></i>
-                        <span>Scan QR Code</span>
-                    </button>
                 </div>
 
                 <div id="statusMessage" class="status-message"></div>
 
-                 <form id="documentForm" enctype="multipart/form-data">
-                <!-- Basic Information Section -->
-                <div class="form-section">
-                    <h2 class="section-title">Basic Information</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="lcNumber">LC Number <span class="required">*</span></label>
-                            <input type="text" id="lcNumber" name="lcNumber" required placeholder="e.g., LC2024001">
-                        </div>
-                        <div class="form-group">
-                            <label for="lcIdentifier">Documentary Credit Identifier</label>
-                            <input type="text" id="lcIdentifier" name="lcIdentifier" placeholder="e.g., 1619699496468609">
-                        </div>
-                        <div class="form-group">
-                            <label for="sequenceOfTotal">Sequence of Total (27)</label>
-                            <input type="text" id="sequenceOfTotal" name="sequenceOfTotal" placeholder="e.g., 1/1">
-                        </div>
-                        <div class="form-group">
-                            <label for="lcType">LC Type <span class="required">*</span></label>
-                            <select id="lcType" name="lcType" required>
-                                <option value="">Select Type</option>
-                                <option value="irrevocable">Irrevocable</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="transferable">Transferable</option>
-                                <option value="standby">Standby</option>
-                                <option value="revolving">Revolving</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                        <label for="applicableRules">Applicable Rules</label>
-                        <input type="text" id="applicableRules" name="applicableRules" placeholder="e.g., UCP LATEST VERSION">
-                    </div>
-                        <div class="form-group">
-                            <label for="confirmationInstructions">Confirmation Instructions (49)</label>
-                            <input type="text" id="confirmationInstructions" name="confirmationInstructions" placeholder="e.g., WITHOUT, CONFIRM, MAY ADD">
-                        </div>
-                        <div class="form-group">
-                            <label for="issueDate">Issue Date <span class="required">*</span></label>
-                            <input type="date" id="issueDate" name="issueDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="expiryDate">Expiry Date <span class="required">*</span></label>
-                            <input type="date" id="expiryDate" name="expiryDate" required>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Parties Section -->
-                <div class="form-section">
-                    <h2 class="section-title">Parties Information</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="applicant">Applicant (50) <span class="required">*</span></label>
-                            <input type="text" id="applicant" name="applicant" required placeholder="Importer Name and Address">
+
+                <form id="documentForm" enctype="multipart/form-data">
+
+                    <!-- Basic Document Information Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Basic Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="lcNumber">LC Number <span class="required">*</span></label>
+                                <input type="text" id="lcNumber" name="lcNumber" required placeholder="e.g., LC2024001">
+                            </div>
+                            <div class="form-group">
+                                <label for="lcIdentifier">Documentary Credit Identifier</label>
+                                <input type="text" id="lcIdentifier" name="lcIdentifier" placeholder="e.g., 1619699496468609">
+                            </div>
+                            <div class="form-group">
+                                <label for="sequenceOfTotal">Sequence of Total (27)</label>
+                                <input type="text" id="sequenceOfTotal" name="sequenceOfTotal" placeholder="e.g., 1/1">
+                            </div>
+                            <div class="form-group">
+                                <label for="lcType">LC Type <span class="required">*</span></label>
+                                <select id="lcType" name="lcType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="irrevocable">IRREVOCABLE</option>
+                                    <option value="irrevocable transferable">IRREVOCABLE TRANSFERABLE</option>
+                                </select>
+                            </div>
+                              <div class="form-group">
+                            <label for="applicableRules">Applicable Rules</label>
+                            <input type="text" id="applicableRules" name="applicableRules" placeholder="e.g., UCP LATEST VERSION">
                         </div>
-                        <div class="form-group">
-                            <label for="applicantAddress">Applicant Address</label>
-                            <input type="text" id="applicantAddress" name="applicantAddress" placeholder="Full address details">
-                        </div>
-                        <div class="form-group">
-                            <label for="beneficiary">Beneficiary (59) <span class="required">*</span></label>
-                            <input type="text" id="beneficiary" name="beneficiary" required placeholder="Exporter Name and Address">
-                        </div>
-                        <div class="form-group">
-                            <label for="issuingBank">Issuing Bank (51A) <span class="required">*</span></label>
-                            <input type="text" id="issuingBank" name="issuingBank" required placeholder="Bank Name and SWIFT Code">
-                        </div>
-                        <div class="form-group">
-                            <label for="advisingBank">Advising Bank (57A)</label>
-                            <input type="text" id="advisingBank" name="advisingBank" placeholder="Bank Name and SWIFT Code (Optional)">
-                        </div>
-                        <div class="form-group">
-                            <label for="drawee">Drawee (42A)</label>
-                            <input type="text" id="drawee" name="drawee" placeholder="Drawee Bank Details">
+                            <div class="form-group">
+                                <label for="confirmationInstructions">Confirmation Instructions (49)</label>
+                                <input type="text" id="confirmationInstructions" name="confirmationInstructions" placeholder="e.g., WITHOUT, CONFIRM, MAY ADD">
+                            </div>
+                            <div class="form-group">
+                                <label for="issueDate">Issue Date <span class="required">*</span></label>
+                                <input type="date" id="issueDate" name="issueDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expiryDate">Expiry Date <span class="required">*</span></label>
+                                <input type="date" id="expiryDate" name="expiryDate" required>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Amount and Payment Section -->
-                <div class="form-section">
-                    <h2 class="section-title">Amount and Payment Details</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="currency">Currency (32B) <span class="required">*</span></label>
-                            <select id="currency" name="currency" required>
-                                <option value="">Select Currency</option>
-                                <option value="USD">USD - US Dollar</option>
-                                <option value="EUR">EUR - Euro</option>
-                                <option value="GBP">GBP - British Pound</option>
-                                <option value="JPY">JPY - Japanese Yen</option>
-                                <option value="INR">INR - Indian Rupee</option>
-                                <option value="AED">AED - UAE Dirham</option>
-                            </select>
+                    <!-- Parties Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Parties Information</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="applicant">Applicant (50) <span class="required">*</span></label>
+                                <input type="text" id="applicant" name="applicant" required placeholder="Importer Name and Address">
+                            </div>
+                            <div class="form-group">
+                                <label for="applicantAddress">Applicant Address</label>
+                                <input type="text" id="applicantAddress" name="applicantAddress" placeholder="Full address details">
+                            </div>
+                            <div class="form-group">
+                                <label for="beneficiary">Beneficiary (59) <span class="required">*</span></label>
+                                <input type="text" id="beneficiary" name="beneficiary" required placeholder="Exporter Name and Address">
+                            </div>
+                            <div class="form-group">
+                                <label for="issuingBank">Issuing Bank (51A) <span class="required">*</span></label>
+                                <input type="text" id="issuingBank" name="issuingBank" required placeholder="Bank Name and SWIFT Code">
+                            </div>
+                            <div class="form-group">
+                                <label for="advisingBank">Advising Bank (57A)</label>
+                                <input type="text" id="advisingBank" name="advisingBank" placeholder="Bank Name and SWIFT Code (Optional)">
+                            </div>
+                             <div class="form-group">
+                            <label for="adviseThroughBank">Advise Through Bank</label>
+                            <input type="text" id="adviseThroughBank" name="adviseThroughBank" placeholder="Intermediary bank for advising">
                         </div>
-                        <div class="form-group">
-                            <label for="amount">Amount (32B) <span class="required">*</span></label>
-                            <input type="number" id="amount" name="amount" required placeholder="0.00" step="0.01">
+                            <div class="form-group">
+                            <label for="confirmationParty">Requested Confirmation Party</label>
+                            <input type="text" id="confirmationParty" name="confirmationParty" placeholder="Bank requested to confirm the LC">
                         </div>
-                        <div class="form-group">
-                            <label for="tolerancePercent">Tolerance % (39A)</label>
-                            <input type="number" id="tolerancePercent" name="tolerancePercent" placeholder="e.g., 10" min="0" max="100">
-                        </div>
-                        <div class="form-group">
-                            <label for="paymentTerms">Payment Terms (42C) <span class="required">*</span></label>
-                            <select id="paymentTerms" name="paymentTerms" required>
-                                <option value="">Select Terms</option>
-                                <option value="By Payment">By Payment</option>
-                                <option value="deferred">By Def Payment</option>
-                                <option value="mixedpayment">By Mixed Payment</option>
-                                <option value="acceptance">By Acceptance</option>
-                                <option value="negotiation">By Negotiation</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="deferredPaymentDetails">Negotiation/Deferred Payment Details</label>
-                            <input type="text" id="deferredPaymentDetails" name="deferredPaymentDetails" placeholder="e.g., 180 DAYS AFTER BILL OF LADING DATE">
-                        </div>
-                        <div class="form-group">
-                            <label for="periodForPresentation">Period for Presentation (48)</label>
-                            <input type="text" id="periodForPresentation" name="periodForPresentation" placeholder="e.g., 21 days">
+                            <div class="form-group">
+                                <label for="drawee">Drawee (42A)</label>
+                                <input type="text" id="drawee" name="drawee" placeholder="Drawee Bank Details">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Shipment Details Section -->
-                <div class="form-section">
-                    <h2 class="section-title">Shipment Details</h2>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="placeOfTaking">Place of Taking in Charge (44A)</label>
-                            <input type="text" id="placeOfTaking" name="placeOfTaking" placeholder="Port/City Name">
+                    <!-- Amount and Payment Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Amount and Payment Details</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="currency">Currency (32B) <span class="required">*</span></label>
+                                <select id="currency" name="currency" required>
+                                    <option value="">Select Currency</option>
+                                    <option value="USD">USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="GBP">GBP - British Pound</option>
+                                    <option value="JPY">JPY - Japanese Yen</option>
+                                    <option value="INR">INR - Indian Rupee</option>
+                                    <option value="AED">AED - UAE Dirham</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Amount (32B) <span class="required">*</span></label>
+                                <input type="number" id="amount" name="amount" required placeholder="0.00" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="tolerancePercent">Tolerance % (39A)</label>
+                                <input type="number" id="tolerancePercent" name="tolerancePercent" placeholder="e.g., 10" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentTerms">Payment Terms (42C) <span class="required">*</span></label>
+                                <select id="paymentTerms" name="paymentTerms" required>
+                                    <option value="">Select Terms</option>
+                                    <option value="By Payment"> BY PAYMENT</option>
+                                    <option value="deferred">BY DEF PAYMENT</option>
+                                    <option value="mixedpayment">BY MIXED PAYMENT</option>
+                                    <option value="acceptance"> BY ACCEPTANCE</option>
+                                    <option value="negotiation"> BY NEGOTIATION</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="deferredPaymentDetails">Negotiation/Deferred Payment Details</label>
+                                <input type="text" id="deferredPaymentDetails" name="deferredPaymentDetails" placeholder="e.g., 180 DAYS AFTER BILL OF LADING DATE">
+                            </div>
+                            <div class="form-group">
+                                <label for="periodForPresentation">Period for Presentation (48)</label>
+                                <input type="text" id="periodForPresentation" name="periodForPresentation" placeholder="e.g., 21 days">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="portOfLoading">Port of Loading (44E)</label>
-                            <input type="text" id="portOfLoading" name="portOfLoading" placeholder="Port Name">
-                        </div>
-                        <div class="form-group">
-                            <label for="portOfDischarge">Port of Discharge (44F)</label>
-                            <input type="text" id="portOfDischarge" name="portOfDischarge" placeholder="Port Name">
-                        </div>
-                        <div class="form-group">
-                            <label for="finalDestination">Final Destination (44B)</label>
-                            <input type="text" id="finalDestination" name="finalDestination" placeholder="City/Country">
-                        </div>
-                        <div class="form-group">
-                            <label for="latestShipmentDate">Latest Shipment Date (44C) <span class="required">*</span></label>
-                            <input type="date" id="latestShipmentDate" name="latestShipmentDate" required>
-                        </div>
-                        <div class="form-group">
+                    </div>
+
+                    <!-- Shipment Details Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Shipment Details</h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="placeOfTaking">Place of Taking in Charge (44A)</label>
+                                <input type="text" id="placeOfTaking" name="placeOfTaking" placeholder="Port/City Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="portOfLoading">Port of Loading (44E)</label>
+                                <input type="text" id="portOfLoading" name="portOfLoading" placeholder="Port Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="portOfDischarge">Port of Discharge (44F)</label>
+                                <input type="text" id="portOfDischarge" name="portOfDischarge" placeholder="Port Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="finalDestination">Final Destination (44B)</label>
+                                <input type="text" id="finalDestination" name="finalDestination" placeholder="City/Country">
+                            </div>
+                            <div class="form-group">
+                                <label for="latestShipmentDate">Latest Shipment Date (44C) <span class="required">*</span></label>
+                                <input type="date" id="latestShipmentDate" name="latestShipmentDate" required>
+                            </div>
+                            <div class="form-group">
                             <label for="partialShipment">Partial Shipment (43P)</label>
                             <select id="partialShipment" name="partialShipment">
-                                <option value="allowed">Allowed</option>
-                                <option value="not_allowed">Not Allowed</option>
+                                <option value="allowed">ALLOWED</option>
+                                <option value="not_allowed">NOT ALLOWED</option>
+                                <option value="conditional">CONDITIONAL</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="transhipment">Transhipment (43T)</label>
                             <select id="transhipment" name="transhipment">
-                                <option value="allowed">Allowed</option>
-                                <option value="not_allowed">Not Allowed</option>
+                                <option value="allowed">ALLOWED</option>
+                                <option value="not_allowed">NOT ALLOWED</option>
+                                <option value="conditional">CONDITIONAL</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="incoterms">Incoterms</label>
-                            <select id="incoterms" name="incoterms">
-                                <option value="">Select Incoterms</option>
-                                <option value="EXW">EXW - Ex Works</option>
-                                <option value="FOB">FOB - Free On Board</option>
-                                <option value="CFR">CFR - Cost and Freight</option>
-                                <option value="CIF">CIF - Cost, Insurance and Freight</option>
-                                <option value="DDP">DDP - Delivered Duty Paid</option>
-                            </select>
+                            <div class="form-group">
+                                <label for="incoterms">Incoterms</label>
+                                <select id="incoterms" name="incoterms">
+                                    <option value="">Select Incoterms</option>
+                                    <option value="EXW">EXW - Ex Works</option>
+                                    <option value="FOB">FOB - Free On Board</option>
+                                    <option value="CFR">CFR - Cost and Freight</option>
+                                    <option value="CIF">CIF - Cost, Insurance and Freight</option>
+                                    <option value="DDP">DDP - Delivered Duty Paid</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Goods Description Section -->
-                <div class="form-section">
-                    <h2 class="section-title">Goods Description</h2>
-                    <div class="form-group">
-                        <label for="goodsDescription">Description of Goods (45A) <span class="required">*</span></label>
-                        <textarea id="goodsDescription" name="goodsDescription" required placeholder="Detailed description of goods/services"></textarea>
-                    </div>
-                    <div class="form-grid">
+                    <!-- Goods Description Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Goods Description</h2>
                         <div class="form-group">
-                            <label for="hsCode">HS Code</label>
-                            <input type="text" id="hsCode" name="hsCode" placeholder="Harmonized System Code">
+                            <label for="goodsDescription">Description of Goods (45A) <span class="required">*</span></label>
+                            <textarea id="goodsDescription" name="goodsDescription" required placeholder="Detailed description of goods/services"></textarea>
                         </div>
-                        <div class="form-group">
-                            <label for="quantity">Quantity</label>
-                            <input type="text" id="quantity" name="quantity" placeholder="e.g., 1000 units">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="hsCode">HS Code</label>
+                                <input type="text" id="hsCode" name="hsCode" placeholder="Harmonized System Code">
+                            </div>
+                            <div class="form-group">
+                                <label for="quantity">Quantity</label>
+                                <input type="text" id="quantity" name="quantity" placeholder="e.g., 1000 units">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Documents Required Section -->
-                <div class="form-section">
-                    <h2 class="section-title">Documents Required (46A)</h2>
-                    <div class="form-group">
-                        <label for="documentsRequired">Documents Required <span class="required">*</span></label>
-                        <textarea id="documentsRequired" name="documentsRequired" required placeholder="List all required documents, e.g., Commercial Invoice, Bill of Lading, Packing List, etc."></textarea>
+                    <!-- Documents Required Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Documents Required (46A)</h2>
+                        <div class="form-group">
+                            <label for="documentsRequired">Documents Required <span class="required">*</span></label>
+                            <textarea id="documentsRequired" name="documentsRequired" required placeholder="List all required documents, e.g., Commercial Invoice, Bill of Lading, Packing List, etc."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="additionalDocuments">Additional Documents</label>
+                            <textarea id="additionalDocuments" name="additionalDocuments" placeholder="Specify any additional documents required"></textarea>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="additionalDocuments">Additional Documents</label>
-                        <textarea id="additionalDocuments" name="additionalDocuments" placeholder="Specify any additional documents required"></textarea>
-                    </div>
-                </div>
 
-                <!-- Additional Conditions Section -->
-                <div class="form-section">
-                    <h2 class="section-title">Additional Conditions</h2>
-                    <div class="form-group">
-                        <label for="additionalConditions">Additional Conditions (47A)</label>
-                        <textarea id="additionalConditions" name="additionalConditions" placeholder="Any special terms or conditions"></textarea>
+                    <!-- Additional Conditions Section -->
+                    <div class="form-section">
+                        <h2 class="section-title">Additional Conditions</h2>
+                        <div class="form-group">
+                            <label for="additionalConditions">Additional Conditions (47A)</label>
+                            <textarea id="additionalConditions" name="additionalConditions" placeholder="Any special terms or conditions"></textarea>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="charges">Charges (71B)</label>
+                                <textarea id="charges" name="charges" placeholder="E.g. All charges outside issuing bank's country for beneficiary — or write custom charges here"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="instructionsToBank">Instructions to Bank (78)</label>
+                                <textarea id="instructionsToBank" name="instructionsToBank" placeholder="Instructions to Paying/Accepting/Negotiating Bank"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="senderToReceiver">Sender to Receiver Info (72)</label>
+                                <textarea id="senderToReceiver" name="senderToReceiver" placeholder="Sender to Receiver Information"></textarea>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="charges">Charges (71B)</label>
-                            <textarea id="charges" name="charges" placeholder="E.g. All charges outside issuing bank's country for beneficiary — or write custom charges here"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="instructionsToBank">Instructions to Bank (78)</label>
-                            <textarea id="instructionsToBank" name="instructionsToBank" placeholder="Instructions to Paying/Accepting/Negotiating Bank"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="senderToReceiver">Sender to Receiver Info (72)</label>
-                            <textarea id="senderToReceiver" name="senderToReceiver" placeholder="Sender to Receiver Information"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <!-- Others Details Section -->
+                    <!-- Others Details Section -->
                         <div class="form-section">
                             <h2 class="section-title">Other Details</h2>
                             <div class="form-group">
@@ -2471,14 +2599,8 @@
                                 <textarea id="otherDetails" name="otherDetails"></textarea>
                             </div>
                         </div>
-
                     <!-- Form Actions -->
                     <div class="form-actions">
-                        <button type="button" class="btn btn-info" onclick="viewSwiftMessageFromDocReg()"
-                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                            <i class="fas fa-envelope"></i>
-                            <span>View SWIFT Preview</span>
-                        </button>
                         <button type="button" class="btn btn-warning" onclick="checkDiscrepancies()"
                             id="checkDiscrepanciesBtn" disabled>
                             <i class="mdi mdi-shield-search"></i>
@@ -2507,53 +2629,28 @@
     <!-- File Upload Input (Hidden) -->
     <input type="file" id="fileInput" name="files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
         style="display: none;">
-    <input type="hidden" id="scPage" value="document_register">
-    <!-- Smart Capture Overlay -->
-    <div id="smartCaptureOverlay"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; padding: 20px;">
-        <div
-            style="background: white; border-radius: 16px; max-width: 800px; margin: 50px auto; padding: 32px; max-height: 80vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h2 style="margin: 0; color: var(--text-color);"><i class="mdi mdi-scan-helper"></i> Smart Document
-                    Capture</h2>
-                <button onclick="closeSmartCapture()"
-                    style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">×</button>
-            </div>
 
-            <div id="dropZone"
-                style="border: 3px dashed var(--border-color); border-radius: 12px; padding: 48px; text-align: center; background: var(--surface-elevated); cursor: pointer;">
-                <div style="font-size: 48px; color: var(--primary-color); margin-bottom: 16px;">
-                    <i class="mdi mdi-cloud-upload"></i>
+    <!-- Smart Capture Modal -->
+    <div id="smartCaptureModal" class="smart-capture-modal">
+        <div class="smart-capture-iframe-container">
+            <div class="smart-capture-header">
+                <div class="smart-capture-header-title">
+                    <i class="mdi mdi-scan-helper"></i>
+                    <div>
+                        <h3>FS CaptureX</h3>
+                        <div class="smart-capture-header-subtitle">Smart Document Intelligence Platform</div>
+                    </div>
                 </div>
-                <h3 style="margin-bottom: 8px; color: var(--text-color);">Drop your documents here</h3>
-                <p style="color: var(--text-muted); margin-bottom: 24px;">or click to browse files</p>
-
-                <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-                    <span
-                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
-                        <i class="fas fa-file-pdf" style="color: #dc2626;"></i> PDF
-                    </span>
-                    <span
-                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
-                        <i class="fas fa-file-image" style="color: #059669;"></i> Images
-                    </span>
-                    <span
-                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
-                        <i class="fas fa-file-word" style="color: #2563eb;"></i> Word
-                    </span>
-                    <span
-                        style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
-                        <i class="fas fa-file-excel" style="color: #16a34a;"></i> Excel
-                    </span>
-                </div>
+                <button class="smart-capture-close" onclick="closeSmartCapture()" title="Close">
+                    <i class="mdi mdi-close"></i>
+                </button>
             </div>
-
-            <div id="fileList" style="margin-top: 24px;"></div>
-
-            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
-                <button onclick="closeSmartCapture()" class="btn btn-secondary">Cancel</button>
-                <button onclick="processFiles()" class="btn btn-primary" disabled id="processBtn">Process Files</button>
+            <div class="smart-capture-loading">
+                <div class="smart-capture-spinner"></div>
+                <div class="smart-capture-loading-text">Loading Smart Capture...</div>
             </div>
+            <iframe id="smartCaptureIframe" class="smart-capture-iframe" src=""
+                onload="hideSmartCaptureLoading()"></iframe>
         </div>
     </div>
 
@@ -2565,12 +2662,6 @@
 
         // Helper functions for LC context and SWIFT message
         function getLCContext() {
-            // Return the FULL LC data (formData) instead of just context wrapper
-            if (lcContext && lcContext.formData) {
-                // Return the full LC data with all fields
-                return lcContext.formData;
-            }
-            // Fallback to full lcContext if no formData property
             return lcContext;
         }
 
@@ -2592,80 +2683,53 @@
             return '';
         }
 
-function updateDiscrepancyTextarea() {
-    const saved = sessionStorage.getItem("registerDocumentDiscrepancies");
-    if (!saved) return;
-
-    const list = JSON.parse(saved);
-    let text = "";
-
-    list.forEach((d, i) => {
-        text += 
-`-----------------------------------------
-Discrepancy #${i + 1}
------------------------------------------
- Field                : ${d.field || 'N/A'}
- Document Type        : ${d.documentType || 'N/A'}
- Document Name        : ${d.documentName || 'N/A'}
-
- Document Value       : ${d.documentValue || 'N/A'}
- Expected Value       : ${d.expectedValue || 'N/A'}
-
- Discrepancy
-${d.discrepancy || 'N/A'}
-
- Rule Information
- Description      : ${d.ruleDescription || 'N/A'}
-
- Status: ${d.isCompliant ? "COMPLIANT ✅" : "NON-COMPLIANT ❌"}
- Severity: ${d.severity || 'N/A'}
-
-`;
-    });
-
-    document.getElementById("discrepeancyDetails").value = text;
-}
-
-function updateDocumentReceived() {
-    const list = sessionStorage.getItem("documentReceivedList");
-    if (!list) return;
-
-    document.getElementById("documentReceived").value = list;
-}
-
         // Initialize LC context on page load
         document.addEventListener('DOMContentLoaded', function () {
             initializeLcContext();
         });
 
-        function initializeLcContext() {
-            // Get LC context from URL parameters and session storage
-            const urlParams = new URLSearchParams(window.location.search);
-            const source = urlParams.get('source');
-            const lcNumber = urlParams.get('lcNumber');
+        function updateDiscrepancyTextarea() {
+            const saved = sessionStorage.getItem("registerDocumentDiscrepancies");
+            if (!saved) return;
 
-            if ((source === 'lc_success' || source === 'register_lc_docs') && lcNumber) {
-                // Load LC context from session storage
-                try {
-                    const storedContext = sessionStorage.getItem('lcContext');
-                    if (storedContext) {
-                        lcContext = JSON.parse(storedContext);
-                        displayLcContext();
-                        //populateRegisterDocumentForm();
-                    } else {
-                        // Create test LC context if none exists (for testing)
-                        console.log('No LC context found, creating test data for LC:', lcNumber);
-                        createTestLcContext(lcNumber);
-                    }
-                } catch (e) {
-                    console.warn('Could not load LC context:', e);
-                    // Create test data as fallback
-                    createTestLcContext(lcNumber);
-                }
-            }
+            const list = JSON.parse(saved);
+            let text = "";
+
+            list.forEach((d, i) => {
+                text +=
+        `-----------------------------------------
+        Discrepancy #${i + 1}
+        -----------------------------------------
+         Field                : ${d.field || 'N/A'}
+         Document Type        : ${d.documentType || 'N/A'}
+         Document Name        : ${d.documentName || 'N/A'}
+
+         Document Value       : ${d.documentValue || 'N/A'}
+         LC Value             : ${d.lcValue || 'N/A'}
+
+         Discrepancy
+        ${d.discrepancy || 'N/A'}
+
+         Rule Information
+         Description      : ${d.ruleDescription || 'N/A'}
+
+         Status: ${d.isCompliant ? "COMPLIANT ✅" : "NON-COMPLIANT ❌"}
+         Severity: ${d.severity || 'N/A'}
+
+        `;
+            });
+
+            document.getElementById("discrepeancyDetails").value = text;
         }
 
-        function populateRegisterDocumentForm() {
+        function updateDocumentReceived() {
+            const list = sessionStorage.getItem("documentReceivedList");
+            if (!list) return;
+
+            document.getElementById("documentReceived").value = list;
+        }
+
+         function populateRegisterDocumentForm() {
             if (!lcContext || !lcContext.formData) {
                 console.warn("No formData found inside lcContext");
                 return;
@@ -2684,6 +2748,31 @@ function updateDocumentReceived() {
             });
         }
 
+        function initializeLcContext() {
+            // Get LC context from URL parameters and session storage
+            const urlParams = new URLSearchParams(window.location.search);
+            const source = urlParams.get('source');
+            const lcNumber = urlParams.get('lcNumber');
+
+            // Check if we have LC context in sessionStorage (from any source)
+            try {
+                const storedContext = sessionStorage.getItem('lcContext');
+                if (storedContext) {
+                    lcContext = JSON.parse(storedContext);
+                    displayLcContext();
+                    return;
+                }
+            } catch (e) {
+                console.warn('Could not load LC context from sessionStorage:', e);
+            }
+
+            // If coming from lc_success page specifically
+            if (source === 'lc_success' && lcNumber) {
+                // Create test LC context if none exists (for testing)
+                console.log('No LC context found, creating test data for LC:', lcNumber);
+                createTestLcContext(lcNumber);
+            }
+        }
 
         function displayLcContext() {
             if (!lcContext) return;
@@ -2780,32 +2869,8 @@ later than expiry date of credit
         }
 
         function viewSwiftMessage() {
-            // Try to get SWIFT message from multiple sources
-            let swiftMessage = null;
-
-            // First, try lcContext
-            if (lcContext && lcContext.swiftMessage) {
-                swiftMessage = lcContext.swiftMessage;
-            }
-
-            // If not found, try sessionStorage
-            if (!swiftMessage) {
-                try {
-                    const storedContext = sessionStorage.getItem('lcContext');
-                    if (storedContext) {
-                        const context = JSON.parse(storedContext);
-                        if (context.swiftMessage) {
-                            swiftMessage = context.swiftMessage;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Could not load SWIFT from sessionStorage:', e);
-                }
-            }
-
-            // If still not found, alert user
-            if (!swiftMessage) {
-                alert('SWIFT message not available. Please complete the LC registration flow first.');
+            if (!lcContext || !lcContext.swiftMessage) {
+                alert('SWIFT message not available. Please generate it from the LC success page first.');
                 return;
             }
 
@@ -2818,121 +2883,20 @@ later than expiry date of credit
             `;
 
             modal.innerHTML = `
-                <div style="background: white; border-radius: 16px; max-width: 85%; max-height: 85%;
+                <div style="background: white; border-radius: 16px; max-width: 80%; max-height: 80%;
                            padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0; color: #334155; font-size: 18px;">SWIFT MT700 Message Preview</h3>
-                        <button id="closeSwiftModal" 
-                                style="background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
+                        <h3 style="margin: 0; color: #334155;">SWIFT MT700 Message</h3>
+                        <button onclick="this.closest('.modal').remove()" 
+                                style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b;">×</button>
                     </div>
                     <pre style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px;
-                              font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
-                              white-space: pre-wrap; overflow-x: auto; max-height: 60vh; word-wrap: break-word;">${swiftMessage}</pre>
-                    <div style="margin-top: 15px; display: flex; gap: 10px;">
-                        <button onclick="copySwiftToClipboard('${swiftMessage.replace(/'/g, "\\'")}');" 
-                                style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            📋 Copy to Clipboard
-                        </button>
-                        <button onclick="downloadSwiftMessage('${swiftMessage.replace(/'/g, "\\'")}');" 
-                                style="padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            📥 Download
-                        </button>
-                    </div>
+                              font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4;
+                              white-space: pre-wrap; overflow-x: auto;">${lcContext.swiftMessage}</pre>
                 </div>
             `;
-            modal.className = 'swift-modal';
+            modal.className = 'modal';
             document.body.appendChild(modal);
-
-            // Add close button event listener
-            const closeBtn = modal.querySelector('#closeSwiftModal');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    modal.remove();
-                });
-            }
-
-            // Close modal when clicking outside the content
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-        }
-
-        function copySwiftToClipboard(message) {
-            navigator.clipboard.writeText(message).then(() => {
-                alert('SWIFT message copied to clipboard!');
-            }).catch(err => {
-                console.error('Could not copy:', err);
-                alert('Failed to copy SWIFT message');
-            });
-        }
-
-        function downloadSwiftMessage(message) {
-            const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(message));
-            element.setAttribute('download', `SWIFT_MT700_${new Date().getTime()}.txt`);
-            element.style.display = 'none';
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        }
-
-        // SWIFT Preview function for document_register page
-        function viewSwiftMessageFromDocReg() {
-            if (!lcContext || !lcContext.swiftMessage) {
-                alert('SWIFT message not available. Please complete the LC registration flow first.');
-                return;
-            }
-
-            const swiftMessage = lcContext.swiftMessage;
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.6); display: flex; align-items: center;
-                justify-content: center; z-index: 10000; backdrop-filter: blur(3px);
-            `;
-
-            modal.innerHTML = `
-                <div style="background: white; border-radius: 16px; max-width: 85%; max-height: 85%;
-                           padding: 24px; overflow: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0; color: #334155; font-size: 18px;">SWIFT MT700 Message - LC ${lcContext.lcNumber}</h3>
-                        <button id="closeSwiftModal" 
-                                style="background: none; border: none; font-size: 28px; cursor: pointer; color: #64748b; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
-                    </div>
-                    <pre style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px;
-                              font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
-                              white-space: pre-wrap; overflow-x: auto; max-height: 60vh; word-wrap: break-word;">${swiftMessage}</pre>
-                    <div style="margin-top: 15px; display: flex; gap: 10px;">
-                        <button onclick="copySwiftToClipboard('${swiftMessage.replace(/'/g, "\\'")}');" 
-                                style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            📋 Copy to Clipboard
-                        </button>
-                        <button onclick="downloadSwiftMessage('${swiftMessage.replace(/'/g, "\\'")}');" 
-                                style="padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                            📥 Download
-                        </button>
-                    </div>
-                </div>
-            `;
-            modal.className = 'swift-modal';
-            document.body.appendChild(modal);
-
-            // Add close button event listener
-            const closeBtn = modal.querySelector('#closeSwiftModal');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    modal.remove();
-                });
-            }
-
-            // Close modal when clicking outside the content
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
         }
 
         // New workflow variables
@@ -3531,7 +3495,7 @@ later than expiry date of credit
                     </div>
                     ${d.document_type ? `<div style="background: #ddd6fe; color: #5b21b6; padding: 2px 6px; border-radius: 3px; font-size: 11px; display: inline-block; margin-bottom: 8px;">${d.document_type.replace('_', ' ').toUpperCase()}</div>` : ''}
                     <div style="color: #374151; margin-bottom: 8px; font-weight: 500;">${d.message}</div>
-                    ${d.lc_requirement ? `<div style="color: #6366f1; font-size: 13px; margin-bottom: 4px;"><strong>LC Requirement:</strong> ${d.lc_requirement}</div>` : ''}
+                    ${d.lc_requirement ? `<div style="color: var(--primary-blue-light); font-size: 13px; margin-bottom: 4px;"><strong>LC Requirement:</strong> ${d.lc_requirement}</div>` : ''}
                     ${d.document_value ? `<div style="color: #dc2626; font-size: 13px; margin-bottom: 4px;"><strong>Document Shows:</strong> ${d.document_value}</div>` : ''}
                     ${d.recommendation ? `<div style="color: #059669; font-size: 13px; margin-bottom: 4px;"><strong>Recommendation:</strong> ${d.recommendation}</div>` : ''}
                     ${d.swift_reference ? `<div style="color: #7c3aed; font-size: 12px; margin-bottom: 4px;"><strong>SWIFT Field:</strong> ${d.swift_reference}</div>` : ''}
@@ -3616,28 +3580,64 @@ later than expiry date of credit
             }
         }
 
-        // function openSmartCapture() {
-        //     document.getElementById('smartCaptureOverlay').style.display = 'block';
-        //     setupDragAndDrop();
-        // }
-
         function openSmartCapture() {
-            // Pass functionName and productName into the Smart Capture iframe/modal
-            const urlParams = new URLSearchParams(window.location.search);
-            window.functionName = "Register Document";
-            window.productName = urlParams.get("productName") || "";
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
 
-            document.getElementById("scPage").value = "document_register";
+            // Show loading state
+            modal.classList.add('loading');
 
-            document.getElementById('smartCaptureOverlay').style.display = 'block';
-            setupDragAndDrop();
+            // Set the iframe source with context parameters
+            const params = new URLSearchParams({
+                functionName: 'Document Registration',
+                productName: 'Trade Finance'
+            });
+            iframe.src = `/document-classification-overlay?${params.toString()}`;
+
+            // Show the modal with animation
+            modal.classList.add('active');
+
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+
+            // Add escape key handler
+            document.addEventListener('keydown', handleSmartCaptureEscape);
         }
 
+        // Hide loading indicator when iframe loads
+        function hideSmartCaptureLoading() {
+            const modal = document.getElementById('smartCaptureModal');
+            setTimeout(() => {
+                modal.classList.remove('loading');
+            }, 300);
+        }
 
+        // Handle escape key
+        function handleSmartCaptureEscape(e) {
+            if (e.key === 'Escape') {
+                closeSmartCapture();
+            }
+        }
+
+        // Close Smart Capture Modal
         function closeSmartCapture() {
-            document.getElementById('smartCaptureOverlay').style.display = 'none';
-            selectedFiles = [];
-            updateFileList();
+            const modal = document.getElementById('smartCaptureModal');
+            const iframe = document.getElementById('smartCaptureIframe');
+
+            // Hide the modal with animation
+            modal.classList.remove('active');
+            modal.classList.remove('loading');
+
+            // Clear iframe source and restore default onload handler after animation
+            setTimeout(() => {
+                iframe.src = '';
+            }, 300);
+
+            // Restore body scroll
+            document.body.style.overflow = '';
+
+            // Remove escape key handler
+            document.removeEventListener('keydown', handleSmartCaptureEscape);
         }
 
         function setupDragAndDrop() {
@@ -3922,7 +3922,7 @@ later than expiry date of credit
                         <div id="qrOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border: 3px solid #10b981; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); pointer-events: none;"></div>
                     </div>
                     
-                    <div id="cameraStatus" style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; color: #059669; font-weight: 600;">
+                    <div id="cameraStatus" style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.15); border-radius: 8px; color: #059669; font-weight: 600;">
                         <i class="mdi mdi-information"></i> Position QR code within the frame
                     </div>
                 </div>
@@ -4815,25 +4815,39 @@ later than expiry date of credit
 
             // Set up onload handler BEFORE setting src to ensure it fires
             iframe.onload = function() {
-                console.log('✅ Smart Capture iframe loaded successfully');
+                console.log('🔌 Smart Capture iframe loaded, sending LC context...');
                 
                 // Remove loading state from modal
                 modal.classList.remove('loading');
                 
-                // Send LC context via postMessage (SAME WAY AS FORM SUBMISSION)
+                // Get LC context
                 const lcData = getLCContext();
+                
                 if (lcData) {
+                    console.log('📤 Sending LC context to iframe:', lcData);
+                    
+                    // Wait a bit for the iframe Vue app to be fully initialized
                     setTimeout(() => {
-                        iframe.contentWindow.postMessage({
-                            type: 'LC_CONTEXT',
-                            lcData: lcData
-                        }, '*');
-                        console.log('📤 LC context sent to iframe via postMessage:', lcData);
-                    }, 1000);
+                        try {
+                            if (iframe.contentWindow) {
+                                iframe.contentWindow.postMessage({
+                                    type: 'LC_CONTEXT',
+                                    lcData: lcData
+                                }, '*');
+                                console.log('✅ LC context sent successfully');
+                            } else {
+                                console.error('❌ iframe.contentWindow is not available');
+                            }
+                        } catch (error) {
+                            console.error('❌ Error sending LC context:', error);
+                        }
+                    }, 1000); // Longer delay to ensure Vue app is initialized
+                } else {
+                    console.warn('⚠️ No LC context available to send');
                 }
             };
             
-            // Now set the iframe source (will trigger onload when ready)
+            // Now set the iframe source (this will trigger onload when ready)
             iframe.src = `/document-classification-overlay?${params.toString()}`;
 
             // Show the modal with animation
@@ -5410,6 +5424,12 @@ later than expiry date of credit
             const uploadZone = document.getElementById('uploadDropZone');
             const fileInput = document.getElementById('documentFileInput');
 
+            // Check if elements exist
+            if (!uploadZone || !fileInput) {
+                console.log('⚠️ Upload zone or file input not found, skipping direct upload initialization');
+                return;
+            }
+
             // Drag and drop handlers
             uploadZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -5815,16 +5835,16 @@ later than expiry date of credit
             window.enhancedUIReady = true;
         }
 
-        // Debug function to force reload enhanced UI script
+        // Debug function to force reload enhanced UI script (DISABLED - missing file)
         window.reloadEnhancedUI = function () {
-            console.log('🔄 Reloading Enhanced UI Script...');
-            const script = document.createElement('script');
-            script.src = "{{ url_for('static', filename='js/enhanced-discrepancy-ui.js') }}";
-            script.onload = function () {
-                console.log('✅ Enhanced UI Script reloaded');
-                window.enhancedUIReady = true;
-            };
-            document.head.appendChild(script);
+            console.log('⚠️ Enhanced UI Script is disabled (missing file)');
+            // const script = document.createElement('script');
+            // script.src = "{{ url_for('static', filename='js/enhanced-discrepancy-ui.js') }}";
+            // script.onload = function () {
+            //     console.log('✅ Enhanced UI Script reloaded');
+            //     window.enhancedUIReady = true;
+            // };
+            // document.head.appendChild(script);
         };
 
         // Test function for enhanced UI

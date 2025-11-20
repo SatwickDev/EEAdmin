@@ -2,42 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Finstack - Innovation Partners for the Future of Finance</title>
+  <title>Finstack - Enterprise Financial Intelligence Platform</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@3.6.10/dist/vuetify.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/unified-design.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
   <style>
-    /* Modern Floating Header */
+    /* ============================================
+       PROFESSIONAL CORPORATE THEME
+       Primary: Deep Navy (#0F172A, #1E293B)
+       Accent: Emerald Green (#047857, #059669)
+       Highlight: Warm Gold (#D97706, #F59E0B)
+       Background: Clean White (#FFFFFF, #F8FAFC)
+       ============================================ */
+    
+    :root {
+      --corporate-navy: #0F172A;
+      --corporate-navy-light: #1E293B;
+      --corporate-emerald: #047857;
+      --corporate-emerald-light: #059669;
+      --corporate-gold: #D97706;
+      --corporate-gold-light: #F59E0B;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8FAFC;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --border-color: #E2E8F0;
+      --shadow-corporate: 0 4px 20px rgba(15, 23, 42, 0.08);
+      --shadow-hover: 0 8px 32px rgba(15, 23, 42, 0.12);
+    }
+
+    /* Modern Floating Header - Corporate Style */
     .floating-header {
       position: fixed;
       top: 20px;
       left: 20px;
       right: 20px;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 24px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      z-index: 2000;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      box-shadow: var(--shadow-corporate);
       animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s ease;
+    }
+
+    .floating-header:hover {
+      box-shadow: var(--shadow-hover);
     }
 
     .floating-header-content {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 28px;
+      padding: 16px 32px;
       max-width: 1400px;
       margin: 0 auto;
     }
 
-    /* Brand Section */
+    /* Brand Section - Premium Look */
     .brand-section {
       display: flex;
       align-items: center;
@@ -49,42 +78,50 @@
     }
 
     .modern-logo {
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      width: 52px;
+      height: 52px;
+      background: #FFFFFF;
+      border: 2px solid #047857;
       border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      animation: logoFloat 4s ease-in-out infinite;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+      padding: 6px;
     }
 
     .modern-logo:hover {
-      transform: scale(1.05) rotate(2deg);
-      border-color: rgba(99, 102, 241, 0.3);
-      background: rgba(99, 102, 241, 0.1);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 24px rgba(4, 120, 87, 0.3);
+      border-color: #059669;
+    }
+
+    .modern-logo i {
+      color: #FFFFFF;
+      font-size: 26px;
     }
 
     .status-pulse {
       position: absolute;
-      top: -2px;
-      right: -2px;
-      width: 12px;
-      height: 12px;
-      background: linear-gradient(135deg, #10b981, #059669);
+      top: -3px;
+      right: -3px;
+      width: 14px;
+      height: 14px;
+      background: linear-gradient(135deg, var(--corporate-gold), var(--corporate-gold-light));
       border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.9);
+      border: 3px solid #FFFFFF;
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      box-shadow: 0 0 12px rgba(217, 119, 6, 0.5);
     }
 
     .brand-info h1 {
-      font-size: 24px !important;
-      font-weight: 800 !important;
+      font-family: 'Poppins', sans-serif;
+      font-size: 26px !important;
+      font-weight: 700 !important;
       margin: 0 !important;
-      background: linear-gradient(135deg, #1e293b, #475569, #64748b);
+      background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%);
       -webkit-background-clip: text !important;
       -webkit-text-fill-color: transparent !important;
       background-clip: text !important;
@@ -93,12 +130,13 @@
 
     .brand-info p {
       font-size: 13px !important;
-      color: rgba(100, 116, 139, 0.8) !important;
+      color: var(--text-secondary) !important;
       margin: 0 !important;
       font-weight: 500 !important;
+      letter-spacing: 0.3px;
     }
 
-    /* Navigation Pills */
+    /* Navigation Pills - Professional */
     .nav-pills {
       display: flex;
       align-items: center;
@@ -131,16 +169,16 @@
     }
 
     .nav-pill.active {
-      background: rgba(255, 255, 255, 0.9) !important;
-      color: #1e293b !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3);
     }
 
     .nav-pill i {
       font-size: 16px;
     }
 
-    /* Header Actions */
+    /* Header Actions - Corporate Style */
     .header-actions {
       display: flex;
       align-items: center;
@@ -150,31 +188,32 @@
     .status-indicator-modern {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      gap: 8px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, rgba(4, 120, 87, 0.1) 0%, rgba(5, 150, 105, 0.15) 100%);
+      border: 1px solid rgba(4, 120, 87, 0.25);
       border-radius: 12px;
-      font-size: 12px;
-      font-weight: 500;
-      color: #059669;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--corporate-emerald);
     }
 
     .pulse-dot {
-      width: 6px;
-      height: 6px;
-      background: #10b981;
+      width: 8px;
+      height: 8px;
+      background: var(--corporate-emerald);
       border-radius: 50%;
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      box-shadow: 0 0 8px rgba(4, 120, 87, 0.5);
     }
 
     .action-button {
       display: flex !important;
       align-items: center !important;
-      gap: 6px !important;
-      padding: 10px 18px !important;
+      gap: 8px !important;
+      padding: 11px 20px !important;
       border-radius: 12px !important;
-      font-size: 13px !important;
+      font-size: 14px !important;
       font-weight: 600 !important;
       text-decoration: none !important;
       border: none !important;
@@ -182,30 +221,50 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
       position: relative !important;
       overflow: hidden !important;
+      letter-spacing: 0.3px;
     }
 
     .action-button.primary {
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 70%, #06b6d4 100%) !important;
+      background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%) !important;
       color: white !important;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
     }
 
     .action-button.primary:hover {
       transform: translateY(-2px) !important;
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.35) !important;
+    }
+
+    .action-button.primary::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .action-button.primary:hover::after {
+      width: 300px;
+      height: 300px;
     }
 
     .action-button.secondary {
-      background: rgba(255, 255, 255, 0.9) !important;
-      color: #374151 !important;
-      border: 1px solid rgba(229, 231, 235, 0.8) !important;
+      background: #FFFFFF !important;
+      color: var(--corporate-navy) !important;
+      border: 2px solid var(--border-color) !important;
     }
 
     .action-button.secondary:hover {
-      background: rgba(255, 255, 255, 1) !important;
-      color: #1f2937 !important;
+      background: var(--bg-secondary) !important;
+      color: var(--corporate-emerald) !important;
+      border-color: var(--corporate-emerald) !important;
       transform: translateY(-1px) !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+      box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15) !important;
     }
 
     /* Animations */
@@ -240,9 +299,112 @@
       }
     }
 
+    /* Body & Main Content - Corporate Professional */
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 50%, #F0FDF4 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(4, 120, 87, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(217, 119, 6, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(15, 23, 42, 0.02) 0%, transparent 30%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
     /* Adjust main content padding */
     .pt-40 {
       padding-top: 120px !important;
+    }
+
+    /* Card & Glass Effects - Corporate */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      box-shadow: var(--shadow-corporate);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+
+    .feature-tile {
+      background: #FFFFFF;
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-tile::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(4, 120, 87, 0.08), transparent);
+      transition: left 0.6s;
+    }
+
+    .feature-tile:hover::before {
+      left: 100%;
+    }
+
+    .feature-tile:hover {
+      border-color: var(--corporate-emerald);
+      box-shadow: 0 12px 40px rgba(4, 120, 87, 0.15);
+      transform: translateY(-4px);
+    }
+
+    /* Typography - Corporate */
+    .heading-gradient {
+      background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-emerald) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .text-muted-pro {
+      color: var(--text-secondary);
+    }
+
+    /* Professional Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+      border-radius: 10px;
+      border: 2px solid var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-emerald) 100%);
     }
 
     /* Mobile Responsiveness */
@@ -318,27 +480,9 @@
             <v-card-title class="text-center pa-6">
               <div class="logo-section">
                 <!-- Finstack Logo -->
-                <svg width="48" height="48" viewBox="0 0 48 48" class="mb-2">
-                  <defs>
-                    <linearGradient id="finstack-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
-                      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
-                    </linearGradient>
-                  </defs>
-                  <g fill="url(#finstack-gradient)">
-                    <!-- F Letter stylized as stacked blocks -->
-                    <rect x="8" y="8" width="8" height="32" rx="2"/>
-                    <rect x="8" y="8" width="24" height="8" rx="2"/>
-                    <rect x="8" y="20" width="20" height="8" rx="2"/>
-                  </g>
-                  <g fill="#E5E7EB" opacity="0.9">
-                    <!-- Stack lines representing finance layers -->
-                    <rect x="20" y="32" width="20" height="2" rx="1"/>
-                    <rect x="20" y="36" width="20" height="2" rx="1"/>
-                  </g>
-                </svg>
-                <h2 class="text-h4 font-weight-bold">Finstack</h2>
-                <p class="text-subtitle-1 text-medium-emphasis">Sign in to your account</p>
+                <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 120px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;">
+                <h2 class="text-h4 font-weight-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">Finstack</h2>
+                <p class="text-subtitle-1" style="color: #475569; font-weight: 500;">Enterprise Financial Platform</p>
               </div>
             </v-card-title>
             <v-card-text class="pa-6">
@@ -400,27 +544,9 @@
             <v-card-title class="text-center pa-6">
               <div class="logo-section">
                 <!-- Finstack Logo -->
-                <svg width="48" height="48" viewBox="0 0 48 48" class="mb-2">
-                  <defs>
-                    <linearGradient id="finstack-gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
-                      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
-                    </linearGradient>
-                  </defs>
-                  <g fill="url(#finstack-gradient2)">
-                    <!-- F Letter stylized as stacked blocks -->
-                    <rect x="8" y="8" width="8" height="32" rx="2"/>
-                    <rect x="8" y="8" width="24" height="8" rx="2"/>
-                    <rect x="8" y="20" width="20" height="8" rx="2"/>
-                  </g>
-                  <g fill="#E5E7EB" opacity="0.9">
-                    <!-- Stack lines representing finance layers -->
-                    <rect x="20" y="32" width="20" height="2" rx="1"/>
-                    <rect x="20" y="36" width="20" height="2" rx="1"/>
-                  </g>
-                </svg>
-                <h2 class="text-h4 font-weight-bold">Create Account</h2>
-                <p class="text-subtitle-1 text-medium-emphasis">Join Finstack</p>
+                <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 120px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;">
+                <h2 class="text-h4 font-weight-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">Create Account</h2>
+                <p class="text-subtitle-1" style="color: #475569; font-weight: 500;">Join Finstack Enterprise</p>
               </div>
             </v-card-title>
             <v-card-text class="pa-6">
@@ -511,46 +637,30 @@
           <div class="brand-section">
             <div class="logo-container">
               <div class="modern-logo">
-                <svg width="28" height="28" viewBox="0 0 48 48">
-                  <defs>
-                    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#6366f1"/>
-                      <stop offset="50%" style="stop-color:#8b5cf6"/>
-                      <stop offset="100%" style="stop-color:#06b6d4"/>
-                    </linearGradient>
-                  </defs>
-                  <g fill="url(#logoGradient)">
-                    <rect x="8" y="8" width="8" height="32" rx="3"/>
-                    <rect x="8" y="8" width="24" height="8" rx="3"/>
-                    <rect x="8" y="20" width="20" height="8" rx="3"/>
-                  </g>
-                  <g fill="url(#logoGradient)" opacity="0.6">
-                    <rect x="20" y="32" width="20" height="2" rx="1"/>
-                    <rect x="20" y="36" width="20" height="2" rx="1"/>
-                  </g>
-                </svg>
+                <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 40px; height: auto; display: block;">
                 <div class="status-pulse"></div>
               </div>
             </div>
             <div class="brand-info">
               <h1 class="brand-title">Finstack</h1>
-              <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+              <p class="brand-subtitle">Enterprise Financial Intelligence Platform</p>
             </div>
           </div>
 
           <!-- Navigation Pills -->
           <nav class="nav-pills">
             <a href="/" class="nav-pill active">
-              <i class="mdi mdi-view-dashboard"></i>
+              <i class="mdi mdi-view-dashboard-variant"></i>
               <span>Dashboard</span>
             </a>
-            <a href="/analytics" class="nav-pill">
-              <i class="mdi mdi-chart-line"></i>
-              <span>Analytics</span>
-            </a>
             <a href="/ai-chat-pro" class="nav-pill">
-              <i class="mdi mdi-robot"></i>
-              <span> Finance AI Agents</span>
+              <i class="mdi mdi-shield-lock"></i>
+              <span>AI Document Scrutiny</span>
+            </a>
+
+            <a href="/document_entity_maintenance" class="nav-pill">
+              <i class="mdi mdi-cog-outline"></i>
+              <span>Admin Configuration</span>
             </a>
           </nav>
 
@@ -558,14 +668,14 @@
           <div class="header-actions">
             <div class="status-indicator-modern">
               <div class="pulse-dot"></div>
-              <span>Online</span>
+              <span>Secure</span>
             </div>
             <button @click="showProfile" class="action-button secondary">
-              <i class="mdi mdi-account-circle"></i>
+              <i class="mdi mdi-account-circle-outline"></i>
               <span>Profile</span>
             </button>
             <button @click="logout" class="action-button primary">
-              <i class="mdi mdi-logout"></i>
+              <i class="mdi mdi-logout-variant"></i>
               <span>Logout</span>
             </button>
           </div>
@@ -573,27 +683,27 @@
       </div>
 
       <!-- Main Content -->
-      <div class="pt-40 pb-12 px-6">
+      <div class="pt-32 pb-6 px-6">
         <!-- Enhanced Welcome Section -->
-        <div class="max-w-7xl mx-auto mb-16">
-          <div class="glass-card p-10 welcome-section">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+        <div class="max-w-7xl mx-auto mb-6">
+          <div class="glass-card p-6 welcome-section">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
               <div class="lg:col-span-2">
-                <div class="space-y-4">
-                  <h2 class="text-5xl font-black leading-tight heading-gradient">
-                    Welcome back, <span class="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">{% raw %}{{ userData.firstName || 'User' }}{% endraw %}</span>!
+                <div class="space-y-2">
+                  <h2 class="text-3xl font-black leading-tight heading-gradient" style="font-family: 'Poppins', sans-serif;">
+                    Welcome back, <span style="background: linear-gradient(135deg, #047857 0%, #D97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">{% raw %}{{ userData.firstName || 'User' }}{% endraw %}</span>!
                   </h2>
-                  <p class="text-muted-pro text-xl font-medium leading-relaxed">
-                    Your AI-powered workspace is ready. Choose from our advanced tools to enhance your workflow and boost productivity.
+                  <p class="text-muted-pro text-sm font-medium leading-relaxed" style="color: #475569;">
+                    Your enterprise financial platform is ready. Access premium banking tools, intelligent automation, and secure document processing.
                   </p>
-                  <div class="flex items-center space-x-6 pt-4">
+                  <div class="flex items-center space-x-4 pt-2">
                     <div class="status-indicator-pro">
                       <div class="status-dot-online"></div>
-                      <span class="text-muted-pro text-sm font-medium">All systems operational</span>
+                      <span class="text-muted-pro text-sm font-medium" style="color: #047857;"><i class="mdi mdi-shield-check" style="margin-right: 4px;"></i>Bank-grade security active</span>
                     </div>
                     <div class="status-indicator-pro">
-                      <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <span class="text-muted-pro text-sm font-medium">Real-time sync active</span>
+                      <div class="w-2 h-2 rounded-full animate-pulse" style="background: #D97706;"></div>
+                      <span class="text-muted-pro text-sm font-medium" style="color: #475569;"><i class="mdi mdi-sync" style="margin-right: 4px;"></i>Real-time sync active</span>
                     </div>
                   </div>
                 </div>
@@ -601,8 +711,8 @@
 
               <div class="hidden lg:block">
                 <div class="relative">
-                  <svg class="progress-ring w-32 h-32" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6"/>
+                  <svg class="progress-ring w-24 h-24" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-white)" stroke-width="6"/>
                     <circle cx="50" cy="50" r="45" fill="none" stroke="url(#progressGradient)" stroke-width="6" stroke-linecap="round"/>
                     <defs>
                       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -613,205 +723,97 @@
                     </defs>
                   </svg>
                   <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span class="text-white font-black text-2xl">92%</span>
-                    <span class="text-white/70 text-sm font-medium">Efficiency</span>
+                    <span class="font-black text-xl" style="color: #0F172A; font-family: 'Poppins', sans-serif;">92%</span>
+                    <span class="text-xs font-medium" style="color: #475569;">Efficiency</span>
                   </div>
                 </div>
-                <p class="text-white/70 text-sm text-center mt-4 font-medium">System Performance</p>
+                <p class="text-xs text-center mt-2 font-medium" style="color: #475569;">System Performance</p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Enhanced Feature Grid -->
-        <div class="max-w-7xl mx-auto mb-16">
-          <div class="text-center mb-12">
-            <h3 class="text-3xl font-black mb-4 heading-gradient">AI-Powered Tools</h3>
-            <p class="text-muted-pro text-lg font-medium">Choose your next action from our comprehensive suite of AI tools</p>
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-6">
+            <h3 class="text-2xl font-black mb-2 heading-gradient" style="font-family: 'Poppins', sans-serif;">Enterprise Financial Solutions</h3>
+            <p class="text-muted-pro text-sm font-medium" style="color: #475569;">Access our comprehensive suite of premium banking and AI-powered tools</p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- AI Help Bot -->
-            <div class="feature-tile p-8" @click="navigateToChat">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- AI Document Scrutiny -->
+            <div class="feature-tile p-6" @click="navigateToChat">
               <div class="content">
-                <div class="flex items-start justify-between mb-6">
-                  <div class="w-16 h-16 rounded-2xl icon-gradient-1 flex items-center justify-center shadow-lg">
-                    <i class="mdi mdi-chat-processing text-white text-3xl"></i>
+                <div class="flex items-start justify-between mb-4">
+                  <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #047857 0%, #059669 100%);">
+                    <i class="mdi mdi-shield-lock text-white text-2xl"></i>
                   </div>
-                  <div class="badge">Popular</div>
+                  <div class="badge text-xs px-3 py-1 rounded-lg" style="background: linear-gradient(135deg, #047857 0%, #059669 100%); color: white; font-weight: 600;">Premium</div>
                 </div>
 
-                <h3 class="text-2xl font-bold text-gray-800 mb-3"> Finance AI Agents </h3>
-                <p class="text-gray-600 mb-6 leading-relaxed">
-                  Intelligent conversational AI assistant powered by advanced language models. Get instant answers, document analysis, and smart recommendations.
+                <h3 class="text-xl font-bold mb-2" style="color: #0F172A; font-family: 'Poppins', sans-serif;">AI Document Scrutiny</h3>
+                <p class="mb-4 leading-relaxed" style="color: #475569; font-size: 13px;">
+                  Enterprise-grade AI document processing with bank-level security. Intelligent classification, automated compliance checks, and secure archival.
                 </p>
 
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span class="text-sm text-gray-500 font-medium">Active 24/7</span>
+                    <div class="w-2 h-2 rounded-full" style="background: #047857;"></div>
+                    <span class="text-xs font-semibold" style="color: #047857;">Bank-grade Security</span>
                   </div>
-                  <i class="mdi mdi-arrow-right-circle text-purple-600 text-2xl"></i>
+                  <i class="mdi mdi-arrow-right-circle text-xl" style="color: #047857;"></i>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                <div class="grid grid-cols-2 gap-3 pt-3" style="border-top: 1px solid #E2E8F0;">
                   <div class="text-center">
-                    <div class="metric-number">99.9%</div>
-                    <div class="text-xs text-gray-500 font-medium">Uptime</div>
+                    <div class="text-lg font-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">99.9%</div>
+                    <div class="text-xs font-medium" style="color: #64748B;">Accuracy</div>
                   </div>
                   <div class="text-center">
-                    <div class="metric-number"><1s</div>
-                    <div class="text-xs text-gray-500 font-medium">Response</div>
+                    <div class="text-lg font-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;"><30s</div>
+                    <div class="text-xs font-medium" style="color: #64748B;">Processing</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Analytics & Reports -->
-            <div class="feature-tile p-8" @click="navigateToAnalytics">
+            <!-- Admin Configuration -->
+            <div class="feature-tile p-6" @click="navigateToAdminConfig">
               <div class="content">
-                <div class="flex items-start justify-between mb-6">
-                  <div class="w-16 h-16 rounded-2xl icon-gradient-4 flex items-center justify-center shadow-lg">
-                    <i class="mdi mdi-chart-line text-white text-3xl"></i>
+                <div class="flex items-start justify-between mb-4">
+                  <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);">
+                    <i class="mdi mdi-cog-outline text-white text-2xl"></i>
                   </div>
+                  <div class="badge text-xs px-3 py-1 rounded-lg" style="background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); color: white; font-weight: 600;">Admin</div>
                 </div>
 
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">Analytics & Reports</h3>
-                <p class="text-gray-600 mb-6 leading-relaxed">
-                  Advanced business intelligence and reporting tools. Generate insights, track performance, and make data-driven decisions.
+                <h3 class="text-xl font-bold mb-2" style="color: #0F172A; font-family: 'Poppins', sans-serif;">Admin Configuration</h3>
+                <p class="mb-4 leading-relaxed" style="color: #475569; font-size: 13px;">
+                  Comprehensive system administration. Manage entities, categories, mappings, functions, and knowledge corpus with enterprise controls.
                 </p>
 
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                   <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span class="text-sm text-gray-500 font-medium">Real-time</span>
+                    <div class="w-2 h-2 rounded-full" style="background: #D97706;"></div>
+                    <span class="text-xs font-semibold" style="color: #0F172A;">Admin Access</span>
                   </div>
-                  <i class="mdi mdi-arrow-right-circle text-green-600 text-2xl"></i>
+                  <i class="mdi mdi-arrow-right-circle text-xl" style="color: #0F172A;"></i>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+                <div class="grid grid-cols-2 gap-3 pt-3" style="border-top: 1px solid #E2E8F0;">
                   <div class="text-center">
-                    <div class="metric-number">15+</div>
-                    <div class="text-xs text-gray-500 font-medium">Report Types</div>
-                  </div>
-                  <div class="text-center">
-                    <div class="metric-number">Live</div>
-                    <div class="text-xs text-gray-500 font-medium">Data Sync</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-            <!-- Database Configuration - NEW -->
-            <div class="feature-tile p-8" @click="navigateToDBConfig">
-              <div class="content">
-                <div class="flex items-start justify-between mb-6">
-                  <div class="w-16 h-16 rounded-2xl" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" class="flex items-center justify-center shadow-lg">
-                    <i class="mdi mdi-database-cog text-white text-3xl"></i>
-                  </div>
-                  <div class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">New</div>
-                </div>
-
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">Database Query Config</h3>
-                <p class="text-gray-600 mb-6 leading-relaxed">
-                  Configure secure database queries with module/table mapping, query recipes, RBAC enforcement, and natural language query builder.
-                </p>
-
-                <div class="flex items-center justify-between mb-6">
-                  <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span class="text-sm text-gray-500 font-medium">Trade Finance</span>
-                  </div>
-                  <i class="mdi mdi-arrow-right-circle text-purple-600 text-2xl"></i>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                  <div class="text-center">
-                    <div class="metric-number">4+</div>
-                    <div class="text-xs text-gray-500 font-medium">Modules</div>
+                    <div class="text-lg font-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">8+</div>
+                    <div class="text-xs font-medium" style="color: #64748B;">Modules</div>
                   </div>
                   <div class="text-center">
-                    <div class="metric-number">Safe</div>
-                    <div class="text-xs text-gray-500 font-medium">Queries</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Admin Configuration - NEW -->
-            <div class="feature-tile p-8" @click="navigateToAdminConfig">
-              <div class="content">
-                <div class="flex items-start justify-between mb-6">
-                  <div class="w-16 h-16 rounded-2xl" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" class="flex items-center justify-center shadow-lg">
-                    <i class="mdi mdi-shield-account text-white text-3xl"></i>
-                  </div>
-                  <div class="badge" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">Admin</div>
-                </div>
-
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">Admin Configuration</h3>
-                <p class="text-gray-600 mb-6 leading-relaxed">
-                  Manage document entities, categories, mappings, custom functions, and Knowledge Corpus. Complete admin control center.
-                </p>
-
-                <div class="flex items-center justify-between mb-6">
-                  <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-pink-500 rounded-full"></div>
-                    <span class="text-sm text-gray-500 font-medium">Admin Only</span>
-                  </div>
-                  <i class="mdi mdi-arrow-right-circle text-pink-600 text-2xl"></i>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                  <div class="text-center">
-                    <div class="metric-number">8+</div>
-                    <div class="text-xs text-gray-500 font-medium">Modules</div>
-                  </div>
-                  <div class="text-center">
-                    <div class="metric-number">Full</div>
-                    <div class="text-xs text-gray-500 font-medium">Control</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-            <!-- Settings & Profile -->
-            <!--div class="feature-tile p-8" @click="navigateToSettings">
-              <div class="content">
-                <div class="flex items-start justify-between mb-6">
-                  <div class="w-16 h-16 rounded-2xl icon-gradient-6 flex items-center justify-center shadow-lg">
-                    <i class="mdi mdi-cog text-white text-3xl"></i>
-                  </div>
-                </div>
-
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">Settings & Profile</h3>
-                <p class="text-gray-600 mb-6 leading-relaxed">
-                  Manage your account settings, preferences, security options, and customize your dashboard experience.
-                </p>
-
-                <div class="flex items-center justify-between mb-6">
-                  <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-gray-500 rounded-full"></div>
-                    <span class="text-sm text-gray-500 font-medium">Customizable</span>
-                  </div>
-                  <i class="mdi mdi-arrow-right-circle text-gray-600 text-2xl"></i>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                  <div class="text-center">
-                    <div class="metric-number">256-bit</div>
-                    <div class="text-xs text-gray-500 font-medium">Encryption</div>
-                  </div>
-                  <div class="text-center">
-                    <div class="metric-number">GDPR</div>
-                    <div class="text-xs text-gray-500 font-medium">Compliant</div>
+                    <div class="text-lg font-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">Full</div>
+                    <div class="text-xs font-medium" style="color: #64748B;">Control</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div-->
+        </div>
 
       </div>
 

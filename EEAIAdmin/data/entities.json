@@ -171,7 +171,6 @@
       "dataCategoryId": "3",
       "dataCategoryValue": "Parties/addresses/places/countries"
     },
- 
     {
       "id": "30",
       "name": "Port of Discharge / Place of discharge /Port of Discharge/Airport of Destination",
@@ -198,6 +197,15 @@
       "mappingFormDescription": "",
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "34",
+      "name": "Payment Terms",
+      "description": "Terms and conditions for payment",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "6",
+      "dataCategoryValue": "Terms"
     },
     {
       "id": "35",
@@ -1497,8 +1505,8 @@
     },
     {
       "id": "195",
-      "name": "Address",
-      "description": "Address",
+      "name": "Beneficiary / Seller Address",
+      "description": "Extract ONLY the Beneficiary or Seller's company/person address. Include address, street, city, country, postal code. Only the address is required, DO NOT include emails,Contact or Telephone details",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "4",
@@ -1765,7 +1773,6 @@
       "dataCategoryId": "2",
       "dataCategoryValue": "Dates"
     },
-  
     {
       "id": "228",
       "name": "Terms of delivery",
@@ -4275,7 +4282,6 @@
       "dataCategoryId": "8",
       "dataCategoryValue": "Measure/Quantities"
     },
- 
     {
       "id": "463",
       "name": "Partial Shipments",
@@ -4294,7 +4300,6 @@
       "dataCategoryId": "6",
       "dataCategoryValue": "Terms"
     },
-   
     {
       "id": "480",
       "name": "Documentary Credit Number",
@@ -4339,6 +4344,15 @@
       "mappingFormDescription": "",
       "dataCategoryId": "",
       "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "621",
+      "name": "Certificate Number",
+      "description": "Certificate Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
     }
   ]
 }

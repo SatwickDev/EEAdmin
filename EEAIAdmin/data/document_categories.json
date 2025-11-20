@@ -281,20 +281,44 @@
       "processType": "Financial Processes"
     },
     {
-      "id": "37",
-      "code": "CS",
-      "name": "Covering Schedule",
-      "sender": "Payer/Buyer",
-      "receiver": "Payee/Seller",
-      "processType": "Financial Processes"
-    },
-    {
       "id": "36",
       "code": "PN",
       "name": "Promissory Note",
       "sender": "Payer/Buyer",
       "receiver": "Payee/Seller",
       "processType": "Financial Processes"
+    },
+    {
+      "id": "37",
+      "code": "CS",
+      "name": "Covering Schedule",
+      "sender": "Payer/Buyer",
+      "receiver": "Payee/Seller",
+      "processType": "Commercial Processes"
+    },
+    {
+      "id": "38",
+      "code": "VC",
+      "name": "Vessel Certificate",
+      "sender": "Seller, Exporter",
+      "receiver": "Buyer, Importer",
+      "processType": "Transport Processes"
+    },
+    {
+      "id": "39",
+      "code": "CW",
+      "name": "Certificate of Weight",
+      "sender": "Carrier, Freight Forwarder",
+      "receiver": "Buyer, Importer",
+      "processType": "Quality and Compliance Processes"
+    },
+    {
+      "id": "40",
+      "code": "CRCD",
+      "name": "Courier Reciept/document",
+      "sender": "Freight Forwarder, Shipper",
+      "receiver": "Buyer, Importer",
+      "processType": "Transport Processes"
     }
   ]
 }

@@ -8,21 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-dark: #4338ca;
+            --primary-color: #14b8a6;
+            --primary-dark: #0d9488;
             --success-color: #10b981;
             --success-light: #d1fae5;
             --success-border: #6ee7b7;
-            --accent-color: #6366f1;
+            --accent-color: #0f766e;
             --bg-color: #f9fafb;
-            --bg-gradient-start: #faf5ff;
-            --bg-gradient-end: #ede9fe;
             --text-color: #1f2937;
             --text-muted: #6b7280;
             --border-color: #e5e7eb;
             --surface: #ffffff;
-            --shadow: 0 4px 6px rgba(79, 70, 229, 0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(79, 70, 229, 0.1), 0 10px 10px -5px rgba(79, 70, 229, 0.04);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
         * {
@@ -33,7 +31,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 50%, #ddd6fe 100%);
+            background: #f9fafb;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -44,69 +42,54 @@
 
         .success-container {
             background: var(--surface);
-            border-radius: 24px;
-            box-shadow: var(--shadow-lg);
-            padding: 48px;
-            max-width: 650px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            padding: 40px;
+            max-width: 600px;
             width: 100%;
             text-align: center;
             position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(79, 70, 229, 0.1);
-        }
-
-        .success-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 50%, #a78bfa 100%);
+            border: 1px solid var(--border-color);
         }
 
         .success-icon {
-            width: 96px;
-            height: 96px;
-            background: linear-gradient(135deg, var(--success-light) 0%, #a7f3d0 100%);
-            border: 4px solid var(--success-border);
+            width: 80px;
+            height: 80px;
+            background: #d1fae5;
+            border: 3px solid var(--success-border);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 28px;
+            margin: 0 auto 24px;
             animation: successBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.2);
         }
 
         .success-icon i {
-            font-size: 42px;
+            font-size: 36px;
             color: var(--success-color);
         }
 
         .success-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 14px;
+            color: var(--text-color);
+            margin-bottom: 12px;
         }
 
         .success-message {
-            font-size: 16px;
+            font-size: 14px;
             color: var(--text-muted);
-            margin-bottom: 36px;
-            line-height: 1.7;
+            margin-bottom: 32px;
+            line-height: 1.6;
         }
 
         .transaction-details {
-            background: linear-gradient(135deg, var(--bg-color) 0%, #f3f4f6 100%);
+            background: var(--bg-color);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 28px;
-            margin-bottom: 36px;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
             text-align: left;
         }
 
@@ -145,79 +128,60 @@
 
         .action-buttons {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 14px 28px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 15px;
+            transition: all 0.2s ease;
+            font-size: 14px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            background: var(--primary-color);
             color: white;
-            border: 1px solid rgba(79, 70, 229, 0.2);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-        }
-
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s ease;
+            border: 1px solid var(--primary-color);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
-            border-color: rgba(79, 70, 229, 0.4);
-        }
-
-        .btn-primary:hover::before {
-            left: 100%;
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-secondary {
             background: var(--surface);
             color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+            border: 1px solid var(--primary-color);
+            box-shadow: var(--shadow);
         }
 
         .btn-secondary:hover {
-            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.2);
+            background: #f9fafb;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-outline {
             background: transparent;
             color: var(--text-muted);
-            border: 2px solid var(--border-color);
+            border: 1px solid var(--border-color);
         }
 
         .btn-outline:hover {
             color: var(--primary-color);
             border-color: var(--primary-color);
-            background: rgba(79, 70, 229, 0.05);
+            background: #f9fafb;
             transform: translateY(-1px);
         }
 
@@ -260,7 +224,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(79, 70, 229, 0.15);
+            background: rgba(20, 184, 166, 0.15);
             display: none;
             align-items: center;
             justify-content: center;
@@ -275,39 +239,36 @@
             max-width: 850px;
             max-height: 75vh;
             overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.2), 0 10px 10px -5px rgba(79, 70, 229, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(20, 184, 166, 0.2), 0 10px 10px -5px rgba(20, 184, 166, 0.1);
             position: relative;
-            border: 1px solid rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(20, 184, 166, 0.1);
         }
 
         .modal-header {
-            padding: 28px 32px;
+            padding: 24px 28px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, var(--bg-color) 0%, #f3f4f6 100%);
+            background: var(--bg-color);
         }
 
         .modal-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-color);
         }
 
         .modal-close {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 20px;
             color: var(--text-muted);
             cursor: pointer;
             padding: 8px;
-            border-radius: 10px;
-            width: 40px;
-            height: 40px;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -315,22 +276,21 @@
         }
 
         .modal-close:hover {
-            background: rgba(79, 70, 229, 0.1);
+            background: #f3f4f6;
             color: var(--primary-color);
-            transform: rotate(90deg);
         }
 
         .modal-body {
-            padding: 28px;
+            padding: 24px;
             max-height: 50vh;
             overflow-y: auto;
         }
 
         .swift-preview {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: #1e293b;
             color: #e2e8f0;
-            padding: 24px;
-            border-radius: 12px;
+            padding: 20px;
+            border-radius: 10px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
             line-height: 1.5;
@@ -368,11 +328,11 @@
 
         /* Enhanced SWIFT Modal Styles */
         .swift-info {
-            background: linear-gradient(135deg, var(--bg-color) 0%, #f3f4f6 100%);
-            border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 28px;
-            border: 1px solid rgba(79, 70, 229, 0.1);
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
         }
 
         .swift-info p {
@@ -417,22 +377,22 @@
         }
 
         .view-toggle-btn.active {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            background: var(--primary-color);
             color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            box-shadow: var(--shadow);
         }
 
         .view-toggle-btn:hover:not(.active) {
             color: var(--primary-color);
-            background: rgba(79, 70, 229, 0.1);
+            background: #f3f4f6;
         }
 
         /* Formatted SWIFT Display */
         .swift-formatted-display {
-            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+            background: #fafafa;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 10px;
+            padding: 20px;
             font-family: 'Inter', sans-serif;
             line-height: 1.7;
             max-height: 450px;
@@ -445,7 +405,7 @@
             background: white;
             border-radius: 10px;
             border-left: 4px solid var(--primary-color);
-            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.05);
+            box-shadow: 0 2px 4px rgba(20, 184, 166, 0.05);
         }
 
         .swift-field-header {
@@ -459,10 +419,10 @@
         }
 
         .swift-field-tag {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            background: var(--primary-color);
             color: white;
-            padding: 3px 8px;
-            border-radius: 6px;
+            padding: 2px 8px;
+            border-radius: 5px;
             font-size: 11px;
             font-weight: 700;
         }
@@ -493,45 +453,44 @@
         }
 
         .btn-muted {
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            background: #f3f4f6;
             color: var(--text-color);
             border: 1px solid var(--border-color);
-            padding: 12px 22px;
-            border-radius: 10px;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-weight: 600;
             font-size: 14px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .btn-muted:hover {
-            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-            border-color: var(--text-muted);
+            background: #e5e7eb;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
 
         .btn-primary-muted {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            background: var(--primary-color);
             color: white;
-            border: 1px solid rgba(79, 70, 229, 0.2);
-            padding: 12px 22px;
-            border-radius: 10px;
+            border: 1px solid var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 8px;
             font-weight: 600;
             font-size: 14px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            box-shadow: var(--shadow);
         }
 
         .btn-primary-muted:hover {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
     </style>
 </head>

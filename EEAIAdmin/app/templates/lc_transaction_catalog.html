@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC Transaction Catalog - Finstack</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floating-header.css') }}">
+    
+    <style>
+        /* ============================================
+           PROFESSIONAL CORPORATE THEME - MATCHING INDEX.HTML
+           Primary: Deep Navy (#0F172A, #1E293B)
+           Accent: Emerald Green (#047857, #059669)
+           Highlight: Warm Gold (#D97706, #F59E0B)
+           Background: Clean White (#FFFFFF, #F8FAFC)
+           ============================================ */
+        
+        :root {
+            --corporate-navy: #0F172A;
+            --corporate-navy-light: #1E293B;
+            --corporate-emerald: #047857;
+            --corporate-emerald-light: #059669;
+            --corporate-gold: #D97706;
+            --corporate-gold-light: #F59E0B;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --border-color: #E2E8F0;
+            --shadow-corporate: 0 4px 20px rgba(15, 23, 42, 0.08);
+            --shadow-hover: 0 8px 32px rgba(15, 23, 42, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 50%, #F0FDF4 100%);
+            min-height: 100vh;
+            padding-top: 120px;
+            padding-left: 12px;
+            padding-right: 12px;
+            padding-bottom: 12px;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text-primary);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(4, 120, 87, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(217, 119, 6, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(15, 23, 42, 0.02) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Page Header - Matching Index.html */
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-corporate);
+            transition: all 0.3s ease;
+        }
+
+        .page-header:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title i {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* Filter Section - Compact & Professional */
+        .filter-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-corporate);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--corporate-navy);
+            letter-spacing: 0.3px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            transition: all 0.3s;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--corporate-emerald);
+            box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            padding-left: 40px;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(4, 120, 87, 0.35);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-secondary {
+            background: #FFFFFF;
+            color: var(--corporate-navy);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            color: var(--corporate-emerald);
+            border-color: var(--corporate-emerald);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
+        }
+
+        /* LC Cards Grid - Compact & Professional */
+        .lc-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .lc-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow-corporate);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lc-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--corporate-emerald) 0%, var(--corporate-gold) 50%, var(--corporate-navy) 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .lc-card:hover {
+            border-color: var(--corporate-emerald);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-4px);
+        }
+
+        .lc-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .lc-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .lc-number {
+            font-size: 17px;
+            font-weight: 700;
+            font-family: 'Poppins', 'Monaco', 'Courier New', monospace;
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-navy-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.3px;
+        }
+
+        .lc-status {
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-submitted {
+            background: linear-gradient(135deg, rgba(4, 120, 87, 0.1), rgba(5, 150, 105, 0.15));
+            color: var(--corporate-emerald);
+            border: 1px solid rgba(4, 120, 87, 0.2);
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), rgba(245, 158, 11, 0.15));
+            color: var(--corporate-gold);
+            border: 1px solid rgba(217, 119, 6, 0.2);
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, rgba(4, 120, 87, 0.15), rgba(5, 150, 105, 0.2));
+            color: var(--corporate-emerald);
+            border: 1px solid rgba(4, 120, 87, 0.25);
+        }
+
+        .lc-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .lc-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .lc-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .lc-info-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .lc-info-value {
+            font-size: 13px;
+            color: var(--corporate-navy);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .lc-card-footer {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-card {
+            flex: 1;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-document {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.2);
+        }
+
+        .btn-document:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(4, 120, 87, 0.3);
+        }
+
+        .btn-view {
+            background: #FFFFFF;
+            color: var(--corporate-navy);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-view:hover {
+            background: var(--bg-secondary);
+            color: var(--corporate-emerald);
+            border-color: var(--corporate-emerald);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.15);
+        }
+
+        /* Empty State - Professional */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-corporate);
+        }
+
+        .empty-state i {
+            font-size: 56px;
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 22px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            color: var(--corporate-navy);
+            margin-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--corporate-emerald);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        /* Professional Scrollbar - Matching Index.html */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            border-radius: 10px;
+            border: 2px solid var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--corporate-navy) 0%, var(--corporate-emerald) 100%);
+        }
+
+        /* Firefox Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--corporate-emerald) var(--bg-secondary);
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* View Toggle & Controls */
+        .view-controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-corporate);
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 4px;
+        }
+
+        .view-toggle-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-toggle-btn:hover {
+            color: var(--corporate-navy);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .view-toggle-btn.active {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.3);
+        }
+
+        .results-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .results-info strong {
+            color: var(--corporate-navy);
+            font-weight: 700;
+        }
+
+        /* List View Table */
+        .lc-list-view {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-corporate);
+        }
+
+        .lc-list-view.active {
+            display: block;
+        }
+
+        .lc-list-view table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .lc-list-view thead {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(248, 250, 252, 0.8) 100%);
+            border-bottom: 2px solid var(--corporate-emerald);
+        }
+
+        .lc-list-view th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--corporate-navy);
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .lc-list-view tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .lc-list-view tbody tr:hover {
+            background: linear-gradient(135deg, rgba(4, 120, 87, 0.03) 0%, rgba(5, 150, 105, 0.05) 100%);
+            transform: translateX(4px);
+        }
+
+        .lc-list-view tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .lc-list-view td {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .lc-list-view td.lc-number-col {
+            font-family: 'Poppins', 'Monaco', monospace;
+            font-weight: 700;
+            color: var(--corporate-navy);
+        }
+
+        .lc-list-view .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .lc-list-view .action-btn-small {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-btn-small.primary {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            color: white;
+        }
+
+        .action-btn-small.primary:hover {
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .action-btn-small.secondary {
+            background: white;
+            color: var(--corporate-navy);
+            border: 1px solid var(--border-color);
+        }
+
+        .action-btn-small.secondary:hover {
+            border-color: var(--corporate-emerald);
+            color: var(--corporate-emerald);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-corporate);
+        }
+
+        .pagination {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .pagination-btn {
+            padding: 8px 14px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--corporate-navy);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 38px;
+            text-align: center;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: var(--corporate-emerald);
+            color: var(--corporate-emerald);
+            background: rgba(4, 120, 87, 0.05);
+        }
+
+        .pagination-btn.active {
+            background: linear-gradient(135deg, var(--corporate-emerald) 0%, var(--corporate-emerald-light) 100%);
+            color: white;
+            border-color: var(--corporate-emerald);
+            box-shadow: 0 2px 8px rgba(4, 120, 87, 0.2);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .lc-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 22px;
+            }
+
+            .view-controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .lc-list-view {
+                overflow-x: auto;
+            }
+
+            .pagination-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Include Floating Header Component -->
+    {% include 'components/floating_header.html' %}
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="mdi mdi-file-document-multiple"></i>
+                LC Transaction Catalog
+            </h1>
+            <p class="page-subtitle">Select an LC transaction to proceed with document checking</p>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-grid">
+                <div class="filter-group search-box">
+                    <label>Search</label>
+                    <i class="mdi mdi-magnify"></i>
+                    <input type="text" id="searchInput" placeholder="LC Number, Applicant, Beneficiary..." />
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Date From</label>
+                    <input type="date" id="dateFromFilter" />
+                </div>
+                <div class="filter-group">
+                    <label>Date To</label>
+                    <input type="date" id="dateToFilter" />
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    <i class="mdi mdi-filter-off"></i>
+                    Clear Filters
+                </button>
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="mdi mdi-filter"></i>
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- View Controls -->
+        <div class="view-controls">
+            <div class="results-info">
+                Showing <strong id="resultsCount">0</strong> transactions
+            </div>
+            <div class="view-toggle">
+                <button class="view-toggle-btn active" id="gridViewBtn" onclick="switchView('grid')">
+                    <i class="mdi mdi-view-grid"></i>
+                    Grid
+                </button>
+                <button class="view-toggle-btn" id="listViewBtn" onclick="switchView('list')">
+                    <i class="mdi mdi-view-list"></i>
+                    List
+                </button>
+            </div>
+        </div>
+
+        <!-- LC Cards Grid View -->
+        <div id="lcCardsGrid" class="lc-cards-grid">
+            <!-- Cards will be populated by JavaScript -->
+        </div>
+
+        <!-- LC List View -->
+        <div id="lcListView" class="lc-list-view">
+            <table>
+                <thead>
+                    <tr>
+                        <th>LC Number</th>
+                        <th>Applicant</th>
+                        <th>Beneficiary</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="lcListBody">
+                    <!-- Rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div class="pagination-info">
+                Page <strong id="currentPageInfo">1</strong> of <strong id="totalPagesInfo">1</strong>
+            </div>
+            <div class="pagination" id="paginationButtons">
+                <!-- Pagination buttons will be generated by JavaScript -->
+            </div>
+            <div class="pagination-info">
+                <strong id="pageRangeInfo">1-10</strong> of <strong id="totalItemsInfo">0</strong>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="mdi mdi-file-document-outline"></i>
+            <h3>No LC Transactions Found</h3>
+            <p>Create your first Letter of Credit to get started</p>
+            <button class="btn btn-primary" onclick="window.location.href='/trade_finance_lc_form'">
+                <i class="mdi mdi-plus"></i>
+                Create New LC
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading LC Transactions...</p>
+        </div>
+    </div>
+
+    <script>
+        let allTransactions = [];
+        let filteredTransactions = [];
+        let currentView = 'grid'; // 'grid' or 'list'
+        let currentPage = 1;
+        let itemsPerPage = 10;
+
+        // Load LC transactions on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadLCTransactions();
+        });
+
+        // Load LC Transactions from database
+        async function loadLCTransactions() {
+            showLoading();
+            try {
+                const response = await fetch('/api/lc_transactions');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allTransactions = data.transactions;
+                    filteredTransactions = allTransactions;
+                    renderCurrentView();
+                    updateResultsCount();
+                } else {
+                    console.error('Failed to load transactions:', data.message);
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                showEmptyState();
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Switch View (Grid/List)
+        function switchView(view) {
+            currentView = view;
+            currentPage = 1; // Reset to first page
+            
+            // Update button states
+            document.getElementById('gridViewBtn').classList.toggle('active', view === 'grid');
+            document.getElementById('listViewBtn').classList.toggle('active', view === 'list');
+            
+            renderCurrentView();
+        }
+
+        // Render Current View
+        function renderCurrentView() {
+            if (currentView === 'grid') {
+                renderLCCards();
+            } else {
+                renderLCList();
+            }
+            renderPagination();
+        }
+
+        // Update Results Count
+        function updateResultsCount() {
+            document.getElementById('resultsCount').textContent = filteredTransactions.length;
+        }
+
+        // Get Paginated Data
+        function getPaginatedData() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            return filteredTransactions.slice(startIndex, endIndex);
+        }
+
+        // Render Pagination
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            const paginationContainer = document.getElementById('paginationContainer');
+            const paginationButtons = document.getElementById('paginationButtons');
+            
+            if (filteredTransactions.length === 0 || totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            
+            paginationContainer.style.display = 'flex';
+            
+            // Update info
+            document.getElementById('currentPageInfo').textContent = currentPage;
+            document.getElementById('totalPagesInfo').textContent = totalPages;
+            
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, filteredTransactions.length);
+            document.getElementById('pageRangeInfo').textContent = `${startItem}-${endItem}`;
+            document.getElementById('totalItemsInfo').textContent = filteredTransactions.length;
+            
+            // Generate buttons
+            let buttonsHTML = '';
+            
+            // Previous button
+            buttonsHTML += `<button class="pagination-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                <i class="mdi mdi-chevron-left"></i>
+            </button>`;
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage < maxVisiblePages - 1) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                buttonsHTML += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) {
+                    buttonsHTML += `<span style="padding: 0 4px; color: var(--text-secondary);">...</span>`;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                buttonsHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    buttonsHTML += `<span style="padding: 0 4px; color: var(--text-secondary);">...</span>`;
+                }
+                buttonsHTML += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            }
+            
+            // Next button
+            buttonsHTML += `<button class="pagination-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                <i class="mdi mdi-chevron-right"></i>
+            </button>`;
+            
+            paginationButtons.innerHTML = buttonsHTML;
+        }
+
+        // Go to Page
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderCurrentView();
+            
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render LC Cards
+        function renderLCCards() {
+            const grid = document.getElementById('lcCardsGrid');
+            const listView = document.getElementById('lcListView');
+            const emptyState = document.getElementById('emptyState');
+
+            listView.style.display = 'none';
+            listView.classList.remove('active');
+
+            if (filteredTransactions.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            const paginatedData = getPaginatedData();
+            grid.innerHTML = paginatedData.map(lc => `
+                <div class="lc-card" onclick="selectLC('${lc._id}')">
+                    <div class="lc-card-header">
+                        <div class="lc-number">${lc.lcNumber || 'N/A'}</div>
+                        <div class="lc-status status-${lc.status || 'submitted'}">
+                            ${lc.status || 'Submitted'}
+                        </div>
+                    </div>
+                    <div class="lc-card-body">
+                        <div class="lc-info-row">
+                            <span class="lc-info-label">Applicant</span>
+                            <span class="lc-info-value">${truncateText(lc.applicant || 'N/A', 30)}</span>
+                        </div>
+                        <div class="lc-info-row">
+                            <span class="lc-info-label">Beneficiary</span>
+                            <span class="lc-info-value">${truncateText(lc.beneficiary || 'N/A', 30)}</span>
+                        </div>
+                        <div class="lc-info-row">
+                            <span class="lc-info-label">Amount</span>
+                            <span class="lc-info-value">${lc.currency || 'USD'} ${formatAmount(lc.amount)}</span>
+                        </div>
+                        <div class="lc-info-row">
+                            <span class="lc-info-label">Expiry Date</span>
+                            <span class="lc-info-value">${formatDate(lc.expiryDate)}</span>
+                        </div>
+                        <div class="lc-info-row">
+                            <span class="lc-info-label">Submitted</span>
+                            <span class="lc-info-value">${formatDate(lc.timestamp)}</span>
+                        </div>
+                    </div>
+                    <div class="lc-card-footer">
+                        <button class="btn-card btn-document" onclick="proceedToDocumentCheck(event, '${lc._id}')">
+                            <i class="mdi mdi-file-check"></i>
+                            Document Check
+                        </button>
+                        <button class="btn-card btn-view" onclick="viewLCDetails(event, '${lc._id}')">
+                            <i class="mdi mdi-eye"></i>
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render LC List (Table View)
+        function renderLCList() {
+            const grid = document.getElementById('lcCardsGrid');
+            const listView = document.getElementById('lcListView');
+            const listBody = document.getElementById('lcListBody');
+            const emptyState = document.getElementById('emptyState');
+
+            grid.style.display = 'none';
+
+            if (filteredTransactions.length === 0) {
+                listView.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            listView.style.display = 'block';
+            listView.classList.add('active');
+            emptyState.style.display = 'none';
+
+            const paginatedData = getPaginatedData();
+            listBody.innerHTML = paginatedData.map(lc => `
+                <tr onclick="selectLC('${lc._id}')">
+                    <td class="lc-number-col">${lc.lcNumber || 'N/A'}</td>
+                    <td>${truncateText(lc.applicant || 'N/A', 35)}</td>
+                    <td>${truncateText(lc.beneficiary || 'N/A', 35)}</td>
+                    <td>${lc.currency || 'USD'} ${formatAmount(lc.amount)}</td>
+                    <td>
+                        <span class="lc-status status-${lc.status || 'submitted'}">
+                            ${lc.status || 'Submitted'}
+                        </span>
+                    </td>
+                    <td>${formatDate(lc.timestamp)}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn-small primary" onclick="proceedToDocumentCheck(event, '${lc._id}')" title="Document Check">
+                                <i class="mdi mdi-file-check"></i>
+                            </button>
+                            <button class="action-btn-small secondary" onclick="viewLCDetails(event, '${lc._id}')" title="View Details">
+                                <i class="mdi mdi-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Select LC Transaction
+        function selectLC(lcId) {
+            console.log('Selected LC:', lcId);
+        }
+
+        // Proceed to Document Check
+        async function proceedToDocumentCheck(event, lcId) {
+            event.stopPropagation();
+            showLoading();
+
+            try {
+                // Fetch full LC details
+                const response = await fetch(`/api/lc_transactions/${lcId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const lc = data.transaction;
+
+                    // Generate SWIFT message for LC
+                    const swiftMessage = await generateSwiftMessage(lc);
+
+                    // Create LC context
+                    const lcContext = {
+                        lcNumber: lc.lcNumber,
+                        swiftMessage: swiftMessage,
+                        formData: lc,
+                        submissionTime: lc.timestamp,
+                        status: lc.status
+                    };
+
+                    // Store in sessionStorage
+                    sessionStorage.setItem('lcContext', JSON.stringify(lcContext));
+
+                    // Navigate to document register with URL parameters
+                    window.location.href = `/document_register?source=lc_success&lcNumber=${encodeURIComponent(lc.lcNumber)}`;
+                } else {
+                    alert('Failed to load LC details');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // View LC Details
+        function viewLCDetails(event, lcId) {
+            event.stopPropagation();
+            window.location.href = `/lc_details/${lcId}`;
+        }
+
+        // Generate SWIFT Message
+        async function generateSwiftMessage(lc) {
+            try {
+                const response = await fetch('/api/generate_swift', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lc)
+                });
+                const data = await response.json();
+                return data.swift_message || generateFallbackSwift(lc);
+            } catch (error) {
+                return generateFallbackSwift(lc);
+            }
+        }
+
+        // Fallback SWIFT Generation
+        function generateFallbackSwift(lc) {
+            return `{1:F01ISSUERXXXXAXXX0000000000}
+{2:I700RECEIVERXXXXN}
+{4:
+:20:${lc.lcNumber || 'N/A'}
+:23:${lc.lcType?.toUpperCase() || 'IRREVOCABLE'}
+:31C:${formatDateForSwift(lc.issueDate)}
+:40A:${lc.lcType?.toUpperCase() || 'IRREVOCABLE'}
+:31D:${formatDateForSwift(lc.expiryDate)}
+:50:${lc.applicant || 'N/A'}
+:59:${lc.beneficiary || 'N/A'}
+:32B:${lc.currency || 'USD'}${lc.amount || '0'}
+:45A:${lc.goodsDescription || 'N/A'}
+:46A:${lc.additionalDocuments || 'N/A'}
+:47A:${lc.additionalConditions || 'N/A'}
+-}`;
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFromFilter').value;
+            const dateTo = document.getElementById('dateToFilter').value;
+
+            filteredTransactions = allTransactions.filter(lc => {
+                // Search filter
+                if (searchTerm && !JSON.stringify(lc).toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+
+                // Status filter
+                if (status && lc.status !== status) {
+                    return false;
+                }
+
+                // Date filters
+                if (dateFrom && new Date(lc.timestamp) < new Date(dateFrom)) {
+                    return false;
+                }
+                if (dateTo && new Date(lc.timestamp) > new Date(dateTo)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Reset to first page when filters change
+            currentPage = 1;
+            renderCurrentView();
+            updateResultsCount();
+        }
+
+        // Clear Filters
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFromFilter').value = '';
+            document.getElementById('dateToFilter').value = '';
+            filteredTransactions = allTransactions;
+            
+            // Reset to first page when clearing filters
+            currentPage = 1;
+            renderCurrentView();
+            updateResultsCount();
+        }
+
+        // Utility Functions
+        function truncateText(text, maxLength) {
+            if (!text) return 'N/A';
+            const lines = text.split('\n');
+            const firstLine = lines[0] || '';
+            return firstLine.length > maxLength 
+                ? firstLine.substring(0, maxLength) + '...' 
+                : firstLine;
+        }
+
+        function formatAmount(amount) {
+            if (!amount) return '0.00';
+            return parseFloat(amount).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit'
+            });
+        }
+
+        function formatDateForSwift(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const year = String(date.getFullYear()).substring(2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + month + day;
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function showEmptyState() {
+            document.getElementById('lcCardsGrid').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

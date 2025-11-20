@@ -8,46 +8,30 @@
         <div class="brand-section">
             <div class="logo-container">
                 <div class="modern-logo">
-                    <svg width="28" height="28" viewBox="0 0 48 48">
-                        <defs>
-                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#6366f1"/>
-                                <stop offset="50%" style="stop-color:#8b5cf6"/>
-                                <stop offset="100%" style="stop-color:#06b6d4"/>
-                            </linearGradient>
-                        </defs>
-                        <g fill="url(#logoGradient)">
-                            <rect x="8" y="8" width="8" height="32" rx="3"/>
-                            <rect x="8" y="8" width="24" height="8" rx="3"/>
-                            <rect x="8" y="20" width="20" height="8" rx="3"/>
-                        </g>
-                        <g fill="url(#logoGradient)" opacity="0.6">
-                            <rect x="20" y="32" width="20" height="2" rx="1"/>
-                            <rect x="20" y="36" width="20" height="2" rx="1"/>
-                        </g>
-                    </svg>
+                    <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 40px; height: auto; display: block;">
                     <div class="status-pulse"></div>
                 </div>
             </div>
             <div class="brand-info">
                 <h1 class="brand-title">Finstack</h1>
-                <p class="brand-subtitle">Innovation Partners for the Future of Finance</p>
+                <p class="brand-subtitle">Enterprise Financial Intelligence Platform</p>
             </div>
         </div>
 
         <!-- Navigation Pills -->
         <nav class="nav-pills" id="globalNavPills">
             <a href="/" class="nav-pill" data-page="dashboard">
-                <i class="mdi mdi-view-dashboard"></i>
+                <i class="mdi mdi-view-dashboard-variant"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="/analytics" class="nav-pill" data-page="analytics">
-                <i class="mdi mdi-chart-line"></i>
-                <span>Analytics</span>
-            </a>
             <a href="/ai-chat-pro" class="nav-pill" data-page="ai-chat">
-                <i class="mdi mdi-robot"></i>
-                <span>Finance AI Agents</span>
+                <i class="mdi mdi-shield-lock"></i>
+                <span>AI Document Scrutiny</span>
+            </a>
+
+            <a href="/document_entity_maintenance" class="nav-pill" data-page="ai-Admin">
+                <i class="mdi mdi-cog-outline"></i>
+                <span>Admin Configuration</span>
             </a>
         </nav>
 
@@ -55,23 +39,15 @@
         <div class="header-actions">
             <div class="status-indicator-modern">
                 <div class="pulse-dot"></div>
-                <span>Online</span>
+                <span>Secure</span>
             </div>
-            <button onclick="goBack()" class="action-button secondary" title="Go Back">
-                <i class="mdi mdi-arrow-left"></i>
-                <span class="btn-text">Back</span>
-            </button>
-            <a href="/" class="action-button secondary" title="Go to Dashboard">
-                <i class="mdi mdi-home"></i>
-                <span class="btn-text">Home</span>
-            </a>
             <button onclick="showProfile()" class="action-button secondary" id="profileBtn" title="View Profile">
-                <i class="mdi mdi-account-circle"></i>
-                <span class="btn-text">Profile</span>
+                <i class="mdi mdi-account-circle-outline"></i>
+                <span>Profile</span>
             </button>
             <button onclick="logout()" class="action-button primary" title="Logout">
-                <i class="mdi mdi-logout"></i>
-                <span class="btn-text">Logout</span>
+                <i class="mdi mdi-logout-variant"></i>
+                <span>Logout</span>
             </button>
         </div>
     </div>
@@ -128,14 +104,22 @@
         navPills.forEach(pill => {
             pill.classList.remove('active');
             const href = pill.getAttribute('href');
+            const dataPage = pill.dataset.page;
             
-            if (currentPath === href || 
-                (currentPath === '/' && pill.dataset.page === 'dashboard') ||
-                (currentPath.includes('trade_finance') && pill.dataset.page === 'forms') ||
-                (currentPath.includes('treasury') && pill.dataset.page === 'forms') ||
-                (currentPath.includes('cash_management') && pill.dataset.page === 'forms') ||
-                (currentPath.includes('ai-chat') && pill.dataset.page === 'ai-chat') ||
-                (currentPath.includes('ai_chat') && pill.dataset.page === 'ai-chat')) {
+            // Exact match
+            if (currentPath === href) {
+                pill.classList.add('active');
+            }
+            // Dashboard page
+            else if (currentPath === '/' && dataPage === 'dashboard') {
+                pill.classList.add('active');
+            }
+            // AI Document Scrutiny pages (including trade finance, treasury, cash management forms)
+            else if ((currentPath === '/ai-chat' || currentPath === '/ai-chat-pro' || currentPath.includes('ai_chat_dashboard') || currentPath.includes('trade_finance') || currentPath.includes('treasury') || currentPath.includes('cash_management') || currentPath.includes('lc_catalog') || currentPath.includes('register_lc_docs')) && dataPage === 'ai-chat') {
+                pill.classList.add('active');
+            }
+            // Admin Configuration pages
+            else if (currentPath.includes('document_entity_maintenance') && dataPage === 'ai-Admin') {
                 pill.classList.add('active');
             }
         });
