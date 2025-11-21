@@ -17984,10 +17984,10 @@ Return compliance status for each field.'''
             thread.start()
             threads.append(thread)
             
-            # Add 30-second buffer after every 3 documents to prevent token limit
+            # Add 15-second buffer after every 3 documents to prevent token limit
             if idx % 3 == 0 and idx < len(document_groups):
-                logger.info(f"⏸️ Processed {idx} documents - Adding 30-second buffer to prevent rate limits...")
-                time.sleep(30)
+                logger.info(f"⏸️ Processed {idx} documents - Adding 15-second buffer to prevent rate limits...")
+                time.sleep(15)
                 logger.info(f"▶️ Resuming extraction for next batch...")
         
         logger.info(f"⏳ Waiting for all {len(threads)} extraction threads to complete...")
@@ -18008,9 +18008,9 @@ Return compliance status for each field.'''
 
         logger.info(f"✅ Parallel extraction complete: {len(results)} document groups processed")
         
-        # Add 30-second buffer after entity extraction before returning to next step
-        logger.info(f"⏸️ Entity extraction complete - Adding 30-second buffer before proceeding...")
-        time.sleep(30)
+        # Add 15-second buffer after entity extraction before returning to next step
+        logger.info(f"⏸️ Entity extraction complete - Adding 15-second buffer before proceeding...")
+        time.sleep(15)
         logger.info(f"▶️ Proceeding to next processing step...")
         
         return results

@@ -8040,11 +8040,11 @@ button:focus {
                     showFieldConfirmation: false, // Control field confirmation modal visibility
                     selectedFields: {}, // Track user's field selections
                     confirmationViewMode: 'list', // View mode for confirmation popup ('list' or 'tiles')
-                    requiredDocsViewMode: 'table', // View mode for required documents tab ('table', 'list', or 'tiles')
+                    requiredDocsViewMode: 'tiles', // View mode for required documents tab ('table', 'list', or 'tiles')
                     documentsFilter: 'all', // Filter for required documents ('all', 'uploaded', 'pending')
-                    missingValuesViewMode: 'table', // View mode for missing values tab ('table', 'list', or 'tiles')
-                    fieldValidationViewMode: 'table', // View mode for field validations tab ('table', 'list', or 'tiles')
-                    discrepanciesViewMode: 'table' // View mode for discrepancies section ('table', 'list', or 'tiles')
+                    missingValuesViewMode: 'tiles', // View mode for missing values tab ('table', 'list', or 'tiles')
+                    fieldValidationViewMode: 'list', // View mode for field validations tab ('table', 'list', or 'tiles')
+                    discrepanciesViewMode: 'tiles' // View mode for discrepancies section ('table', 'list', or 'tiles')
                 }
             },
             computed: {
@@ -8953,11 +8953,11 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                             // Trigger discrepancy check if from document register
                             if (this.isFromDocumentRegister && this.lcContext) {
-                                console.log('⏳ Waiting 45 seconds before compliance check to avoid rate limits...');
+                                console.log('⏳ Waiting 30 seconds before compliance check to avoid rate limits...');
                                 setTimeout(() => {
                                     console.log('🔍 Starting discrepancy check after rate limit buffer');
                                     this.performDiscrepancyCheck();
-                                }, 45000); // 45 second delay
+                                }, 30000); // 30 second delay
                             }
                         } else {
                             throw new Error(data.error || 'Revalidation failed');
@@ -10549,11 +10549,11 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                         // Automatically run discrepancy check if we have results
                         if (this.results && this.results.length > 0) {
-                            console.log('⏳ Waiting 45 seconds before compliance check to avoid rate limits...');
+                            console.log('⏳ Waiting 30 seconds before compliance check to avoid rate limits...');
                             setTimeout(() => {
                                 console.log('🔍 Starting discrepancy check after rate limit buffer');
                                 this.performDiscrepancyCheck();
-                            }, 45000); // 45 second delay
+                            }, 30000); // 30 second delay
                         }
                     } catch (error) {
                         console.error('❌ Error loading cross-verification rules:', error);
@@ -10573,11 +10573,11 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     }
                     
                     if (this.results && this.results.length > 0 && this.isFromDocumentRegister && this.lcContext) {
-                        console.log('⏳ Waiting 45 seconds before compliance check to avoid rate limits...');
+                        console.log('⏳ Waiting 30 seconds before compliance check to avoid rate limits...');
                         setTimeout(() => {
                             console.log('🔍 Starting discrepancy check after rate limit buffer');
                             this.performDiscrepancyCheck();
-                        }, 45000); // 45 second delay
+                        }, 30000); // 30 second delay
                     }
                 },
 
