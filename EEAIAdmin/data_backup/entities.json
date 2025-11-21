@@ -327,7 +327,7 @@
     {
       "id": "51",
       "name": "Net Weight",
-      "description": "Weight of goods excluding packaging - Extract Net weight the complete numeric weight value including unit of measurement, exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "description": "Weight of goods excluding packaging - Extract Net weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -336,7 +336,7 @@
     {
       "id": "52",
       "name": "Volume",
-      "description": "Total volume of the shipment - Extract the complete numeric weight value including unit of measurement, exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "description": "Total volume of the shipment - Extract the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -2388,7 +2388,7 @@
     {
       "id": "299",
       "name": "Tare weight",
-      "description": "Tare weight - EXTRACT tare weight including unit of measurement",
+      "description": "Tare weight",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -2837,7 +2837,7 @@
     {
       "id": "351",
       "name": "Full or empty container",
-      "description": "Capture the container status only if the document explicitly uses the exact words ‘FULL’ or ‘EMPTY’. Do not infer or assume the status based on context, cargo details, shipment type, or any other information. Extract only the literal value FULL or EMPTY when it is clearly mentioned in the document. If not explicitly stated, return null or leave the field blank.",
+      "description": "Code specifying how full a piece of transport equipment is",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",
@@ -2909,7 +2909,7 @@
     {
       "id": "359",
       "name": "Gross Weight/Net Weight/Transport Means, gross weight",
-      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value including unit of measurement, exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -4132,7 +4132,7 @@
     {
       "id": "515",
       "name": "Gross Weight",
-      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value including unit of measurement, exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "",
@@ -4267,7 +4267,7 @@
     {
       "id": "21",
       "name": "Net Weight",
-      "description": "Net weight of the goods without packaging or container - Extract the complete numeric weight value including unit of measurement, exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "description": "Net weight of the goods without packaging or container - Extract the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -4276,7 +4276,7 @@
     {
       "id": "50",
       "name": "Gross Weight/Net Weight/Transport Means, gross weight",
-      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value including unit of measurement, exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
+      "description": "Transport Means, gross weight - Extract GROSS weight the complete numeric weight value exactly as it appears in the document. Preserve comma thousand separators (e.g., '1,950' not '1.950' or '1950'). Treat commas as thousand separators and periods as decimal points. Do not reformat, round, or alter the numeric value.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "8",
@@ -4537,7 +4537,7 @@
     {
       "id": "642",
       "name": "Gross Tonnage / Deadweight Tonnage",
-      "description": "Gross Tonnage / Deadweight Tonnage - EXTRACT numeric weight value including unit of measurement",
+      "description": "Gross Tonnage / Deadweight Tonnage",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "",

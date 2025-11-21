@@ -303,18 +303,24 @@ Return ONLY a JSON object (no markdown, no explanation):
 3. Accept semantic equivalence (abbreviations, format variations, synonyms)
 4. Only flag as non-compliant if there's a genuine discrepancy
 
+**CRITICAL RULES:**
+- NEVER make assumptions about missing or empty values
+- If either documentValue or lcValue is empty, null, "N/A", "Not found", or missing, you MUST still include it in the comparison with "compliant": false
+- DO NOT substitute assumed values for missing data
+- Return actual extracted values only - if no value exists, use empty string "" or the exact text found
+
 **Return ONLY a JSON array:**
 [
   {{
     "field": "Document field name",
-    "documentValue": "Value from document",
+    "documentValue": "Value from document (use empty string if not found - DO NOT ASSUME)",
     "lcField": "Matching LC field name",
-    "lcValue": "Value from LC",
+    "lcValue": "Value from LC (use empty string if not found - DO NOT ASSUME)",
     "ruleCode": "R-XXXX",
     "ruleDescription": "Rule description",
-    "compliant": true or false,
+    "compliant": false if either value is missing/empty, otherwise true/false based on comparison,
     "explanation": "Brief explanation of comparison result",
-    "severity": "low" or "high"
+    "severity": "high" if values are missing/empty, otherwise "low" or "high"
   }}
 ]
 
@@ -345,18 +351,47 @@ Return ONLY a JSON object (no markdown, no explanation):
                 
                 # Add document metadata to each result
                 for comparison in comparisons:
+                    doc_value = comparison.get('documentValue', '')
+                    lc_value = comparison.get('lcValue', '')
+                    
+                    # Check if either value is empty/None/null
+                    is_doc_value_empty = not doc_value or str(doc_value).strip() == '' or str(doc_value).lower() in ['none', 'null', 'n/a', 'not found', 'not available']
+                    is_lc_value_empty = not lc_value or str(lc_value).strip() == '' or str(lc_value).lower() in ['none', 'null', 'n/a', 'not found', 'not available']
+                    
+                    # If either value is empty, mark as non-compliant (override LLM decision)
+                    if is_doc_value_empty or is_lc_value_empty:
+                        is_compliant = False
+                        explanation = comparison.get('explanation', '')
+                        
+                        if is_doc_value_empty and is_lc_value_empty:
+                            explanation = f"Both document value and LC value are empty/missing. Cannot perform comparison."
+                            severity = 'high'
+                        elif is_doc_value_empty:
+                            explanation = f"Document value is empty/missing (LC value: '{lc_value}'). Cannot verify compliance."
+                            severity = 'high'
+                        else:
+                            explanation = f"LC value is empty/missing (Document value: '{doc_value}'). Cannot perform comparison."
+                            severity = 'high'
+                        
+                        logger.warning(f"⚠️ Empty value detected for {comparison.get('field')}: {explanation}")
+                    else:
+                        # Both values present, use LLM's compliance decision
+                        is_compliant = comparison.get('compliant', False)
+                        explanation = comparison.get('explanation')
+                        severity = comparison.get('severity', 'low' if is_compliant else 'high')
+                    
                     results.append({
                         'field': comparison.get('field'),
                         'documentType': doc_type,
                         'documentName': doc_name,
-                        'documentValue': comparison.get('documentValue'),
-                        'lcValue': comparison.get('lcValue'),
+                        'documentValue': doc_value,
+                        'lcValue': lc_value,
                         'lcField': comparison.get('lcField'),
                         'ruleCode': comparison.get('ruleCode'),
                         'ruleDescription': comparison.get('ruleDescription'),
-                        'discrepancy': comparison.get('explanation'),
-                        'severity': comparison.get('severity', 'low' if comparison.get('compliant') else 'high'),
-                        'isCompliant': comparison.get('compliant', False),
+                        'discrepancy': explanation,
+                        'severity': severity,
+                        'isCompliant': is_compliant,
                         'hash': doc.get('hash', doc.get('file_hash', ''))
                     })
                     

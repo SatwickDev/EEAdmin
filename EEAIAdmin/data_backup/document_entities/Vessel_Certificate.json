@@ -1,0 +1,76 @@
+{
+  "documentId": "Vessel_Certificate",
+  "documentName": "Vessel Certificate",
+  "mappings": [
+    {
+      "documentId": "Vessel_Certificate",
+      "documentName": "Vessel Certificate",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "621",
+      "entityName": "Certificate Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional",
+      "id": "1169"
+    },
+    {
+      "documentId": "Vessel_Certificate",
+      "documentName": "Vessel Certificate",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "124",
+      "entityName": "Issue Date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates",
+      "fieldType": "optional",
+      "id": "88514"
+    },
+    {
+      "documentId": "Vessel_Certificate",
+      "documentName": "Vessel Certificate",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "219",
+      "entityName": "Expiry Date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "2",
+      "dataCategoryValue": "Dates",
+      "fieldType": "optional",
+      "id": "88516"
+    },
+    {
+      "documentId": "Vessel_Certificate",
+      "documentName": "Vessel Certificate",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "235",
+      "entityName": "Documentary credit number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional",
+      "id": "88517"
+    },
+    {
+      "documentId": "Vessel_Certificate",
+      "documentName": "Vessel Certificate",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "66",
+      "entityName": "Vessel Name",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "optional",
+      "id": "88518"
+    }
+  ]
+}
