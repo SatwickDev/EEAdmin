@@ -4353,6 +4353,447 @@
       "mappingFormDescription": "",
       "dataCategoryId": "",
       "dataCategoryValue": "References"
+    },
+    {
+      "id": "622",
+      "name": "Type of Instrument",
+      "description": "Type of Instrument (Letter of Credit, Documentary Collection, Guarantee)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "623",
+      "name": "Instrument Number",
+      "description": "Instrument Number - EXTRACT Instrument Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "624",
+      "name": "Transport Document Details",
+      "description": "EXTRACT Transport Document Details (Bill of Lading / Airway Bill)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "625",
+      "name": "Bank Charges",
+      "description": "Bank Charges",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Amounts/charges/percentages"
+    },
+    {
+      "id": "626",
+      "name": "Settlement Instructions",
+      "description": "EXTRACT Settlement Instruction details (account details, SWIFT codes)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "627",
+      "name": "Name of Issuing Inspection Company",
+      "description": "EXTRACT ONLY Name of Issuing Inspection Company, DO NOT include address and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "628",
+      "name": "Address of Issuing Inspection Company",
+      "description": "EXTRACT only Address of Issuing Inspection Company, DO NOT include mail and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "629",
+      "name": "Date of Weighing",
+      "description": "Date of Weighing",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "630",
+      "name": "Method of Weighing",
+      "description": "Method of Weighing (scale type, calibration details)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "631",
+      "name": "Name of Inspector",
+      "description": "EXTRACT only Name of Inspector, DO NOT include address details and contact detals",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "632",
+      "name": "Signature of Inspector",
+      "description": "EXTRACT Signature of Inspector",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "633",
+      "name": "Inspection Location",
+      "description": "Inspection Location",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "634",
+      "name": "Certification Statement",
+      "description": "Certification Statement (confirming accuracy)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "635",
+      "name": "Name of Classification Society or Inspection Company",
+      "description": "EXTRACT only Name of Classification Society or Inspection Company. DO NOT include address and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "636",
+      "name": "Address of Classification Society or Inspection Company",
+      "description": "EXTRACT only Address of Classification Society or Inspection Company. DO NOT include email and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "637",
+      "name": "Contact Details",
+      "description": "Contact Details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "638",
+      "name": "IMO Number",
+      "description": "IMO Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "639",
+      "name": "Flag / Registry",
+      "description": "Flag / Registry",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "640",
+      "name": "Type of Vessel",
+      "description": "Type of Vessel (bulk carrier, tanker, container ship)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "641",
+      "name": "Year of Build",
+      "description": "EXTARCT only Year of Build. DO NOT include day and month details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "642",
+      "name": "Gross Tonnage / Deadweight Tonnage",
+      "description": "Gross Tonnage / Deadweight Tonnage",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "643",
+      "name": "Hull Number",
+      "description": "Hull Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "644",
+      "name": "Statement of Seaworthiness or Compliance",
+      "description": "Statement of Seaworthiness or Compliance",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "645",
+      "name": "Class Notation",
+      "description": "Class Notation (e.g., Lloyd’s Register, Bureau Veritas)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "646",
+      "name": "Validity Period",
+      "description": "Validity Period",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "647",
+      "name": "Survey Type",
+      "description": "Survey Type (annual, intermediate, special)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "648",
+      "name": "Owner Name",
+      "description": "EXTRACT only Owner Name. DO NOT include address and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "649",
+      "name": "Owner Address",
+      "description": "EXTARCT only Owner Address. DO NOT include contact and email details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "650",
+      "name": "Operator Name",
+      "description": "EXTRACT only Name of the Operator. DO NOT include",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "651",
+      "name": "Operator Address",
+      "description": "EXTARCT Operators Address. DO NOT include address and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "652",
+      "name": "Port of Registry",
+      "description": "Port of Registry",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "653",
+      "name": "Last Dry Dock Date",
+      "description": "Last Dry Dock Date",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "654",
+      "name": "Date of Inspection",
+      "description": "Date of Inspection",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Dates"
+    },
+    {
+      "id": "655",
+      "name": "Place of Inspection",
+      "description": "Place of Inspection",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Locations"
+    },
+    {
+      "id": "656",
+      "name": "Remarks or Conditions",
+      "description": "Remarks or Conditions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "657",
+      "name": "Receipt Number",
+      "description": "Receipt Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "658",
+      "name": "Tracking Number",
+      "description": "Tracking Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "659",
+      "name": "Name of Courier Service",
+      "description": "EXTRACT only Name of Courier Service. DO NOT include the address and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "660",
+      "name": "Address of Courier Service",
+      "description": "EXTRACT only Address of Courier Service. DO NOT include the email and contact details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "661",
+      "name": "Contact Information",
+      "description": "Contact Information",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "662",
+      "name": "Contact Person",
+      "description": "Contact Person",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "663",
+      "name": "Service Type",
+      "description": "Service Type (Express, Standard)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "664",
+      "name": "Tracking URL or Barcode",
+      "description": "Tracking URL or Barcode",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "665",
+      "name": "Reference to LC Number or Contract",
+      "description": "Reference to LC Number or Contract",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "666",
+      "name": "Courier Representative Signature",
+      "description": "Courier Representative Signature",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "667",
+      "name": "Sender Signature",
+      "description": "Sender Signature (optional)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "668",
+      "name": "Beneficiary Account Number",
+      "description": "Beneficiary Account Number. EXTRACT only account number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "669",
+      "name": "Confirmation Party Details",
+      "description": "Confirmation Party Details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
+    },
+    {
+      "id": "670",
+      "name": "Packaging Details",
+      "description": "Packaging Details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Measure/Quantities"
     }
   ]
 }

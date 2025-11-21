@@ -877,7 +877,10 @@
                 '49': { name: 'Confirmation Instructions', description: 'Confirmation requirements' },
                 '71B': { name: 'Charges', description: 'Details of charges' },
                 '72': { name: 'Sender to Receiver Information', description: 'Information between banks' },
-                '78': { name: 'Instructions to Paying Bank', description: 'Special instructions' }
+                 '78': { name: 'Instructions to Paying Bank', description: 'Special instructions' },
+                '31D': { name: 'Place of Expiry', description: 'Location where the LC expires' },
+                '59A': { name: 'Beneficiary Account Number', description: 'Account number of the beneficiary' },
+                '71D': { name: 'Confirmation Party Details', description: 'Details of the confirmation party' }
             };
 
             return fieldMap[tag] || { name: `Field ${tag}`, description: 'SWIFT field' };

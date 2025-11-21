@@ -156,7 +156,6 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional"
     },
- 
     {
       "id": "870",
       "documentId": "Letter_of_Credit",
@@ -604,6 +603,48 @@
       "dataCategoryValue": "Locations",
       "fieldType": "mandatory",
       "id": "88488"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "618",
+      "entityName": "Place of Expiry",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "mandatory",
+      "id": "88529"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "668",
+      "entityName": "Beneficiary Account Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory",
+      "id": "88530"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "669",
+      "entityName": "Confirmation Party Details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "mandatory",
+      "id": "88531"
     }
   ]
 }

@@ -127,6 +127,48 @@
       "dataCategoryValue": "Dates",
       "fieldType": "optional",
       "id": "88515"
+    },
+    {
+      "documentId": "Certificate_of_Weight",
+      "documentName": "Certificate of Weight",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "627",
+      "entityName": "Name of Issuing Inspection Company",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "3",
+      "dataCategoryValue": "Parties/addresses/places/countries",
+      "fieldType": "optional",
+      "id": "88537"
+    },
+    {
+      "documentId": "Certificate_of_Weight",
+      "documentName": "Certificate of Weight",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "628",
+      "entityName": "Address of Issuing Inspection Company",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "4",
+      "dataCategoryValue": "Locations",
+      "fieldType": "optional",
+      "id": "88538"
+    },
+    {
+      "documentId": "Certificate_of_Weight",
+      "documentName": "Certificate of Weight",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "670",
+      "entityName": "Packaging Details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional",
+      "id": "88539"
     }
   ]
 }

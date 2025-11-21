@@ -24117,11 +24117,18 @@ def generate_mt700_message(lc_data):
         ":27:" + lc_data.get('sequenceOfTotal', '1/1'),  # Sequence of Total - NEW
         ":31C:" + issue_date,  # Date of Issue
         ":40A:IRREVOCABLE",  # Form of Documentary Credit
-        ":31D:" + expiry_date + lc_data.get('finalDestination', 'ANY BANK').upper(),  # Date and Place of Expiry
+        # Place of Expiry (if present)
+        (":31D:" + expiry_date + " " + lc_data.get('placeOfExpiry', '').upper()) if lc_data.get('placeOfExpiry') else (":31D:" + expiry_date + " " + lc_data.get('finalDestination', 'ANY BANK').upper()),
         ":50:" + format_address_field(lc_data['applicant']),  # Applicant
         ":59:" + format_address_field(lc_data['beneficiary']),  # Beneficiary
+        # Beneficiary Account Number (if present)
+        (":59A:" + lc_data['beneficiaryAccountNumber']) if lc_data.get('beneficiaryAccountNumber') else None,
         ":32B:" + currency + amount,  # Currency Code, Amount
+        # Confirmation Party Details (if present)
+        (":71D:" + lc_data['confirmationPartyDetails']) if lc_data.get('confirmationPartyDetails') else None,
     ]
+    # Remove None values if any field is not present
+    swift_lines = [line for line in swift_lines if line is not None]
 
     # Add issuing bank
     if lc_data.get('issuingBank'):

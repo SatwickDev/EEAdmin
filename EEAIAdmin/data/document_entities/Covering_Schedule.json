@@ -253,6 +253,76 @@
       "dataCategoryValue": "Parties/addresses/places/countries",
       "fieldType": "optional",
       "id": "88511"
+    },
+    {
+      "documentId": "Covering_Schedule",
+      "documentName": "Covering Schedule",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "622",
+      "entityName": "Type of Instrument",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional",
+      "id": "88532"
+    },
+    {
+      "documentId": "Covering_Schedule",
+      "documentName": "Covering Schedule",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "623",
+      "entityName": "Instrument Number",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional",
+      "id": "88533"
+    },
+    {
+      "documentId": "Covering_Schedule",
+      "documentName": "Covering Schedule",
+      "documentCategoryId": "2",
+      "documentCategoryName": "Transport Processes",
+      "entityId": "624",
+      "entityName": "Transport Document Details",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "8",
+      "dataCategoryValue": "Measure/Quantities",
+      "fieldType": "optional",
+      "id": "88534"
+    },
+    {
+      "documentId": "Covering_Schedule",
+      "documentName": "Covering Schedule",
+      "documentCategoryId": "4",
+      "documentCategoryName": "Financial Processes",
+      "entityId": "625",
+      "entityName": "Bank Charges",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "7",
+      "dataCategoryValue": "Amounts/charges/percentages",
+      "fieldType": "optional",
+      "id": "88535"
+    },
+    {
+      "documentId": "Covering_Schedule",
+      "documentName": "Covering Schedule",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "626",
+      "entityName": "Settlement Instructions",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "optional",
+      "id": "88536"
     }
   ]
 }
