@@ -292,35 +292,39 @@ class DocumentClassifier:
         prompt_template = classification_config.get('prompt_template')
 
         if prompt_template:
-            # Use template from YAML
+            # Use template from YAML - NO TRUNCATION
             prompt = prompt_template.format(
                 system_prompt=system_prompt,
                 document_types_by_category=chr(10).join(category_sections),
-                ocr_text=ocr_text[:25000]
+                ocr_text=ocr_text
             )
-            logging.info("Printing the value of the prompt for the first page classification : {}".format(prompt))
+            logging.info("Generated classification prompt with full OCR text (length: {} chars)".format(len(ocr_text)))
         else:
-            # Fallback to hardcoded template
+            # Fallback to hardcoded template - NO TRUNCATION
             prompt = f"""
 {system_prompt}
 
-### Available Document Types by Business Process Category:
+### PREDEFINED DOCUMENT TYPES (YOU MUST CHOOSE FROM THIS LIST ONLY):
 
 {chr(10).join(category_sections)}
 
+### CRITICAL INSTRUCTION:
+**The document_type in your response MUST be one of the types listed above. If the document title uses different terminology, use your trade finance expertise to map it to the closest matching type from the list. DO NOT create new document types.**
+
 ### OCR Text to Classify:
-"{ocr_text[:25000]}"
+"{ocr_text}"
 
 ### Required Output:
 Return ONLY this JSON structure (no markdown, no additional text):
 {{
-  "category": "<Exact category from the list above>",
-  "document_type": "<Exact document type from the list above>",
+  "category": "<MUST be exactly one from: Commercial Processes, Transport Processes, Border and Regulatory Processes, Financial Processes, Quality and Compliance Processes>",
+  "document_type": "<MUST be exactly one from the predefined list above - use your trade finance expertise to map variations>",
   "sub_type": "<Specific sub-type if identifiable, otherwise null>",
   "confidence": <0-100>,
-  "reasoning": "<Brief explanation>"
+  "reasoning": "<Explain: 1) Document title/header found 2) If title differs from our list, explain how you mapped it using trade finance knowledge 3) Why this is the closest match>"
 }}
 """
+            logging.info("Generated fallback classification prompt with full OCR text (length: {} chars)".format(len(ocr_text)))
         try:
             # Ensure OpenAI is configured before each call (thread safety)
             if not openai.api_key:

@@ -18778,7 +18778,19 @@ Return compliance status for each field.'''
                 'certificate from Ship-Owner': 'Vessel Certificate',
                 'certificate from ship-Owner': 'Vessel Certificate',
                 'Certificate from ship-Owner': 'Vessel Certificate',
-                'CERTIFICATE FROM SHIP-OWNER': 'Vessel Certificate'
+                'CERTIFICATE FROM SHIP-OWNER': 'Vessel Certificate',
+ 
+                # Quality and Material Inspection Certificates
+                'Mill Certificate': 'Certificate of Inspection for Organic Products',
+                'mill certificate': 'Certificate of Inspection for Organic Products',
+                'Mill Test Certificate': 'Certificate of Inspection for Organic Products',
+                'mill test certificate': 'Certificate of Inspection for Organic Products',
+                'Material Test Certificate': 'Certificate of Inspection for Organic Products',
+                'material test certificate': 'Certificate of Inspection for Organic Products',
+                'Quality Certificate': 'Certificate of Inspection for Organic Products',
+                'quality certificate': 'Certificate of Inspection for Organic Products',
+                'Test Certificate': 'Certificate of Inspection for Organic Products',
+                'test certificate': 'Certificate of Inspection for Organic Products'
                 # Add more aliases as needed
             }
             

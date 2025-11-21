@@ -3711,9 +3711,6 @@ button:focus {
                                             <i class="mdi mdi-chart-line mr-1"></i>Confidence
                                         </th>
                                         <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">
-                                            <i class="mdi mdi-shield-check mr-1"></i>Score
-                                        </th>
-                                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">
                                             <i class="mdi mdi-clock-outline mr-1"></i>Time
                                         </th>
                                         <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">Actions</th>
@@ -3778,18 +3775,6 @@ button:focus {
                                                     {% raw %}{{ result.confidence }}{% endraw %}%
                                                 </span>
                                             </div>
-                                        </td>
-                                        
-                                        <!-- Compliance Score -->
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-lg font-bold text-sm bg-white shadow-sm"
-                                                  :class="{
-                                                      'text-emerald-700 border-2 border-emerald-400': result.complianceScore >= 80,
-                                                      'text-amber-700 border-2 border-amber-400': result.complianceScore >= 60 && result.complianceScore < 80,
-                                                      'text-rose-700 border-2 border-rose-400': result.complianceScore < 60
-                                                  }">
-                                                {% raw %}{{ result.complianceScore }}{% endraw %}%
-                                            </span>
                                         </td>
                                         
                                         <!-- Processing Time -->
@@ -4700,20 +4685,20 @@ button:focus {
                                     <div class="divide-y divide-gray-100">
                                         <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
                                              :key="fieldKey"
-                                             class="grid grid-cols-12 gap-2 px-3 py-2 group hover:bg-slate-50/30 transition-all duration-200"
+                                             class="grid grid-cols-12 gap-2 px-3 py-2 group transition-all duration-200"
                                              :class="{
-                                                 'bg-teal-50/30': activeFieldIndex === index && fieldData?.value && !manuallyEditedFields[fieldKey] && !editedFields[fieldKey],
-                                                 'bg-slate-50/40': manuallyEditedFields[fieldKey] || editedFields[fieldKey],
-                                                 'bg-teal-50/30': fieldData?.bounding_box && (manuallyEditedFields[fieldKey] || editedFields[fieldKey]),
-                                                 'bg-red-50/20': !fieldData?.value
+                                                 'bg-yellow-100 border-l-4 border-yellow-500': editingField === fieldKey || manuallyEditedFields[fieldKey],
+                                                 'bg-red-100 border-l-4 border-red-500 hover:bg-red-100/80': !fieldData?.value && !editedFields[fieldKey] && !manuallyEditedFields[fieldKey] && editingField !== fieldKey && (fieldData?.priority === 'Optional' || fieldData?.priority === 'Conditional'),
+                                                 'hover:bg-slate-50/30 bg-teal-50/30': activeFieldIndex === index && (fieldData?.value || editedFields[fieldKey]) && editingField !== fieldKey && !manuallyEditedFields[fieldKey],
+                                                 'hover:bg-slate-50/30': editingField !== fieldKey && (fieldData?.value || !((fieldData?.priority === 'Optional' || fieldData?.priority === 'Conditional') && !fieldData?.value))
                                              }"
                                              @click="highlightField(index, fieldData)">
 
                                             <!-- Field Description (3 columns) -->
                                             <div class="col-span-3 flex items-center gap-1.5">
                                                 <div class="w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
-                                                     :class="fieldData?.value ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'">
-                                                    <i class="mdi text-[10px]" :class="fieldData?.value ? 'mdi-check-circle' : 'mdi-alert-circle-outline'"></i>
+                                                     :class="(fieldData?.value || (editingField === fieldKey && editedFields[fieldKey])) ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'">
+                                                    <i class="mdi text-[10px]" :class="(fieldData?.value || (editingField === fieldKey && editedFields[fieldKey])) ? 'mdi-check-circle' : 'mdi-alert-circle-outline'"></i>
                                                 </div>
                                                 <span class="text-[10px] font-semibold text-gray-700" style="font-family: 'Inter', -apple-system, sans-serif;">
                                                     {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
@@ -4721,17 +4706,29 @@ button:focus {
                                             </div>
 
                                             <!-- Field Value (5 columns) -->
-                                            <div class="col-span-5 flex items-center w-full">
+                                            <div class="col-span-5 flex items-center gap-1 w-full">
                                                 <!-- Edit Mode -->
-                                                <textarea v-if="editingField === fieldKey"
-                                                    v-model="editedFields[fieldKey]"
-                                                    @blur="saveFieldEdit(fieldKey)"
-                                                    @keyup.enter="saveFieldEdit(fieldKey)"
-                                                    @keyup.esc="cancelFieldEdit()"
-                                                    class="w-full px-2 py-1 border border-teal-500 rounded text-[10px] resize-none focus:outline-none focus:border-teal-600"
-                                                    style="font-family: 'Inter', -apple-system, sans-serif;"
-                                                    :ref="'fieldInput_' + fieldKey"
-                                                    rows="2"></textarea>
+                                                <div v-if="editingField === fieldKey" class="flex items-center gap-1 w-full">
+                                                    <textarea
+                                                        v-model="editedFields[fieldKey]"
+                                                        @keyup.esc="cancelFieldEdit()"
+                                                        class="w-full px-2 py-1 border border-yellow-500 rounded text-[10px] resize-none focus:outline-none focus:border-yellow-600"
+                                                        style="font-family: 'Inter', -apple-system, sans-serif;"
+                                                        :ref="'fieldInput_' + fieldKey"
+                                                        rows="2"></textarea>
+                                                    <!-- Save Button (Green Tick) -->
+                                                    <button @click.stop="saveFieldEdit(fieldKey)"
+                                                            class="w-5 h-5 bg-green-500 hover:bg-green-600 text-white rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                                            title="Save">
+                                                        <i class="mdi mdi-check text-xs font-bold"></i>
+                                                    </button>
+                                                    <!-- Cancel Button (Red Cross) -->
+                                                    <button @click.stop="cancelFieldEdit()"
+                                                            class="w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded flex items-center justify-center flex-shrink-0 transition-all"
+                                                            title="Cancel">
+                                                        <i class="mdi mdi-close text-xs font-bold"></i>
+                                                    </button>
+                                                </div>
                                                 
                                                 <!-- Display Mode -->
                                                 <div v-else @click.stop="startFieldEdit(fieldKey, fieldData?.value)" class="w-full cursor-text">
@@ -4798,7 +4795,12 @@ button:focus {
                                 <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="grid grid-cols-2 gap-3">
                                     <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
                                          :key="fieldKey"
-                                         class="group relative bg-white rounded-lg border border-gray-200 hover:border-teal-300 transition-all duration-200 hover:shadow-md overflow-hidden"
+                                         class="group relative bg-white rounded-lg transition-all duration-200 hover:shadow-md overflow-hidden"
+                                         :class="{
+                                             'border-4 border-yellow-500 bg-yellow-50': editingField === fieldKey || manuallyEditedFields[fieldKey],
+                                             'border-4 border-red-500 bg-red-100': !fieldData?.value && !editedFields[fieldKey] && !manuallyEditedFields[fieldKey] && editingField !== fieldKey && (fieldData?.priority === 'Optional' || fieldData?.priority === 'Conditional'),
+                                             'border border-gray-200 hover:border-teal-300': (fieldData?.value || editedFields[fieldKey]) && editingField !== fieldKey && !manuallyEditedFields[fieldKey]
+                                         }"
                                          @click="highlightField(index, fieldData)">
                                         
                                         <!-- Field Card -->
@@ -4807,8 +4809,8 @@ button:focus {
                                             <div class="flex items-center justify-between mb-2">
                                                 <div class="flex items-center gap-2 flex-1 min-w-0">
                                                     <div class="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
-                                                         :class="fieldData?.value ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'">
-                                                        <i class="mdi text-xs" :class="fieldData?.value ? 'mdi-check' : 'mdi-close'"></i>
+                                                         :class="(fieldData?.value || (editingField === fieldKey && editedFields[fieldKey])) ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'">
+                                                        <i class="mdi text-xs" :class="(fieldData?.value || (editingField === fieldKey && editedFields[fieldKey])) ? 'mdi-check' : 'mdi-close'"></i>
                                                     </div>
                                                     <span class="text-xs font-bold text-gray-700 truncate">
                                                         {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
@@ -4823,12 +4825,42 @@ button:focus {
                                             </div>
 
                                             <!-- Field Value -->
-                                            <div class="bg-gray-50 rounded px-2 py-1.5 mb-2 min-h-[40px] flex items-center">
-                                                <div v-if="fieldData?.value" class="text-xs text-gray-800 line-clamp-2">
-                                                    {% raw %}{{ fieldData.value }}{% endraw %}
+                                            <div class="bg-gray-50 rounded px-2 py-1.5 mb-2 min-h-[40px]">
+                                                <!-- Edit Mode -->
+                                                <div v-if="editingField === fieldKey" class="flex flex-col gap-1">
+                                                    <textarea
+                                                        v-model="editedFields[fieldKey]"
+                                                        @keyup.esc="cancelFieldEdit()"
+                                                        class="w-full px-2 py-1 border border-yellow-500 rounded text-[10px] resize-none focus:outline-none focus:border-yellow-600"
+                                                        style="font-family: 'Inter', -apple-system, sans-serif;"
+                                                        :ref="'fieldInput_' + fieldKey"
+                                                        rows="2"></textarea>
+                                                    <div class="flex items-center justify-end gap-1">
+                                                        <!-- Save Button (Green Tick) -->
+                                                        <button @click.stop="saveFieldEdit(fieldKey)"
+                                                                class="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded flex items-center gap-1 text-[9px] font-semibold transition-all"
+                                                                title="Save">
+                                                            <i class="mdi mdi-check text-xs"></i>
+                                                            Save
+                                                        </button>
+                                                        <!-- Cancel Button (Red Cross) -->
+                                                        <button @click.stop="cancelFieldEdit()"
+                                                                class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded flex items-center gap-1 text-[9px] font-semibold transition-all"
+                                                                title="Cancel">
+                                                            <i class="mdi mdi-close text-xs"></i>
+                                                            Cancel
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div v-else class="text-[10px] text-gray-400 italic">
-                                                    No value
+                                                
+                                                <!-- Display Mode -->
+                                                <div v-else class="flex items-center min-h-[40px]">
+                                                    <div v-if="fieldData?.value" class="text-xs text-gray-800 line-clamp-2">
+                                                        {% raw %}{{ fieldData.value }}{% endraw %}
+                                                    </div>
+                                                    <div v-else class="text-[10px] text-gray-400 italic">
+                                                        No value
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -4933,7 +4965,7 @@ button:focus {
                                 </button>
 
                                 <!-- Close Button -->
-                                <button @click="showDiscrepancyModal = false"
+                                <button @click="showDiscrepancyModal = false;this.discrepancyFilter = 'all';"
                                         class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm" style="font-family: 'Inter', -apple-system, sans-serif;">
                                     <i class="mdi mdi-close text-base"></i>
                                     <span>Close</span>
@@ -5975,7 +6007,30 @@ button:focus {
                         </button>
                     </div>
                 </div>
-
+                <!-- Filter Buttons for Accepted/Exceptions -->
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="text-sm font-semibold text-gray-700">Filter:</span>
+                                <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-lg p-1">
+                                    <button @click="discrepancyFilter = 'all'"
+                                            :class="discrepancyFilter === 'all' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-800'"
+                                            class="px-3 py-1.5 rounded-md transition-all duration-200 flex items-center gap-1.5 font-semibold text-xs">
+                                        <i class="mdi mdi-filter-variant text-sm"></i>
+                                        <span>All</span>
+                                    </button>
+                                    <button @click="discrepancyFilter = 'accepted'"
+                                            :class="discrepancyFilter === 'accepted' ? 'bg-green-50 text-green-700 border border-green-300 shadow-sm' : 'text-slate-600 hover:text-slate-800'"
+                                            class="px-3 py-1.5 rounded-md transition-all duration-200 flex items-center gap-1.5 font-semibold text-xs">
+                                        <i class="mdi mdi-check-circle text-sm"></i>
+                                        <span>Accepted</span>
+                                    </button>
+                                    <button @click="discrepancyFilter = 'exceptions'"
+                                            :class="discrepancyFilter === 'exceptions' ? 'bg-red-50 text-red-700 border border-red-300 shadow-sm' : 'text-slate-600 hover:text-slate-800'"
+                                            class="px-3 py-1.5 rounded-md transition-all duration-200 flex items-center gap-1.5 font-semibold text-xs">
+                                        <i class="mdi mdi-alert-circle text-sm"></i>
+                                        <span>Exceptions</span>
+                                    </button>
+                                </div>
+                            </div>
                 <!-- Summary Stats with Click Handlers (HIDDEN) -->
                 <div v-if="false" class="grid grid-cols-3 gap-3 mb-5">
                     <!-- Total Checks Card - Clickable -->
@@ -8262,25 +8317,44 @@ async waitForRequiredDocumentsParsing() {
                   },
 				     getFilteredDiscrepancies() {
 					const allDiscrepancies = this.getDiscrepancies();
-					
-					console.log('🔍 getFilteredDiscrepancies called');
-					console.log('allDiscrepancies count:', allDiscrepancies.length);
-					console.log('allDiscrepancies sample:', allDiscrepancies.slice(0, 2));
-					console.log('discrepancyFilter:', this.discrepancyFilter);
-
-					if (this.discrepancyFilter === 'compliant') {
-						const filtered = allDiscrepancies.filter(d => d.isCompliant === true);
-						console.log('Filtered compliant count:', filtered.length);
-						return filtered;
-					} else if (this.discrepancyFilter === 'issues') {
-						const filtered = allDiscrepancies.filter(d => d.isCompliant === false);
-						console.log('Filtered issues count:', filtered.length);
-						return filtered;
-					}
-
-					console.log('Returning all discrepancies:', allDiscrepancies.length);
-					return allDiscrepancies; // 'all' - return everything
-				},
+                   
+                    console.log('🔍 getFilteredDiscrepancies called');
+                    console.log('allDiscrepancies count:', allDiscrepancies.length);
+                    console.log('allDiscrepancies sample:', allDiscrepancies.slice(0, 2));
+                    console.log('discrepancyFilter:', this.discrepancyFilter);
+ 
+                    // Handle 'accepted' filter - show compliant items OR manually accepted items
+                    if (this.discrepancyFilter === 'accepted') {
+                        const filtered = allDiscrepancies.filter(d => {
+                            const isCompliant = d.isCompliant === true;
+                            const isManuallyAccepted = this.acceptedDiscrepancies.includes(d.documentType + '|' + d.field);
+                            return isCompliant || isManuallyAccepted;
+                        });
+                        console.log('Filtered accepted count:', filtered.length);
+                        return filtered;
+                    }
+                   
+                    // Handle 'exceptions' filter - show non-compliant items
+                    if (this.discrepancyFilter === 'exceptions') {
+                        const filtered = allDiscrepancies.filter(d => d.isCompliant === false);
+                        console.log('Filtered exceptions count:', filtered.length);
+                        return filtered;
+                    }
+ 
+                    // Legacy filter support (for backward compatibility)
+                    if (this.discrepancyFilter === 'compliant') {
+                        const filtered = allDiscrepancies.filter(d => d.isCompliant === true);
+                        console.log('Filtered compliant count:', filtered.length);
+                        return filtered;
+                    } else if (this.discrepancyFilter === 'issues') {
+                        const filtered = allDiscrepancies.filter(d => d.isCompliant === false);
+                        console.log('Filtered issues count:', filtered.length);
+                        return filtered;
+                    }
+ 
+                    console.log('Returning all discrepancies:', allDiscrepancies.length);
+                    return allDiscrepancies; // 'all' - return everything
+                },
 				 getFilteredLCConditions() {
                     const allConditions = this.getLCConditionsResults();
 
@@ -9077,6 +9151,7 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     this.currentPage = 0;
                     this.zoomLevel = 1;
                     this.activeFieldIndex = null;
+                    this.fieldValidationViewMode = 'list';
                     this.drawings = [];
                     this.hasDrawings = false;
                     this.pendingHighlight = null;
@@ -12755,7 +12830,8 @@ splitCurrencyAndAmount(combinedValue) {
                                     confidence: value.confidence || 85,
                                     bounding_page: pageNum,
                                     bounding_box: value.bounding_box || value.bbox || null,
-                                    exact_text: value.exact_text || ''
+                                    exact_text: value.exact_text || '',
+                                    priority: value.priority || value.mandatory === true ? 'Mandatory' : (value.mandatory === 'Conditional' ? 'Conditional' : 'Optional')
                                 };
                             } else if (value.hasOwnProperty('content')) {
                                 // Handle alternative structure
@@ -13863,7 +13939,8 @@ splitCurrencyAndAmount(combinedValue) {
                             }
 
                             // Track manual edits - Vue 3: direct assignment (no $set needed)
-                            this.manuallyEditedFields[fieldKey] = !!newValue;
+                            // Mark as edited if user interacted with the field (even if value is empty)
+                            this.manuallyEditedFields[fieldKey] = true;
                         }
                     }
 
