@@ -9468,99 +9468,125 @@ Return compliance status for each field.'''
     # SPATIAL CLUSTERING - FIND BEST GROUP
     # ============================================
 
-    def find_best_spatial_cluster(expected_lines: List[str], word_pool: List[Dict], 
-                                fuzzy_threshold: float = 0.80,
-                                is_rotated: bool = False) -> List[Dict]:
+    def find_best_spatial_cluster(expected_lines: List[str], word_pool: List[Dict],
+                              fuzzy_threshold: float = 0.80,
+                              is_rotated: bool = False) -> List[Dict]:
         """
         Find the best spatial cluster of lines
         Works for both normal and rotated pages
         """
-        
+       
         logger.info(f"Finding best spatial cluster for {len(expected_lines)} lines (rotated={is_rotated})")
-        
+       
         # Find all candidates for each line
         all_candidates = {}
-        
+       
         for line_text in expected_lines:
             candidates = find_all_candidates_for_line(line_text, word_pool, fuzzy_threshold, is_rotated)
-            
+           
             if not candidates:
                 logger.warning(f"No candidates found for: '{line_text}'")
                 return []
-            
+           
             all_candidates[line_text] = candidates
             logger.info(f"  '{line_text}': {len(candidates)} candidates")
-        
+       
         # Try to find best combination
         best_cluster = None
         best_score = -1
-        
+        best_total_distance = float('inf')
+       
         first_line = expected_lines[0]
-        
-        # Track used word indices across ALL lines to prevent reuse
-        global_used_words = set()
-        
-        for first_candidate in all_candidates[first_line]:
+       
+        for attempt_num, first_candidate in enumerate(all_candidates[first_line]):
             cluster = [first_candidate]
             current_used_words = set()
-            
+            cluster_total_distance = 0
+           
             # Mark words from first candidate as used
             for word in first_candidate.get('words', []):
                 word_id = id(word)
                 current_used_words.add(word_id)
-            
-            for line_text in expected_lines[1:]:
+           
+            for line_idx, line_text in enumerate(expected_lines[1:], start=2):
                 candidates = all_candidates.get(line_text, [])
-                
+               
                 if not candidates:
                     break
-                
+               
                 # Find candidate closest to current cluster AND doesn't reuse words
                 best_candidate = None
                 best_distance = float('inf')
-                
-                for candidate in candidates:
+               
+                for cand_idx, candidate in enumerate(candidates):
                     # Check if this candidate reuses any words from previous lines
                     candidate_word_ids = set(id(w) for w in candidate.get('words', []))
-                    
+                   
                     if candidate_word_ids & current_used_words:
-                        # This candidate reuses words - skip it
                         continue
-                    
-                    # Calculate distance
-                    distances = [calculate_distance(candidate['bounding_box'], item['bounding_box']) 
-                            for item in cluster]
-                    avg_distance = sum(distances) / len(distances)
-                    
-                    if avg_distance < best_distance:
-                        best_distance = avg_distance
+                   
+                    # ✅ CRITICAL FIX: For multi-line text, use Y-distance primarily
+                    last_bbox = cluster[-1]['bounding_box']
+                    curr_bbox = candidate['bounding_box']
+                   
+                    last_y = (last_bbox[1] + last_bbox[3] + last_bbox[5] + last_bbox[7]) / 4
+                    curr_y = (curr_bbox[1] + curr_bbox[3] + curr_bbox[5] + curr_bbox[7]) / 4
+                   
+                    # Y-distance is primary factor for sequential lines
+                    distance_to_last = abs(curr_y - last_y)
+                   
+                    if distance_to_last < best_distance:
+                        best_distance = distance_to_last
                         best_candidate = candidate
-                
+               
                 if best_candidate:
                     cluster.append(best_candidate)
+                    cluster_total_distance += best_distance
+                   
                     # Mark words from this candidate as used
                     for word in best_candidate.get('words', []):
                         current_used_words.add(id(word))
                 else:
                     break
-            
+           
             # Check if cluster is complete
             if len(cluster) == len(expected_lines):
                 score = score_cluster(cluster, expected_lines)
-                
-                logger.debug(f"Cluster score: {score:.2f} (size: {len(cluster)})")
-                
-                if score > best_score:
+                avg_distance_per_line = cluster_total_distance / max(1, len(cluster) - 1)
+               
+                # Prioritize clusters with smaller total distance
+                is_better = False
+                if best_cluster is None:
+                    is_better = True
+                elif avg_distance_per_line < best_total_distance * 0.8:
+                    is_better = True
+                elif avg_distance_per_line < best_total_distance * 1.2 and score > best_score * 1.1:
+                    is_better = True
+               
+                if is_better:
                     best_score = score
                     best_cluster = cluster
-        
+                    best_total_distance = avg_distance_per_line
+       
         if best_cluster:
-            logger.info(f"✓ Found best cluster with score {best_score:.2f}")
+            logger.info(f"✓ Found best cluster with score {best_score:.2f}, avg Y-distance {best_total_distance:.4f}")
+           
+            # Log final cluster details
+            for i, item in enumerate(best_cluster):
+                if i > 0:
+                    prev_y = (best_cluster[i-1]['bounding_box'][1] + best_cluster[i-1]['bounding_box'][5]) / 2
+                    curr_y = (item['bounding_box'][1] + item['bounding_box'][5]) / 2
+                    y_dist = abs(curr_y - prev_y)
+                    logger.info(f"  Line {i+1}: '{item.get('matched_text', '')}' at Y={curr_y:.4f} (Y-distance: {y_dist:.4f})")
+                else:
+                    curr_y = (item['bounding_box'][1] + item['bounding_box'][5]) / 2
+                    logger.info(f"  Line {i+1}: '{item.get('matched_text', '')}' at Y={curr_y:.4f}")
+           
             return best_cluster
         else:
             logger.warning("No complete cluster found")
             return []
-
+ 
 
     def score_cluster(cluster: List[Dict], expected_lines: List[str]) -> float:
         """Score a cluster based on spatial compactness, match quality, and completeness"""
