@@ -4658,8 +4658,21 @@ button:focus {
                         <!-- Fields Content Area (Optimized for Scrolling) -->
                         <div class="panel-content flex-1 overflow-y-auto min-h-0 custom-scrollbar">
 
+                            <!-- SWIFT MESSAGE VIEW (When viewing discrepancy) -->
+                            <div v-if="viewingDiscrepancy" class="p-4 bg-white">
+                                <div class="bg-gradient-to-b from-slate-900 to-slate-800 rounded-lg overflow-hidden">
+                                    <div class="px-4 py-3 border-b border-slate-400">
+                                        <div class="text-white font-bold text-sm">📧 SWIFT MT799</div>
+                                        <div class="text-slate-300 text-xs mt-1">LC Credit Message</div>
+                                    </div>
+                                    <div class="p-4 bg-slate-50 text-xs font-mono text-slate-900 overflow-y-auto" style="max-height: 600px; white-space: pre-wrap; word-break: break-word;">
+                                        <div v-html="getHighlightedSwiftMessage()"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- LIST VIEW (Table Format) -->
-                            <div v-if="fieldValidationViewMode === 'list'" class="p-3" style="background: #FAFBFC;">
+                            <div v-if="!viewingDiscrepancy && fieldValidationViewMode === 'list'" class="p-3" style="background: #FAFBFC;">
                                 <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                                     <!-- Table Header -->
                                     <div class="grid grid-cols-12 gap-2 bg-slate-50 px-3 py-2 border-b border-slate-200" style="font-family: 'Inter', -apple-system, sans-serif;">
@@ -4791,7 +4804,7 @@ button:focus {
                             <!-- END LIST VIEW -->
 
                             <!-- GRID VIEW -->
-                            <div v-else class="p-4" style="background: #FAFBFC;">
+                            <div v-else-if="!viewingDiscrepancy" class="p-4" style="background: #FAFBFC;">
                                 <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="grid grid-cols-2 gap-3">
                                     <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
                                          :key="fieldKey"
@@ -8016,6 +8029,7 @@ button:focus {
                     lcConditionsResults: [], // Results of LC-specific conditions validation
                     loadingLCConditions: false, // Loading state for LC conditions parsing/validation
                     discrepancyResults: [], // Results of cross-verification checks
+                    viewingDiscrepancy: null, // Currently viewing discrepancy for SWIFT message display
                     loadingDiscrepancies: false, // Loading state for discrepancy analysis
                     discrepancyActions: {}, // Track action selection for each discrepancy
                     acceptedDiscrepancies: [], // Track accepted discrepancies
@@ -10742,6 +10756,63 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                 // which uses GPT-4o for intelligent semantic comparison in background
 
                 // Get discrepancies for display in the tab
+                getHighlightedSwiftMessage() {
+                    if (!this.viewingDiscrepancy) return '';
+                    
+                    const lcValue = this.viewingDiscrepancy.lcValue || '';
+                    const swiftMessage = this.generateSwiftMessage(this.viewingDiscrepancy);
+                    
+                    if (!lcValue) {
+                        return `<pre>${swiftMessage}</pre>`;
+                    }
+                    
+                    // Escape HTML and highlight all occurrences of lcValue
+                    let highlighted = swiftMessage
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    
+                    const escapedValue = lcValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`(${escapedValue})`, 'gi');
+                    highlighted = highlighted.replace(regex, '<mark style="background-color: #fbbf24; font-weight: bold; padding: 2px 4px; border-radius: 2px;">$1</mark>');
+                    
+                    return `<pre>${highlighted}</pre>`;
+                },
+
+                generateSwiftMessage(discrepancy) {
+                    return `{1:F01BANKGB2LAXXX0000000000}
+{2:I700BANKUS33XXXXN}
+{3:{108:MT700}}
+{4:
+:20:${discrepancy.field || 'REFERENCE'}
+:23:IRREVOCABLE
+:28C:1/1
+:50:APPLICANT
+:50:${discrepancy.field || 'APPLICANT'}
+:51:ADVISING BANK
+:51:BANK OF AMERICA
+:32B:${discrepancy.lcValue || 'AMOUNT NOT SPECIFIED'}
+:50A:BENEFICIARY
+:39A:PERMITTED MAXIMUM ABOUT: PLUS
+:41A:AVAILABLE WITH BANK
+:42C:AT SIGHT
+:43P:PRESENTATION PERIOD: ${discrepancy.field || 'WITHIN 21 DAYS'}
+:44A:DOCUMENTS AND TERMS
+:44F:ADDITIONAL CONDITIONS
+:45A:DOCUMENTS REQUIRED
+:45A:1. COMMERCIAL INVOICE
+:45A:2. BILL OF LADING
+:45A:3. PACKING LIST
+:46A:ADDITIONAL DOCUMENTS
+:47A:ADDITIONAL CONDITIONS
+:49:CHARGES: ALL OTHER EXPENSES INCURRED IN
+:49:CONNECTION WITH THIS CREDIT ARE PAYABLE BY
+:49:THE APPLICANT
+:71B:REIMBURSING DETAILS
+:77B:NARRATIVE
+:78:CONDITIONS FOR DOCUMENTS
+-}`;
+                },
+
                 getDiscrepancies() {
                     console.log('🔍 getDiscrepancies() called');
                     console.log('discrepancyResults (LLM checks):', this.discrepancyResults.length);
@@ -11555,20 +11626,21 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     console.log('Discrepancy data:', discrepancy);
                     console.log('Type:', type);
                     
+                    // Set viewing state for SWIFT message display
+                    this.viewingDiscrepancy = discrepancy;
                     this.selectedDiscrepancyPreview = discrepancy;
                     this.discrepancyPreviewType = type;
-                    this.discrepancyImageLoaded = false;
-                    this.discrepancyFieldData = null;
                     
                     if (!this.results || this.results.length === 0) {
                         console.error('❌ No results available');
                         return;
                     }
 
-                    const fieldName = discrepancy.field;
                     const documentType = discrepancy.documentType;
+                    const fieldName = discrepancy.field;
+                    const documentValue = discrepancy.documentValue;
                     
-                    console.log('🔍 Looking for field:', fieldName, 'in document:', documentType);
+                    console.log('🔍 Looking for document type:', documentType);
                     
                     // Find the result matching the document type
                     const result = this.results.find(r => r.documentType === documentType);
@@ -11579,8 +11651,17 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     }
 
                     console.log('✅ Found result:', result);
-
-                    // Get the field data with bounding box
+                    
+                    // Set selectedResult to open the document in View Details modal
+                    this.selectedResult = result;
+                    this.showDetailsModal = true;
+                    this.currentPage = 0;
+                    this.zoomLevel = 1;
+                    this.activeFieldIndex = null;
+                    this.drawings = [];
+                    
+                    // Find the field in extracted fields and trigger search
+                    console.log('🔍 Looking for field:', fieldName);
                     let fieldData = result.extractedFields[fieldName];
                     
                     // If exact match not found, try case-insensitive matching
@@ -11597,65 +11678,15 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         }
                     }
                     
-                    if (!fieldData) {
-                        console.warn('⚠️ Could not find field data for:', fieldName);
-                    } else {
-                        console.log('✅ Found field data:', fieldData);
-                    }
-
-                    // Get the page with bounding box info
-                    const pageWithField = fieldData?.bounding_page ?? 0;
-                    
-                    console.log('📄 Using page index:', pageWithField);
-                    
-                    // Set the preview image
-                    if (result.previewImages && result.previewImages[pageWithField]) {
-                        this.discrepancyPreviewImage = result.previewImages[pageWithField];
-                        console.log('✅ Set preview image from page', pageWithField);
-                    } else if (result.previewImages && result.previewImages[0]) {
-                        this.discrepancyPreviewImage = result.previewImages[0];
-                        console.log('⚠️ Set preview image from page 0 (fallback)');
-                    } else {
-                        console.error('❌ No preview images available');
-                    }
-
-                    // Store field data for bounding box calculation after image loads
-                    this.discrepancyFieldData = fieldData;
-                    
-                    // Check if bounding box is missing or all zeros
                     if (fieldData) {
-                        const box = fieldData.bounding_box;
-                        let needsSearch = false;
-                        
-                        if (!box || !Array.isArray(box)) {
-                            needsSearch = true;
-                        } else {
-                            const allZeros = box.every(coord => coord === 0);
-                            if (allZeros) {
-                                needsSearch = true;
-                            }
-                        }
-                        
-                        // If bounding box is missing, search for it using the existing API
-                        if (needsSearch && fieldData.value) {
-                            console.log('🔍 Bounding box missing - triggering coordinate search for:', fieldData.value);
-                            
-                            // Show preview first
-                            this.showDiscrepancyPreview = true;
-                            
-                            // Then search for coordinates which will update the highlight
-                            this.$nextTick(async () => {
-                                try {
-                                    await this.searchDiscrepancyCoordinates(fieldName, fieldData);
-                                } catch (error) {
-                                    console.error('Error searching coordinates:', error);
-                                }
-                            });
-                            return;
-                        }
+                        console.log('✅ Found field data, triggering search:', fieldData);
+                        // Trigger the existing search mechanism
+                        this.$nextTick(() => {
+                            this.searchFieldCoordinates(fieldName, documentValue, fieldData);
+                        });
+                    } else {
+                        console.warn('⚠️ Could not find field data for:', fieldName);
                     }
-                    
-                    this.showDiscrepancyPreview = true;
                 },
 
                 // Close Discrepancy Preview Modal
@@ -11908,6 +11939,7 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     this.activeFieldIndex = null;
                     this.drawings = [];
                     this.pendingHighlight = null;
+                    this.viewingDiscrepancy = null;
                 },
 
                 // Page tab navigation for grouped results
