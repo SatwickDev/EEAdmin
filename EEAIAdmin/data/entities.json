@@ -4779,12 +4779,12 @@
     },
     {
       "id": "669",
-      "name": "Confirmation Party Details",
-      "description": "Confirmation Party Details",
+      "name": "Available With Swift Address",
+      "description": "Extract only the SWIFT/BIC address from Field 41A (Available With… By…). \nReturn only the 8- or 11-character SWIFT code. \nDo not include the availability method such as BY PAYMENT, BY ACCEPTANCE, BY NEGOTIATION, or any additional text.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "",
-      "dataCategoryValue": "Parties/addresses/places/countries"
+      "dataCategoryValue": "References"
     },
     {
       "id": "670",

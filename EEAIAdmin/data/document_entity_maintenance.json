@@ -14515,20 +14515,6 @@
       "id": "88530"
     },
     {
-      "documentId": "Letter_of_Credit",
-      "documentName": "Letter of Credit",
-      "documentCategoryId": "1",
-      "documentCategoryName": "Commercial Processes",
-      "entityId": "669",
-      "entityName": "Confirmation Party Details",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "3",
-      "dataCategoryValue": "Parties/addresses/places/countries",
-      "fieldType": "mandatory",
-      "id": "88531"
-    },
-    {
       "documentId": "Covering_Schedule",
       "documentName": "Covering Schedule",
       "documentCategoryId": "1",
@@ -15255,6 +15241,20 @@
       "dataCategoryValue": "References",
       "fieldType": "optional",
       "id": "88583"
+    },
+    {
+      "documentId": "Letter_of_Credit",
+      "documentName": "Letter of Credit",
+      "documentCategoryId": "1",
+      "documentCategoryName": "Commercial Processes",
+      "entityId": "669",
+      "entityName": "Available With Swift Address",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "1",
+      "dataCategoryValue": "References",
+      "fieldType": "mandatory",
+      "id": "88584"
     }
   ],
   "documentName": "Courier Reciept/document"
