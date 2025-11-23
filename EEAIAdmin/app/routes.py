@@ -24162,9 +24162,9 @@ def generate_mt700_message(lc_data):
         # Beneficiary Account Number (if present)
         (":59A:" + lc_data['beneficiaryAccountNumber']) if lc_data.get('beneficiaryAccountNumber') else None,
         ":32B:" + currency + amount,  # Currency Code, Amount
-        # Confirmation Party Details (if present)
-        (":71D:" + lc_data['confirmationPartyDetails']) if lc_data.get('confirmationPartyDetails') else None,
-    ]
+        # 41A - Available With (ONLY SWIFT Address) *** UPDATED ***
+        (":41A:" + lc_data['availableWithSwiftAddress'].upper())
+         if lc_data.get('availableWithSwiftAddress') else None,
     # Remove None values if any field is not present
     swift_lines = [line for line in swift_lines if line is not None]
 

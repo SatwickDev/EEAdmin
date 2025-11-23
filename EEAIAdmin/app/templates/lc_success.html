@@ -858,8 +858,8 @@
                 '59': { name: 'Beneficiary', description: 'Party who will receive payment' },
                 '32B': { name: 'Currency Code/Amount', description: 'LC currency and amount' },
                 '39A': { name: 'Percentage Credit Amount Tolerance', description: 'Tolerance percentage for amount' },
-                '41A': { name: 'Available With', description: 'Bank where LC is available' },
-                '41D': { name: 'Available By', description: 'Method of availability' },
+                '41A': { name: 'Available With (BIC)', description: 'BIC/SWIFT code of the bank where the LC is available' },
+                '41D': { name: 'Available With (address)', description: 'Name/address where the LC is available' },
                 '42A': { name: 'Drawee', description: 'Party who will pay the draft' },
                 '42C': { name: 'Drafts At', description: 'Tenor of drafts (AT SIGHT/USANCE)' },
                 '42D': { name: 'Drawee Details', description: 'Detailed drawee information' },
@@ -879,8 +879,7 @@
                 '72': { name: 'Sender to Receiver Information', description: 'Information between banks' },
                  '78': { name: 'Instructions to Paying Bank', description: 'Special instructions' },
                 '31D': { name: 'Place of Expiry', description: 'Location where the LC expires' },
-                '59A': { name: 'Beneficiary Account Number', description: 'Account number of the beneficiary' },
-                '71D': { name: 'Confirmation Party Details', description: 'Details of the confirmation party' }
+                '59A': { name: 'Beneficiary Account Number', description: 'Account number of the beneficiary' }
             };
 
             return fieldMap[tag] || { name: `Field ${tag}`, description: 'SWIFT field' };
