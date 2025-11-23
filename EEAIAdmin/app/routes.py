@@ -24165,6 +24165,7 @@ def generate_mt700_message(lc_data):
         # 41A - Available With (ONLY SWIFT Address) *** UPDATED ***
         (":41A:" + lc_data['availableWithSwiftAddress'].upper())
          if lc_data.get('availableWithSwiftAddress') else None,
+    ]
     # Remove None values if any field is not present
     swift_lines = [line for line in swift_lines if line is not None]
 
