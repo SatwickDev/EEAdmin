@@ -2847,7 +2847,7 @@
     {
       "id": "351",
       "name": "Full or empty container",
-      "description": "Code specifying how full a piece of transport equipment is",
+      "description": "Extract this value only when the document explicitly contains the exact standalone word ‘FULL’ or the exact standalone word ‘EMPTY’. Do NOT infer the container status from context, cargo information, shipment type, or any other wording. If neither ‘FULL’ nor ‘EMPTY’ appears exactly in the document, return an empty string (‘’). Never guess.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "11",

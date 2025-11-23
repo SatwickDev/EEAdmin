@@ -28,7 +28,37 @@ from app.utils.app_config import (
     OPENAI_MAX_DELAY
 )
 import app.utils.app_config as app_config
+import weakref
 from app.utils.openai_retry import retry_openai, create_websocket_retry
+
+# Registry of live DocumentClassifier instances. WeakSet so instances
+# are not kept alive solely by the registry.
+_DOC_CLASSIFIER_INSTANCES = weakref.WeakSet()
+
+
+def reload_all_document_classifier_instances() -> int:
+    """Reload all live DocumentClassifier instances registered in this module.
+
+    Returns the number of instances that were reloaded. This helper is used by
+    `app.utils.reload_helper` to refresh in-memory consumers after a filesystem
+    reload.
+    """
+    reloaded = 0
+    try:
+        # Create a list snapshot to avoid modification during iteration
+        instances = list(_DOC_CLASSIFIER_INSTANCES)
+        logging.info(f"reload_all_document_classifier_instances: found {len(instances)} registered instances")
+        for inst in instances:
+            try:
+                ok = inst.reload_from_disk()
+                if ok:
+                    reloaded += 1
+            except Exception:
+                logging.exception("reload_all_document_classifier_instances: failed to reload one instance")
+        logging.info(f"reload_all_document_classifier_instances: completed, reloaded={reloaded}")
+    except Exception:
+        logging.exception("reload_all_document_classifier_instances: unexpected failure")
+    return reloaded
 
 
 class DocumentClassifier:
@@ -61,7 +91,58 @@ class DocumentClassifier:
         self.entity_descriptions = self._load_entity_descriptions()  # Load entity descriptions
         self.document_categories = self._load_document_categories()  # Load categories
         self._load_document_fields()
+        # Register instance so external reload helpers can refresh live instances
+        try:
+            _DOC_CLASSIFIER_INSTANCES.add(self)
+        except Exception:
+            # If registry isn't available for any reason, continue silently
+            pass
         logging.info("DocumentClassifier initialized successfully")
+
+    def reload_from_disk(self) -> bool:
+        """Reload on-disk definitions (entities, mappings, fields) into this instance.
+
+        This method is intentionally verbose with logs so runtime reloads can be
+        observed in the server logs while debugging live reload behaviour.
+        """
+        logging.info("DocumentClassifier.reload_from_disk: starting reload_from_disk()")
+        try:
+            # Re-read all backing files and refresh caches
+            self.function_fields = self._load_function_fields()
+            self.entity_mappings = self._load_entity_mappings()
+            self.entity_descriptions = self._load_entity_descriptions()
+            self.document_categories = self._load_document_categories()
+
+            # Reload document field definitions into the existing cache object
+            try:
+                self.document_fields_cache.clear()
+            except Exception:
+                self.document_fields_cache = {}
+            self._load_document_fields()
+
+            # Log summary of what was reloaded
+            logging.info(
+                "DocumentClassifier.reload_from_disk: reloaded -> function_fields=%d, entity_mappings=%d, entity_descriptions=%d, document_categories=%d, document_fields_cache=%d",
+                len(self.function_fields) if self.function_fields else 0,
+                len(self.entity_mappings) if self.entity_mappings else 0,
+                len(self.entity_descriptions) if self.entity_descriptions else 0,
+                len(self.document_categories) if self.document_categories else 0,
+                len(self.document_fields_cache) if self.document_fields_cache else 0,
+            )
+
+            # Log a small sample of loaded entity descriptions for quick verification
+            try:
+                sample = list(self.entity_descriptions.items())[:5]
+                for name, desc in sample:
+                    logging.info(f"RELOAD_ENTITY_SAMPLE: '{name}' -> '{desc[:120]}{'...' if len(desc) > 120 else ''}'")
+            except Exception:
+                pass
+
+            logging.info("DocumentClassifier.reload_from_disk: completed successfully")
+            return True
+        except Exception as e:
+            logging.exception(f"DocumentClassifier.reload_from_disk failed: {e}")
+            return False
     
     def _load_function_fields(self) -> Dict:
         """Load function fields mapping from JSON file."""

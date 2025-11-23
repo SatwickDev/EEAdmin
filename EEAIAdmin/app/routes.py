@@ -14670,6 +14670,21 @@ Return compliance status for each field.'''
 
         try:
             # Use DocumentClassifier to build extraction prompt from config and entity_mappings
+            # DEBUG: show which in-memory cache the extraction will read from
+            try:
+                from flask import current_app
+                cache_keys = list(getattr(current_app, 'json_data_cache', {}).keys())
+                logger.info("DEBUG: json_data_cache keys before building prompt: %s", cache_keys)
+                logger.info("DEBUG: entities present in cache: %s", 'entities' in getattr(current_app, 'json_data_cache', {}))
+                # Show a small preview of entities content to help debugging (trim long output)
+                try:
+                    sample = getattr(current_app, 'json_data_cache', {}).get('entities')
+                    logger.info("DEBUG: sample entities head: %s", str(sample)[:1000])
+                except Exception:
+                    logger.debug("DEBUG: unable to stringify sample entities")
+            except Exception:
+                logger.debug("DEBUG: current_app not available when building extraction prompt")
+
             logger.info(f"SEARCH: Building extraction prompt using DocumentClassifier for page {page_number}")
             prompt = document_classifier.build_extraction_prompt(
                 document_type=document_type,
@@ -19317,9 +19332,9 @@ Return compliance status for each field.'''
         import json
         from datetime import datetime
 
-        from app.utils.reload_helper import reload_all_jsons,reload_app_data
-        reload_all_jsons()
-        reload_app_data()
+        # from app.utils.reload_helper import reload_all_jsons,reload_app_data
+        # reload_all_jsons()
+        # reload_app_data()
         try:
             # === INPUT VALIDATION ===
             data = request.get_json()
@@ -24023,6 +24038,18 @@ def _save_entities(data):
     filepath = os.path.join(entities_dir, 'entities.json')
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+    # If running in the context of a request, mark that data was modified so
+    # the after_request hook can trigger a reload in this worker.
+    try:
+        from flask import has_request_context, g
+        if has_request_context():
+            try:
+                g.data_modified = True
+            except Exception:
+                pass
+    except Exception:
+        # Not running inside Flask or import failed — ignore
+        pass
 
 def _load_document_categories():
     """Helper function to load all document categories from single JSON file"""
