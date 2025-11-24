@@ -18787,6 +18787,7 @@ Return compliance status for each field.'''
     {'4. For 6+ page packages, even if indicators are weak, assume Covering Schedule unless clear LC narrative present' if is_multi_doc_package else ''}
     {'5. **CRITICAL**: Covering Schedule can span 1-3 pages. If Page 2-3 still has tabular format with document lists, mark as continuation of Covering Schedule, NOT as Letter of Credit' if is_multi_doc_package else ''}
     {'6. **The actual LC (if present) will start after the Covering Schedule**, typically pages 3-7' if is_multi_doc_package else ''}
+    {'7. DO NOT classify pages as Covering Schedule if they contain explicit Bill of Exchange indicators (e.g., "Bill of Exchange", "Drawee", "Drawer", "Payee", "Pay to", "Payable at", "For value received", "Accepted"). Treat these as HIGH-PRIORITY OVERRIDES: classify as "Bill of Exchange" (or the most specific matching financial instrument) with high confidence, overriding tabular/list heuristics.' if is_multi_doc_package else ''}
 
     **Letter of Credit vs Covering Schedule:**
     - **Letter of Credit**: Contains credit amount, expiry date, detailed terms and conditions, beneficiary details, issuing bank, payment terms (NARRATIVE document, usually 2-4 pages, comes AFTER Covering Schedule in multi-doc packages)
