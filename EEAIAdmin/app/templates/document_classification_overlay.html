@@ -13932,8 +13932,8 @@ splitCurrencyAndAmount(combinedValue) {
                     this.editingField = fieldKey;
                     // //changed: Store original value for cancel functionality
                     this.editedFields[fieldKey] = value || '';
-                    this.manuallyEditedFields[fieldKey] = true; // Mark as manually edited to hide confidence
-
+                    // //changed: Don't set manuallyEditedFields here - only set it if value actually changes on save
+ 
                     this.$nextTick(() => {
                         const input = this.$refs['fieldInput_' + fieldKey];
                         if (input && input[0]) {
@@ -13947,32 +13947,41 @@ splitCurrencyAndAmount(combinedValue) {
                     // //changed: Store values before any operations
                     const wasEditing = this.editingField === fieldKey;
                     const currentValue = this.editedFields[fieldKey] || '';
-
+ 
                     // //changed: Save the value if field is being edited
                     if (wasEditing) {
                         const fields = this.getExtractedFieldsWithDetails();
-
+ 
                         if (fields[fieldKey]) {
                             const newValue = currentValue.trim();
-
+                            // //changed: Get original value before updating to compare if it changed
+                            const originalValue = (fields[fieldKey].value || '').trim();
+ 
                             // Update displayed field value
                             fields[fieldKey].value = newValue;
-
+ 
                             // Update original selected result
                             if (this.selectedResult &&
                                 this.selectedResult.extractedFields &&
                                 this.selectedResult.extractedFields[fieldKey]) {
-
+ 
                                 if (typeof this.selectedResult.extractedFields[fieldKey] === 'object') {
                                     this.selectedResult.extractedFields[fieldKey].value = newValue;
                                 } else {
                                     this.selectedResult.extractedFields[fieldKey] = newValue;
                                 }
                             }
-
+ 
                             // Track manual edits - Vue 3: direct assignment (no $set needed)
-                            // Mark as edited if user interacted with the field (even if value is empty)
-                            this.manuallyEditedFields[fieldKey] = true;
+                            // //changed: Only mark as edited if the value actually changed
+                            if (newValue !== originalValue) {
+                                this.manuallyEditedFields[fieldKey] = true;
+                            } else {
+                                // //changed: Remove from manuallyEditedFields if value didn't change
+                                if (this.manuallyEditedFields[fieldKey]) {
+                                    delete this.manuallyEditedFields[fieldKey];
+                                }
+                            }
                         }
                     }
 
@@ -13980,16 +13989,15 @@ splitCurrencyAndAmount(combinedValue) {
                     if (this.editedFields[fieldKey]) {
                         delete this.editedFields[fieldKey];
                     }
-
+ 
                     // //changed: Close edit mode immediately - Vue 3: direct assignment (no $set needed)
                     this.editingField = null;
-                    
+                   
                     // //changed: Force Vue to update the view immediately to ensure edit box closes
                     this.$nextTick(() => {
                         this.$forceUpdate();
                     });
                 },
-
                 // //changed: Fixed cancelFieldEdit to not save and close edit box
                 cancelFieldEdit(fieldKey) {
                     // //changed: Only cancel if this is the field being edited
