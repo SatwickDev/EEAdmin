@@ -6,7 +6,7 @@
   "fields": {
     "mandatory": [
       {
-        "name": "Documentary Credit Identifier",
+        "name": "Documentary Credit Number",
         "fieldId": "dc_identifier",
         "type": "text",
         "required": true,

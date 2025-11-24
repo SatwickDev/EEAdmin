@@ -1100,8 +1100,8 @@
     },
     {
       "id": "142",
-      "name": "Documentary Credit Identifier",
-      "description": "Extract the MUR (Message User Reference) number from the Letter of Credit application. The MUR number uniquely identifies the transaction reference used in SWIFT messages or LC documentation. Do not extract the LC number or any other reference numbers.",
+      "name": "Documentary Credit Number",
+      "description": "Reference number identifying the documentary credit/letter of credit.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -1827,15 +1827,7 @@
       "dataCategoryId": "4",
       "dataCategoryValue": "Locations"
     },
-    {
-      "id": "235",
-      "name": "Documentary credit number",
-      "description": "Unique identifier for a letter of credit",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References"
-    },
+
     {
       "id": "236",
       "name": "Transport document number",
@@ -4301,15 +4293,6 @@
       "dataCategoryValue": "Terms"
     },
     {
-      "id": "480",
-      "name": "Documentary Credit Number",
-      "description": "Reference number identifying the documentary credit/letter of credit",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "1",
-      "dataCategoryValue": "References"
-    },
-    {
       "id": "601",
       "name": "Document Title",
       "description": "Title or heading of the document (e.g., 'COVERING SCHEDULE FOR LETTER OF CREDIT', 'COMMERCIAL INVOICE')",
@@ -4794,6 +4777,24 @@
       "mappingFormDescription": "",
       "dataCategoryId": "",
       "dataCategoryValue": "Measure/Quantities"
+    },
+    {
+      "id": "671",
+      "name": "Related Transaction Reference",
+      "description": "Related Transaction Reference (e.g., LC number, Collection reference)",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "References"
+    },
+    {
+      "id": "672",
+      "name": "Consignee / Ship To Party",
+      "description": "Extract ONLY the explicitly mentioned Consignee or Ship To Party name, removing all special characters and excluding any address or contact details, returning strictly the clean company/person name with no assumptions.",
+      "mappingFormField": "",
+      "mappingFormDescription": "",
+      "dataCategoryId": "",
+      "dataCategoryValue": "Parties/addresses/places/countries"
     }
   ]
 }
