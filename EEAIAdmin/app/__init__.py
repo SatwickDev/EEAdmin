@@ -74,23 +74,61 @@ def create_app():
         response.headers['Access-Control-Allow-Credentials'] = 'true'
         return response
 
-    # --- ✅ NEW: Automatic JSON reload hook ---
+    # --- ✅ NEW: Automatic JSON reload hook (safer) ---
+    # Use `g.data_modified` in writer endpoints to indicate a real data change.
+    # Also add a lightweight per-worker marker check so workers pick up external changes.
+    from flask import g, request, current_app
+
     @app.after_request
     def auto_reload_on_modify(response):
-        """Automatically reload JSONs after successful POST/PUT/DELETE."""
-        from flask import request
-        import logging
-        logger = logging.getLogger(__name__)
+        """Automatically reload JSONs after successful POST/PUT/DELETE when a writer set `g.data_modified`.
 
+        Writer endpoints that modify files should set `g.data_modified = True` after a successful write.
+        This avoids reloading on unrelated POST/PUT/DELETE requests.
+        """
         try:
-            if request.method in ['POST', 'PUT', 'DELETE'] and response.status_code in [200, 201]:
-                from app.utils.reload_helper import reload_all_jsons,reload_app_data
-                reload_all_jsons()
-                reload_app_data()  # Also reload YAML/XML data
-                logger.info("✅ Auto JSON reload triggered after data change")
-        except Exception as e:
-            logger.warning(f"⚠️ Auto reload failed: {e}")
+            if getattr(g, 'data_modified', False) and request.method in ['POST', 'PUT', 'DELETE'] and response.status_code in (200, 201):
+                try:
+                    from app.utils.reload_helper import reload_all_jsons, reload_app_data
+                    # Run synchronously to guarantee data is available for subsequent requests.
+                    reload_all_jsons()
+                    reload_app_data()
+                    logger.info("✅ Auto JSON reload triggered after data change")
+                    # Clear the flag so duplicate after_request hooks won't trigger repeatedly
+                    g.data_modified = False
+                except Exception as e:
+                    logger.warning(f"⚠️ Auto reload failed: {e}")
+        except Exception:
+            # keep the after_request tolerant to avoid blocking responses
+            logger.debug('auto_reload_on_modify encountered an unexpected error')
         return response
+
+    @app.before_request
+    def _check_reload_marker():
+        """Per-worker marker check: if `app/data/.last_reload` mtime is newer than the
+        in-process marker, call the reload helpers so workers stay in sync.
+        """
+        try:
+            import os
+            marker = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', '.last_reload')
+            try:
+                mtime = os.path.getmtime(marker)
+            except Exception:
+                mtime = None
+
+            last = getattr(current_app, '_last_reload_mtime', None)
+            if mtime and (last is None or mtime > last):
+                try:
+                    from app.utils.reload_helper import reload_all_jsons, reload_app_data
+                    reload_all_jsons()
+                    reload_app_data()
+                    current_app._last_reload_mtime = mtime
+                    logger.info('✅ Per-worker reload applied from marker')
+                except Exception:
+                    logger.exception('Failed to apply per-worker reload from marker')
+        except Exception:
+            # Do not let marker checks break requests
+            logger.debug('check_reload_marker failed')
 
     # -----------------------------------------
 

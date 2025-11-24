@@ -28,7 +28,37 @@ from app.utils.app_config import (
     OPENAI_MAX_DELAY
 )
 import app.utils.app_config as app_config
+import weakref
 from app.utils.openai_retry import retry_openai, create_websocket_retry
+
+# Registry of live DocumentClassifier instances. WeakSet so instances
+# are not kept alive solely by the registry.
+_DOC_CLASSIFIER_INSTANCES = weakref.WeakSet()
+
+
+def reload_all_document_classifier_instances() -> int:
+    """Reload all live DocumentClassifier instances registered in this module.
+
+    Returns the number of instances that were reloaded. This helper is used by
+    `app.utils.reload_helper` to refresh in-memory consumers after a filesystem
+    reload.
+    """
+    reloaded = 0
+    try:
+        # Create a list snapshot to avoid modification during iteration
+        instances = list(_DOC_CLASSIFIER_INSTANCES)
+        logging.info(f"reload_all_document_classifier_instances: found {len(instances)} registered instances")
+        for inst in instances:
+            try:
+                ok = inst.reload_from_disk()
+                if ok:
+                    reloaded += 1
+            except Exception:
+                logging.exception("reload_all_document_classifier_instances: failed to reload one instance")
+        logging.info(f"reload_all_document_classifier_instances: completed, reloaded={reloaded}")
+    except Exception:
+        logging.exception("reload_all_document_classifier_instances: unexpected failure")
+    return reloaded
 
 
 class DocumentClassifier:
@@ -61,7 +91,58 @@ class DocumentClassifier:
         self.entity_descriptions = self._load_entity_descriptions()  # Load entity descriptions
         self.document_categories = self._load_document_categories()  # Load categories
         self._load_document_fields()
+        # Register instance so external reload helpers can refresh live instances
+        try:
+            _DOC_CLASSIFIER_INSTANCES.add(self)
+        except Exception:
+            # If registry isn't available for any reason, continue silently
+            pass
         logging.info("DocumentClassifier initialized successfully")
+
+    def reload_from_disk(self) -> bool:
+        """Reload on-disk definitions (entities, mappings, fields) into this instance.
+
+        This method is intentionally verbose with logs so runtime reloads can be
+        observed in the server logs while debugging live reload behaviour.
+        """
+        logging.info("DocumentClassifier.reload_from_disk: starting reload_from_disk()")
+        try:
+            # Re-read all backing files and refresh caches
+            self.function_fields = self._load_function_fields()
+            self.entity_mappings = self._load_entity_mappings()
+            self.entity_descriptions = self._load_entity_descriptions()
+            self.document_categories = self._load_document_categories()
+
+            # Reload document field definitions into the existing cache object
+            try:
+                self.document_fields_cache.clear()
+            except Exception:
+                self.document_fields_cache = {}
+            self._load_document_fields()
+
+            # Log summary of what was reloaded
+            logging.info(
+                "DocumentClassifier.reload_from_disk: reloaded -> function_fields=%d, entity_mappings=%d, entity_descriptions=%d, document_categories=%d, document_fields_cache=%d",
+                len(self.function_fields) if self.function_fields else 0,
+                len(self.entity_mappings) if self.entity_mappings else 0,
+                len(self.entity_descriptions) if self.entity_descriptions else 0,
+                len(self.document_categories) if self.document_categories else 0,
+                len(self.document_fields_cache) if self.document_fields_cache else 0,
+            )
+
+            # Log a small sample of loaded entity descriptions for quick verification
+            try:
+                sample = list(self.entity_descriptions.items())[:5]
+                for name, desc in sample:
+                    logging.info(f"RELOAD_ENTITY_SAMPLE: '{name}' -> '{desc[:120]}{'...' if len(desc) > 120 else ''}'")
+            except Exception:
+                pass
+
+            logging.info("DocumentClassifier.reload_from_disk: completed successfully")
+            return True
+        except Exception as e:
+            logging.exception(f"DocumentClassifier.reload_from_disk failed: {e}")
+            return False
     
     def _load_function_fields(self) -> Dict:
         """Load function fields mapping from JSON file."""
@@ -75,9 +156,15 @@ class DocumentClassifier:
     def _load_entity_mappings(self) -> Dict:
         """Load document entity maintenance mappings from JSON file."""
         try:
+            logging.info(f"📋 LOADING ENTITY MAPPINGS:")
+            logging.info(f"  📁 File Path: {self.entity_maintenance_path}")
+            logging.info(f"  📂 Absolute Path: {os.path.abspath(self.entity_maintenance_path)}")
+            
             with open(str(self.entity_maintenance_path), 'r') as f:
                 data = json.load(f)
                 mappings = data.get('mappings', [])
+                
+                logging.info(f"  📊 Total mapping entries loaded: {len(mappings)}")
 
                 # Organize mappings by document type
                 doc_mappings = {}
@@ -119,6 +206,45 @@ class DocumentClassifier:
                                 doc_mappings[doc_id]['optional_fields'].append(entity_info)
 
                 logging.info(f"Loaded entity mappings for {len(doc_mappings)} document types")
+                
+                # Log detailed breakdown of all document types and their entities
+                logging.info(f"📋 COMPLETE ENTITY MAPPINGS BREAKDOWN:")
+                logging.info(f"  📂 Source Path: {self.entity_maintenance_path}")
+                logging.info(f"  📊 Total Document Types: {len(doc_mappings)}")
+                logging.info(f"")
+                
+                for doc_id, doc_info in sorted(doc_mappings.items()):
+                    doc_name = doc_info.get('documentName', doc_id)
+                    category = doc_info.get('documentCategoryName', 'Unknown')
+                    mandatory_count = len(doc_info['mandatory_fields'])
+                    optional_count = len(doc_info['optional_fields'])
+                    conditional_count = len(doc_info['conditional_fields'])
+                    total_fields = mandatory_count + optional_count + conditional_count
+                    
+                    logging.info(f"  📄 Document Type: {doc_name}")
+                    logging.info(f"     🆔 ID: {doc_id}")
+                    logging.info(f"     📁 Category: {category}")
+                    logging.info(f"     📊 Fields: {total_fields} total (✅ {mandatory_count} mandatory, 🔸 {optional_count} optional, 🔶 {conditional_count} conditional)")
+                    
+                    # Log all mandatory entities
+                    if mandatory_count > 0:
+                        mandatory_entities = [e['entityName'] for e in doc_info['mandatory_fields']]
+                        logging.info(f"     ✅ Mandatory: {', '.join(mandatory_entities)}")
+                    
+                    # Log all optional entities
+                    if optional_count > 0:
+                        optional_entities = [e['entityName'] for e in doc_info['optional_fields']]
+                        logging.info(f"     🔸 Optional: {', '.join(optional_entities)}")
+                    
+                    # Log all conditional entities
+                    if conditional_count > 0:
+                        conditional_entities = [e['entityName'] for e in doc_info['conditional_fields']]
+                        logging.info(f"     🔶 Conditional: {', '.join(conditional_entities)}")
+                    
+                    logging.info(f"")
+                
+                logging.info(f"✅ Entity mappings loading complete")
+                
                 return doc_mappings
         except Exception as e:
             logging.error(f"Failed to load entity mappings: {e}")
@@ -249,6 +375,10 @@ class DocumentClassifier:
             client_id: Optional client ID for WebSocket messages
             task_id: Optional task ID for tracking
         """
+        logging.info(f"📋 CLASSIFICATION REQUEST: Starting document classification")
+        logging.info(f"📄 OCR Text Length: {len(ocr_text)} characters")
+        logging.info(f"📄 OCR Text Preview: {ocr_text[:200]}...")
+        
         # Use entity_mappings to organize documents by proper categories
         doc_types_by_category = {cat: [] for cat in self.document_categories.values()}
 
@@ -298,7 +428,9 @@ class DocumentClassifier:
                 document_types_by_category=chr(10).join(category_sections),
                 ocr_text=ocr_text
             )
-            logging.info("Generated classification prompt with full OCR text (length: {} chars)".format(len(ocr_text)))
+            logging.info(f"🔧 Using YAML prompt template for classification")
+            logging.info(f"📋 Generated classification prompt (length: {len(prompt)} chars)")
+            logging.info(f"📋 Document categories included: {len(doc_types_by_category)}")
         else:
             # Fallback to hardcoded template - NO TRUNCATION
             prompt = f"""
@@ -324,7 +456,9 @@ Return ONLY this JSON structure (no markdown, no additional text):
   "reasoning": "<Explain: 1) Document title/header found 2) If title differs from our list, explain how you mapped it using trade finance knowledge 3) Why this is the closest match>"
 }}
 """
-            logging.info("Generated fallback classification prompt with full OCR text (length: {} chars)".format(len(ocr_text)))
+            logging.info(f"🔧 Using fallback hardcoded prompt template")
+            logging.info(f"📋 Generated classification prompt (length: {len(prompt)} chars)")
+            logging.info(f"📋 Document categories included: {len(doc_types_by_category)}")
         try:
             # Ensure OpenAI is configured before each call (thread safety)
             if not openai.api_key:
@@ -334,23 +468,41 @@ Return ONLY this JSON structure (no markdown, no additional text):
                 openai.api_version = AZURE_OPENAI_API_VERSION
                 openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
             
-            # Log API configuration for debugging
-            logging.info(f"Attempting document classification with Azure OpenAI")
-            logging.info(f"API Base: {openai.api_base}")
-            logging.info(f"API Version: {openai.api_version}")
-            logging.info(f"Deployment Name: {deployment_name}")
-            logging.info(f"API Key exists: {bool(openai.api_key)}")
-            logging.info(f"API Key length: {len(openai.api_key) if openai.api_key else 0}")
+            # Log complete request details
+            logging.info(f"📋 COMPLETE CLASSIFICATION REQUEST TO AZURE OPENAI:")
+            logging.info(f"  🌐 Endpoint: {openai.api_base}")
+            logging.info(f"  🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
+            logging.info(f"  📝 API Version: {openai.api_version}")
+            logging.info(f"  🚀 Deployment/Engine: {deployment_name}")
+            logging.info(f"  🔧 Temperature: {OPENAI_TEMPERATURE_DEFAULT}")
+            logging.info(f"  📊 Model Type: ChatCompletion")
+            logging.info(f"  💬 System Message: You are a document classification assistant.")
+            logging.info(f"  📄 User Prompt Length: {len(prompt)} characters")
+            logging.info(f"  📋 FULL USER PROMPT:\n{prompt}")
+            logging.info(f"📤 Sending classification request to Azure OpenAI...")
 
             # Use retry mechanism for OpenAI call with WebSocket support
             response = self._call_openai_with_retry(prompt, websocket_handler, client_id, task_id)
 
-            logging.info(f"Document classification successful")
+            logging.info(f"✅ Azure OpenAI API call successful")
             content = response["choices"][0]["message"]["content"]
+            logging.info(f"📊 CLASSIFICATION RESPONSE (Raw):")
+            logging.info(f"  📄 Content Length: {len(content)} characters")
+            logging.info(f"  📋 Full Response:\n{content}")
+            
             result = self._extract_json_from_response(content)
+            logging.info(f"📊 CLASSIFICATION RESPONSE (Parsed):")
+            logging.info(f"  📁 Category: {result.get('category', 'N/A')}")
+            logging.info(f"  📄 Document Type: {result.get('document_type', 'N/A')}")
+            logging.info(f"  📝 Sub-Type: {result.get('sub_type', 'N/A')}")
+            logging.info(f"  📈 Confidence: {result.get('confidence', 0)}%")
+            logging.info(f"  💡 Reasoning: {result.get('reasoning', 'N/A')}")
+            
             # Normalize document_type to use spaces instead of underscores
             if result and "document_type" in result:
                 result["document_type"] = result["document_type"].replace("_", " ")
+            
+            logging.info(f"✅ Classification complete: {result.get('document_type', 'unknown')}")
             return result
         except openai.error.AuthenticationError as e:
             logging.error(f"Azure OpenAI Authentication Error: {e}")
@@ -534,6 +686,10 @@ Return ONLY this JSON structure (no markdown, no additional text):
         Returns:
             OpenAI API response dictionary
         """
+        logging.info(f"🚀 Calling OpenAI API with retry mechanism")
+        logging.info(f"📋 Prompt length: {len(prompt)} chars")
+        logging.info(f"🔌 WebSocket enabled: {bool(websocket_handler and client_id)}")
+        
         # Use WebSocket-aware retry if handler is provided
         if websocket_handler and client_id:
             retry_decorator = create_websocket_retry(
@@ -651,6 +807,12 @@ Return ONLY this JSON structure (no markdown, no additional text):
 
     def build_extraction_prompt(self, document_type: str, ocr_text: str, page_number: int = 1) -> str:
         """Build extraction prompt dynamically based on entity mappings."""
+        logging.info(f"📋 EXTRACTION PROMPT BUILD REQUEST:")
+        logging.info(f"  📄 Document Type: {document_type}")
+        logging.info(f"  📝 Page Number: {page_number}")
+        logging.info(f"  📊 OCR Text Length: {len(ocr_text)} characters")
+        logging.info(f"  📄 OCR Text (FULL):\n{ocr_text}")
+        
         # Normalize document type to match entity_mappings keys
         doc_id = document_type.replace(' ', '_')
         logging.info("Printing the document id used for building extraction prompt : {}".format(doc_id))
@@ -658,7 +820,12 @@ Return ONLY this JSON structure (no markdown, no additional text):
 
         # Get entity fields for this document type
         entity_info = self.get_enhanced_entity_fields(doc_id)
-        logging.info(f"Entity info for {doc_id}: {entity_info}")
+        logging.info(f"📋 Entity fields loaded for {doc_id}:")
+        logging.info(f"  ✅ Mandatory fields: {len(entity_info['mandatory_fields'])}")
+        logging.info(f"  🔸 Optional fields: {len(entity_info['optional_fields'])}")
+        logging.info(f"  🔶 Conditional fields: {len(entity_info['conditional_fields'])}")
+        logging.info(f"  📋 Total fields: {len(entity_info['mandatory_fields']) + len(entity_info['optional_fields']) + len(entity_info['conditional_fields'])}")
+        logging.info(f"📋 Full entity_info (COMPLETE):\n{json.dumps(entity_info, indent=2)}")
 
         # Get document category info using case-insensitive lookup
         doc_category = "Unknown"
@@ -764,7 +931,7 @@ Return ONLY this JSON structure (no markdown, no additional text):
         # Log sample of fields_text to show descriptions being included
         logging.info(f"PROMPT_FIELDS_PREVIEW: Extraction flags - Mandatory:{extract_mandatory}, Optional:{extract_optional}, Conditional:{extract_conditional}")
         logging.info(f"PROMPT_FIELDS_COUNTS: Total fields to extract: {total_all_fields} (M:{total_mandatory} O:{total_optional} C:{total_conditional})")
-        logging.info(f"PROMPT_FIELDS_PREVIEW: Generated fields section (first 500 chars): {fields_text[:500]}{'...' if len(fields_text) > 500 else ''}")
+        logging.info(f"📋 COMPLETE FIELDS SECTION (FULL - NO TRUNCATION):\n{fields_text}")
 
         # Get system prompt from config
         system_prompt = extraction_config.get('system_prompt',
@@ -957,17 +1124,40 @@ Return ONLY valid JSON (no markdown, no commentary):
         Returns:
             String prompt for LLM
         """
-        logging.info(f"Building chunk {chunk_id} extraction prompt for {len(field_list)} entities")
+        logging.info("")
+        logging.info(f"{'='*100}")
+        logging.info(
+            f"🔍 STEP 1 (Chunk {chunk_id}): PRIMARY ENTITY DEFINITION "
+            f"(from document_entity_maintenance.json)"
+        )
+        logging.info(f"{'='*100}")
+        logging.info(
+            f"📋 Building chunk-based extraction prompt for "
+            f"{len(field_list)} entities"
+        )
+        logging.info(f"📄 Page Number: {page_number}")
+        logging.info(f"🧩 Chunk ID: {chunk_id}")
         
         # Get extraction config
         extraction_config = self.prompt_config.get('extraction', {})
-        system_prompt = extraction_config.get('system_prompt',
-            'You are an expert data extraction system for trade finance documents.')
+        system_prompt = extraction_config.get(
+            'system_prompt',
+            'You are an expert data extraction system for '
+            'trade finance documents.'
+        )
 
+        # Log all fields in this chunk
+        logging.info(f"📋 Fields in chunk {chunk_id}:")
+        for idx, field_name in enumerate(field_list, 1):
+            logging.info(f"   {idx}. {field_name}")
+        
         # Build fields section for this chunk
         fields_text = ""
         for field_name in field_list:
-            field_def = field_definitions.get(field_name, f"{field_name} - No description available")
+            field_def = field_definitions.get(
+                field_name,
+                f"{field_name} - No description available"
+            )
             fields_text += f"- **{field_def}**\n"
 
         # Build chunk-specific prompt
@@ -1005,7 +1195,7 @@ Return ONLY valid JSON (no markdown, no commentary):
   "extracted_fields": {{
     "<Field_Name>": {{
       "value": "<extracted value or empty string>",
-      "exact_text":"exact value that is present in the txt i sent u without anychages in space etc",
+      "exact_text": "<exact value from OCR without changes>",
       "confidence": <0-100>,
       "bounding_box": [<x1>, <y1>, <x2>, <y2>],
       "bounding_page": {page_number}
@@ -1015,10 +1205,22 @@ Return ONLY valid JSON (no markdown, no commentary):
   "chunk_confidence": <overall 0-100>
 }}
 
-IMPORTANT: Extract ONLY the {len(field_list)} fields listed above. Do not include any other fields.
+IMPORTANT: Extract ONLY the {len(field_list)} fields listed above.
+Do not include any other fields.
 """
         
-        logging.info(f"Generated chunk {chunk_id} prompt: {len(prompt)} chars for {len(field_list)} fields")
+        logging.info(
+            f"✅ STEP 1 (Chunk {chunk_id}) COMPLETE: Prompt built from "
+            f"primary entity definitions"
+        )
+        logging.info(f"📊 Prompt Length: {len(prompt)} characters")
+        logging.info(f"📋 Fields Count: {len(field_list)}")
+        logging.info(
+            f"📋 PRIMARY EXTRACTION PROMPT (Chunk {chunk_id}) "
+            f"(COMPLETE - NO TRUNCATION):\n{prompt}"
+        )
+        logging.info(f"{'='*100}")
+        logging.info("")
         return prompt
 
     def check_compliance(self, document_type: str, extracted_fields: Dict) -> Dict:

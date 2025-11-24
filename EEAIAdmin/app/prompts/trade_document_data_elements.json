@@ -100,7 +100,7 @@
       },
       {
         "uid": "1172",
-        "name": "Documentary credit identifier",
+        "name": "Documentary Credit Number",
         "description": "Reference number to identify a documentary credit",
         "requirements": {"INV": "O", "CID": "O", "CoO": "O", "PCoO": "O", "LC": "M", "BoE": "C", "PN": "C"}
       },

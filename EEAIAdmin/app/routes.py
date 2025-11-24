@@ -492,21 +492,42 @@ def load_document_field_mappings(document_type):
     Returns formatted field example for the prompt with ALL fields included
     """
     try:
+        logger.info(f"")
+        logger.info(f"{'='*100}")
+        logger.info(f"🔧 STEP 2: OPTIONAL ENTITY ENHANCEMENT (Field Examples from document_entities/*.json)")
+        logger.info(f"{'='*100}")
+        logger.info(f"📄 Document Type: {document_type}")
+        
         # Normalize document type to match filename format (e.g., "Commercial Invoice" -> "Commercial_Invoice")
         doc_type_normalized = document_type.replace(' ', '_').replace('-', '_')
+        logger.info(f"📝 Normalized Type: {doc_type_normalized}")
 
         # Try to load the document entity JSON file
         entity_file_path = os.path.join('data', 'document_entities', f'{doc_type_normalized}.json')
+        logger.info(f"📁 Looking for enhancement file: {entity_file_path}")
+        logger.info(f"📂 Absolute Path: {os.path.abspath(entity_file_path)}")
 
         if not os.path.exists(entity_file_path):
-            logger.warning(f"Field mapping file not found: {entity_file_path}")
+            logger.warning(f"⚠️ Enhancement file NOT FOUND: {entity_file_path}")
+            logger.info(f"ℹ️ Proceeding WITHOUT optional field examples (using only primary entity definitions)")
+            logger.info(f"{'='*100}")
+            logger.info(f"")
             return None
 
+        logger.info(f"✅ Enhancement file found, loading field examples...")
         with open(entity_file_path, 'r', encoding='utf-8') as f:
             entity_data = json.load(f)
+        
+        logger.info(f"📊 File loaded successfully, size: {len(json.dumps(entity_data))} characters")
 
         if 'mappings' not in entity_data:
+            logger.warning(f"⚠️ No 'mappings' key found in enhancement file")
+            logger.info(f"{'='*100}")
+            logger.info(f"")
             return None
+
+        mappings_count = len(entity_data.get('mappings', []))
+        logger.info(f"📋 Total mapping entries in file: {mappings_count}")
 
         # Group fields by fieldType and remove duplicates
         mandatory_fields = []
@@ -538,6 +559,22 @@ def load_document_field_mappings(document_type):
                 conditional_fields.append(field_info)
             else:
                 optional_fields.append(field_info)
+
+        # Log field breakdown
+        total_fields = len(mandatory_fields) + len(optional_fields) + len(conditional_fields)
+        logger.info(f"📊 Field Examples Breakdown:")
+        logger.info(f"   ✅ Mandatory: {len(mandatory_fields)}")
+        logger.info(f"   🔸 Optional: {len(optional_fields)}")
+        logger.info(f"   🔶 Conditional: {len(conditional_fields)}")
+        logger.info(f"   📋 Total: {total_fields}")
+        
+        # Log all field names for transparency
+        if mandatory_fields:
+            logger.info(f"   ✅ Mandatory field examples: {', '.join([f['name'] for f in mandatory_fields])}")
+        if optional_fields:
+            logger.info(f"   🔸 Optional field examples: {', '.join([f['name'] for f in optional_fields])}")
+        if conditional_fields:
+            logger.info(f"   🔶 Conditional field examples: {', '.join([f['name'] for f in conditional_fields])}")
 
         # Format as comprehensive field structure - SHOW ALL FIELDS (no limits)
         example = f"\n{'='*80}\n"
@@ -6334,8 +6371,6 @@ Provide a structured summary with your findings.""",
         import re
 
         try:
-            logger.info("🤖 Parsing required documents with LLM")
-
             data = request.get_json()
             if not data:
                 return jsonify({'success': False, 'error': 'No data provided'}), 400
@@ -6346,13 +6381,18 @@ Provide a structured summary with your findings.""",
             if not required_documents_text or required_documents_text.strip() == '':
                 return jsonify({'success': False, 'error': 'No required documents text provided'}), 400
 
-            logger.info(f"📄 Parsing required documents for {document_type}")
-            logger.info(f"📝 Raw text: {required_documents_text[:200]}...")
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📄 REQUIRED DOCUMENTS PARSING - LLM REQUEST")
+            logger.info(f"{'='*100}")
+            logger.info(f"📋 Document Type: {document_type}")
+            logger.info(f"📊 Input Text Length: {len(required_documents_text)} characters")
+            logger.info(f"📝 Raw Input Text (COMPLETE - NO TRUNCATION):\n{required_documents_text}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             # Use global Azure OpenAI configuration from app_config.py
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
-            
-            logger.info(f"🔧 Using global Azure OpenAI configuration - Deployment: {deployment_name}")
 
             # Comprehensive prompt to handle any format
             prompt = f"""You are a trade finance document expert. Parse the following required documents text and return a JSON object with a "documents" array.
@@ -6396,7 +6436,35 @@ Output format:
   {{"name": "Packing List", "description": "Original plus copies", "priority": "Mandatory", "category": "trade"}}
 ]"""
 
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📋 REQUIRED DOCUMENTS PARSING - COMPLETE PROMPT")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Prompt Length: {len(prompt)} characters")
+            logger.info(f"📝 System Message: You are a trade finance expert. Extract ALL documents from the text and return a JSON object with a 'documents' array. Each document must have 'name', 'description', 'priority', and 'category' fields.")
+            logger.info(f"📝 COMPLETE USER PROMPT (FULL - NO TRUNCATION):\n{prompt}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+
             # Call OpenAI with explicit instructions
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📤 REQUIRED DOCUMENTS PARSING - CALLING AZURE OPENAI")
+            logger.info(f"{'='*100}")
+            logger.info(f"🌐 Endpoint: {openai.api_base}")
+            logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
+            logger.info(f"📝 API Version: {openai.api_version}")
+            logger.info(f"🚀 Engine/Deployment: {deployment_name}")
+            logger.info(f"🔧 Temperature: 0.1")
+            logger.info(f"📊 Max Tokens: 2000")
+            logger.info(f"🎲 Seed: 12345")
+            logger.info(f"📈 Top P: 0.1")
+            logger.info(f"🔢 Frequency Penalty: 0")
+            logger.info(f"🔢 Presence Penalty: 0")
+            logger.info(f"📋 Response Format: json_object")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
@@ -6412,67 +6480,113 @@ Output format:
                 response_format={"type": "json_object"}
             )
 
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("✅ REQUIRED DOCUMENTS PARSING - AZURE OPENAI RESPONSE")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Response Status: Success")
+            
             response_text = response["choices"][0]["message"]["content"].strip()
-            logger.info(f"🤖 LLM Response: {response_text[:500]}...")
+            logger.info(f"📊 Response Length: {len(response_text)} characters")
+            logger.info(f"📋 COMPLETE RAW RESPONSE (FULL - NO TRUNCATION):\n{response_text}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             # Parse the JSON response
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔍 REQUIRED DOCUMENTS PARSING - PARSING RESPONSE")
+            logger.info(f"{'='*100}")
             try:
                 parsed_response = json.loads(response_text)
+                logger.info(f"✅ JSON parsing successful")
+                logger.info(f"📊 Response Type: {type(parsed_response).__name__}")
+                logger.info(f"📋 Parsed Response Structure:\n{json.dumps(parsed_response, indent=2)}")
                 
                 # Handle different response formats
                 if isinstance(parsed_response, list):
                     # Response is already an array of documents
                     parsed_documents = parsed_response
+                    logger.info(f"📄 Response format: Direct array of documents")
                 elif isinstance(parsed_response, dict):
                     # Response is an object, look for documents array
                     if 'documents' in parsed_response:
                         parsed_documents = parsed_response['documents']
+                        logger.info(f"📄 Response format: Object with 'documents' array")
                     elif 'required_documents' in parsed_response:
                         parsed_documents = parsed_response['required_documents']
+                        logger.info(f"📄 Response format: Object with 'required_documents' array")
                     elif 'items' in parsed_response:
                         parsed_documents = parsed_response['items']
+                        logger.info(f"📄 Response format: Object with 'items' array")
                     else:
                         # Treat the object as a single document
                         parsed_documents = [parsed_response]
+                        logger.info(f"📄 Response format: Single document object")
                 else:
                     logger.error(f"❌ Unexpected response format: {type(parsed_response)}")
                     parsed_documents = []
                     
                 logger.info(f"📋 Extracted {len(parsed_documents)} documents from LLM response")
+                logger.info(f"📋 Documents List:\n{json.dumps(parsed_documents, indent=2)}")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 
             except json.JSONDecodeError as e:
                 logger.error(f"❌ Failed to parse JSON response: {e}")
                 logger.error(f"📄 Raw response: {response_text}")
                 
                 # Fallback: try to extract JSON array or object from text
+                logger.info(f"🔄 Attempting fallback JSON extraction...")
                 json_match = re.search(r'[\[{].*[\]}]', response_text, re.DOTALL)
                 if json_match:
                     try:
                         fallback_response = json.loads(json_match.group(0))
                         if isinstance(fallback_response, list):
                             parsed_documents = fallback_response
+                            logger.info(f"✅ Fallback successful: Extracted array with {len(parsed_documents)} documents")
                         elif isinstance(fallback_response, dict):
                             parsed_documents = [fallback_response]
+                            logger.info(f"✅ Fallback successful: Extracted single document object")
                         else:
                             parsed_documents = []
-                    except:
+                            logger.error(f"❌ Fallback failed: Unexpected type {type(fallback_response)}")
+                    except Exception as fallback_error:
+                        logger.error(f"❌ Fallback JSON parsing failed: {fallback_error}")
                         parsed_documents = []
                 else:
+                    logger.error(f"❌ No JSON structure found in response")
                     parsed_documents = []
+                
+                logger.info(f"{'='*100}")
+                logger.info("")
 
             # Clean up
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🧹 REQUIRED DOCUMENTS PARSING - CLEANING DOCUMENTS")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Documents to clean: {len(parsed_documents)}")
+            
             cleaned_documents = []
-            for doc in parsed_documents:
+            for idx, doc in enumerate(parsed_documents, 1):
                 if isinstance(doc, dict) and doc.get('name'):
-                    cleaned_documents.append({
+                    cleaned_doc = {
                         'name': doc.get('name', '').strip(),
                         'description': doc.get('description', '').strip(),
                         'priority': doc.get('priority', 'Mandatory'),
                         'category': doc.get('category', 'other'),
                         'mandatory': doc.get('priority', 'Mandatory').lower() == 'mandatory'
-                    })
+                    }
+                    cleaned_documents.append(cleaned_doc)
+                    logger.info(f"   {idx}. {cleaned_doc['name']} - {cleaned_doc['priority']} ({cleaned_doc['category']})")
+                else:
+                    logger.warning(f"   ⚠️  Skipped invalid document at index {idx}: {doc}")
 
-            logger.info(f"✅ Successfully parsed {len(cleaned_documents)} documents")
+            logger.info(f"✅ Successfully cleaned {len(cleaned_documents)} documents")
+            logger.info(f"📋 FINAL CLEANED DOCUMENTS (COMPLETE):\n{json.dumps(cleaned_documents, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             return jsonify({
                 'success': True,
@@ -6495,48 +6609,57 @@ Output format:
         import re
 
         try:
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📋 LC CONDITIONS PARSING - PARSE ADDITIONAL CONDITIONS")
+            logger.info(f"{'='*100}")
             logger.info("🤖 Parsing LC Additional Conditions with LLM")
 
             data = request.get_json()
             if not data:
+                logger.error("❌ No data provided in request")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 return jsonify({'success': False, 'error': 'No data provided'}), 400
 
             additional_conditions_text = data.get('additional_conditions_text', '')
             lc_number = data.get('lc_number', 'Unknown')
 
             if not additional_conditions_text or additional_conditions_text.strip() == '':
+                logger.error("❌ No additional conditions text provided")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 return jsonify({'success': False, 'error': 'No additional conditions text provided'}), 400
 
-            logger.info(f"📄 Parsing additional conditions for LC: {lc_number}")
-            logger.info(f"📝 Raw text: {additional_conditions_text[:200]}...")
-            
-            # ===== COMPREHENSIVE LOGGING FOR DEBUGGING =====
-            logger.info(f"📋 =======================================================")
-            logger.info(f"📋 COMPLETE ADDITIONAL CONDITIONS TEXT ANALYSIS")
-            logger.info(f"📋 =======================================================")
             logger.info(f"📋 LC Number: {lc_number}")
-            logger.info(f"📋 Text Length: {len(additional_conditions_text)} characters")
-            logger.info(f"📋 Text Lines: {len(additional_conditions_text.splitlines())} lines")
-            logger.info(f"📋 FULL TEXT START:")
-            logger.info(f"📋 {'-'*60}")
-            logger.info(additional_conditions_text)
-            logger.info(f"📋 {'-'*60}")
-            logger.info(f"📋 FULL TEXT END")
-            logger.info(f"📋 =======================================================")
+            logger.info(f"📊 Input Text Length: {len(additional_conditions_text)} characters")
+            logger.info(f"📊 Input Text Lines: {len(additional_conditions_text.splitlines())} lines")
+            logger.info(f"📝 COMPLETE INPUT TEXT (FULL - NO TRUNCATION):\n{additional_conditions_text}")
             
             # Analyze text structure
             lines = additional_conditions_text.splitlines()
+            logger.info(f"📋 Line-by-line analysis:")
             for i, line in enumerate(lines, 1):
                 if line.strip():
-                    logger.info(f"📋 Line {i:2d}: {line.strip()}")
+                    logger.info(f"   Line {i:2d}: {line.strip()}")
             
-            logger.info(f"📋 Expected rules from this text: Extract ALL individual validation rules (should be 15-30+ rules for comprehensive LC conditions)")
-            logger.info(f"📋 =======================================================")
+            logger.info(f"📊 Expected output: 15-30+ validation rules")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             # Use global Azure OpenAI configuration from app_config.py
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
 
-            logger.info(f"🔧 Using global Azure OpenAI configuration - Deployment: {deployment_name}")
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔧 LC CONDITIONS PARSING - AZURE OPENAI CONFIGURATION")
+            logger.info(f"{'='*100}")
+            logger.info(f"🌐 Endpoint: {openai.api_base}")
+            logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
+            logger.info(f"📝 API Version: {openai.api_version}")
+            logger.info(f"🚀 Deployment Name: {deployment_name}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             # Comprehensive prompt to extract validation rules - Using few-shot learning
             prompt = """You are a trade finance compliance expert. I will show you an example of how to extract multiple validation rules from LC Additional Conditions, then you do the same for the actual text.
@@ -6603,20 +6726,36 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
                 additional_conditions_text=additional_conditions_text
             )
 
-            # ===== LOG COMPLETE PROMPT BEING SENT TO LLM =====
-            logger.info(f"🤖 =======================================================")
-            logger.info(f"🤖 COMPLETE PROMPT BEING SENT TO LLM")
-            logger.info(f"🤖 =======================================================")
-            logger.info(f"🤖 Prompt Length: {len(prompt)} characters")
-            logger.info(f"🤖 FULL PROMPT START:")
-            logger.info(f"🤖 {'-'*60}")
-            logger.info(prompt)
-            logger.info(f"🤖 {'-'*60}")
-            logger.info(f"🤖 FULL PROMPT END")
-            logger.info(f"🤖 =======================================================")
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📋 LC CONDITIONS PARSING - COMPLETE PROMPT")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Prompt Length: {len(prompt)} characters")
+            logger.info(f"💬 System Message: You are an expert who ALWAYS extracts ALL INDIVIDUAL validation rules from LC conditions. Extract EVERY requirement as a separate rule - typically 15-30+ rules from comprehensive LC text. Do NOT limit to only 6 rules. Follow the example pattern exactly and return a JSON ARRAY with ALL rules.")
+            logger.info(f"📝 COMPLETE USER PROMPT (FULL - NO TRUNCATION):\n{prompt}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             # Call OpenAI
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📤 LC CONDITIONS PARSING - CALLING AZURE OPENAI")
+            logger.info(f"{'='*100}")
+            logger.info(f"🌐 Endpoint: {openai.api_base}")
+            logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
+            logger.info(f"📝 API Version: {openai.api_version}")
+            logger.info(f"🚀 Engine/Deployment: {deployment_name}")
+            logger.info(f"🔧 Temperature: 0.1")
+            logger.info(f"📊 Max Tokens: 15000")
+            logger.info(f"🎲 Seed: 12345")
+            logger.info(f"📈 Top P: 0.1")
+            logger.info(f"🔢 Frequency Penalty: 0")
+            logger.info(f"🔢 Presence Penalty: 0")
+            logger.info(f"📋 Response Format: json_object")
             logger.info(f"🚀 Sending request to LLM with {len(prompt)} character prompt...")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
@@ -6632,14 +6771,31 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
                 response_format={"type": "json_object"}
             )
 
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("✅ LC CONDITIONS PARSING - AZURE OPENAI RESPONSE")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Response Status: Success")
+            
             response_text = response["choices"][0]["message"]["content"].strip()
-            logger.info(f"🤖 LLM Response: {response_text[:500]}...")
+            logger.info(f"📊 Response Length: {len(response_text)} characters")
+            logger.info(f"📋 COMPLETE RAW RESPONSE (FULL - NO TRUNCATION):\n{response_text}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             # Extract JSON
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔍 LC CONDITIONS PARSING - EXTRACTING JSON")
+            logger.info(f"{'='*100}")
+            
+            original_response = response_text
             if '```json' in response_text:
                 response_text = response_text.split('```json')[1].split('```')[0].strip()
+                logger.info(f"📝 Extracted JSON from markdown code block")
             elif '```' in response_text:
                 response_text = response_text.split('```')[1].split('```')[0].strip()
+                logger.info(f"📝 Extracted JSON from code block")
 
             # ===== FIX: Handle both array and single object responses =====
             json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
@@ -6653,35 +6809,71 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
                     response_text = '[' + object_match.group(0) + ']'
                     logger.info("🔍 Found single JSON object, wrapping in array")
                 else:
-                    logger.error(f"❌ No valid JSON found in response: {response_text}")
+                    logger.error(f"❌ No valid JSON found in response")
 
-            logger.info(f"🔍 Final JSON to parse: {response_text[:200]}...")
+            logger.info(f"📊 Cleaned Response Length: {len(response_text)} characters")
+            logger.info(f"📋 CLEANED JSON TEXT (FULL - NO TRUNCATION):\n{response_text}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔧 LC CONDITIONS PARSING - PARSING JSON")
+            logger.info(f"{'='*100}")
             try:
                 parsed_rules = json.loads(response_text)
-                logger.info(f"📊 Parsed rules type: {type(parsed_rules)}, length: {len(parsed_rules) if isinstance(parsed_rules, list) else 'N/A'}")
+                logger.info(f"✅ JSON parsing successful on first attempt")
+                logger.info(f"📊 Parsed rules type: {type(parsed_rules).__name__}")
+                logger.info(f"📊 Parsed rules count: {len(parsed_rules) if isinstance(parsed_rules, list) else 'N/A'}")
                 
                 # Ensure it's a list
                 if not isinstance(parsed_rules, list):
-                    logger.warning(f"⚠️ Expected list, got {type(parsed_rules)}. Converting to list.")
+                    logger.warning(f"⚠️ Expected list, got {type(parsed_rules).__name__}. Converting to list.")
                     parsed_rules = [parsed_rules] if isinstance(parsed_rules, dict) else []
+                    logger.info(f"📊 Converted to list: {len(parsed_rules)} items")
                     
             except json.JSONDecodeError as e:
                 logger.error(f"❌ JSON parsing failed: {e}")
                 logger.error(f"❌ Response text: {response_text}")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 return jsonify({
                     'success': False, 
                     'error': f'Failed to parse LLM response as JSON: {str(e)}',
                     'raw_response': response_text[:500]
                 }), 500
 
+            logger.info(f"📋 PARSED RULES (FULL - NO TRUNCATION):\n{json.dumps(parsed_rules, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+
             # Clean up
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🧹 LC CONDITIONS PARSING - CLEANING RULES")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Total rules to clean: {len(parsed_rules)}")
+            logger.info("")
+            
             cleaned_rules = []
-            logger.info(f"🧹 Starting to clean {len(parsed_rules)} raw rules...")
             
             for idx, rule in enumerate(parsed_rules):
-                logger.info(f"🔍 Processing rule {idx + 1}: {type(rule)}")
+                logger.info(f"{'─'*80}")
+                logger.info(f"🔍 Processing Rule {idx + 1}/{len(parsed_rules)}")
+                logger.info(f"📊 Rule Type: {type(rule).__name__}")
+                
                 if isinstance(rule, dict):
+                    logger.info(f"📋 Raw Rule Data:")
+                    logger.info(f"   - ID: {rule.get('id', 'N/A')}")
+                    logger.info(f"   - Code: {rule.get('code', 'N/A')}")
+                    logger.info(f"   - Category: {rule.get('category', 'N/A')}")
+                    logger.info(f"   - Description: {rule.get('description', 'N/A')}")
+                    logger.info(f"   - Field Affected: {rule.get('field_affected', 'N/A')}")
+                    logger.info(f"   - Validation Type: {rule.get('validation_type', 'N/A')}")
+                    logger.info(f"   - Expected Value: {rule.get('expected_value', 'N/A')}")
+                    logger.info(f"   - Severity: {rule.get('severity', 'N/A')}")
+                    logger.info(f"   - Actionable: {rule.get('actionable', 'N/A')}")
+                    
                     cleaned_rule = {
                         'id': rule.get('id', f'lc-cond-{idx+1:03d}'),
                         'code': rule.get('code', f'LC-COND-{idx+1:03d}'),
@@ -6696,23 +6888,60 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
                         'lc_number': lc_number
                     }
                     cleaned_rules.append(cleaned_rule)
-                    logger.info(f"✅ Rule {idx + 1} cleaned: {cleaned_rule['code']} - {cleaned_rule['description'][:50]}...")
+                    logger.info(f"✅ Rule {idx + 1} cleaned successfully")
+                    logger.info(f"   Final Code: {cleaned_rule['code']}")
+                    logger.info(f"   Final Category: {cleaned_rule['category']}")
+                    logger.info(f"   Final Description: {cleaned_rule['description'][:100]}{'...' if len(cleaned_rule['description']) > 100 else ''}")
                 else:
-                    logger.warning(f"⚠️ Skipping non-dict rule {idx + 1}: {type(rule)}")
+                    logger.warning(f"⚠️ Skipping non-dict rule {idx + 1}")
+                    logger.warning(f"   Type: {type(rule).__name__}")
+                    logger.warning(f"   Value: {str(rule)[:100]}")
 
-            logger.info(f"✅ Successfully parsed and cleaned {len(cleaned_rules)} LC condition rules")
+            logger.info("")
+            logger.info(f"{'─'*80}")
+            logger.info(f"✅ Rule cleaning complete")
+            logger.info(f"📊 Successfully cleaned: {len(cleaned_rules)}/{len(parsed_rules)} rules")
+            logger.info(f"📋 FINAL CLEANED RULES (FULL - NO TRUNCATION):\n{json.dumps(cleaned_rules, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
-            return jsonify({
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🎉 LC CONDITIONS PARSING - FINAL RESPONSE")
+            logger.info(f"{'='*100}")
+            logger.info(f"✅ Success: True")
+            logger.info(f"📊 Total rules returned: {len(cleaned_rules)}")
+            logger.info(f"🏷️ LC Number: {lc_number}")
+            
+            final_response = {
                 'success': True,
                 'rules': cleaned_rules,
                 'count': len(cleaned_rules),
                 'lc_number': lc_number
-            })
+            }
+            
+            logger.info(f"📋 COMPLETE FINAL RESPONSE (FULL - NO TRUNCATION):\n{json.dumps(final_response, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+
+            return jsonify(final_response)
 
         except Exception as e:
-            logger.error(f"❌ Error parsing additional conditions: {e}")
-            logger.exception("Full traceback:")
-            return jsonify({'success': False, 'error': str(e)}), 500
+            logger.error("")
+            logger.error(f"{'='*100}")
+            logger.error("❌ LC CONDITIONS PARSING - ERROR")
+            logger.error(f"{'='*100}")
+            logger.error(f"❌ Error Type: {type(e).__name__}")
+            logger.error(f"❌ Error Message: {str(e)}")
+            logger.error(f"❌ LC Number: {lc_number if 'lc_number' in locals() else 'N/A'}")
+            logger.exception("❌ Full traceback:")
+            logger.error(f"{'='*100}")
+            logger.error("")
+            
+            error_response = {'success': False, 'error': str(e)}
+            logger.error(f"📋 Error Response: {json.dumps(error_response)}")
+            
+            return jsonify(error_response), 500
 
     @app.route('/api/validate-lc-conditions', methods=['POST'])
     @timing_aspect
@@ -6729,11 +6958,17 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
         def validate_rule_batch(batch_rules, documents, lc_data, deployment_name, batch_num):
             """Process a batch of rules against all documents"""
             try:
-                logger.info(f"🔄 Batch {batch_num}: Processing {len(batch_rules)} rules against {len(documents)} documents")
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🔄 LC CONDITIONS VALIDATION - BATCH {batch_num}")
+                logger.info(f"{'='*100}")
+                logger.info(f"📋 Rules to validate: {len(batch_rules)}")
+                logger.info(f"📄 Documents to check: {len(documents)}")
+                logger.info(f"🔧 Deployment: {deployment_name}")
 
                 # Create focused document summaries (reduce token usage)
                 doc_summaries = []
-                for doc in documents:
+                for idx, doc in enumerate(documents, 1):
                     summary = {
                         'documentType': doc.get('documentType', 'Unknown'),
                         'fileName': doc.get('fileName', ''),
@@ -6743,6 +6978,23 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
                         'textPreview': str(doc.get('fullText', ''))[:500]  # First 500 chars
                     }
                     doc_summaries.append(summary)
+                    logger.info(f"   {idx}. {summary['documentType']} - {summary['fileName']} ({len(summary['pages'])} pages)")
+
+                logger.info(f"📊 Document summaries created: {len(doc_summaries)}")
+                logger.info(f"📋 COMPLETE DOCUMENT SUMMARIES (FULL - NO TRUNCATION):\n{json.dumps(doc_summaries, indent=2)}")
+                
+                logger.info(f"📋 LC Data:")
+                logger.info(f"   🔢 LC Number: {lc_data.get('lcNumber', 'Unknown')}")
+                logger.info(f"   👤 Beneficiary: {lc_data.get('beneficiary', 'Unknown')}")
+                logger.info(f"   📅 Issue Date: {lc_data.get('issueDate', 'Unknown')}")
+                logger.info(f"   📅 Expiry Date: {lc_data.get('expiryDate', 'Unknown')}")
+                
+                logger.info(f"📋 Rules to validate in this batch:")
+                for idx, rule in enumerate(batch_rules, 1):
+                    logger.info(f"   {idx}. {rule.get('code', 'NO-CODE')} - {rule.get('description', 'No description')[:100]}")
+                logger.info(f"📋 COMPLETE BATCH RULES (FULL - NO TRUNCATION):\n{json.dumps(batch_rules, indent=2)}")
+                logger.info(f"{'='*100}")
+                logger.info("")
 
                 prompt = f"""Validate documents against LC conditions. Return ONLY valid JSON array.
 
@@ -6807,6 +7059,16 @@ CRITICAL: Always include actual field values that were checked. For example:
 
 Return results for all {len(batch_rules)} rules. Check every document and show actual values."""
 
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"📋 LC CONDITIONS VALIDATION - COMPLETE PROMPT (Batch {batch_num})")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Prompt Length: {len(prompt)} characters")
+                logger.info(f"💬 System Message: You are a precise LC validator. Return ONLY valid JSON array. No explanations. Check all rules against all documents.")
+                logger.info(f"📝 COMPLETE USER PROMPT (FULL - NO TRUNCATION):\n{prompt}")
+                logger.info(f"{'='*100}")
+                logger.info("")
+
                 request_params = {
                     'engine': deployment_name,
                     'messages': [
@@ -6820,31 +7082,94 @@ Return results for all {len(batch_rules)} rules. Check every document and show a
                     'max_tokens': 8000
                 }
 
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"📤 LC CONDITIONS VALIDATION - CALLING AZURE OPENAI (Batch {batch_num})")
+                logger.info(f"{'='*100}")
+                logger.info(f"🌐 Endpoint: {openai.api_base}")
+                logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
+                logger.info(f"📝 API Version: {openai.api_version}")
+                logger.info(f"🚀 Engine/Deployment: {deployment_name}")
+                logger.info(f"🔧 Temperature: 0.1")
+                logger.info(f"📊 Max Tokens: 8000")
+                logger.info(f"📋 Messages Count: 2 (system + user)")
+                logger.info(f"{'='*100}")
+                logger.info("")
+
                 response = openai.ChatCompletion.create(**request_params)
+                
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"✅ LC CONDITIONS VALIDATION - AZURE OPENAI RESPONSE (Batch {batch_num})")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Response Status: Success")
+                
                 response_text = response["choices"][0]["message"]["content"].strip()
+                logger.info(f"📊 Response Length: {len(response_text)} characters")
+                logger.info(f"📋 COMPLETE RAW RESPONSE (FULL - NO TRUNCATION):\n{response_text}")
+                logger.info(f"{'='*100}")
+                logger.info("")
 
                 # Extract JSON
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🔍 LC CONDITIONS VALIDATION - EXTRACTING JSON (Batch {batch_num})")
+                logger.info(f"{'='*100}")
+                
+                original_response = response_text
                 if '```json' in response_text:
                     response_text = response_text.split('```json')[1].split('```')[0].strip()
+                    logger.info(f"📝 Extracted JSON from markdown code block")
                 elif '```' in response_text:
                     response_text = response_text.split('```')[1].split('```')[0].strip()
+                    logger.info(f"📝 Extracted JSON from code block")
 
                 json_match = re.search(r'\[\s*\{.*\}\s*\]', response_text, re.DOTALL)
                 if json_match:
                     response_text = json_match.group(0)
+                    logger.info(f"📝 Extracted JSON array using regex pattern")
+
+                logger.info(f"📊 Cleaned Response Length: {len(response_text)} characters")
+                logger.info(f"📋 CLEANED JSON TEXT (FULL - NO TRUNCATION):\n{response_text}")
+                logger.info(f"{'='*100}")
+                logger.info("")
 
                 # Parse JSON with fixes
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🔧 LC CONDITIONS VALIDATION - PARSING JSON (Batch {batch_num})")
+                logger.info(f"{'='*100}")
                 try:
                     batch_results = json.loads(response_text)
-                except json.JSONDecodeError:
+                    logger.info(f"✅ JSON parsing successful on first attempt")
+                    logger.info(f"📊 Parsed {len(batch_results)} validation results")
+                except json.JSONDecodeError as parse_error:
                     # Auto-fix common issues
+                    logger.warning(f"⚠️ Initial JSON parsing failed: {parse_error}")
+                    logger.info(f"🔧 Attempting auto-fix: removing newlines and trailing commas...")
                     response_text = response_text.replace('\n', ' ')
                     response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
-                    batch_results = json.loads(response_text)
+                    try:
+                        batch_results = json.loads(response_text)
+                        logger.info(f"✅ JSON parsing successful after auto-fix")
+                        logger.info(f"📊 Parsed {len(batch_results)} validation results")
+                    except json.JSONDecodeError as final_error:
+                        logger.error(f"❌ JSON parsing failed even after auto-fix: {final_error}")
+                        raise
+
+                logger.info(f"📋 PARSED RESULTS (FULL - NO TRUNCATION):\n{json.dumps(batch_results, indent=2)}")
+                logger.info(f"{'='*100}")
+                logger.info("")
 
                 # ======= ENSURE FRONTEND COMPATIBILITY: Add missing fields =======
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🧹 LC CONDITIONS VALIDATION - CLEANING RESULTS (Batch {batch_num})")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Results to clean: {len(batch_results)}")
+                
                 cleaned_batch_results = []
-                for result in batch_results:
+                for idx, result in enumerate(batch_results, 1):
                     if isinstance(result, dict):
                         # Ensure all required frontend fields are present
                         cleaned_result = {
@@ -6872,44 +7197,87 @@ Return results for all {len(batch_rules)} rules. Check every document and show a
                                 }
                         
                         cleaned_batch_results.append(cleaned_result)
+                        logger.info(f"   {idx}. Rule: {cleaned_result.get('rule', {}).get('code', 'NO-CODE')} - Status: {cleaned_result.get('status', 'unknown')}")
                         
-                logger.info(f"✅ Batch {batch_num}: Generated {len(cleaned_batch_results)} cleaned validation results")
-                logger.info(f"🔍 Sample cleaned result: {cleaned_batch_results[0] if cleaned_batch_results else 'No results'}")
+                logger.info(f"✅ Successfully cleaned {len(cleaned_batch_results)} validation results")
+                logger.info(f"📋 FINAL CLEANED RESULTS (COMPLETE - NO TRUNCATION):\n{json.dumps(cleaned_batch_results, indent=2)}")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 
                 return cleaned_batch_results
 
             except Exception as e:
-                logger.error(f"❌ Batch {batch_num} failed: {e}")
+                logger.error("")
+                logger.error(f"{'='*100}")
+                logger.error(f"❌ LC CONDITIONS VALIDATION - BATCH {batch_num} FAILED")
+                logger.error(f"{'='*100}")
+                logger.error(f"Error: {str(e)}")
+                logger.error(f"Error Type: {type(e).__name__}")
+                logger.exception("Full traceback:")
+                logger.error(f"{'='*100}")
+                logger.error("")
                 return []
 
         try:
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🚀 LC CONDITIONS VALIDATION - MAIN ENDPOINT")
+            logger.info(f"{'='*100}")
             logger.info("🤖 Starting PARALLEL LLM-based LC Conditions validation")
 
             data = request.get_json()
             if not data:
+                logger.error("❌ No data provided in request")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 return jsonify({'success': False, 'error': 'No data provided'}), 400
 
             rules = data.get('rules', [])
             documents = data.get('documents', [])
             lc_data = data.get('lc_data', {})
 
+            logger.info(f"📊 Input Data:")
+            logger.info(f"   📋 Rules Count: {len(rules)}")
+            logger.info(f"   📄 Documents Count: {len(documents)}")
+            logger.info(f"   💼 LC Data: {bool(lc_data)}")
+            logger.info(f"📋 COMPLETE INPUT DATA (FULL - NO TRUNCATION):")
+            logger.info(f"   Rules:\n{json.dumps(rules, indent=2)}")
+            logger.info(f"   Documents:\n{json.dumps(documents, indent=2)}")
+            logger.info(f"   LC Data:\n{json.dumps(lc_data, indent=2)}")
+
             if not rules:
+                logger.error("❌ No validation rules provided")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 return jsonify({'success': False, 'error': 'No validation rules provided'}), 400
 
             if not documents:
+                logger.error("❌ No documents provided")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 return jsonify({'success': False, 'error': 'No documents provided'}), 400
 
             logger.info(f"📋 Processing {len(rules)} rules against {len(documents)} documents - 1 rule per parallel call")
 
             # Get Azure OpenAI config
             deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+            logger.info(f"🔧 Using deployment: {deployment_name}")
 
             # Each rule gets its own batch (1 rule per batch for maximum parallelism)
             BATCH_SIZE = 1
             rule_batches = [[rule] for rule in rules]  # Each rule in its own list
             logger.info(f"🔢 Created {len(rule_batches)} parallel batches (1 rule each)")
+            logger.info(f"⚡ Max workers: 18 (parallel batch processing)")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             # Process ALL rules in parallel using ThreadPoolExecutor
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔄 LC CONDITIONS VALIDATION - PARALLEL BATCH EXECUTION")
+            logger.info(f"{'='*100}")
+            logger.info(f"🚀 Submitting {len(rule_batches)} parallel batch jobs...")
+            
             all_results = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=18) as executor:  # Up to 18 parallel calls
                 # Submit all batches
@@ -6918,20 +7286,38 @@ Return results for all {len(batch_rules)} rules. Check every document and show a
                     for idx, batch in enumerate(rule_batches)
                 }
 
+                logger.info(f"✅ All {len(future_to_batch)} batch jobs submitted")
+                logger.info(f"⏳ Waiting for batch completions...")
+                
                 # Collect results as they complete
+                completed = 0
                 for future in concurrent.futures.as_completed(future_to_batch):
                     batch_idx = future_to_batch[future]
+                    completed += 1
                     try:
                         batch_results = future.result()
                         all_results.extend(batch_results)
-                        logger.info(f"✅ Collected results from batch {batch_idx + 1}")
+                        logger.info(f"✅ ({completed}/{len(rule_batches)}) Collected {len(batch_results)} results from batch {batch_idx + 1}")
                     except Exception as e:
-                        logger.error(f"❌ Batch {batch_idx + 1} failed: {e}")
+                        logger.error(f"❌ ({completed}/{len(rule_batches)}) Batch {batch_idx + 1} failed: {e}")
+                        logger.exception(f"Batch {batch_idx + 1} exception:")
 
-            logger.info(f"✅ All batches complete. Total validation results: {len(all_results)}")
+            logger.info(f"")
+            logger.info(f"✅ All {len(rule_batches)} batches complete. Total validation results: {len(all_results)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # ======= FINAL VALIDATION: Ensure response format is correct =======
-            logger.info(f"🔍 Sample validation result structure: {all_results[0] if all_results else 'No results'}")
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔍 LC CONDITIONS VALIDATION - FINAL VALIDATION")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Total results: {len(all_results)}")
+            
+            if all_results:
+                logger.info(f"🔍 Sample validation result structure:\n{json.dumps(all_results[0], indent=2)}")
+            else:
+                logger.warning(f"⚠️ No validation results generated")
             
             # Log field counts for debugging
             if all_results:
@@ -6941,7 +7327,11 @@ Return results for all {len(batch_rules)} rules. Check every document and show a
                 if missing_fields:
                     logger.warning(f"⚠️ Missing frontend fields in response: {missing_fields}")
                 else:
-                    logger.info(f"✅ All required frontend fields present")
+                    logger.info(f"✅ All required frontend fields present: {', '.join(required_fields)}")
+
+            logger.info(f"📋 FINAL VALIDATION RESULTS (COMPLETE - NO TRUNCATION):\n{json.dumps(all_results, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
 
             return jsonify({
                 'success': True,
@@ -13853,7 +14243,14 @@ Return compliance status for each field.'''
                     progress_tracker.start_ocr()
 
                 try:
+                    logger.info(f"📋 OCR REQUEST: File={file_name}, Type={file_type}, Path={temp_file_path}")
+                    logger.info(f"🔧 OCR Config: Quality={quality_verdict if 'quality_verdict' in locals() else 'N/A'}, FileSize={os.path.getsize(temp_file_path)} bytes")
+                    
                     extracted_text_data = extract_text_with_retry_optimized(temp_file_path, file_type)
+                    
+                    logger.info(f"📊 OCR RESPONSE: Success={extracted_text_data.get('error') is None}, Lines={len(extracted_text_data.get('text_data', []))}, Confidence={extracted_text_data.get('overall_confidence', 0):.3f}")
+                    logger.info(f"⏱️ OCR Processing Time: {extracted_text_data.get('processing_time', 0):.2f}s")
+                    
                     text_data = extracted_text_data.get("text_data", [])
 
                     # Mark OCR complete
@@ -14410,6 +14807,19 @@ Return compliance status for each field.'''
                     chunk_id=chunk_id
                 )
 
+                logger.info(f"📋 ENTITY EXTRACTION REQUEST (Chunk {chunk_id}) TO AZURE OPENAI:")
+                logger.info(f"  🌐 Endpoint: {openai.api_base}")
+                logger.info(f"  🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
+                logger.info(f"  📝 API Version: {openai.api_version}")
+                logger.info(f"  🚀 Deployment/Engine: {model}")
+                logger.info(f"  🔧 Temperature: 0")
+                logger.info(f"  🎲 Seed: {12345 + chunk_id}")
+                logger.info(f"  📊 Max Tokens: (default)")
+                logger.info(f"  📄 Prompt Length: {len(chunk_prompt)} characters")
+                logger.info(f"  📋 Chunk Fields: {len(field_list)} fields")
+                logger.info(f"  📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\\n{chunk_prompt}")
+                logger.info(f"📤 Calling Azure OpenAI for chunk {chunk_id} extraction...")
+
                 # Make LLM call for this chunk
                 response = openai.ChatCompletion.create(
                     engine=model,
@@ -14422,11 +14832,19 @@ Return compliance status for each field.'''
                     response_format={"type": "json_object"}
                 )
 
+                logger.info(f"✅ Azure OpenAI API call successful for chunk {chunk_id}")
                 result = response["choices"][0]["message"]["content"].strip()
+                logger.info(f"📊 ENTITY EXTRACTION RESPONSE (Chunk {chunk_id} - Raw):")
+                logger.info(f"  📄 Content Length: {len(result)} characters")
+                logger.info(f"  📋 Full Response (COMPLETE - NO TRUNCATION):\\n{result}")
+                
                 parsed_json = parse_json_from_llm_response(result)
 
                 if parsed_json and 'extracted_fields' in parsed_json:
                     field_count = len(parsed_json.get('extracted_fields', {}))
+                    logger.info(f"📊 ENTITY EXTRACTION RESPONSE (Chunk {chunk_id} - Parsed):")
+                    logger.info(f"  ✅ Extracted fields: {field_count}/{len(entities)}")
+                    logger.info(f"  📋 Extracted fields (COMPLETE):\\n{json.dumps(parsed_json.get('extracted_fields', {}), indent=2)}")
                     logger.info(f"   ✅ Chunk {chunk_id}: Extracted {field_count}/{len(entities)} fields")
                 else:
                     logger.warning(f"   ⚠️  Chunk {chunk_id}: Failed to parse response")
@@ -14670,19 +15088,53 @@ Return compliance status for each field.'''
 
         try:
             # Use DocumentClassifier to build extraction prompt from config and entity_mappings
-            logger.info(f"SEARCH: Building extraction prompt using DocumentClassifier for page {page_number}")
+            logger.info(f"")
+            logger.info(f"{'='*100}")
+            logger.info(f"🔍 STEP 1: PRIMARY ENTITY DEFINITION (from document_entity_maintenance.json)")
+            logger.info(f"{'='*100}")
+            logger.info(f"📄 Document Type: {document_type}")
+            logger.info(f"📝 Page Number: {page_number}")
+            logger.info(f"🏗️ Building extraction prompt using DocumentClassifier...")
+            
             prompt = document_classifier.build_extraction_prompt(
                 document_type=document_type,
                 ocr_text=page_text,
                 page_number=page_number
             )
-            logger.info(f"SUCCESS:Extraction prompt built successfully using entity_mappings")
+            
+            logger.info(f"✅ STEP 1 COMPLETE: Extraction prompt built successfully from primary entity definitions")
+            logger.info(f"📊 Primary Prompt Length: {len(prompt)} characters")
+            logger.info(f"📋 PRIMARY EXTRACTION PROMPT (COMPLETE - NO TRUNCATION):\n{prompt}")
+            logger.info(f"{'='*100}")
+            logger.info(f"")
 
             # === ENHANCEMENT: Add field mapping examples from document_entities ===
+            original_prompt_length = len(prompt)
             field_mapping_example = load_document_field_mappings(document_type)
+            
             if field_mapping_example:
                 prompt += f"\n\n{field_mapping_example}"
-                logger.info(f" Enhanced prompt with field mapping examples for {document_type}")
+                enhancement_length = len(field_mapping_example)
+                logger.info(f"")
+                logger.info(f"{'='*100}")
+                logger.info(f"🔗 PROMPT ENHANCEMENT: Combining Step 1 + Step 2")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Original Prompt (Step 1): {original_prompt_length} characters")
+                logger.info(f"➕ Enhancement Text (Step 2): {enhancement_length} characters")
+                logger.info(f"📋 Combined Prompt Total: {len(prompt)} characters")
+                logger.info(f"✅ Prompt enhanced with field mapping examples for {document_type}")
+                logger.info(f"📋 FINAL COMBINED PROMPT (COMPLETE - NO TRUNCATION):\n{prompt}")
+                logger.info(f"{'='*100}")
+                logger.info(f"")
+            else:
+                logger.info(f"")
+                logger.info(f"{'='*100}")
+                logger.info(f"ℹ️ NO ENHANCEMENT: Using only Step 1 (primary entity definitions)")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Final Prompt Length: {len(prompt)} characters (no enhancement added)")
+                logger.info(f"📋 FINAL PROMPT (COMPLETE - NO TRUNCATION):\n{prompt}")
+                logger.info(f"{'='*100}")
+                logger.info(f"")
 
             # Load prompt configuration for model settings (already declared global at function start)
             if not prompt_config:
@@ -17135,7 +17587,7 @@ Return compliance status for each field.'''
 
         try:
             logger.info(f"🔄 Background compliance check started for hash: {file_hash}")
-            logger.info(f"📋 Document type: {document_type}, Fields count: {len(extracted_fields)}")
+            logger.info(f"📋 REQUEST: Background Compliance - Hash: {file_hash}, Document Type: {document_type}, Fields Count: {len(extracted_fields)}")
 
             compliance_status_tracker[file_hash] = {
                 'status': 'processing',
@@ -17155,7 +17607,7 @@ Return compliance status for each field.'''
                                    if not k.startswith('_coordinate_mapping') and
                                       k not in ['coordinate_mapping_stats']}
 
-                logger.info(f"📋 Compliance fields after filtering: {len(compliance_fields)}")
+                logger.info(f"📋 Compliance fields after filtering: {len(compliance_fields)} (removed coordinate mappings)")
 
                 try:
                     # RULE-BASED UNIFIED COMPLIANCE
@@ -17165,21 +17617,26 @@ Return compliance status for each field.'''
                         clear_unified_compliance_result
                     )
 
+                    logger.info(f"🔄 Clearing previous unified compliance results")
                     clear_unified_compliance_result()
 
-                    logger.info(f"📋 Starting compliance analysis for {document_type}")
+                    logger.info(f"📋 Starting analyze_unified_compliance_fast for {document_type}")
+                    logger.info(f"🔄 Calling analyze_unified_compliance_fast() with {len(compliance_fields)} fields")
 
                     # Single unified compliance call
                     analyze_unified_compliance_fast(compliance_fields, document_type)
 
+                    logger.info(f"🔄 Getting unified compliance result")
                     # Get the unified compliance result
                     unified_compliance = get_unified_compliance_result()
 
                     logger.info(f"✅ Compliance analysis returned: {len(unified_compliance)} fields")
+                    logger.info(f"📊 RESPONSE: Compliance Analysis Complete - {len(unified_compliance)} fields checked")
                     logger.info(f"📊 Sample compliance data: {str(list(unified_compliance.keys())[:5])}")
 
                 except Exception as e:
                     logger.error(f"❌ Background compliance analysis failed: {e}")
+                    logger.error(f"❌ Compliance Error Details: Document Type={document_type}, Fields Count={len(compliance_fields)}")
                     import traceback
                     logger.error(traceback.format_exc())
                     unified_compliance = {}
@@ -17194,10 +17651,12 @@ Return compliance status for each field.'''
             }
 
             logger.info(f"✅ Updated tracker for {file_hash} - status: completed, fields: {len(unified_compliance)}")
+            logger.info(f"✅ FINAL: Background Compliance Complete - Hash={file_hash}, Status=completed, Fields={len(unified_compliance)}")
             logger.info(f"📋 Current tracker keys: {list(compliance_status_tracker.keys())}")
 
         except Exception as e:
             logger.error(f"❌ Error in background compliance for {file_hash}: {e}")
+            logger.error(f"❌ Critical Compliance Failure: Hash={file_hash}, Error={str(e)}")
             import traceback
             logger.error(traceback.format_exc())
             compliance_status_tracker[file_hash] = {
@@ -17206,6 +17665,7 @@ Return compliance status for each field.'''
                 'error': str(e),
                 'timestamp': datetime.now()
             }
+            logger.error(f"❌ Tracker updated with error status for {file_hash}")
 
     def process_document_with_config(uploaded_file, function_name=None, product_name=None,
                                      document_type=None, progress_tracker=None, config=None):
@@ -17274,11 +17734,13 @@ Return compliance status for each field.'''
                 progress_tracker.start_quality_analysis()
 
             logger.info(f"SEARCH: STEP 1/4: QUALITY ANALYSIS - Analyzing document quality for {file_name}")
+            logger.info(f"📋 REQUEST: Quality Analysis - File: {file_name}, Type: {file_type}, Path: {temp_file_path}")
             quality_start = time.time()
 
             # Import quality analyzer
             from app.utils.quality_analyzer import quality_analyzer
 
+            logger.info(f"🔄 Calling quality_analyzer.analyze_document_quality_fast()")
             quality_result = quality_analyzer.analyze_document_quality_fast(
                 temp_file_path,
                 file_name,
@@ -17286,16 +17748,23 @@ Return compliance status for each field.'''
             )
             quality_time = time.time() - quality_start
 
+            logger.info(f"📊 RESPONSE: Quality Analysis Result - Success: {quality_result.get('success', False)}, Time: {quality_time:.2f}s")
+            logger.info(f"📊 Quality Result Details: {quality_result}")
+
             if quality_result.get("success", False):
                 verdict = quality_result.get("verdict", "pre_processing")
                 quality_score = quality_result.get("quality_score", 0.5)
+                pages_analyzed = quality_result.get("pages_analyzed", 0)
                 logger.info(f"SUCCESS:Quality analysis completed in {quality_time:.2f}s - Verdict: {verdict} (score: {quality_score:.3f})")
+                logger.info(f"✅ Quality Metrics: Verdict={verdict}, Score={quality_score:.3f}, Pages={pages_analyzed}")
 
                 if progress_tracker:
                     progress_tracker.quality_complete(verdict, quality_score)
             else:
                 # Quality analysis failed - proceed with standard processing
-                logger.warning(f"WARNINGS: Quality analysis failed: {quality_result.get('error', 'Unknown error')}")
+                error_msg = quality_result.get('error', 'Unknown error')
+                logger.warning(f"WARNINGS: Quality analysis failed: {error_msg}")
+                logger.warning(f"⚠️ Quality Analysis Error Details: {quality_result}")
                 verdict = "pre_processing"  # Default fallback
                 quality_score = 0.5
 
@@ -17307,11 +17776,13 @@ Return compliance status for each field.'''
                 progress_tracker.start_ocr()
 
             logger.info(f" STEP 2/4: OCR - Extracting text from {file_name} (Quality verdict: {verdict})")
+            logger.info(f"📋 REQUEST: OCR Extraction - File: {file_name}, Quality Verdict: {verdict}, Estimated Pages: {quality_result.get('pages_analyzed', 1) if quality_result else 1}")
             ocr_start = time.time()
 
             # OPTIMIZATION: Estimate page count for timeout calculation
             estimated_pages = quality_result.get("pages_analyzed", 1) if quality_result else 1
 
+            logger.info(f"🔄 Calling extract_text_with_retry_optimized() with quality_verdict={verdict}, page_count={estimated_pages}")
             # Use optimized OCR with quality-based optimization
             extracted_text_data = extract_text_with_retry_optimized(
                 temp_file_path,
@@ -17322,14 +17793,18 @@ Return compliance status for each field.'''
             text_data = extracted_text_data.get("text_data", [])
             ocr_time = time.time() - ocr_start
 
+            logger.info(f"📊 RESPONSE: OCR Extraction Complete - Extracted {len(text_data)} text entries in {ocr_time:.2f}s")
+
             # Enhanced logging with optimization stats
             if "optimization_stats" in extracted_text_data:
                 stats = extracted_text_data["optimization_stats"]
                 logger.info(f"SUCCESS:OPTIMIZED OCR completed in {ocr_time:.2f}s - "
                            f"Extracted {len(text_data)} text entries | "
                            f"FastMode: {stats.get('fast_mode', False)}, "
+                           f"PollingInterval: {stats.get('polling_interval', 0):.2f}s, "
                            f"Polls: {stats.get('poll_count', 'N/A')}, "
                            f"Timeout: {stats.get('dynamic_timeout', 'N/A')}s")
+                logger.info(f"✅ OCR Optimization Stats: {stats}")
             else:
                 logger.info(f"SUCCESS:OCR completed in {ocr_time:.2f}s - Extracted {len(text_data)} text entries")
 
@@ -17396,14 +17871,17 @@ Return compliance status for each field.'''
                 progress_tracker.start_classification()
 
             logger.info(f"SEARCH: STEP 3/4: CLASSIFICATION - Identifying document type")
+            logger.info(f"📋 REQUEST: Document Classification - File: {file_name}, Pages: {len(pages_ocr_data)}")
             classification_start = time.time()
 
             # Use existing DocumentClassifier for classification
             page_text = "\n".join([text['text'] for page_data in pages_ocr_data for text in page_data])
+            logger.info(f"🔄 Calling document_classifier.classify_document() with {len(page_text)} characters of text")
 
             classification_result = document_classifier.classify_document(page_text)
 
             logger.info(f"ANALYTICS: Classification result: {str(classification_result)[:200]}...")
+            logger.info(f"📊 RESPONSE: Classification Result - {classification_result}")
 
             # Extract document type and confidence
             detected_doc_type = classification_result.get('document_type', document_type or 'Unknown')
@@ -17416,6 +17894,7 @@ Return compliance status for each field.'''
 
             classification_time = time.time() - classification_start
             logger.info(f"SUCCESS:Classification completed in {classification_time:.2f}s - Type: {detected_doc_type}, Confidence: {confidence}")
+            logger.info(f"✅ Classification Complete: Type={detected_doc_type}, Confidence={confidence:.2f}%, Time={classification_time:.2f}s")
 
             if progress_tracker:
                 progress_tracker.classification_complete(
@@ -17425,6 +17904,7 @@ Return compliance status for each field.'''
 
             # === STEP 4: EXTRACTION (Using Config Prompts + Field Mappings) ===
             logger.info(f"UPLOAD: STEP 4/4: EXTRACTION - Extracting fields using config prompts + field mappings")
+            logger.info(f"📋 REQUEST: Entity Extraction - Document Type: {detected_doc_type}")
             extraction_start = time.time()
 
             if progress_tracker:
@@ -17443,6 +17923,7 @@ Return compliance status for each field.'''
             logger.info(f"PARAMETERS: Using extraction config - Model: {extraction_model}, Temp: {extraction_temp}, MaxTokens: {extraction_max_tokens}")
 
             # Build extraction prompt using DocumentClassifier
+            logger.info(f"🔄 Building extraction prompt for document type: {detected_doc_type}")
             extraction_prompt = document_classifier.build_extraction_prompt(
                 document_type=detected_doc_type,
                 ocr_text=page_text,
@@ -17460,6 +17941,7 @@ Return compliance status for each field.'''
             logger.info(f" Built extraction prompt ({len(extraction_prompt)} chars)")
 
             # Call LLM for extraction
+            logger.info(f"🔄 Calling OpenAI API for entity extraction - Model: {extraction_model}")
             extraction_response = openai.ChatCompletion.create(
                 engine=extraction_model,
                 messages=[{"role": "user", "content": extraction_prompt}],
@@ -17474,16 +17956,20 @@ Return compliance status for each field.'''
 
             extraction_result = extraction_response.choices[0].message.content
             logger.info(f"ANALYTICS: Extraction result: {extraction_result[:200]}...")
+            logger.info(f"📊 RESPONSE: Entity Extraction - Received {len(extraction_result)} characters from LLM")
 
             # Parse extraction result
             try:
                 extraction_json = json.loads(extraction_result)
                 extracted_fields = extraction_json.get('extracted_fields', {})
-            except:
+                logger.info(f"✅ Successfully parsed extraction JSON - {len(extracted_fields)} fields extracted")
+            except Exception as parse_error:
+                logger.error(f"❌ Failed to parse extraction JSON: {parse_error}")
                 extracted_fields = {}
 
             extraction_time = time.time() - extraction_start
             logger.info(f"SUCCESS:Extraction completed in {extraction_time:.2f}s - Extracted {len(extracted_fields)} fields")
+            logger.info(f"✅ Entity Extraction Complete: Fields={len(extracted_fields)}, Time={extraction_time:.2f}s")
 
             if progress_tracker:
                 progress_tracker.field_extraction_complete(extracted_count=len(extracted_fields))
@@ -17493,8 +17979,10 @@ Return compliance status for each field.'''
             file_content_hash = hashlib.md5(f"{file_name}_{datetime.now().isoformat()}".encode()).hexdigest()
 
             logger.info(f"🚀 Starting background compliance check for {file_content_hash}")
+            logger.info(f"📋 REQUEST: Compliance Analysis - File Hash: {file_content_hash}, Document Type: {detected_doc_type}, Fields: {len(extracted_fields)}")
 
             # Start compliance check in background thread (non-blocking)
+            logger.info(f"🔄 Starting background compliance thread")
             compliance_thread = threading.Thread(
                 target=run_compliance_check_background,
                 args=(file_content_hash, extracted_fields, detected_doc_type),
@@ -17507,6 +17995,7 @@ Return compliance status for each field.'''
             compliance_analysis_time = 0.0  # Background processing time not counted
 
             logger.info(f"✅ Compliance check running in background (hash: {file_content_hash})")
+            logger.info(f"✅ Background Compliance Thread Started: Hash={file_content_hash}, Thread={compliance_thread.name}")
 
             # Transform compliance data for UI consumption
             def transform_compliance_for_ui(compliance_data, compliance_type):
@@ -18382,6 +18871,20 @@ Return compliance status for each field.'''
     3. ALWAYS prioritize explicit document titles over content similarity.
     4. Continuation pages should maintain the same document_type as the page they continue."""
 
+            logger.info(f"📋 BATCH CLASSIFICATION REQUEST TO AZURE OPENAI:")
+            logger.info(f"  🌐 Endpoint: {openai.api_base}")
+            logger.info(f"  🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
+            logger.info(f"  📝 API Version: {openai.api_version}")
+            logger.info(f"  🚀 Deployment/Engine: {deployment_name}")
+            logger.info(f"  🔧 Temperature: 0.05")
+            logger.info(f"  📊 Max Tokens: 3000")
+            logger.info(f"  🎲 Seed: 12345")
+            logger.info(f"  💬 System Message Length: {len(system_message)} chars")
+            logger.info(f"  💬 System Message: {system_message}")
+            logger.info(f"  📄 User Prompt Length: {len(batch_prompt)} chars")
+            logger.info(f"  📋 FULL USER PROMPT:\\n{batch_prompt}")
+            logger.info(f"📤 Calling Azure OpenAI ChatCompletion API...")
+
             response = openai.ChatCompletion.create(
                 engine=deployment_name,
                 messages=[
@@ -18397,7 +18900,11 @@ Return compliance status for each field.'''
                 response_format={"type": "json_object"}
             )
 
+            logger.info(f"✅ Azure OpenAI API call successful")
             response_text = response.choices[0].message.content.strip()
+            logger.info(f"📊 BATCH CLASSIFICATION RESPONSE (Raw):")
+            logger.info(f"  📄 Content Length: {len(response_text)} characters")
+            logger.info(f"  📋 Full Response:\\n{response_text}")
 
             # Clean response
             if response_text.startswith('```json'):
@@ -18408,6 +18915,9 @@ Return compliance status for each field.'''
 
             # Parse response
             batch_result = json.loads(response_text)
+            logger.info(f"📊 BATCH CLASSIFICATION RESPONSE (Parsed):")
+            logger.info(f"  📚 Total Pages Classified: {len(batch_result.get('pages', []))}")
+            logger.info(f"  📋 Package Analysis: {batch_result.get('package_analysis', {})}")
             
             # Extract package analysis if present
             package_analysis = batch_result.get('package_analysis', {})
@@ -18656,7 +19166,7 @@ Return compliance status for each field.'''
             if progress_tracker:
                 progress_tracker.quality_complete(verdict, quality_score)
 
-            # === STEP 3: OCR EXTRACTION ===
+            # === STEP 2: OCR EXTRACTION ===
             if progress_tracker:
                 progress_tracker.start_ocr()
 
@@ -18706,7 +19216,7 @@ Return compliance status for each field.'''
             pages_ocr_data = organize_ocr_data_by_page(text_data)
             logger.info(f"📄 Organized into {len(pages_ocr_data)} pages")
 
-            # === STEP 4: PAGE CLASSIFICATION (BATCH) ===
+            # === STEP 3: PAGE CLASSIFICATION (BATCH) ===
             logger.info(f"🏷️ STEP 3/5: PAGE CLASSIFICATION ({len(pages_ocr_data)} pages)")
             classification_start = time.time()
 
@@ -24164,8 +24674,9 @@ def generate_mt700_message(lc_data):
         # Beneficiary Account Number (if present)
         (":59A:" + lc_data['beneficiaryAccountNumber']) if lc_data.get('beneficiaryAccountNumber') else None,
         ":32B:" + currency + amount,  # Currency Code, Amount
-        # Available With Swift Address (if present) - UPDATED FIELD
-        (":41A:" + lc_data['availableWithSwiftAddress']) if lc_data.get('availableWithSwiftAddress') else None,    ]
+        # Confirmation Party Details (if present)
+        (":71D:" + lc_data['confirmationPartyDetails']) if lc_data.get('confirmationPartyDetails') else None,
+    ]
     # Remove None values if any field is not present
     swift_lines = [line for line in swift_lines if line is not None]
 

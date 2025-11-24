@@ -31,18 +31,18 @@
       "id": "88490"
     },
     {
+      "id": "88491",
       "documentId": "Covering_Schedule",
       "documentName": "Covering Schedule",
       "documentCategoryId": "1",
       "documentCategoryName": "Commercial Processes",
-      "entityId": "235",
-      "entityName": "Documentary credit number",
+      "entityId": "671",
+      "entityName": "Related Transaction Reference",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
       "dataCategoryValue": "References",
-      "fieldType": "optional",
-      "id": "88491"
+      "fieldType": "optional"
     },
     {
       "documentId": "Covering_Schedule",

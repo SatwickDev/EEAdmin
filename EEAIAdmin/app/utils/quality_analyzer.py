@@ -469,32 +469,40 @@ Quality Guidelines:
             Dictionary containing optimized quality analysis results
         """
         start_time = time.time()
-        
+
         try:
             logger.info(f"PARALLEL quality analysis for: {file_name}")
-            
+            logger.info(f"📋 REQUEST: Quality Analysis (Fast) - File: {file_name}, Path: {file_path}")
+            logger.info(f"🔧 Config: Model={self.azure_config['deployment_name']}, MaxTokens={self.fast_vision_config['max_tokens']}, ImageQuality={self.fast_vision_config['image_quality']}")
+
             if progress_tracker:
                 progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, "Parallel quality analysis...", 10)
-            
+
             # Convert document to images
+            logger.info(f"🔄 Converting document to images for analysis")
             if file_path.lower().endswith('.pdf'):
+                logger.info(f"📄 Processing PDF document")
                 images = self._convert_pdf_to_images_fast(file_path)
             else:
+                logger.info(f"🖼️ Processing image document")
                 img_base64 = self._load_image_file_fast(file_path)
                 images = [img_base64] if img_base64 else []
-            
+
             if not images:
+                logger.error(f"❌ Failed to convert document to images")
                 return self._create_error_result("Failed to process document images", file_name)
-            
+
+            logger.info(f"✅ Document converted to {len(images)} images")
             logger.info(f"Starting PARALLEL analysis of {len(images)} pages using threading")
-            
+            logger.info(f"🚀 Creating {len(images)} parallel threads for simultaneous page analysis")
+
             # PARALLEL PROCESSING: Analyze all pages simultaneously
             import threading
             from queue import Queue
-            
+
             results_queue = Queue()
             threads = []
-            
+
             def analyze_page_thread(img_base64, page_num, results_queue):
                 """Thread worker for parallel page analysis"""
                 try:
@@ -515,27 +523,37 @@ Quality Guidelines:
                 thread.start()
             
             # Wait for all threads to complete
+            logger.info(f"⏳ Waiting for all {len(threads)} analysis threads to complete")
             for thread in threads:
                 thread.join()
             
+            logger.info(f"✅ All threads completed, collecting results")
             # Collect results in order
             page_results_dict = {}
             while not results_queue.empty():
                 page_num, result = results_queue.get()
                 if result:
                     page_results_dict[page_num] = result
+                    logger.info(f"📊 Page {page_num}: Score={result.get('score', 0):.3f}, Verdict={result.get('verdict', 'unknown')}")
             
             # Sort by page number
             page_results = [page_results_dict[i] for i in sorted(page_results_dict.keys())]
             
+            logger.info(f"📊 Collected {len(page_results)} page results")
             if not page_results:
+                logger.error(f"❌ No pages could be analyzed")
                 return self._create_error_result("No pages could be analyzed", file_name)
             
             # Calculate results
+            logger.info(f"🔢 Calculating overall quality metrics")
             total_score = sum(r["score"] for r in page_results)
             valid_pages = len(page_results)
             overall_score = total_score / valid_pages
+            logger.info(f"📊 Total Score: {total_score:.3f}, Valid Pages: {valid_pages}, Average: {overall_score:.3f}")
+            
             verdict = self._determine_verdict(overall_score)
+            logger.info(f"✅ Verdict Determined: {verdict} (threshold check complete)")
+            
             processing_time = time.time() - start_time
             
             result = {
@@ -551,6 +569,8 @@ Quality Guidelines:
             }
             
             logger.info(f"PARALLEL quality analysis: {verdict} (score: {overall_score:.3f}) in {processing_time:.2f}s - {len(images)} pages analyzed simultaneously")
+            logger.info(f"📊 RESPONSE: Quality Analysis Complete - Verdict={verdict}, Score={overall_score:.3f}, Pages={valid_pages}, Time={processing_time:.2f}s")
+            logger.info(f"📋 Recommendations: {result['recommendations']}")
             
             if progress_tracker:
                 progress_tracker.update_stage(ProcessingStage.QUALITY_ANALYSIS, f"Parallel analysis complete: {verdict}", 100)
@@ -565,9 +585,14 @@ Quality Guidelines:
         """Convert PDF pages to base64 encoded images with optimized settings."""
         images = []
         try:
+            logger.info(f"📄 Opening PDF: {pdf_path}")
             doc = fitz.open(pdf_path)
+            total_pages = len(doc)
+            pages_to_process = min(total_pages, 10)
+            logger.info(f"📄 PDF has {total_pages} pages, processing first {pages_to_process} pages")
             
-            for page_num in range(min(len(doc), 10)):  # Limit to first 10 pages
+            for page_num in range(pages_to_process):
+                logger.info(f"🔄 Converting PDF page {page_num + 1}/{pages_to_process} to image")
                 page = doc[page_num]
                 # Use lower resolution for faster processing
                 mat = fitz.Matrix(1.5, 1.5)  # Reduced from 2.0 to 1.5
@@ -588,9 +613,13 @@ Quality Guidelines:
     def _load_image_file_fast(self, image_path: str) -> Optional[str]:
         """Load and convert image file to base64 with optimization."""
         try:
+            logger.info(f"🖼️ Loading image file: {image_path}")
             with Image.open(image_path) as img:
+                logger.info(f"📐 Original image size: {img.width}x{img.height}, Mode: {img.mode}")
+                
                 # Optimize image size for faster processing
                 if img.width > 1500 or img.height > 1500:
+                    logger.info(f"📏 Resizing image from {img.width}x{img.height} to max 1500x1500")
                     img.thumbnail((1500, 1500), Image.Resampling.LANCZOS)
                 
                 # Convert to RGB if needed
@@ -601,9 +630,12 @@ Quality Guidelines:
                 img_byte_arr = io.BytesIO()
                 img.save(img_byte_arr, format='PNG', optimize=True)
                 img_byte_arr = img_byte_arr.getvalue()
+                logger.info(f"💾 Image converted to bytes: {len(img_byte_arr)} bytes")
                 
                 # Convert to base64
-                return base64.b64encode(img_byte_arr).decode('utf-8')
+                base64_str = base64.b64encode(img_byte_arr).decode('utf-8')
+                logger.info(f"✅ Image converted to base64: {len(base64_str)} chars")
+                return base64_str
                 
         except Exception as e:
             logger.error(f"Failed to load image file (fast): {str(e)}")
@@ -615,6 +647,7 @@ Quality Guidelines:
         Focus: Brightness, Contrast, Sharpness, Text Clarity, Overall Readability
         """
         try:
+            logger.info(f"🔄 Analyzing Page {page_num} with GPT-4o Vision (Fast Mode)")
             # Optimized prompt focusing on 5 key metrics only
             prompt = f'''Analyze page {page_num} image quality for OCR processing.
 
@@ -636,6 +669,45 @@ Return JSON only:
 
 Guidelines: 0.0=poor, 0.5=fair, 0.7=good, 0.9=excellent, 1.0=perfect'''
             
+            # Build complete request payload
+            request_messages = [
+                {
+                    "role": "system",
+                    "content": self.fast_vision_config["system_prompt"]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{img_base64[:100]}...",  # Truncate base64 for logging
+                                "detail": self.fast_vision_config["image_quality"]
+                            }
+                        }
+                    ]
+                }
+            ]
+            
+            request_params = {
+                "engine": self.azure_config["deployment_name"],
+                "max_tokens": self.fast_vision_config["max_tokens"],
+                "temperature": self.fast_vision_config["temperature"],
+                "top_p": self.fast_vision_config["top_p"],
+                "frequency_penalty": self.fast_vision_config["frequency_penalty"],
+                "presence_penalty": self.fast_vision_config["presence_penalty"]
+            }
+            
+            # Log complete request
+            logger.info(f"📋 COMPLETE REQUEST for Page {page_num}:")
+            logger.info(f"  🔧 Engine: {request_params['engine']}")
+            logger.info(f"  🔧 Parameters: MaxTokens={request_params['max_tokens']}, Temp={request_params['temperature']}, TopP={request_params['top_p']}")
+            logger.info(f"  💬 System Prompt: {request_messages[0]['content']}")
+            logger.info(f"  💬 User Prompt:\n{prompt}")
+            logger.info(f"  🖼️ Image: base64 string ({len(img_base64)} chars), Quality={self.fast_vision_config['image_quality']}")
+            
+            logger.info(f"🔄 Calling GPT-4o Vision API for Page {page_num}...")
             # Call GPT-4o Vision API with optimized settings
             response = openai.ChatCompletion.create(
                 engine=self.azure_config["deployment_name"],
@@ -667,19 +739,28 @@ Guidelines: 0.0=poor, 0.5=fair, 0.7=good, 0.9=excellent, 1.0=perfect'''
             
             # Parse response
             content = response.choices[0].message.content.strip()
+            logger.info(f"📊 GPT Response for Page {page_num}: {content[:200]}...")
+            
             metrics_data = self._parse_fast_response(content)
             
             if not metrics_data:
+                logger.error(f"❌ Failed to parse metrics for Page {page_num}")
                 return None
+            
+            logger.info(f"✅ Parsed Metrics for Page {page_num}: {metrics_data}")
             
             # Calculate overall page score from 5 metrics
             page_score = self._calculate_fast_score(metrics_data)
+            logger.info(f"📊 Page {page_num} Overall Score: {page_score:.3f}")
+            
+            page_verdict = self._determine_verdict(page_score)
+            logger.info(f"✅ Page {page_num} Analysis Complete: Score={page_score:.3f}, Verdict={page_verdict}")
             
             return {
                 "page": page_num,
                 "score": round(page_score, 3),
                 "metrics": metrics_data,
-                "verdict": self._determine_verdict(page_score)
+                "verdict": page_verdict
             }
             
         except Exception as e:
