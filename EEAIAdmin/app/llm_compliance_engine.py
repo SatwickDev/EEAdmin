@@ -140,7 +140,12 @@ class LLMComplianceEngine:
             Dictionary with categorized rules
         """
         try:
-            logger.info(f"🤖 Classifying {len(rules)} rules using GPT-4o...")
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🤖 COMPLIANCE ENGINE - RULE CLASSIFICATION")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Total rules to classify: {len(rules)}")
+            logger.info("")
             
             # Prepare rules for LLM analysis
             rules_text = json.dumps([{
@@ -149,6 +154,14 @@ class LLMComplianceEngine:
                 'description': rule.get('description'),
                 'basis': rule.get('basis')
             } for rule in rules], indent=2)
+            
+            logger.info(f"{'='*100}")
+            logger.info("📋 COMPLIANCE ENGINE - INPUT DATA")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Rules count: {len(rules)}")
+            logger.info(f"📋 COMPLETE RULES DATA (FULL - NO TRUNCATION):\n{rules_text}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             prompt = f"""Analyze the following compliance rules and classify each into ONE of these categories:
 
@@ -169,6 +182,32 @@ Return ONLY a JSON object (no markdown, no explanation):
   "cross_document": [list of rule codes]
 }}"""
 
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔧 COMPLIANCE ENGINE - CONFIGURATION")
+            logger.info(f"{'='*100}")
+            logger.info(f"🌐 Azure OpenAI Endpoint: {openai.api_base}")
+            logger.info(f"🔑 API Key: {'*' * 20 if openai.api_key else 'NOT SET'}")
+            logger.info(f"📦 API Version: {openai.api_version}")
+            logger.info(f"🚀 Deployment Name: {self.deployment_name}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📝 COMPLIANCE ENGINE - PROMPT & API PARAMETERS")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Prompt Length: {len(prompt)} characters")
+            logger.info(f"📋 System Message: You are a trade finance compliance expert. Classify rules accurately based on their purpose.")
+            logger.info(f"📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\n{prompt}")
+            logger.info(f"")
+            logger.info(f"🔧 API Call Parameters:")
+            logger.info(f"🔢 Temperature: {OPENAI_TEMPERATURE_COMPLIANCE}")
+            logger.info(f"🔢 Max Tokens: {OPENAI_MAX_TOKENS_COMPLIANCE}")
+            logger.info(f"🚀 Sending request to Azure OpenAI...")
+            logger.info(f"{'='*100}")
+            logger.info("")
+
             response = openai.ChatCompletion.create(
                 engine=self.deployment_name,
                 messages=[
@@ -181,13 +220,34 @@ Return ONLY a JSON object (no markdown, no explanation):
             
             # Extract and validate response content
             response_content = response.choices[0].message.content.strip()
-            logger.info(f"📥 GPT-4o response (first 500 chars): {response_content[:500]}")
+            
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("✅ COMPLIANCE ENGINE - RULE CLASSIFICATION RESPONSE")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Response Status: Success")
+            logger.info(f"📊 Response Length: {len(response_content)} characters")
+            logger.info(f"📋 COMPLETE RAW RESPONSE (FULL - NO TRUNCATION):\n{response_content}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             if not response_content:
+                logger.error("")
+                logger.error(f"{'='*100}")
+                logger.error("❌ COMPLIANCE ENGINE - EMPTY RESPONSE ERROR")
+                logger.error(f"{'='*100}")
                 logger.error("❌ GPT-4o returned empty response")
+                logger.error(f"{'='*100}")
+                logger.error("")
                 raise ValueError("Empty response from GPT-4o")
             
             # Remove markdown code fences if present
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔍 COMPLIANCE ENGINE - EXTRACTING JSON")
+            logger.info(f"{'='*100}")
+            
+            original_response = response_content
             if response_content.startswith('```'):
                 # Remove opening fence
                 response_content = response_content.split('\n', 1)[1] if '\n' in response_content else response_content[3:]
@@ -195,10 +255,35 @@ Return ONLY a JSON object (no markdown, no explanation):
                 if response_content.endswith('```'):
                     response_content = response_content.rsplit('```', 1)[0]
                 response_content = response_content.strip()
+                logger.info(f"📝 Removed markdown code fences")
+            else:
+                logger.info(f"📝 No markdown code fences found")
+            
+            logger.info(f"📊 Cleaned Response Length: {len(response_content)} characters")
+            logger.info(f"📋 CLEANED JSON TEXT (FULL - NO TRUNCATION):\n{response_content}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔧 COMPLIANCE ENGINE - PARSING JSON")
+            logger.info(f"{'='*100}")
             
             classification = json.loads(response_content)
+            logger.info(f"✅ JSON parsing successful")
+            logger.info(f"📊 Classification keys: {list(classification.keys())}")
+            logger.info(f"✅ JSON parsing successful")
+            logger.info(f"📊 Classification keys: {list(classification.keys())}")
+            logger.info(f"📋 PARSED CLASSIFICATION (FULL - NO TRUNCATION):\n{json.dumps(classification, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # Organize rules by category (only LC comparison and cross-document)
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🧹 COMPLIANCE ENGINE - ORGANIZING RULES")
+            logger.info(f"{'='*100}")
+            
             categorized = {
                 'lc_comparison': [],
                 'cross_document': []
@@ -206,19 +291,38 @@ Return ONLY a JSON object (no markdown, no explanation):
             
             # Map rules to categories
             rule_map = {rule.get('code'): rule for rule in rules}
+            logger.info(f"📊 Total rules in map: {len(rule_map)}")
             
             for category in ['lc_comparison', 'cross_document']:
-                for code in classification.get(category, []):
+                codes = classification.get(category, [])
+                logger.info(f"📋 {category}: {len(codes)} rule codes found")
+                for code in codes:
                     if code in rule_map:
                         categorized[category].append(rule_map[code])
+                        logger.info(f"   ✅ Mapped {code} to {category}")
+                    else:
+                        logger.warning(f"   ⚠️ Code {code} not found in rule_map")
             
-            logger.info(f"✅ Rules classified - LC: {len(categorized['lc_comparison'])}, "
-                       f"Cross-Doc: {len(categorized['cross_document'])}")
+            logger.info(f"")
+            logger.info(f"✅ Rule categorization complete")
+            logger.info(f"📊 LC Comparison Rules: {len(categorized['lc_comparison'])}")
+            logger.info(f"📊 Cross-Document Rules: {len(categorized['cross_document'])}")
+            logger.info(f"📋 FINAL CATEGORIZED RULES (FULL - NO TRUNCATION):\n{json.dumps(categorized, indent=2, default=str)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             return categorized
             
         except Exception as e:
-            logger.error(f"❌ Error classifying rules: {str(e)}")
+            logger.error("")
+            logger.error(f"{'='*100}")
+            logger.error("❌ COMPLIANCE ENGINE - RULE CLASSIFICATION ERROR")
+            logger.error(f"{'='*100}")
+            logger.error(f"❌ Error Type: {type(e).__name__}")
+            logger.error(f"❌ Error Message: {str(e)}")
+            logger.exception("❌ Full traceback:")
+            logger.error(f"{'='*100}")
+            logger.error("")
             return {'lc_comparison': [], 'cross_document': []}
     
     def perform_lc_comparison_check(
@@ -270,6 +374,15 @@ Return ONLY a JSON object (no markdown, no explanation):
             
             # Let GPT-4o decide which fields to compare
             try:
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🔍 COMPLIANCE ENGINE - LC COMPARISON FOR: {doc_name}")
+                logger.info(f"{'='*100}")
+                logger.info(f"📄 Document Type: {doc_type}")
+                logger.info(f"📊 Entities Count: {len(entities)}")
+                logger.info(f"📊 Applicable Rules Count: {len(applicable_rules)}")
+                logger.info("")
+                
                 # Safely serialize rules - handle any nested dicts
                 try:
                     rules_summary = []
@@ -280,8 +393,19 @@ Return ONLY a JSON object (no markdown, no explanation):
                             'basis': str(r.get('basis', 'N/A'))
                         })
                 except Exception as rule_err:
-                    logger.error(f"Error serializing rules: {str(rule_err)}")
+                    logger.error(f"❌ Error serializing rules: {str(rule_err)}")
                     rules_summary = [{'error': 'Could not serialize rules'}]
+                
+                logger.info(f"{'='*100}")
+                logger.info(f"📋 COMPLIANCE ENGINE - LC COMPARISON INPUT DATA")
+                logger.info(f"{'='*100}")
+                logger.info(f"📄 Document: {doc_name}")
+                logger.info(f"📋 Document Type: {doc_type}")
+                logger.info(f"📋 DOCUMENT ENTITIES (FULL - NO TRUNCATION):\n{json.dumps(entities, indent=2)}")
+                logger.info(f"📋 LC CONTEXT (FULL - NO TRUNCATION):\n{json.dumps(lc_context, indent=2)}")
+                logger.info(f"📋 APPLICABLE RULES (FULL - NO TRUNCATION):\n{json.dumps(rules_summary, indent=2)}")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 
                 prompt = f"""You are a trade finance compliance expert. Analyze the document fields against LC values based on the provided rules.
 
@@ -326,6 +450,20 @@ Return ONLY a JSON object (no markdown, no explanation):
 
 **IMPORTANT:** Only include fields that SHOULD be compared per the rules. Return empty array [] if no comparisons are needed."""
 
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"📝 COMPLIANCE ENGINE - LC COMPARISON PROMPT")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Prompt Length: {len(prompt)} characters")
+                logger.info(f"📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\n{prompt}")
+                logger.info("")
+                logger.info(f"🔧 API Call Parameters:")
+                logger.info(f"🔢 Temperature: {OPENAI_TEMPERATURE_COMPLIANCE}")
+                logger.info(f"🔢 Max Tokens: {OPENAI_MAX_TOKENS_COMPLIANCE * 2}")
+                logger.info(f"🚀 Sending request to Azure OpenAI...")
+                logger.info(f"{'='*100}")
+                logger.info("")
+
                 response = openai.ChatCompletion.create(
                     engine=self.deployment_name,
                     messages=[
@@ -338,25 +476,73 @@ Return ONLY a JSON object (no markdown, no explanation):
                 
                 response_content = response.choices[0].message.content.strip()
                 
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"✅ COMPLIANCE ENGINE - LC COMPARISON RESPONSE")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Response Status: Success")
+                logger.info(f"📊 Response Length: {len(response_content)} characters")
+                logger.info(f"📋 COMPLETE RAW RESPONSE (FULL - NO TRUNCATION):\n{response_content}")
+                logger.info(f"{'='*100}")
+                logger.info("")
+                
                 # Strip markdown code fences if present
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🔍 COMPLIANCE ENGINE - EXTRACTING JSON")
+                logger.info(f"{'='*100}")
+                
                 if response_content.startswith('```'):
                     response_content = response_content.split('```')[1]
                     if response_content.startswith('json'):
                         response_content = response_content[4:]
                     response_content = response_content.strip()
+                    logger.info(f"📝 Removed markdown code fences")
+                else:
+                    logger.info(f"📝 No markdown code fences found")
+                
+                logger.info(f"📊 Cleaned Response Length: {len(response_content)} characters")
+                logger.info(f"📋 CLEANED JSON TEXT (FULL - NO TRUNCATION):\n{response_content}")
+                logger.info(f"{'='*100}")
+                logger.info("")
+                
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🔧 COMPLIANCE ENGINE - PARSING JSON")
+                logger.info(f"{'='*100}")
                 
                 comparisons = json.loads(response_content)
-                
-                logger.info(f"✅ LLM identified {len(comparisons)} field comparisons for {doc_name}")
+                logger.info(f"✅ JSON parsing successful")
+                logger.info(f"📊 Comparisons count: {len(comparisons)}")
+                logger.info(f"📋 PARSED COMPARISONS (FULL - NO TRUNCATION):\n{json.dumps(comparisons, indent=2)}")
+                logger.info(f"{'='*100}")
+                logger.info("")
                 
                 # Add document metadata to each result
-                for comparison in comparisons:
+                logger.info("")
+                logger.info(f"{'='*100}")
+                logger.info(f"🧹 COMPLIANCE ENGINE - PROCESSING COMPARISONS")
+                logger.info(f"{'='*100}")
+                logger.info(f"📊 Processing {len(comparisons)} comparisons for {doc_name}")
+                logger.info("")
+                
+                for idx, comparison in enumerate(comparisons):
+                    logger.info(f"{'─'*80}")
+                    logger.info(f"🔍 Processing comparison {idx + 1}/{len(comparisons)}")
+                    logger.info(f"📋 Field: {comparison.get('field')}")
+                    
                     doc_value = comparison.get('documentValue', '')
                     lc_value = comparison.get('lcValue', '')
+                    
+                    logger.info(f"📄 Document Value: {doc_value}")
+                    logger.info(f"📋 LC Value: {lc_value}")
                     
                     # Check if either value is empty/None/null
                     is_doc_value_empty = not doc_value or str(doc_value).strip() == '' or str(doc_value).lower() in ['none', 'null', 'n/a', 'not found', 'not available']
                     is_lc_value_empty = not lc_value or str(lc_value).strip() == '' or str(lc_value).lower() in ['none', 'null', 'n/a', 'not found', 'not available']
+                    
+                    logger.info(f"🔍 Document value empty: {is_doc_value_empty}")
+                    logger.info(f"🔍 LC value empty: {is_lc_value_empty}")
                     
                     # If either value is empty, mark as non-compliant (override LLM decision)
                     if is_doc_value_empty or is_lc_value_empty:
@@ -366,12 +552,15 @@ Return ONLY a JSON object (no markdown, no explanation):
                         if is_doc_value_empty and is_lc_value_empty:
                             explanation = f"Both document value and LC value are empty/missing. Cannot perform comparison."
                             severity = 'high'
+                            logger.warning(f"⚠️ Both values empty - marking as non-compliant")
                         elif is_doc_value_empty:
                             explanation = f"Document value is empty/missing (LC value: '{lc_value}'). Cannot verify compliance."
                             severity = 'high'
+                            logger.warning(f"⚠️ Document value empty - marking as non-compliant")
                         else:
                             explanation = f"LC value is empty/missing (Document value: '{doc_value}'). Cannot perform comparison."
                             severity = 'high'
+                            logger.warning(f"⚠️ LC value empty - marking as non-compliant")
                         
                         logger.warning(f"⚠️ Empty value detected for {comparison.get('field')}: {explanation}")
                     else:
@@ -379,8 +568,9 @@ Return ONLY a JSON object (no markdown, no explanation):
                         is_compliant = comparison.get('compliant', False)
                         explanation = comparison.get('explanation')
                         severity = comparison.get('severity', 'low' if is_compliant else 'high')
+                        logger.info(f"✅ Both values present - using LLM decision: compliant={is_compliant}")
                     
-                    results.append({
+                    result = {
                         'field': comparison.get('field'),
                         'documentType': doc_type,
                         'documentName': doc_name,
@@ -393,13 +583,39 @@ Return ONLY a JSON object (no markdown, no explanation):
                         'severity': severity,
                         'isCompliant': is_compliant,
                         'hash': doc.get('hash', doc.get('file_hash', ''))
-                    })
+                    }
+                    
+                    results.append(result)
+                    logger.info(f"📝 Added result: {comparison.get('field')} - Compliant: {is_compliant}")
+                
+                logger.info("")
+                logger.info(f"✅ Completed processing {len(comparisons)} comparisons for {doc_name}")
+                logger.info(f"📊 Total results added: {len(comparisons)}")
+                logger.info(f"{'='*100}")
+                logger.info("")
                     
             except Exception as e:
-                logger.error(f"❌ Error in LLM LC comparison for {doc_name}: {str(e)}")
+                logger.error("")
+                logger.error(f"{'='*100}")
+                logger.error(f"❌ COMPLIANCE ENGINE - LC COMPARISON ERROR")
+                logger.error(f"{'='*100}")
+                logger.error(f"❌ Document: {doc_name}")
+                logger.error(f"❌ Error Type: {type(e).__name__}")
+                logger.error(f"❌ Error Message: {str(e)}")
+                logger.exception("❌ Full traceback:")
+                logger.error(f"{'='*100}")
+                logger.error("")
                 continue
         
-        logger.info(f"✅ LC comparison complete: {len(results)} results")
+        logger.info("")
+        logger.info(f"{'='*100}")
+        logger.info(f"🎉 COMPLIANCE ENGINE - LC COMPARISON COMPLETE")
+        logger.info(f"{'='*100}")
+        logger.info(f"📊 Total results: {len(results)}")
+        logger.info(f"📋 FINAL LC COMPARISON RESULTS (FULL - NO TRUNCATION):\n{json.dumps(results, indent=2, default=str)}")
+        logger.info(f"{'='*100}")
+        logger.info("")
+        
         return results
     
     def perform_cross_document_check(
@@ -454,6 +670,22 @@ Return ONLY a JSON object (no markdown, no explanation):
                 logger.error(f"Error serializing cross-doc rules: {str(rule_err)}")
                 rules_summary = [{'error': 'Could not serialize rules'}]
             
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info(f"🔗 COMPLIANCE ENGINE - CROSS-DOCUMENT COMPARISON")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Total documents: {len(doc_data)}")
+            logger.info(f"📊 Total rules: {len(rules)}")
+            logger.info("")
+            
+            logger.info(f"{'='*100}")
+            logger.info(f"📋 COMPLIANCE ENGINE - CROSS-DOCUMENT INPUT DATA")
+            logger.info(f"{'='*100}")
+            logger.info(f"📋 DOCUMENT DATA (FULL - NO TRUNCATION):\n{json.dumps(doc_data, indent=2)}")
+            logger.info(f"📋 CROSS-DOCUMENT RULES (FULL - NO TRUNCATION):\n{json.dumps(rules_summary, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
             prompt = f"""You are a trade finance compliance expert. Analyze field consistency across multiple documents based on cross-document rules.
 
 **Documents ({len(doc_data)} total):**
@@ -486,6 +718,20 @@ Return ONLY a JSON object (no markdown, no explanation):
 
 **IMPORTANT:** Only include fields that SHOULD be compared per the rules. Return empty array [] if no cross-document comparisons are needed."""
 
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info(f"📝 COMPLIANCE ENGINE - CROSS-DOCUMENT PROMPT")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Prompt Length: {len(prompt)} characters")
+            logger.info(f"📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\n{prompt}")
+            logger.info("")
+            logger.info(f"🔧 API Call Parameters:")
+            logger.info(f"🔢 Temperature: {OPENAI_TEMPERATURE_COMPLIANCE}")
+            logger.info(f"🔢 Max Tokens: {OPENAI_MAX_TOKENS_COMPLIANCE * 2}")
+            logger.info(f"🚀 Sending request to Azure OpenAI...")
+            logger.info(f"{'='*100}")
+            logger.info("")
+
             response = openai.ChatCompletion.create(
                 engine=self.deployment_name,
                 messages=[
@@ -498,20 +744,65 @@ Return ONLY a JSON object (no markdown, no explanation):
             
             response_content = response.choices[0].message.content.strip()
             
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info(f"✅ COMPLIANCE ENGINE - CROSS-DOCUMENT RESPONSE")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Response Status: Success")
+            logger.info(f"📊 Response Length: {len(response_content)} characters")
+            logger.info(f"📋 COMPLETE RAW RESPONSE (FULL - NO TRUNCATION):\n{response_content}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
             # Strip markdown code fences if present
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info(f"🔍 COMPLIANCE ENGINE - EXTRACTING JSON")
+            logger.info(f"{'='*100}")
+            
             if response_content.startswith('```'):
                 response_content = response_content.split('```')[1]
                 if response_content.startswith('json'):
                     response_content = response_content[4:]
                 response_content = response_content.strip()
+                logger.info(f"📝 Removed markdown code fences")
+            else:
+                logger.info(f"📝 No markdown code fences found")
+            
+            logger.info(f"📊 Cleaned Response Length: {len(response_content)} characters")
+            logger.info(f"📋 CLEANED JSON TEXT (FULL - NO TRUNCATION):\n{response_content}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info(f"🔧 COMPLIANCE ENGINE - PARSING JSON")
+            logger.info(f"{'='*100}")
             
             comparisons = json.loads(response_content)
-            
-            logger.info(f"✅ LLM identified {len(comparisons)} cross-document comparisons")
+            logger.info(f"✅ JSON parsing successful")
+            logger.info(f"📊 Comparisons count: {len(comparisons)}")
+            logger.info(f"📋 PARSED COMPARISONS (FULL - NO TRUNCATION):\n{json.dumps(comparisons, indent=2)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # Add metadata to each result
-            for comparison in comparisons:
-                results.append({
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info(f"🧹 COMPLIANCE ENGINE - PROCESSING CROSS-DOCUMENT RESULTS")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Processing {len(comparisons)} comparisons")
+            logger.info("")
+            
+            for idx, comparison in enumerate(comparisons):
+                logger.info(f"{'─'*80}")
+                logger.info(f"🔍 Processing comparison {idx + 1}/{len(comparisons)}")
+                logger.info(f"📋 Field: {comparison.get('field')}")
+                logger.info(f"📄 Document 1: {comparison.get('document1Name')} - Value: {comparison.get('document1Value')}")
+                logger.info(f"📄 Document 2: {comparison.get('document2Name')} - Value: {comparison.get('document2Value')}")
+                logger.info(f"✅ Compliant: {comparison.get('compliant')}")
+                
+                result = {
                     'field': comparison.get('field'),
                     'documentType': 'Cross-Document',
                     'documentName': comparison.get('document1Name'),
@@ -523,12 +814,36 @@ Return ONLY a JSON object (no markdown, no explanation):
                     'discrepancy': comparison.get('explanation'),
                     'severity': comparison.get('severity', 'low' if comparison.get('compliant') else 'medium'),
                     'isCompliant': comparison.get('compliant', False)
-                })
+                }
+                results.append(result)
+                logger.info(f"📝 Added cross-document result: {comparison.get('field')}")
+            
+            logger.info("")
+            logger.info(f"✅ Completed processing {len(comparisons)} cross-document comparisons")
+            logger.info(f"📊 Total results added: {len(comparisons)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
                 
         except Exception as e:
-            logger.error(f"❌ Error in LLM cross-document comparison: {str(e)}")
+            logger.error("")
+            logger.error(f"{'='*100}")
+            logger.error(f"❌ COMPLIANCE ENGINE - CROSS-DOCUMENT ERROR")
+            logger.error(f"{'='*100}")
+            logger.error(f"❌ Error Type: {type(e).__name__}")
+            logger.error(f"❌ Error Message: {str(e)}")
+            logger.exception("❌ Full traceback:")
+            logger.error(f"{'='*100}")
+            logger.error("")
         
-        logger.info(f"✅ Cross-document comparison complete: {len(results)} results")
+        logger.info("")
+        logger.info(f"{'='*100}")
+        logger.info(f"🎉 COMPLIANCE ENGINE - CROSS-DOCUMENT COMPLETE")
+        logger.info(f"{'='*100}")
+        logger.info(f"📊 Total results: {len(results)}")
+        logger.info(f"📋 FINAL CROSS-DOCUMENT RESULTS (FULL - NO TRUNCATION):\n{json.dumps(results, indent=2, default=str)}")
+        logger.info(f"{'='*100}")
+        logger.info("")
+        
         return results
     
     def run_comprehensive_compliance_check(
@@ -549,43 +864,90 @@ Return ONLY a JSON object (no markdown, no explanation):
             Compliance results with all checks
         """
         try:
-            logger.info("🚀 Starting comprehensive LLM-based compliance check")
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🚀 COMPLIANCE ENGINE - COMPREHENSIVE CHECK STARTED")
+            logger.info(f"{'='*100}")
+            logger.info(f"📊 Total documents: {len(documents)}")
+            logger.info(f"📊 Total rules: {len(all_rules)}")
+            logger.info(f"📋 LC Context fields: {list(lc_context.keys()) if lc_context else []}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # Step 1: Classify rules
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📋 STEP 1: CLASSIFYING RULES")
+            logger.info(f"{'='*100}")
             categorized_rules = self.classify_rules_by_type(all_rules)
+            logger.info(f"✅ Rule classification complete")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # Step 2: Perform LC comparisons
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📋 STEP 2: LC COMPARISON CHECKS")
+            logger.info(f"{'='*100}")
             lc_results = self.perform_lc_comparison_check(
                 documents=documents,
                 lc_context=lc_context,
                 rules=categorized_rules['lc_comparison']
             )
+            logger.info(f"✅ LC comparison checks complete: {len(lc_results)} results")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # Step 3: Perform cross-document comparisons
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📋 STEP 3: CROSS-DOCUMENT CHECKS")
+            logger.info(f"{'='*100}")
             cross_doc_results = self.perform_cross_document_check(
                 documents=documents,
                 rules=categorized_rules['cross_document']
             )
+            logger.info(f"✅ Cross-document checks complete: {len(cross_doc_results)} results")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # Combine results
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🔗 COMBINING RESULTS")
+            logger.info(f"{'='*100}")
             all_results = lc_results + cross_doc_results
+            logger.info(f"📊 LC Results: {len(lc_results)}")
+            logger.info(f"📊 Cross-Document Results: {len(cross_doc_results)}")
+            logger.info(f"📊 Total Combined Results: {len(all_results)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
             # Statistics
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("📊 CALCULATING STATISTICS")
+            logger.info(f"{'='*100}")
             total_checks = len(all_results)
             compliant_count = sum(1 for r in all_results if r.get('isCompliant'))
             non_compliant_count = total_checks - compliant_count
+            compliance_rate = (compliant_count / total_checks * 100) if total_checks > 0 else 0
             
-            logger.info(f"✅ Compliance check complete: {total_checks} checks, "
-                       f"{compliant_count} compliant, {non_compliant_count} non-compliant")
+            logger.info(f"📊 Total Checks: {total_checks}")
+            logger.info(f"✅ Compliant: {compliant_count}")
+            logger.info(f"❌ Non-Compliant: {non_compliant_count}")
+            logger.info(f"📈 Compliance Rate: {compliance_rate:.2f}%")
+            logger.info(f"{'='*100}")
+            logger.info("")
             
-            return {
+            final_response = {
                 'success': True,
                 'results': all_results,
                 'statistics': {
                     'total_checks': total_checks,
                     'compliant': compliant_count,
                     'non_compliant': non_compliant_count,
-                    'compliance_rate': (compliant_count / total_checks * 100) if total_checks > 0 else 0
+                    'compliance_rate': compliance_rate
                 },
                 'rule_classification': {
                     'lc_comparison_rules': len(categorized_rules['lc_comparison']),
@@ -593,10 +955,34 @@ Return ONLY a JSON object (no markdown, no explanation):
                 }
             }
             
+            logger.info("")
+            logger.info(f"{'='*100}")
+            logger.info("🎉 COMPLIANCE ENGINE - COMPREHENSIVE CHECK COMPLETE")
+            logger.info(f"{'='*100}")
+            logger.info(f"✅ Success: True")
+            logger.info(f"📋 FINAL RESPONSE (FULL - NO TRUNCATION):\n{json.dumps(final_response, indent=2, default=str)}")
+            logger.info(f"{'='*100}")
+            logger.info("")
+            
+            return final_response
+            
         except Exception as e:
-            logger.error(f"❌ Error in comprehensive compliance check: {str(e)}")
-            return {
+            logger.error("")
+            logger.error(f"{'='*100}")
+            logger.error("❌ COMPLIANCE ENGINE - COMPREHENSIVE CHECK ERROR")
+            logger.error(f"{'='*100}")
+            logger.error(f"❌ Error Type: {type(e).__name__}")
+            logger.error(f"❌ Error Message: {str(e)}")
+            logger.exception("❌ Full traceback:")
+            logger.error(f"{'='*100}")
+            logger.error("")
+            
+            error_response = {
                 'success': False,
                 'error': str(e),
                 'results': []
             }
+            logger.error(f"📋 Error Response: {json.dumps(error_response)}")
+            
+            return error_response
+

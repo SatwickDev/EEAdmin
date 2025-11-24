@@ -156,8 +156,9 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
             logging.error(f"Unsupported file type: {file_type}")
             return {"error": f"Unsupported file type: {file_type}", "text_data": []}
 
-        logging.info(f"OPTIMIZED OCR processing: {file_path}")
-        logging.info(f"Quality verdict: {quality_verdict}, Pages: {page_count}")
+        logging.info(f"📋 OCR REQUEST: Starting Azure Computer Vision OCR")
+        logging.info(f"📄 File: {file_path}, Type: {file_type}")
+        logging.info(f"🔧 Quality Verdict: {quality_verdict}, Estimated Pages: {page_count}")
 
         # OPTIMIZATION 1: Dynamic timeout calculation
         dynamic_timeout = OCR_TIMEOUT_BASE + (page_count * OCR_TIMEOUT_PER_PAGE)
@@ -168,11 +169,30 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
             dynamic_timeout = max(10, dynamic_timeout * 0.7)  # Reduce timeout for high quality docs
             logging.info("Fast mode enabled for high-quality document")
 
-        logging.info(f"Dynamic timeout: {dynamic_timeout}s (base: {OCR_TIMEOUT_BASE}s + {page_count}*{OCR_TIMEOUT_PER_PAGE}s)")
+        logging.info(f"⏱️ Dynamic timeout: {dynamic_timeout}s (base: {OCR_TIMEOUT_BASE}s + {page_count}*{OCR_TIMEOUT_PER_PAGE}s)")
 
         # Read file and send to Azure OCR
+        file_size = os.path.getsize(file_path)
+        logging.info(f"📋 COMPLETE OCR REQUEST TO AZURE COMPUTER VISION:")
+        logging.info(f"  🌐 Endpoint: {COMPUTER_VISION_ENDPOINT}")
+        logging.info(f"  🔑 API Key: {COMPUTER_VISION_KEY}")
+        logging.info(f"  📄 Method: read_in_stream()")
+        logging.info(f"  📁 File Path: {file_path}")
+        logging.info(f"  📊 File Size: {file_size} bytes ({file_size/1024:.2f} KB)")
+        logging.info(f"  📝 File Type: {file_type}")
+        logging.info(f"  ⚙️ Parameters:")
+        logging.info(f"    - raw=True (returns raw HTTP response)")
+        logging.info(f"    - language: auto-detect")
+        logging.info(f"    - model: latest OCR model")
+        logging.info(f"  ⏱️ Expected timeout: {dynamic_timeout}s")
+        logging.info(f"  🚀 Fast mode: {fast_mode}")
+        logging.info(f"📤 Sending file stream to Azure OCR...")
+        
         with open(file_path, "rb") as file_stream:
             read_response = cv_client.read_in_stream(file_stream, raw=True)
+        
+        logging.info(f"✅ Azure OCR API call successful, received operation location")
+        logging.info(f"📋 API Response Headers: {dict(read_response.headers) if hasattr(read_response, 'headers') else 'N/A'}")
 
         # Extract operation ID from response headers
         operation_location = read_response.headers.get("Operation-Location")
@@ -186,14 +206,18 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
         start_time = time.time()
         poll_count = 0
         
+        logging.info(f"⏳ Starting polling for operation ID: {operation_id}")
+        
         while True:
             result = cv_client.get_read_result(operation_id)
             poll_count += 1
+            logging.info(f"🔄 Poll #{poll_count}: Status={result.status}")
             
             # OPTIMIZATION 4: Early termination for completed operations
             if result.status not in ["notStarted", "running"]:
                 processing_time = time.time() - start_time
-                logging.info(f"OCR completed in {processing_time:.2f}s after {poll_count} polls")
+                logging.info(f"✅ OCR operation completed in {processing_time:.2f}s after {poll_count} polls")
+                logging.info(f"📊 Final Status: {result.status}")
                 break
 
             # OPTIMIZATION 5: Timeout check
@@ -223,6 +247,7 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
             }
 
         # ANTI-HALLUCINATION: Extract text with confidence filtering and validation
+        logging.info(f"🔍 Starting text extraction with anti-hallucination filtering...")
         text_data = []
         word_data = []
         total_confidence = 0
@@ -234,7 +259,15 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
         MIN_WORD_LENGTH = 1  # Filter out single characters that are often noise
         SUSPICIOUS_PATTERNS = [r'^[^a-zA-Z0-9\s]+$', r'^\s*$', r'^[.,;:!?\-_=+(){}\[\]"\'`~@#$%^&*/<>\\|]*$']
         
+        logging.info(f"🛡️ Anti-hallucination settings: MinConfidence={MIN_CONFIDENCE_THRESHOLD}, MinWordLength={MIN_WORD_LENGTH}")
+        
+        total_pages = len(result.analyze_result.read_results)
+        logging.info(f"📄 Processing {total_pages} pages from Azure OCR results...")
+        
         for page_num, read_result in enumerate(result.analyze_result.read_results, start=1):
+            page_lines = len(read_result.lines)
+            logging.info(f"📄 Processing Page {page_num}/{total_pages}: {page_lines} lines detected")
+            
             for line in read_result.lines:
                 words = line.words
                 
@@ -305,9 +338,13 @@ def extract_text_from_file_optimized(file_path, file_type, quality_verdict=None,
         overall_confidence = total_confidence / line_count if line_count > 0 else 0.0
         processing_time = time.time() - start_time
         
-        logging.info(f"OCR Results: {len(text_data)} lines, avg confidence: {overall_confidence:.3f}")
-        logging.info(f"ANTI-HALLUCINATION: Filtered out {filtered_out_count} low-confidence/suspicious lines")
-        logging.info(f"Total processing time: {processing_time:.2f}s")
+        logging.info(f"📊 OCR RESPONSE: Extraction Complete")
+        logging.info(f"✅ Valid Lines: {len(text_data)}, Total Words: {len(word_data)}")
+        logging.info(f"📈 Overall Confidence: {overall_confidence:.3f}")
+        logging.info(f"🛡️ Anti-hallucination: Filtered {filtered_out_count} suspicious lines (kept {len(text_data)} valid)")
+        logging.info(f"⏱️ Total Processing Time: {processing_time:.2f}s")
+        logging.info(f"⚡ Performance: {len(text_data)/processing_time:.1f} lines/sec, {poll_count} API polls")
+        logging.info(f"🔧 Optimization Stats: FastMode={fast_mode}, AdaptivePolling={OCR_ADAPTIVE_POLLING}, Timeout={dynamic_timeout}s")
         
         return {
             "text_data": text_data,
