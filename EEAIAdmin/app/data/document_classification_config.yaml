@@ -294,3 +294,22 @@ logging:
   log_compliance_results: true
   log_processing_times: true
   log_api_calls: true
+chunking:
+  enabled: true
+  entity_count_thresholds:
+    small: 10
+    medium: 20
+    large: 30
+  chunk_counts:
+    small: 2
+    medium: 3
+    large: 4
+    xlarge: 5
+  base_seed: 12345
+  seed_increment_per_chunk: 1
+  min_entities_per_chunk: 1
+  prioritize_mandatory_first: true
+  priority_order:
+  - Mandatory
+  - Optional
+  - Conditional
