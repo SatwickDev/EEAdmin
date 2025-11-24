@@ -14701,82 +14701,64 @@ Return compliance status for each field.'''
         """
         logger.info(f"🧩 Starting chunk-based entity extraction for page {page_number}")
 
-        # Load chunking configuration from YAML
-        chunking_config = document_classifier.prompt_config.get('chunking', {})
-        
-        if not chunking_config.get('enabled', True):
-            logger.warning("⚠️ Chunking is disabled in config - falling back to single extraction")
-            # Could implement fallback to non-chunked extraction here
-        
-        # Get configuration values
-        thresholds = chunking_config.get('entity_count_thresholds', {
-            'small': 10,
-            'medium': 20,
-            'large': 30
-        })
-        chunk_counts = chunking_config.get('chunk_counts', {
-            'small': 2,
-            'medium': 3,
-            'large': 4,
-            'xlarge': 5
-        })
-        base_seed = chunking_config.get('base_seed', 12345)
-        seed_increment = chunking_config.get('seed_increment_per_chunk', 1)
-        min_entities_per_chunk = chunking_config.get('min_entities_per_chunk', 1)
-        prioritize_mandatory = chunking_config.get('prioritize_mandatory_first', True)
-        priority_order = chunking_config.get('priority_order', ['Mandatory', 'Optional', 'Conditional'])
-        
-        logger.info(f"📋 Chunking Configuration:")
-        logger.info(f"   Thresholds: Small≤{thresholds['small']}, Medium≤{thresholds['medium']}, Large≤{thresholds['large']}")
-        logger.info(f"   Chunk Counts: Small={chunk_counts['small']}, Medium={chunk_counts['medium']}, Large={chunk_counts['large']}, XLarge={chunk_counts['xlarge']}")
-        logger.info(f"   Base Seed: {base_seed}, Increment: {seed_increment}")
-        logger.info(f"   Min Entities/Chunk: {min_entities_per_chunk}")
-        logger.info(f"   Prioritize Mandatory First: {prioritize_mandatory}")
-        logger.info(f"   Priority Order: {priority_order}")
-
         # Calculate total entities
         all_entities = entity_info['mandatory_fields'] + entity_info['optional_fields'] + entity_info['conditional_fields']
         total_entities = len(all_entities)
         logger.info(f"📋 Total entities to extract: {total_entities} (Mandatory: {len(entity_info['mandatory_fields'])}, Optional: {len(entity_info['optional_fields'])}, Conditional: {len(entity_info['conditional_fields'])})")
 
-        # Determine optimal number of chunks based on configuration
-        if total_entities <= thresholds['small']:
-            num_chunks = chunk_counts['small']
-        elif total_entities <= thresholds['medium']:
-            num_chunks = chunk_counts['medium']
-        elif total_entities <= thresholds['large']:
-            num_chunks = chunk_counts['large']
+        # Determine optimal number of chunks (3-5 chunks based on entity count)
+        if total_entities <= 10:
+            num_chunks = 2
+        elif total_entities <= 20:
+            num_chunks = 3
+        elif total_entities <= 30:
+            num_chunks = 4
         else:
-            num_chunks = chunk_counts['xlarge']
-        
-        logger.info(f"📦 Determined chunk count: {num_chunks} chunks for {total_entities} entities")
+            num_chunks = 5
 
-        # Always prioritize mandatory fields first, then optional, then conditional (if configured)
-        chunk_size = max(min_entities_per_chunk, total_entities // num_chunks)
+        # Always prioritize mandatory fields first, then optional, then conditional
+        chunk_size = max(1, total_entities // num_chunks)
         entity_chunks = []
         
         current_chunk = []
         current_chunk_priority = []
         
-        # Process entities in priority order (configurable)
-        entity_groups = {
-            'Mandatory': entity_info['mandatory_fields'],
-            'Optional': entity_info['optional_fields'],
-            'Conditional': entity_info['conditional_fields']
-        }
-        
-        for priority in priority_order:
-            for entity in entity_groups.get(priority, []):
-                current_chunk.append(entity)
-                current_chunk_priority.append(priority)
-                if len(current_chunk) >= chunk_size and len(entity_chunks) < num_chunks - 1:
-                    entity_chunks.append({
-                        'entities': current_chunk.copy(),
-                        'priorities': current_chunk_priority.copy(),
-                        'chunk_id': len(entity_chunks) + 1
-                    })
-                    current_chunk = []
-                    current_chunk_priority = []
+        # Process entities in priority order
+        for entity in entity_info['mandatory_fields']:
+            current_chunk.append(entity)
+            current_chunk_priority.append('Mandatory')
+            if len(current_chunk) >= chunk_size and len(entity_chunks) < num_chunks - 1:
+                entity_chunks.append({
+                    'entities': current_chunk.copy(),
+                    'priorities': current_chunk_priority.copy(),
+                    'chunk_id': len(entity_chunks) + 1
+                })
+                current_chunk = []
+                current_chunk_priority = []
+
+        for entity in entity_info['optional_fields']:
+            current_chunk.append(entity)
+            current_chunk_priority.append('Optional')
+            if len(current_chunk) >= chunk_size and len(entity_chunks) < num_chunks - 1:
+                entity_chunks.append({
+                    'entities': current_chunk.copy(),
+                    'priorities': current_chunk_priority.copy(),
+                    'chunk_id': len(entity_chunks) + 1
+                })
+                current_chunk = []
+                current_chunk_priority = []
+
+        for entity in entity_info['conditional_fields']:
+            current_chunk.append(entity)
+            current_chunk_priority.append('Conditional')
+            if len(current_chunk) >= chunk_size and len(entity_chunks) < num_chunks - 1:
+                entity_chunks.append({
+                    'entities': current_chunk.copy(),
+                    'priorities': current_chunk_priority.copy(),
+                    'chunk_id': len(entity_chunks) + 1
+                })
+                current_chunk = []
+                current_chunk_priority = []
 
         # Add remaining entities to the last chunk
         if current_chunk:
@@ -14831,14 +14813,11 @@ Return compliance status for each field.'''
                 logger.info(f"  📝 API Version: {openai.api_version}")
                 logger.info(f"  🚀 Deployment/Engine: {model}")
                 logger.info(f"  🔧 Temperature: 0")
-                
-                # Calculate seed from configuration
-                chunk_seed = base_seed + (seed_increment * (chunk_id - 1))
-                logger.info(f"  🎲 Seed: {chunk_seed} (base={base_seed}, increment={seed_increment}, chunk={chunk_id})")
+                logger.info(f"  🎲 Seed: {12345 + chunk_id}")
                 logger.info(f"  📊 Max Tokens: (default)")
                 logger.info(f"  📄 Prompt Length: {len(chunk_prompt)} characters")
                 logger.info(f"  📋 Chunk Fields: {len(field_list)} fields")
-                logger.info(f"  📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\n{chunk_prompt}")
+                logger.info(f"  📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\\n{chunk_prompt}")
                 logger.info(f"📤 Calling Azure OpenAI for chunk {chunk_id} extraction...")
 
                 # Make LLM call for this chunk
@@ -14846,7 +14825,7 @@ Return compliance status for each field.'''
                     engine=model,
                     messages=[{"role": "user", "content": chunk_prompt}],
                     temperature=0,
-                    seed=chunk_seed,  # Use configured seed calculation
+                    seed=12345 + chunk_id,  # Different seed per chunk for reproducibility
                     top_p=0.1,
                     frequency_penalty=0,
                     presence_penalty=0,
