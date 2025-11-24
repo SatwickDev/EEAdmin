@@ -4513,7 +4513,7 @@ button:focus {
                         <div class="flex-1 flex" style="min-height: 0;">
 
                             <!-- Single Page - Larger Container for Better Readability -->
-                            <div class="flex-1 overflow-auto"
+                            <div ref="documentViewer" class="flex-1 overflow-auto"
                                  v-if="selectedResult?.previewImages && selectedResult.previewImages[currentPage]"
                                  @wheel="handleWheel"
                                  @mousedown="startPan"
@@ -4676,12 +4676,12 @@ button:focus {
                                 <div v-if="selectedResult?.extractedFields && Object.keys(selectedResult.extractedFields).length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                                     <!-- Table Header -->
                                     <div class="grid grid-cols-12 gap-2 bg-slate-50 px-3 py-2 border-b border-slate-200" style="font-family: 'Inter', -apple-system, sans-serif;">
-                                        <div class="col-span-3 flex items-center gap-1 text-[10px] font-bold text-slate-700">
-                                            <i class="mdi mdi-tag-text-outline text-teal-600 text-xs"></i>
+                                        <div class="col-span-3 flex items-center gap-1 text-[10px] font-bold text-slate-700 min-w-0">
+                                            <i class="mdi mdi-tag-text-outline text-teal-600 text-xs flex-shrink-0"></i>
                                             <span>Field Description</span>
                                         </div>
-                                        <div class="col-span-5 flex items-center gap-1 text-[10px] font-bold text-slate-700">
-                                            <i class="mdi mdi-text-box-outline text-teal-600 text-xs"></i>
+                                        <div class="col-span-5 flex items-center gap-1 text-[10px] font-bold text-slate-700 min-w-0">
+                                            <i class="mdi mdi-text-box-outline text-teal-600 text-xs flex-shrink-0"></i>
                                             <span>Field Value</span>
                                         </div>
                                         <div class="col-span-1 flex items-center justify-center gap-1 text-[10px] font-bold text-slate-700">
@@ -4698,7 +4698,7 @@ button:focus {
                                     <div class="divide-y divide-gray-100">
                                         <div v-for="(fieldData, fieldKey, index) in getExtractedFieldsWithDetails()"
                                              :key="fieldKey"
-                                             class="grid grid-cols-12 gap-2 px-3 py-2 group transition-all duration-200"
+                                             class="grid grid-cols-12 gap-2 px-3 py-2.5 group transition-all duration-200 min-w-0 items-start"
                                              :class="{
                                                  'bg-yellow-100 border-l-4 border-yellow-500': editingField === fieldKey || manuallyEditedFields[fieldKey],
                                                  'bg-red-100 border-l-4 border-red-500 hover:bg-red-100/80': !fieldData?.value && !editedFields[fieldKey] && !manuallyEditedFields[fieldKey] && editingField !== fieldKey && (fieldData?.priority === 'Optional' || fieldData?.priority === 'Conditional'),
@@ -4708,20 +4708,20 @@ button:focus {
                                              @click="highlightField(index, fieldData)">
 
                                             <!-- Field Description (3 columns) -->
-                                            <div class="col-span-3 flex items-center gap-1.5">
-                                                <div class="w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+                                            <div class="col-span-3 flex items-start gap-1.5 min-w-0 py-1">
+                                                <div class="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 mt-0.5"
                                                      :class="(fieldData?.value || (editingField === fieldKey && editedFields[fieldKey])) ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'">
                                                     <i class="mdi text-[10px]" :class="(fieldData?.value || (editingField === fieldKey && editedFields[fieldKey])) ? 'mdi-check-circle' : 'mdi-alert-circle-outline'"></i>
                                                 </div>
-                                                <span class="text-[10px] font-semibold text-gray-700" style="font-family: 'Inter', -apple-system, sans-serif;">
+                                                <span class="text-[10px] font-semibold text-gray-700 break-words" style="font-family: 'Inter', -apple-system, sans-serif; word-break: break-word; overflow-wrap: break-word; line-height: 1.4;">
                                                     {% raw %}{{ formatFieldName(fieldKey) }}{% endraw %}
                                                 </span>
                                             </div>
 
                                             <!-- Field Value (5 columns) -->
-                                            <div class="col-span-5 flex items-center gap-1 w-full">
+                                            <div class="col-span-5 flex items-center gap-1 w-full min-w-0">
                                                 <!-- Edit Mode -->
-                                                <div v-if="editingField === fieldKey" class="flex items-center gap-1 w-full">
+                                                <div v-if="editingField === fieldKey" class="flex items-center gap-1 w-full min-w-0">
                                                     <textarea
                                                         v-model="editedFields[fieldKey]"
                                                         @keyup.esc="cancelFieldEdit()"
@@ -4744,8 +4744,8 @@ button:focus {
                                                 </div>
                                                 
                                                 <!-- Display Mode -->
-                                                <div v-else @click.stop="startFieldEdit(fieldKey, fieldData?.value)" class="w-full cursor-text">
-                                                    <div v-if="fieldData?.value" class="text-[10px] text-gray-800 line-clamp-2" style="font-family: 'Inter', -apple-system, sans-serif;">
+                                                <div v-else @click.stop="startFieldEdit(fieldKey, fieldData?.value)" class="w-full cursor-text min-w-0">
+                                                    <div v-if="fieldData?.value" class="text-[10px] text-gray-800 line-clamp-2 break-words" style="font-family: 'Inter', -apple-system, sans-serif; word-break: break-word; overflow-wrap: break-word; hyphens: auto;">
                                                         {% raw %}{{ fieldData.value }}{% endraw %}
                                                     </div>
                                                     <div v-else class="text-[9px] text-gray-400 italic">Click to add value</div>
@@ -4753,7 +4753,7 @@ button:focus {
                                             </div>
 
                                             <!-- Confidence (1 column) -->
-                                            <div class="col-span-1 flex items-center justify-center">
+                                            <div class="col-span-1 flex items-start justify-center pt-1">
                                                 <span v-if="fieldData?.confidence && !manuallyEditedFields[fieldKey]" 
                                                       class="px-1.5 py-0.5 rounded text-[9px] font-bold whitespace-nowrap"
                                                       :class="fieldData.confidence > 80 ? 'bg-green-600 text-white' : fieldData.confidence > 60 ? 'bg-yellow-400 text-slate-800' : 'bg-red-600 text-white'"
@@ -4764,7 +4764,7 @@ button:focus {
                                             </div>
 
                                             <!-- Actions (3 columns) -->
-                                            <div class="col-span-3 flex items-center justify-center gap-1">
+                                            <div class="col-span-3 flex items-start justify-center gap-1 pt-1">
                                                 <!-- Search Icon -->
                                                 <button @click.stop="searchFieldCoordinates(fieldKey, fieldData?.value, fieldData)"
                                                         :disabled="!fieldData?.value || searchingField === fieldKey"

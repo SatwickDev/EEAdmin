@@ -871,15 +871,21 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 9999;
             align-items: center;
             justify-content: center;
             padding: 20px;
             overflow-y: auto;
+            overflow-x: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            will-change: transform;
         }
 
         .modal.active {
             display: flex;
+            position: fixed !important;
+            z-index: 99999 !important;
         }
 
         .modal-content {
@@ -894,6 +900,10 @@
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            z-index: 100000 !important;
+            margin: auto;
+            transform: translateZ(0);
         }
 
         .modal-header {
@@ -2537,6 +2547,17 @@
         .action-button i {
             font-size: 18px;
         }
+
+        /* SweetAlert2 z-index override to appear above modals */
+        .swal2-container {
+            z-index: 100000 !important;
+        }
+        .swal2-popup {
+            z-index: 100001 !important;
+        }
+        .swal2-backdrop-show {
+            z-index: 99999 !important;
+        }
     </style>
 </head>
 <body>
@@ -4034,6 +4055,13 @@
     let dataCategoriesTab = [];
     let filteredDataCategoriesTab = [];
 
+    // Configure SweetAlert2 to always appear above modals
+    const SwalWithDefaults = Swal.mixin({
+        zIndex: 100000,
+        allowOutsideClick: false,
+        allowEscapeKey: true
+    });
+
     document.addEventListener('DOMContentLoaded', async () => {
         handleUrlHash();
         setTimeout(async () => {
@@ -4714,7 +4742,10 @@
             showCancelButton: true,
             confirmButtonText: 'Yes',
             cancelButtonText: 'No',
-            reverseButtons: true
+            reverseButtons: true,
+            zIndex: 100000,
+            allowOutsideClick: false,
+            allowEscapeKey: true
         });
         return result.isConfirmed;
     }
@@ -4757,7 +4788,10 @@
             showCancelButton: true,
             confirmButtonText: 'Yes',
             cancelButtonText: 'No',
-            reverseButtons: true
+            reverseButtons: true,
+            zIndex: 100000,
+            allowOutsideClick: false,
+            allowEscapeKey: true
         });
         return result.isConfirmed;
     }
@@ -5295,7 +5329,12 @@
         document.getElementById('categoryId').value = '';
         populateProcessTypeDropdown(); // Add this line
 
-        document.getElementById('DocumentcategoryModal').classList.add('active');
+        const modal = document.getElementById('DocumentcategoryModal');
+        modal.classList.add('active');
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+        // Ensure modal stays on top when zoomed
+        modal.style.zIndex = '99999';
     }
 
     function editDocumentCategory(categoryId) {
@@ -5309,7 +5348,12 @@
             document.getElementById('categorySender').value = Category.sender || '';
             document.getElementById('categoryReceiver').value = Category.receiver || '';
             document.getElementById('categoryProcess').value = Category.processType || '';
-            document.getElementById('DocumentcategoryModal').classList.add('active');
+            const modal = document.getElementById('DocumentcategoryModal');
+            modal.classList.add('active');
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+            // Ensure modal stays on top when zoomed
+            modal.style.zIndex = '99999';
         }
     }
 
@@ -5343,7 +5387,11 @@
     }
 
     function closeDocumentModal() {
-        document.getElementById('DocumentcategoryModal').classList.remove('active');
+        const modal = document.getElementById('DocumentcategoryModal');
+        modal.classList.remove('active');
+        // Restore body scroll when modal is closed
+        document.body.style.overflow = '';
+        modal.style.zIndex = '';
     }
 
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
@@ -5376,7 +5424,10 @@
                         title: 'Already Exists!',
                         text: ans,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#d33'
+                        confirmButtonColor: '#d33',
+                        zIndex: 100000,
+                        allowOutsideClick: false,
+                        allowEscapeKey: true
                     });
                 } else {
                     const flag = await confirmDocumentChange(categoryData, filteredDocumentTypes[categoryId - 1]);
@@ -5407,7 +5458,10 @@
                         title: 'Already Exists!',
                         text: ans,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#d33'
+                        confirmButtonColor: '#d33',
+                        zIndex: 100000,
+                        allowOutsideClick: false,
+                        allowEscapeKey: true
                     });
                 } else {
                     const flag = await confirmDocumentChange(categoryData);
@@ -5440,7 +5494,10 @@
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#3085d6',
                     timer: 25000,
-                    timerProgressBar: true
+                    timerProgressBar: true,
+                    zIndex: 100000,
+                    allowOutsideClick: false,
+                    allowEscapeKey: true
                 });
             } else {
                 showError(data.message || 'Failed to save category');
@@ -5923,7 +5980,10 @@
                         title: 'Already Exists!',
                         text: ans,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#d33'
+                        confirmButtonColor: '#d33',
+                        zIndex: 100000,
+                        allowOutsideClick: false,
+                        allowEscapeKey: true
                     });
                 } else {
                     const flag = await confirmMappingChange(mappingData.documentId, mappingData.entityName);
@@ -5948,7 +6008,10 @@
                         title: 'Already Exists!',
                         text: ans,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#d33'
+                        confirmButtonColor: '#d33',
+                        zIndex: 100000,
+                        allowOutsideClick: false,
+                        allowEscapeKey: true
                     });
                 } else {
                     const flag = await confirmMappingChange(mappingData.documentId, mappingData.documentId);
@@ -6050,7 +6113,16 @@
     }
 
     function showError(message) {
-        alert('Error: ' + message);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: message,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#d33',
+            zIndex: 100000,
+            allowOutsideClick: false,
+            allowEscapeKey: true
+        });
     }
 
     // ===== CUSTOM FUNCTIONS MANAGEMENT =====
@@ -6571,7 +6643,10 @@
                         title: 'Already Exists!',
                         text: ans,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#d33'
+                        confirmButtonColor: '#d33',
+                        zIndex: 100000,
+                        allowOutsideClick: false,
+                        allowEscapeKey: true
                     });
                 } else {
                     const confirm = await confirmEntityChange(entityData, entitiesTab[entityId2 - 1]);
@@ -6597,7 +6672,10 @@
                         title: 'Already Exists!',
                         text: ans,
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#d33'
+                        confirmButtonColor: '#d33',
+                        zIndex: 100000,
+                        allowOutsideClick: false,
+                        allowEscapeKey: true
                     });
                 } else {
                     const confirm = await confirmEntityChange(entityData);
