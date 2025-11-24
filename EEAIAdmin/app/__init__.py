@@ -79,27 +79,47 @@ def create_app():
     # Also add a lightweight per-worker marker check so workers pick up external changes.
     from flask import g, request, current_app
 
+    from time import time
+    import glob
     @app.after_request
     def auto_reload_on_modify(response):
-        """Automatically reload JSONs after successful POST/PUT/DELETE when a writer set `g.data_modified`.
-
-        Writer endpoints that modify files should set `g.data_modified = True` after a successful write.
-        This avoids reloading on unrelated POST/PUT/DELETE requests.
+        """
+        Automatically reload JSONs after successful POST/PUT/DELETE when a writer set `g.data_modified`.
+        Only reload if changes happened in data or app/data folders, and debounce reloads.
         """
         try:
             if getattr(g, 'data_modified', False) and request.method in ['POST', 'PUT', 'DELETE'] and response.status_code in (200, 201):
-                try:
-                    from app.utils.reload_helper import reload_all_jsons, reload_app_data
-                    # Run synchronously to guarantee data is available for subsequent requests.
-                    reload_all_jsons()
-                    reload_app_data()
-                    logger.info("✅ Auto JSON reload triggered after data change")
-                    # Clear the flag so duplicate after_request hooks won't trigger repeatedly
-                    g.data_modified = False
-                except Exception as e:
-                    logger.warning(f"⚠️ Auto reload failed: {e}")
+                now = time()
+                last_reload = getattr(current_app, '_last_json_reload', 0)
+                # Only reload if more than 2 seconds have passed since last reload
+                if now - last_reload > 2:
+                    # Check if any file in data or app/data has changed since last reload
+                    data_dirs = [
+                        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'),
+                        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+                    ]
+                    changed = False
+                    for folder in data_dirs:
+                        folder = os.path.abspath(folder)
+                        for file in glob.glob(os.path.join(folder, '**'), recursive=True):
+                            if os.path.isfile(file):
+                                mtime = os.path.getmtime(file)
+                                if last_reload == 0 or mtime > last_reload:
+                                    changed = True
+                                    break
+                        if changed:
+                            break
+                    if changed:
+                        try:
+                            from app.utils.reload_helper import reload_all_jsons, reload_app_data
+                            reload_all_jsons()
+                            reload_app_data()
+                            logger.info("✅ Auto JSON reload triggered after data change in monitored folders")
+                            current_app._last_json_reload = now
+                            g.data_modified = False
+                        except Exception as e:
+                            logger.warning(f"⚠️ Auto reload failed: {e}")
         except Exception:
-            # keep the after_request tolerant to avoid blocking responses
             logger.debug('auto_reload_on_modify encountered an unexpected error')
         return response
 

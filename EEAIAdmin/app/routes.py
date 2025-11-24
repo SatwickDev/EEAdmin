@@ -19838,9 +19838,9 @@ Return compliance status for each field.'''
         import json
         from datetime import datetime
 
-        from app.utils.reload_helper import reload_all_jsons,reload_app_data
-        reload_all_jsons()
-        reload_app_data()
+        # from app.utils.reload_helper import reload_all_jsons,reload_app_data
+        # reload_all_jsons()
+        # reload_app_data()
         try:
             # === INPUT VALIDATION ===
             data = request.get_json()
