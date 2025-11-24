@@ -19683,9 +19683,7 @@ Return compliance status for each field.'''
                             "page_range": group['page_range'],
                             "pages": group['pages'],
                             "confidence": round(group['confidence'], 2),
-                            "text_preview": (group['text'][:200] + "...") if len(group['text']) > 200 else group['text'],
-                            "file_name": file_name,
-                            "fileName": file_name
+                            "text_preview": (group['text'][:200] + "...") if len(group['text']) > 200 else group['text']
                         }
                         for idx, group in enumerate(document_groups)
                     ],
@@ -20109,7 +20107,7 @@ Return compliance status for each field.'''
 
                         # Parse extraction result
                         try:
-                            logger.info(f"🔍 Raw response: {extraction_result}")
+                            logger.info(f"🔍 Raw response (first 500 chars): {extraction_result[:500]}")
 
                             # Extract JSON from markdown if present
                             if '```json' in extraction_result:
