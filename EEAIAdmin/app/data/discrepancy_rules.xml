@@ -9073,4 +9073,595 @@
     <updatedAt>2025-10-14T20:28:27.208522</updatedAt>
 </rule>
 
+  <rule id="3f6d2e2b-6c8b-4a7e-9f2b-1a2b3c4d5e6f">
+    <code>R-1100</code>
+    <documentType>Commercial Invoice</documentType>
+    <description>Invoice issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="e4b1f2c3-4d5a-6b7c-8d9e-0f1a2b3c4d5e">
+    <code>R-1105</code>
+    <documentType>Packing List</documentType>
+    <description>Packing List issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f5a6b7c8-9d0e-1f2a-3b4c-5d6e7f8a9b0c">
+    <code>R-1106</code>
+    <documentType>Certificate of Origin</documentType>
+    <description>Certificate of Origin issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="0a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d">
+    <code>R-1107</code>
+    <documentType>Insurance Certificate</documentType>
+    <description>Insurance Certificate issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="1b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e">
+    <code>R-1108</code>
+    <documentType>Bill of Lading</documentType>
+    <description>Bill of Lading issue/boarding date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="2c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f">
+    <code>R-1109</code>
+    <documentType>Air Waybill</documentType>
+    <description>Air Waybill issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="3d4e5f6a-7b8c-9d0e-1f2a-3b4c5d6e7f80">
+    <code>R-1110</code>
+    <documentType>Bill of Exchange</documentType>
+    <description>Bill of Exchange issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="6c9e1b2a-8f34-4d2a-9f7a-2b3c4d5e6f70">
+    <code>R-1101</code>
+    <documentType>Bill of Lading</documentType>
+    <description>Boarding date in Bill of Lading (or 'shipped on board' presentation days) must be earlier than the Covering Schedule date; flag if boarding date is equal/after the covering schedule date.</description>
+    <basis>Custom Rule - Covering Schedule Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="b1a2c3d4-e5f6-7890-1234-56789abcdef0">
+    <code>R-1102</code>
+    <documentType>Bill of Lading</documentType>
+    <description>Bill of Lading boarding date must be earlier than the latest shipment date; if boarding date is after the latest shipment date, flag as 'Late Shipment'.</description>
+    <basis>Custom Rule - Late Shipment</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="0f1e2d3c-4b5a-6978-90ab-cdef12345678">
+    <code>R-1103</code>
+    <documentType>Letter of Credit</documentType>
+    <description>Expiry date of the Letter of Credit must be cross-verified against presentation dates and other document dates; flag cases where expiry precedes any required document presentation or critical document date.</description>
+    <basis>Custom Rule - Expiry Date Verification</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="7e6d5c4b-3a29-18f0-4b6c-8d9e0f1a2b3c">
+    <code>R-1104</code>
+    <documentType>Commercial Invoice</documentType>
+    <description>Invoice date must fall between the LC issue date and the LC expiry date (inclusive); flag invoices dated before LC issue or after LC expiry.</description>
+    <basis>Custom Rule - Invoice Date Window</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="11111111-1111-4111-8111-111111111111">
+    <code>R-1111</code>
+    <documentType>Purchase Order</documentType>
+    <description>Purchase Order issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="22222222-2222-4222-8222-222222222222">
+    <code>R-1112</code>
+    <documentType>Shipper's Letter of Instructions</documentType>
+    <description>Shipper's Letter of Instructions issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="33333333-3333-4333-8333-333333333333">
+    <code>R-1113</code>
+    <documentType>Sea Waybill</documentType>
+    <description>Sea Waybill issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="44444444-4444-4444-8444-444444444444">
+    <code>R-1114</code>
+    <documentType>Ship's Delivery Order</documentType>
+    <description>Ship's Delivery Order issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="55555555-5555-4555-8555-555555555555">
+    <code>R-1115</code>
+    <documentType>Sea Cargo Manifest</documentType>
+    <description>Sea Cargo Manifest issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="66666666-6666-4666-8666-666666666666">
+    <code>R-1116</code>
+    <documentType>Air Cargo Manifest</documentType>
+    <description>Air Cargo Manifest issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="77777777-7777-4777-8777-777777777777">
+    <code>R-1117</code>
+    <documentType>Rail Consignment Note</documentType>
+    <description>Rail Consignment Note issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="88888888-8888-4888-8888-888888888888">
+    <code>R-1118</code>
+    <documentType>Road Consignment Note</documentType>
+    <description>Road Consignment Note issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="99999999-9999-4999-8999-999999999999">
+    <code>R-1119</code>
+    <documentType>Cargo Insurance Document</documentType>
+    <description>Cargo Insurance Document issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa">
+    <code>R-1120</code>
+    <documentType>Warehouse Receipt</documentType>
+    <description>Warehouse Receipt issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb">
+    <code>R-1121</code>
+    <documentType>Dangerous Goods Declaration</documentType>
+    <description>Dangerous Goods Declaration issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="cccccccc-cccc-4ccc-8ccc-cccccccccccc">
+    <code>R-1122</code>
+    <documentType>Consignment Security Declaration</documentType>
+    <description>Consignment Security Declaration issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="dddddddd-dddd-4ddd-8ddd-dddddddddddd">
+    <code>R-1123</code>
+    <documentType>Export/Import License for agricultural products</documentType>
+    <description>Export/Import License issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee">
+    <code>R-1124</code>
+    <documentType>Non-preferential Certificate of Origin</documentType>
+    <description>Non-preferential Certificate of Origin issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="ffffffff-ffff-4fff-8fff-ffffffffffff">
+    <code>R-1125</code>
+    <documentType>Preferential Certificate of Origin</documentType>
+    <description>Preferential Certificate of Origin issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="01234567-89ab-4012-8123-0123456789ab">
+    <code>R-1126</code>
+    <documentType>Customs Declaration</documentType>
+    <description>Customs Declaration issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="12345678-9abc-4123-8123-123456789abc">
+    <code>R-1127</code>
+    <documentType>CODEX Generic Model Official Certificate</documentType>
+    <description>CODEX Generic Model Official Certificate issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="23456789-abcd-4234-8234-23456789abcd">
+    <code>R-1128</code>
+    <documentType>Phytosanitary certificate</documentType>
+    <description>Phytosanitary certificate issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="3456789a-bcde-4334-8334-3456789abcde">
+    <code>R-1129</code>
+    <documentType>International Veterinary Certificates</documentType>
+    <description>International Veterinary Certificates issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="456789ab-cdef-4434-8434-456789abcdef">
+    <code>R-1130</code>
+    <documentType>CITES Permit / Certificate</documentType>
+    <description>CITES Permit / Certificate issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="56789abc-def0-4534-8534-56789abcdef0">
+    <code>R-1131</code>
+    <documentType>Certificate of Inspection for Organic Products</documentType>
+    <description>Certificate of Inspection for Organic Products issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="6789abcd-ef01-4634-8634-6789abcdef01">
+    <code>R-1132</code>
+    <documentType>Customs Bond</documentType>
+    <description>Customs Bond issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="789abcde-f012-4734-8734-789abcdef012">
+    <code>R-1133</code>
+    <documentType>ATA Carnet</documentType>
+    <description>ATA Carnet issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="89abcdef-0123-4834-8834-89abcdef0123">
+    <code>R-1134</code>
+    <documentType>TIR Carnet</documentType>
+    <description>TIR Carnet issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="9abcdef0-1234-4934-8934-9abcdef01234">
+    <code>R-1135</code>
+    <documentType>Transit Accompanying Document</documentType>
+    <description>Transit Accompanying Document issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="abcdef01-2345-4a34-8a34-abcdef012345">
+    <code>R-1136</code>
+    <documentType>Advance Ruling Application</documentType>
+    <description>Advance Ruling Application issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="bcdef012-3456-4b34-8b34-bcdef0123456">
+    <code>R-1137</code>
+    <documentType>Excise Guarantee</documentType>
+    <description>Excise Guarantee issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="cdef0123-4567-4c34-8c34-cdef01234567">
+    <code>R-1138</code>
+    <documentType>Administrative Documents used in the Excise Movement Control System</documentType>
+    <description>EMCS/administrative document issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="def01234-5678-4d34-8d34-def012345678">
+    <code>R-1139</code>
+    <documentType>Payment Confirmation</documentType>
+    <description>Payment Confirmation issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="ef012345-6789-4e34-8e34-ef0123456789">
+    <code>R-1140</code>
+    <documentType>Promissory Note</documentType>
+    <description>Promissory Note issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f0123456-789a-4f34-8f34-f0123456789a">
+    <code>R-1141</code>
+    <documentType>Covering Schedule</documentType>
+    <description>Covering Schedule issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="01234567-89ab-4a34-8a34-0123456789ab">
+    <code>R-1142</code>
+    <documentType>Vessel Certificate</documentType>
+    <description>Vessel Certificate issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="12345678-9abc-4b34-8b34-123456789abc">
+    <code>R-1143</code>
+    <documentType>Certificate of Weight</documentType>
+    <description>Certificate of Weight issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="23456789-abcd-4c34-8c34-23456789abcd">
+    <code>R-1144</code>
+    <documentType>Courier Reciept/document</documentType>
+    <description>Courier Receipt/document issue date must be greater than the Letter of Credit issue date.</description>
+    <basis>Custom Rule - Issue Date Consistency</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="e1178a1a-0000-4f34-8f34-000000001178">
+    <code>R-1178</code>
+    <documentType>ATA Carnet</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+  
+  <rule id="e1175a1a-0000-4f34-8f34-000000001175">
+    <code>R-1175</code>
+    <documentType>CITES Permit / Certificate</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+  
+    <rule id="e1172a1a-0000-4f34-8f34-000000001172">
+    <code>R-1172</code>
+    <documentType>CODEX Generic Model Official Certificate</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+  
+    <rule id="e1168a1a-0000-4f34-8f34-000000001168">
+    <code>R-1168</code>
+    <documentType>Export/Import License for agricultural products</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+  
+    <rule id="e1174a1a-0000-4f34-8f34-000000001174">
+    <code>R-1174</code>
+    <documentType>International Veterinary Certificates</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+  
+    <rule id="e1173a1a-0000-4f34-8f34-000000001173">
+    <code>R-1173</code>
+    <documentType>Phytosanitary certificate</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+  
+    <rule id="e1179a1a-0000-4f34-8f34-000000001179">
+    <code>R-1179</code>
+    <documentType>TIR Carnet</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+  
+    <rule id="e1189a1a-0000-4f34-8f34-000000001189">
+    <code>R-1189</code>
+    <documentType>Vessel Certificate</documentType>
+    <description>Expiry date must be greater than Issue Date.</description>
+    <basis>Custom Rule - Expiry vs Issue Date</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f2e23456-7abc-4f34-8f34-f2e23456789b">
+    <code>R-1146</code>
+    <documentType>Bill of Lading</documentType>
+    <description>Bill of Lading boarding/on-board date must be earlier than the Covering Schedule date.</description>
+    <basis>Custom Rule - Boarding vs Covering Schedule</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f3e23456-7abc-4f34-8f34-f3e23456789c">
+    <code>R-1147</code>
+    <documentType>Ship's Delivery Order</documentType>
+    <description>Ship's Delivery Order boarding/presentation date must be earlier than the Covering Schedule date.</description>
+    <basis>Custom Rule - Boarding vs Covering Schedule</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f4e23456-7abc-4f34-8f34-f4e23456789d">
+    <code>R-1148</code>
+    <documentType>Bill of Lading</documentType>
+    <description>Bill of Lading boarding date must be earlier than the Letter of Credit latest shipment date (late shipment detection).</description>
+    <basis>Custom Rule - Late Shipment</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f5e23456-7abc-4f34-8f34-f5e23456789e">
+    <code>R-1149</code>
+    <documentType>Commercial Invoice</documentType>
+    <description>Invoice date must be between the document issue date and the document expiry date (inclusive).</description>
+    <basis>Custom Rule - Invoice Date Window</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f6e23456-7abc-4f34-8f34-f6e23456789f">
+    <code>R-1150</code>
+    <documentType>Customs Declaration</documentType>
+    <description>Invoice/date field must be between the document issue date and the document expiry date (inclusive).</description>
+    <basis>Custom Rule - Invoice Date Window</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+  <rule id="f7e23456-7abc-4f34-8f34-f7e2345678a0">
+    <code>R-1151</code>
+    <documentType>Administrative Documents used in the Excise Movement Control System</documentType>
+    <description>Invoice/date field must be between the document issue date and the document expiry date (inclusive).</description>
+    <basis>Custom Rule - Invoice Date Window</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
+
+
 </discrepancyRules>
