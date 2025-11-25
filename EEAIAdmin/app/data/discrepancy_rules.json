@@ -10032,61 +10032,56 @@
       "createdAt": "2025-11-12T13:27:08.844561",
       "updatedAt": "2025-11-12T13:27:08.844561"
     },
-   {
-  "id": "a9c31cf8-3a7e-4df6-b6e7-f7a6e4bafc01",
-  "code": "R-1003",
-  "documentType": "Insurance Certificate",
-  "description": "Copy of Marine Insurance Declaration is presented instead of the original Insurance Policy or Certificate.",
-  "basis": "UCP 600 Article 28(a)",
-  "priority": "Mandatory",
-  "createdAt": "2025-10-14T20:28:27.208531",
-  "updatedAt": "2025-10-14T20:28:27.208531"
-},
-
-   {
-  "id": "a9c31cf8-3a7e-4df6-b6e7-f7a6e4bafc01",
-  "code": "R-1004",
-  "documentType": "Insurance Certificate",
-  "description": "Copy of Marine Insurance Declaration is presented instead of the original Insurance Policy or Certificate.",
-  "basis": "UCP 600 Article 28(a)",
-  "priority": "Mandatory",
-  "createdAt": "2025-10-14T20:28:27.208531",
-  "updatedAt": "2025-10-14T20:28:27.208531"
-},
     {
-  "id": "c13bf4a5-42f5-4cb8-bff9-d1cfe7f81b03",
-  "code": "R-1005",
-  "documentType": "Insurance Certificate",
-  "description": "Insurance Policy or Certificate omits to show the Notify Party as per LC clause (47A-19).",
-  "basis": "Bank Practice",
-  "priority": "Mandatory",
-  "createdAt": "2025-10-14T20:28:27.208533",
-  "updatedAt": "2025-10-14T20:28:27.208533"
-},
+      "id": "a9c31cf8-3a7e-4df6-b6e7-f7a6e4bafc01",
+      "code": "R-1003",
+      "documentType": "Insurance Certificate",
+      "description": "Copy of Marine Insurance Declaration is presented instead of the original Insurance Policy or Certificate.",
+      "basis": "UCP 600 Article 28(a)",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-14T20:28:27.208531",
+      "updatedAt": "2025-10-14T20:28:27.208531"
+    },
     {
-  "id": "f41b6b9b-8d7c-4f4a-872d-235c8137a9c1",
-  "code": "R-1006",
-  "documentType": "Certificate of Origin",
-  "description": "Certificate of Origin must not be made in the name of the issuing bank as specified in the Letter of Credit (47A-1).",
-  "basis": "Bank Practice",
-  "priority": "Mandatory",
-  "createdAt": "2025-10-14T20:28:27.208521",
-  "updatedAt": "2025-10-14T20:28:27.208521"
-},
+      "id": "a9c31cf8-3a7e-4df6-b6e7-f7a6e4bafc01",
+      "code": "R-1004",
+      "documentType": "Insurance Certificate",
+      "description": "Copy of Marine Insurance Declaration is presented instead of the original Insurance Policy or Certificate.",
+      "basis": "UCP 600 Article 28(a)",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-14T20:28:27.208531",
+      "updatedAt": "2025-10-14T20:28:27.208531"
+    },
     {
-  "id": "8a1d6219-29a2-43a1-a5a8-5d9e6bba7f9c",
-  "code": "R-1007",
-  "documentType": "Certificate of Origin",
-  "description": "Certificate of Origin omits to show the name and address of the manufacturer or processor.",
-  "basis": "ISBP 821",
-  "priority": "Mandatory",
-  "createdAt": "2025-10-14T20:28:27.208522",
-  "updatedAt": "2025-10-14T20:28:27.208522"
-},
-    
-    
-    
-    
+      "id": "c13bf4a5-42f5-4cb8-bff9-d1cfe7f81b03",
+      "code": "R-1005",
+      "documentType": "Insurance Certificate",
+      "description": "Insurance Policy or Certificate omits to show the Notify Party as per LC clause (47A-19).",
+      "basis": "Bank Practice",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-14T20:28:27.208533",
+      "updatedAt": "2025-10-14T20:28:27.208533"
+    },
+    {
+      "id": "f41b6b9b-8d7c-4f4a-872d-235c8137a9c1",
+      "code": "R-1006",
+      "documentType": "Certificate of Origin",
+      "description": "Certificate of Origin must not be made in the name of the issuing bank as specified in the Letter of Credit (47A-1).",
+      "basis": "Bank Practice",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-14T20:28:27.208521",
+      "updatedAt": "2025-10-14T20:28:27.208521"
+    },
+    {
+      "id": "8a1d6219-29a2-43a1-a5a8-5d9e6bba7f9c",
+      "code": "R-1007",
+      "documentType": "Certificate of Origin",
+      "description": "Certificate of Origin omits to show the name and address of the manufacturer or processor.",
+      "basis": "ISBP 821",
+      "priority": "Mandatory",
+      "createdAt": "2025-10-14T20:28:27.208522",
+      "updatedAt": "2025-10-14T20:28:27.208522"
+    },
     {
       "id": "3f6d2e2b-6c8b-4a7e-9f2b-1a2b3c4d5e6f",
       "code": "R-1100",
@@ -10537,7 +10532,7 @@
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
     },
-        {
+    {
       "id": "e1178a1a-0000-4f34-8f34-000000001178",
       "code": "R-1178",
       "documentType": "ATA Carnet",
@@ -10547,7 +10542,7 @@
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
     },
-	 {
+    {
       "id": "e1175a1a-0000-4f34-8f34-000000001175",
       "code": "R-1175",
       "documentType": "CITES Permit / Certificate",
@@ -10557,7 +10552,7 @@
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
     },
-	 {
+    {
       "id": "e1168a1a-0000-4f34-8f34-000000001168",
       "code": "R-1168",
       "documentType": "Export/Import License for agricultural products",
@@ -10567,7 +10562,7 @@
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
     },
-	  {
+    {
       "id": "e1174a1a-0000-4f34-8f34-000000001174",
       "code": "R-1174",
       "documentType": "International Veterinary Certificates",
@@ -10577,7 +10572,7 @@
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
     },
-	  {
+    {
       "id": "e1173a1a-0000-4f34-8f34-000000001173",
       "code": "R-1173",
       "documentType": "Phytosanitary certificate",
@@ -10587,7 +10582,7 @@
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
     },
-	 { 
+    {
       "id": "e1179a1a-0000-4f34-8f34-000000001179",
       "code": "R-1179",
       "documentType": "TIR Carnet",
@@ -10597,7 +10592,7 @@
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
     },
-	 {
+    {
       "id": "e1189a1a-0000-4f34-8f34-000000001189",
       "code": "R-1189",
       "documentType": "Vessel Certificate",
@@ -10631,7 +10626,7 @@
       "id": "f4e23456-7abc-4f34-8f34-f4e23456789d",
       "code": "R-1148",
       "documentType": "Bill of Lading",
-      "description": "Bill of Lading boarding date must be earlier than the Letter of Credit latest shipment date (late shipment detection).",
+      "description": "The Bill of Lading’s shipped-on-board date or consignment loading date must be on or before the LC’s latest shipment date; a later date constitutes a late shipment.",
       "basis": "Custom Rule - Late Shipment",
       "priority": "Mandatory",
       "createdAt": "2025-11-25T12:00:00",
@@ -10666,7 +10661,16 @@
       "priority": "Mandatory",
       "createdAt": "2025-11-25T12:00:00",
       "updatedAt": "2025-11-25T12:00:00"
+    },
+    {
+      "id": "f4e23456-7abc-4f34-8f34-f4e23457889d",
+      "code": "R-1154",
+      "documentType": "Bill of Lading",
+      "description": "The consignment loading (shipped-on-board) date on the Bill of Lading must be on or before the covering schedule issue date; any later date constitutes a late-shipment discrepancy.",
+      "basis": "Custom Rule - Late Shipment",
+      "priority": "Mandatory",
+      "createdAt": "2025-11-25T12:00:00",
+      "updatedAt": "2025-11-25T12:00:00"
     }
- 
   ]
 }

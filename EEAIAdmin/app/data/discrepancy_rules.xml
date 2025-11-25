@@ -9626,7 +9626,7 @@
   <rule id="f4e23456-7abc-4f34-8f34-f4e23456789d">
     <code>R-1148</code>
     <documentType>Bill of Lading</documentType>
-    <description>Bill of Lading boarding date must be earlier than the Letter of Credit latest shipment date (late shipment detection).</description>
+    <description>The Bill of Lading’s shipped-on-board date or consignment loading date must be on or before the LC’s latest shipment date; a later date constitutes a late shipment.</description>
     <basis>Custom Rule - Late Shipment</basis>
     <priority>Mandatory</priority>
     <createdAt>2025-11-25T12:00:00</createdAt>
@@ -9663,5 +9663,14 @@
     <updatedAt>2025-11-25T12:00:00</updatedAt>
   </rule>
 
+	<rule id="f7e23456-7abc-4f34-8f34-f7e2345678a0">
+    <code>R-1154</code>
+    <documentType>Bill of Lading</documentType>
+    <description>The consignment loading (shipped-on-board) date on the Bill of Lading must be on or before the covering schedule issue date; any later date constitutes a late-shipment discrepancy.</description>
+    <basis>Custom Rule - Late Shipment</basis>
+    <priority>Mandatory</priority>
+    <createdAt>2025-11-25T12:00:00</createdAt>
+    <updatedAt>2025-11-25T12:00:00</updatedAt>
+  </rule>
 
 </discrepancyRules>

@@ -2757,7 +2757,7 @@
     {
       "id": "343",
       "name": "Consignment loading date",
-      "description": "Date and optionally time when a consignment is to be or has been loaded onto a means of transport",
+      "description": "Extract ONLY the date on which the goods were loaded on board the vessel, typically found under “On-Board Date”, “Loaded on Board”, or “Shipped on Board” in the Bill of Lading; capture the date exactly as shown.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "2",
