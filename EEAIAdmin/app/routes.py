@@ -6391,62 +6391,49 @@ Provide a structured summary with your findings.""",
             logger.info(f"{'='*100}")
             logger.info("")
 
-            # Use global Azure OpenAI configuration from app_config.py
-            deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+            # Load Required Documents configuration from YAML
+            required_docs_config = document_classifier.prompt_config.get('required_documents', {})
+            
+            # Get configuration values with fallbacks
+            model = required_docs_config.get('model', 'gpt-4o')
+            temperature = required_docs_config.get('temperature', 0.1)
+            max_tokens = required_docs_config.get('max_tokens', 2000)
+            seed = required_docs_config.get('seed', 12345)
+            top_p = required_docs_config.get('top_p', 0.1)
+            frequency_penalty = required_docs_config.get('frequency_penalty', 0)
+            presence_penalty = required_docs_config.get('presence_penalty', 0)
+            system_prompt = required_docs_config.get('system_prompt', 'You are a trade finance expert.')
+            user_prompt_template = required_docs_config.get('user_prompt_template', '')
+            response_format_type = required_docs_config.get('response_format', 'json_object')
+            fallback_json = required_docs_config.get('fallback_json_extraction', True)
+            default_priority = required_docs_config.get('default_priority', 'Mandatory')
+            default_category = required_docs_config.get('default_category', 'other')
+            
+            logger.info(f"📋 Required Documents Configuration Loaded:")
+            logger.info(f"   Model: {model}")
+            logger.info(f"   Temperature: {temperature}")
+            logger.info(f"   Max Tokens: {max_tokens}")
+            logger.info(f"   Seed: {seed}")
+            logger.info(f"   Top P: {top_p}")
+            logger.info(f"   Response Format: {response_format_type}")
+            logger.info(f"   Fallback JSON Extraction: {fallback_json}")
 
-            # Comprehensive prompt to handle any format
-            prompt = f"""You are a trade finance document expert. Parse the following required documents text and return a JSON object with a "documents" array.
-
-TEXT TO PARSE:
-{required_documents_text}
-
-INSTRUCTIONS:
-1. Extract EVERY distinct document mentioned in the text
-2. Each document should be a JSON object with these exact fields:
-   - "name": Document type (e.g., "Commercial Invoice", "Bill of Lading")
-   - "description": Brief requirements (10-15 words)
-   - "priority": "Mandatory" or "Optional" 
-   - "category": "trade", "financial", "certification", "shipping", or "other"
-
-RESPONSE FORMAT:
-Return a JSON object with this structure:
-{{
-  "documents": [
-    {{"name": "Commercial Invoice", "description": "Signed original, attested, legalized", "priority": "Mandatory", "category": "trade"}},
-    {{"name": "Bill of Lading", "description": "Clean shipped on board, full set", "priority": "Mandatory", "category": "shipping"}}
-  ]
-}}
-
-Extract ALL documents mentioned - typically 5-15 documents in an LC.
-
-CRITICAL INSTRUCTIONS:
-- Extract ALL documents mentioned in the text above
-- If you see numbers (1, 2, 3...) or bullets, each one is typically a separate document
-- Look for document names like "invoice", "bill of lading", "certificate", "policy", "list"
-- Standardize abbreviations: B/L → Bill of Lading, C/O → Certificate of Origin, GSP → Certificate of Origin (GSP Form)
-- If one item mentions multiple documents (e.g., "invoice and packing list"), create separate entries
-- Return ONLY the JSON array with NO extra text
-
-Output format:
-[
-  {{"name": "Commercial Invoice", "description": "Signed original, attested, legalized by embassy", "priority": "Mandatory", "category": "trade"}},
-  {{"name": "Bill of Lading", "description": "Full set, clean on board, made to order", "priority": "Mandatory", "category": "shipping"}},
-  {{"name": "Certificate of Origin", "description": "Attested by chamber, legalized", "priority": "Mandatory", "category": "certification"}},
-  {{"name": "Marine Insurance Policy", "description": "110% invoice value, warehouse to warehouse", "priority": "Mandatory", "category": "financial"}},
-  {{"name": "Packing List", "description": "Original plus copies", "priority": "Mandatory", "category": "trade"}}
-]"""
+            # Build prompt from template
+            prompt = user_prompt_template.format(
+                required_documents_text=required_documents_text
+            )
 
             logger.info("")
             logger.info(f"{'='*100}")
             logger.info("📋 REQUIRED DOCUMENTS PARSING - COMPLETE PROMPT")
             logger.info(f"{'='*100}")
             logger.info(f"📊 Prompt Length: {len(prompt)} characters")
-            logger.info(f"📝 System Message: You are a trade finance expert. Extract ALL documents from the text and return a JSON object with a 'documents' array. Each document must have 'name', 'description', 'priority', and 'category' fields.")
+            logger.info(f"📝 System Message: {system_prompt}")
             logger.info(f"📝 COMPLETE USER PROMPT (FULL - NO TRUNCATION):\n{prompt}")
             logger.info(f"{'='*100}")
             logger.info("")
 
-            # Call OpenAI with explicit instructions
+            # Call OpenAI with configured parameters
             logger.info("")
             logger.info(f"{'='*100}")
             logger.info("📤 REQUIRED DOCUMENTS PARSING - CALLING AZURE OPENAI")
@@ -6454,30 +6441,30 @@ Output format:
             logger.info(f"🌐 Endpoint: {openai.api_base}")
             logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
             logger.info(f"📝 API Version: {openai.api_version}")
-            logger.info(f"🚀 Engine/Deployment: {deployment_name}")
-            logger.info(f"🔧 Temperature: 0.1")
-            logger.info(f"📊 Max Tokens: 2000")
-            logger.info(f"🎲 Seed: 12345")
-            logger.info(f"📈 Top P: 0.1")
-            logger.info(f"🔢 Frequency Penalty: 0")
-            logger.info(f"🔢 Presence Penalty: 0")
-            logger.info(f"📋 Response Format: json_object")
+            logger.info(f"🚀 Engine/Deployment: {model}")
+            logger.info(f"🔧 Temperature: {temperature}")
+            logger.info(f"📊 Max Tokens: {max_tokens}")
+            logger.info(f"🎲 Seed: {seed}")
+            logger.info(f"📈 Top P: {top_p}")
+            logger.info(f"🔢 Frequency Penalty: {frequency_penalty}")
+            logger.info(f"🔢 Presence Penalty: {presence_penalty}")
+            logger.info(f"📋 Response Format: {response_format_type}")
             logger.info(f"{'='*100}")
             logger.info("")
             
             response = openai.ChatCompletion.create(
-                engine=deployment_name,
+                engine=model,
                 messages=[
-                    {"role": "system", "content": "You are a trade finance expert. Extract ALL documents from the text and return a JSON object with a 'documents' array. Each document must have 'name', 'description', 'priority', and 'category' fields."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1,
-                max_tokens=2000,
-                seed=12345,  # ✅ Reproducibility
-                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
-                frequency_penalty=0,
-                presence_penalty=0,
-                response_format={"type": "json_object"}
+                temperature=temperature,
+                max_tokens=max_tokens,
+                seed=seed,
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+                response_format={"type": response_format_type}
             )
 
             logger.info("")
@@ -6574,9 +6561,9 @@ Output format:
                     cleaned_doc = {
                         'name': doc.get('name', '').strip(),
                         'description': doc.get('description', '').strip(),
-                        'priority': doc.get('priority', 'Mandatory'),
-                        'category': doc.get('category', 'other'),
-                        'mandatory': doc.get('priority', 'Mandatory').lower() == 'mandatory'
+                        'priority': doc.get('priority', default_priority),
+                        'category': doc.get('category', default_category),
+                        'mandatory': doc.get('priority', default_priority).lower() == 'mandatory'
                     }
                     cleaned_documents.append(cleaned_doc)
                     logger.info(f"   {idx}. {cleaned_doc['name']} - {cleaned_doc['priority']} ({cleaned_doc['category']})")
@@ -6647,81 +6634,37 @@ Output format:
             logger.info(f"{'='*100}")
             logger.info("")
 
-            # Use global Azure OpenAI configuration from app_config.py
-            deployment_name = os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME', 'gpt-4o')
+            # Load LC Conditions Parse configuration from YAML
+            lc_parse_config = document_classifier.prompt_config.get('lc_conditions_parse', {})
+            
+            model = lc_parse_config.get('model', 'gpt-4o')
+            temperature = lc_parse_config.get('temperature', 0.1)
+            max_tokens = lc_parse_config.get('max_tokens', 15000)
+            seed = lc_parse_config.get('seed', 12345)
+            top_p = lc_parse_config.get('top_p', 0.1)
+            frequency_penalty = lc_parse_config.get('frequency_penalty', 0)
+            presence_penalty = lc_parse_config.get('presence_penalty', 0)
+            system_prompt = lc_parse_config.get('system_prompt', 'You are an expert LC conditions parser.')
+            user_prompt_template = lc_parse_config.get('user_prompt_template', '')
+            response_format_type = lc_parse_config.get('response_format', 'json_object')
 
             logger.info("")
             logger.info(f"{'='*100}")
-            logger.info("🔧 LC CONDITIONS PARSING - AZURE OPENAI CONFIGURATION")
+            logger.info("🔧 LC CONDITIONS PARSING - CONFIGURATION LOADED")
             logger.info(f"{'='*100}")
+            logger.info(f"   Model: {model}")
+            logger.info(f"   Temperature: {temperature}")
+            logger.info(f"   Max Tokens: {max_tokens}")
+            logger.info(f"   Seed: {seed}")
+            logger.info(f"   Top P: {top_p}")
             logger.info(f"🌐 Endpoint: {openai.api_base}")
             logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
             logger.info(f"📝 API Version: {openai.api_version}")
-            logger.info(f"🚀 Deployment Name: {deployment_name}")
             logger.info(f"{'='*100}")
             logger.info("")
 
-            # Comprehensive prompt to extract validation rules - Using few-shot learning
-            prompt = """You are a trade finance compliance expert. I will show you an example of how to extract multiple validation rules from LC Additional Conditions, then you do the same for the actual text.
-
-EXAMPLE INPUT:
-"1. ALL DOCUMENTS MUST BE DATED, PREPARED IN ENGLISH ONLY AND MUST BEAR OUR L/C NUMBER DULY SIGNED BY ISSUER."
-
-EXAMPLE OUTPUT (notice how ONE sentence becomes FOUR separate rules):
-[
-  {{
-    "id": "lc-cond-001",
-    "code": "LC-COND-001", 
-    "category": "date_validation",
-    "description": "All documents must be dated",
-    "field_affected": "all_documents",
-    "validation_type": "date_required",
-    "expected_value": "valid_date",
-    "severity": "high",
-    "actionable": true
-  }},
-  {{
-    "id": "lc-cond-002",
-    "code": "LC-COND-002",
-    "category": "language", 
-    "description": "All documents must be prepared in English only",
-    "field_affected": "all_documents",
-    "validation_type": "language_check", 
-    "expected_value": "English",
-    "severity": "high",
-    "actionable": true
-  }},
-  {{
-    "id": "lc-cond-003", 
-    "code": "LC-COND-003",
-    "category": "reference_number",
-    "description": "All documents must bear LC number {lc_number}",
-    "field_affected": "all_documents", 
-    "validation_type": "contains_lc_number",
-    "expected_value": "{lc_number}",
-    "severity": "high",
-    "actionable": true
-  }},
-  {{
-    "id": "lc-cond-004",
-    "code": "LC-COND-004", 
-    "category": "signature",
-    "description": "All documents must be duly signed by issuer",
-    "field_affected": "all_documents",
-    "validation_type": "signature_required", 
-    "expected_value": "signed",
-    "severity": "high", 
-    "actionable": true
-  }}
-]
-
-NOW YOUR TURN - Parse this actual LC text into multiple separate validation rules:
-
-LC Number: {lc_number}
-Additional Conditions Text:
-{additional_conditions_text}
-
-Return JSON array with ALL validation rules - extract EVERY requirement as separate rules. Do not limit to 6 rules - there should be 15-30+ rules from this comprehensive LC text. Break down every single requirement into separate actionable rules.""".format(
+            # Build prompt from template
+            prompt = user_prompt_template.format(
                 lc_number=lc_number,
                 additional_conditions_text=additional_conditions_text
             )
@@ -6731,7 +6674,7 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
             logger.info("📋 LC CONDITIONS PARSING - COMPLETE PROMPT")
             logger.info(f"{'='*100}")
             logger.info(f"📊 Prompt Length: {len(prompt)} characters")
-            logger.info(f"💬 System Message: You are an expert who ALWAYS extracts ALL INDIVIDUAL validation rules from LC conditions. Extract EVERY requirement as a separate rule - typically 15-30+ rules from comprehensive LC text. Do NOT limit to only 6 rules. Follow the example pattern exactly and return a JSON ARRAY with ALL rules.")
+            logger.info(f"💬 System Message: {system_prompt}")
             logger.info(f"📝 COMPLETE USER PROMPT (FULL - NO TRUNCATION):\n{prompt}")
             logger.info(f"{'='*100}")
             logger.info("")
@@ -6744,31 +6687,31 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
             logger.info(f"🌐 Endpoint: {openai.api_base}")
             logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
             logger.info(f"📝 API Version: {openai.api_version}")
-            logger.info(f"🚀 Engine/Deployment: {deployment_name}")
-            logger.info(f"🔧 Temperature: 0.1")
-            logger.info(f"📊 Max Tokens: 15000")
-            logger.info(f"🎲 Seed: 12345")
-            logger.info(f"📈 Top P: 0.1")
-            logger.info(f"🔢 Frequency Penalty: 0")
-            logger.info(f"🔢 Presence Penalty: 0")
-            logger.info(f"📋 Response Format: json_object")
+            logger.info(f"🚀 Engine/Deployment: {model}")
+            logger.info(f"🔧 Temperature: {temperature}")
+            logger.info(f"📊 Max Tokens: {max_tokens}")
+            logger.info(f"🎲 Seed: {seed}")
+            logger.info(f"📈 Top P: {top_p}")
+            logger.info(f"🔢 Frequency Penalty: {frequency_penalty}")
+            logger.info(f"🔢 Presence Penalty: {presence_penalty}")
+            logger.info(f"📋 Response Format: {response_format_type}")
             logger.info(f"🚀 Sending request to LLM with {len(prompt)} character prompt...")
             logger.info(f"{'='*100}")
             logger.info("")
             
             response = openai.ChatCompletion.create(
-                engine=deployment_name,
+                engine=model,
                 messages=[
-                    {"role": "system", "content": "You are an expert who ALWAYS extracts ALL INDIVIDUAL validation rules from LC conditions. Extract EVERY requirement as a separate rule - typically 15-30+ rules from comprehensive LC text. Do NOT limit to only 6 rules. Follow the example pattern exactly and return a JSON ARRAY with ALL rules."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1,
-                max_tokens=15000,  # Increased for many more rules
-                seed=12345,  # ✅ Reproducibility
-                top_p=0.1,  # ✅ NOT 1.0 (reduces randomness)
-                frequency_penalty=0,
-                presence_penalty=0,
-                response_format={"type": "json_object"}
+                temperature=temperature,
+                max_tokens=max_tokens,
+                seed=seed,
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+                response_format={"type": response_format_type}
             )
 
             logger.info("")
@@ -6958,13 +6901,24 @@ Return JSON array with ALL validation rules - extract EVERY requirement as separ
         def validate_rule_batch(batch_rules, documents, lc_data, deployment_name, batch_num):
             """Process a batch of rules against all documents"""
             try:
+                # Load LC Conditions Validate configuration from YAML
+                lc_validate_config = document_classifier.prompt_config.get('lc_conditions_validate', {})
+                
+                model = lc_validate_config.get('model', deployment_name)
+                temperature = lc_validate_config.get('temperature', 0.1)
+                max_tokens = lc_validate_config.get('max_tokens', 8000)
+                system_prompt = lc_validate_config.get('system_prompt', 'You are a precise LC validator.')
+                user_prompt_template = lc_validate_config.get('user_prompt_template', '')
+
                 logger.info("")
                 logger.info(f"{'='*100}")
                 logger.info(f"🔄 LC CONDITIONS VALIDATION - BATCH {batch_num}")
                 logger.info(f"{'='*100}")
                 logger.info(f"📋 Rules to validate: {len(batch_rules)}")
                 logger.info(f"📄 Documents to check: {len(documents)}")
-                logger.info(f"🔧 Deployment: {deployment_name}")
+                logger.info(f"🔧 Model: {model}")
+                logger.info(f"🔧 Temperature: {temperature}")
+                logger.info(f"📊 Max Tokens: {max_tokens}")
 
                 # Create focused document summaries (reduce token usage)
                 doc_summaries = []
@@ -7064,22 +7018,22 @@ Return results for all {len(batch_rules)} rules. Check every document and show a
                 logger.info(f"📋 LC CONDITIONS VALIDATION - COMPLETE PROMPT (Batch {batch_num})")
                 logger.info(f"{'='*100}")
                 logger.info(f"📊 Prompt Length: {len(prompt)} characters")
-                logger.info(f"💬 System Message: You are a precise LC validator. Return ONLY valid JSON array. No explanations. Check all rules against all documents.")
+                logger.info(f"💬 System Message: {system_prompt}")
                 logger.info(f"📝 COMPLETE USER PROMPT (FULL - NO TRUNCATION):\n{prompt}")
                 logger.info(f"{'='*100}")
                 logger.info("")
 
                 request_params = {
-                    'engine': deployment_name,
+                    'engine': model,
                     'messages': [
                         {
                             "role": "system",
-                            "content": "You are a precise LC validator. Return ONLY valid JSON array. No explanations. Check all rules against all documents."
+                            "content": system_prompt
                         },
                         {"role": "user", "content": prompt}
                     ],
-                    'temperature': 0.1,
-                    'max_tokens': 8000
+                    'temperature': temperature,
+                    'max_tokens': max_tokens
                 }
 
                 logger.info("")
@@ -7089,9 +7043,9 @@ Return results for all {len(batch_rules)} rules. Check every document and show a
                 logger.info(f"🌐 Endpoint: {openai.api_base}")
                 logger.info(f"🔑 API Key: {openai.api_key[:10]}...{openai.api_key[-4:] if openai.api_key and len(openai.api_key) > 14 else '***'}")
                 logger.info(f"📝 API Version: {openai.api_version}")
-                logger.info(f"🚀 Engine/Deployment: {deployment_name}")
-                logger.info(f"🔧 Temperature: 0.1")
-                logger.info(f"📊 Max Tokens: 8000")
+                logger.info(f"🚀 Engine/Deployment: {model}")
+                logger.info(f"🔧 Temperature: {temperature}")
+                logger.info(f"📊 Max Tokens: {max_tokens}")
                 logger.info(f"📋 Messages Count: 2 (system + user)")
                 logger.info(f"{'='*100}")
                 logger.info("")

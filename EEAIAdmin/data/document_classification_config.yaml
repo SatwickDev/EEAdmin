@@ -318,3 +318,206 @@ chunking:
   - Mandatory
   - Optional
   - Conditional
+required_documents:
+  model: gpt-4o
+  temperature: 0.1
+  max_tokens: 2000
+  seed: 12345
+  top_p: 0.1
+  frequency_penalty: 0
+  presence_penalty: 0
+  system_prompt: "You are a trade finance expert. Extract ALL documents from the text and return a JSON object with a 'documents' array. Each document must have 'name', 'description', 'priority', and 'category' fields."
+  user_prompt_template: |
+    You are a trade finance document expert. Parse the following required documents text and return a JSON object with a "documents" array.
+
+    TEXT TO PARSE:
+    {required_documents_text}
+
+    INSTRUCTIONS:
+    1. Extract EVERY distinct document mentioned in the text
+    2. Each document should be a JSON object with these exact fields:
+       - "name": Document type (e.g., "Commercial Invoice", "Bill of Lading")
+       - "description": Brief requirements (10-15 words)
+       - "priority": "Mandatory" or "Optional" 
+       - "category": "trade", "financial", "certification", "shipping", or "other"
+
+    RESPONSE FORMAT:
+    Return a JSON object with this structure:
+    {{
+      "documents": [
+        {{"name": "Commercial Invoice", "description": "Signed original, attested, legalized", "priority": "Mandatory", "category": "trade"}},
+        {{"name": "Bill of Lading", "description": "Clean shipped on board, full set", "priority": "Mandatory", "category": "shipping"}}
+      ]
+    }}
+
+    Extract ALL documents mentioned - typically 5-15 documents in an LC.
+
+    CRITICAL INSTRUCTIONS:
+    - Extract ALL documents mentioned in the text above
+    - If you see numbers (1, 2, 3...) or bullets, each one is typically a separate document
+    - Look for document names like "invoice", "bill of lading", "certificate", "policy", "list"
+    - Standardize abbreviations: B/L → Bill of Lading, C/O → Certificate of Origin, GSP → Certificate of Origin (GSP Form)
+    - If one item mentions multiple documents (e.g., "invoice and packing list"), create separate entries
+    - Return ONLY the JSON array with NO extra text
+
+    Output format:
+    [
+      {{"name": "Commercial Invoice", "description": "Signed original, attested, legalized by embassy", "priority": "Mandatory", "category": "trade"}},
+      {{"name": "Bill of Lading", "description": "Full set, clean on board, made to order", "priority": "Mandatory", "category": "shipping"}},
+      {{"name": "Certificate of Origin", "description": "Attested by chamber, legalized", "priority": "Mandatory", "category": "certification"}},
+      {{"name": "Marine Insurance Policy", "description": "110% invoice value, warehouse to warehouse", "priority": "Mandatory", "category": "financial"}},
+      {{"name": "Packing List", "description": "Original plus copies", "priority": "Mandatory", "category": "trade"}}
+    ]
+  response_format: json_object
+  fallback_json_extraction: true
+  default_priority: Mandatory
+  default_category: other
+  categories:
+  - trade
+  - financial
+  - certification
+  - shipping
+  - other
+lc_conditions_parse:
+  model: gpt-4o
+  temperature: 0.1
+  max_tokens: 15000
+  seed: 12345
+  top_p: 0.1
+  frequency_penalty: 0
+  presence_penalty: 0
+  system_prompt: "You are an expert who ALWAYS extracts ALL INDIVIDUAL validation rules from LC conditions. Extract EVERY requirement as a separate rule - typically 15-30+ rules from comprehensive LC text. Do NOT limit to only 6 rules. Follow the example pattern exactly and return a JSON ARRAY with ALL rules."
+  user_prompt_template: |
+    You are a trade finance compliance expert. I will show you an example of how to extract multiple validation rules from LC Additional Conditions, then you do the same for the actual text.
+
+    EXAMPLE INPUT:
+    "1. ALL DOCUMENTS MUST BE DATED, PREPARED IN ENGLISH ONLY AND MUST BEAR OUR L/C NUMBER DULY SIGNED BY ISSUER."
+
+    EXAMPLE OUTPUT (notice how ONE sentence becomes FOUR separate rules):
+    [
+      {{
+        "id": "lc-cond-001",
+        "code": "LC-COND-001", 
+        "category": "date_validation",
+        "description": "All documents must be dated",
+        "field_affected": "all_documents",
+        "validation_type": "date_required",
+        "expected_value": "valid_date",
+        "severity": "high",
+        "actionable": true
+      }},
+      {{
+        "id": "lc-cond-002",
+        "code": "LC-COND-002",
+        "category": "language", 
+        "description": "All documents must be prepared in English only",
+        "field_affected": "all_documents",
+        "validation_type": "language_check", 
+        "expected_value": "English",
+        "severity": "high",
+        "actionable": true
+      }},
+      {{
+        "id": "lc-cond-003", 
+        "code": "LC-COND-003",
+        "category": "reference_number",
+        "description": "All documents must bear LC number {{lc_number}}",
+        "field_affected": "all_documents", 
+        "validation_type": "contains_lc_number",
+        "expected_value": "{{lc_number}}",
+        "severity": "high",
+        "actionable": true
+      }},
+      {{
+        "id": "lc-cond-004",
+        "code": "LC-COND-004", 
+        "category": "signature",
+        "description": "All documents must be duly signed by issuer",
+        "field_affected": "all_documents",
+        "validation_type": "signature_required", 
+        "expected_value": "signed",
+        "severity": "high", 
+        "actionable": true
+      }}
+    ]
+
+    NOW YOUR TURN - Parse this actual LC text into multiple separate validation rules:
+
+    LC Number: {lc_number}
+    Additional Conditions Text:
+    {additional_conditions_text}
+
+    Return JSON array with ALL validation rules - extract EVERY requirement as separate rules. Do not limit to 6 rules - there should be 15-30+ rules from this comprehensive LC text. Break down every single requirement into separate actionable rules.
+  response_format: json_object
+  expected_rules_min: 15
+  expected_rules_max: 30
+lc_conditions_validate:
+  model: gpt-4o
+  temperature: 0.1
+  max_tokens: 8000
+  system_prompt: "You are a precise LC validator. Return ONLY valid JSON array. No explanations. Check all rules against all documents."
+  user_prompt_template: |
+    Validate documents against LC conditions. Return ONLY valid JSON array.
+
+    LC DATA:
+    - LC Number: {lc_number}
+    - Beneficiary: {beneficiary}
+    - Issue Date: {issue_date}
+    - Expiry Date: {expiry_date}
+
+    DOCUMENTS ({doc_count} total):
+    {doc_summaries}
+
+    RULES TO VALIDATE ({rules_count} rules):
+    {batch_rules}
+
+    CRITICAL: Validate EACH rule against ALL {doc_count} documents.
+
+    OUTPUT FORMAT (JSON array only, no markdown):
+    [
+      {{
+        "rule": {{"code": "LC-COND-XXX", "description": "rule text"}},
+        "status": "compliant" OR "non_compliant" OR "manual_review",
+        "isCompliant": true OR false OR null,
+        "message": "summary for all {doc_count} documents",
+        "severity": "high",
+        "category": "category_name",
+        "details": {{
+          "compliant": [{{
+            "document": "Type", 
+            "fileName": "name", 
+            "pages": "Pages X", 
+            "reason": "why compliant",
+            "fieldValue": "actual value found that made it compliant",
+            "fieldName": "name of field checked"
+          }}],
+          "nonCompliant": [{{
+            "document": "Type", 
+            "fileName": "name", 
+            "pages": "Pages X", 
+            "reason": "why non-compliant",
+            "fieldValue": "actual problematic value found",
+            "expectedValue": "what was expected",
+            "fieldName": "name of field checked"
+          }}],
+          "requiresManualReview": [{{
+            "document": "Type", 
+            "fileName": "name", 
+            "pages": "Pages X", 
+            "reason": "why manual review needed",
+            "fieldValue": "actual value found (if any)",
+            "fieldName": "name of field checked"
+          }}]
+        }}
+      }}
+    ]
+
+    CRITICAL: Always include actual field values that were checked. For example:
+    - fieldValue: "Deutsche Bank AG" (for language check - non-compliant because German)
+    - fieldValue: "ILCAE00221000098" (for LC number check - compliant)  
+    - fieldValue: "15-Nov-2024" (for date check - compliant/non-compliant based on requirements)
+    - fieldValue: "" or "Not found" (for missing required fields)
+
+    Return results for all {rules_count} rules. Check every document and show actual values.
+  batch_size: 4
+  parallel_processing: true
