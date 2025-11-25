@@ -7801,18 +7801,6 @@ button:focus {
                                     class="absolute top-0 left-0 pointer-events-none"
                                     style="width: 100%; height: 100%;">
                             </canvas>
-                            
-                            <!-- Warning when bounding box coordinates are missing -->
-                            <div v-if="!discrepancyFieldData?.bounding_box && discrepancyImageLoaded" 
-                                 class="absolute top-4 left-4 right-4 bg-slate-50 border border-slate-300 rounded-lg p-3 shadow-md">
-                                <div class="flex items-start gap-2">
-                                    <i class="mdi mdi-alert-circle text-orange-600 text-lg flex-shrink-0"></i>
-                                    <div class="flex-1 text-xs">
-                                        <p class="font-semibold text-orange-900 mb-1">Field Position Not Available</p>
-                                        <p class="text-orange-700">The OCR system did not capture position coordinates for this field. The value was extracted but cannot be highlighted on the document.</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         
                         <!-- Value Display Box -->
@@ -8039,6 +8027,8 @@ button:focus {
                     discrepancyImageLoaded: false, // Track if preview image is loaded
                     discrepancyPreviewType: 'standard', // 'standard' or 'lc_conditions'
                     discrepancyFieldData: null, // Field data containing bounding box info
+                    discrepancySearchResults: [], // Search results for discrepancy preview
+                    discrepancyCanvasContext: null, // Canvas context for discrepancy preview
                     requiredDocumentsCache: [], // Cache for required documents from LC context
                     loadingRequiredDocuments: false, // Loading state for required documents parsing
                     parsingRequiredDocuments: false, // Flag to prevent simultaneous parsing calls
@@ -11626,6 +11616,7 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     this.viewingDiscrepancy = discrepancy;
                     this.selectedDiscrepancyPreview = discrepancy;
                     this.discrepancyPreviewType = type;
+                    this.showDiscrepancyPreview = true; // Show the discrepancy preview modal
                     
                     if (!this.results || this.results.length === 0) {
                         console.error('❌ No results available');
@@ -11648,15 +11639,10 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                     console.log('✅ Found result:', result);
                     
-                    // Set selectedResult to open the document in View Details modal
+                    // Store the result for reference
                     this.selectedResult = result;
-                    this.showDetailsModal = true;
-                    this.currentPage = 0;
-                    this.zoomLevel = 1;
-                    this.activeFieldIndex = null;
-                    this.drawings = [];
                     
-                    // Find the field in extracted fields and trigger search
+                    // Find the field in extracted fields
                     console.log('🔍 Looking for field:', fieldName);
                     let fieldData = result.extractedFields[fieldName];
                     
@@ -11674,15 +11660,60 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         }
                     }
                     
-                    if (fieldData) {
-                        console.log('✅ Found field data, triggering search:', fieldData);
-                        // Trigger the existing search mechanism
-                        this.$nextTick(() => {
-                            this.searchFieldCoordinates(fieldName, documentValue, fieldData);
-                        });
-                    } else {
-                        console.warn('⚠️ Could not find field data for:', fieldName);
+                    // If fieldData not found, create a basic one from the discrepancy
+                    if (!fieldData) {
+                        fieldData = {
+                            value: documentValue,
+                            bounding_page: 0,
+                            bounding_box: null,
+                            exact_text: documentValue
+                        };
+                        console.log('⚠️ Field data not found, using basic field data from discrepancy');
                     }
+                    
+                    // Store field data for discrepancy preview
+                    this.discrepancyFieldData = fieldData;
+                    
+                    // Determine which page to show initially
+                    // We'll update this after search completes with the correct page
+                    let initialPageIndex = 0;
+                    if (fieldData.bounding_page !== undefined && fieldData.bounding_page !== null) {
+                        // fieldData.bounding_page might be relative index or absolute page
+                        // If it's a small number (< 100), assume it's a relative index
+                        // Otherwise, convert from absolute page
+                        if (fieldData.bounding_page < 100) {
+                            initialPageIndex = fieldData.bounding_page;
+                    } else {
+                            // Convert absolute page to relative index
+                            if (result.pages && result.pages.length > 0) {
+                                initialPageIndex = result.pages.indexOf(fieldData.bounding_page);
+                                if (initialPageIndex === -1) initialPageIndex = 0;
+                            } else {
+                                initialPageIndex = fieldData.bounding_page - 1;
+                            }
+                        }
+                    }
+                    
+                    // Load the preview image for the initial page
+                    if (result.previewImages && result.previewImages.length > 0) {
+                        const pageIndex = Math.max(0, Math.min(initialPageIndex, result.previewImages.length - 1));
+                        this.discrepancyPreviewImage = result.previewImages[pageIndex];
+                        console.log(`📄 Loading initial preview image for relative page ${pageIndex}`);
+                    } else {
+                        console.warn('⚠️ No preview images available for this document');
+                        this.discrepancyPreviewImage = null;
+                    }
+                    
+                    // Reset image loaded state
+                    this.discrepancyImageLoaded = false;
+                    
+                    // Trigger search for coordinates after modal opens
+                    this.$nextTick(() => {
+                        if (fieldData && documentValue) {
+                            console.log('✅ Triggering coordinate search for discrepancy preview');
+                            this.searchDiscrepancyFieldCoordinates(fieldName, documentValue, fieldData, result);
+                        }
+                    });
                 },
 
                 // Close Discrepancy Preview Modal
@@ -11692,6 +11723,15 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     this.discrepancyPreviewImage = null;
                     this.discrepancyImageLoaded = false;
                     this.discrepancyFieldData = null;
+                    this.discrepancySearchResults = [];
+                    this.viewingDiscrepancy = null; // Clear viewing discrepancy state to prevent affecting View Details modal
+                    
+                    // Clear canvas
+                    if (this.discrepancyCanvasContext && this.$refs.discrepancyCanvas) {
+                        this.discrepancyCanvasContext.clearRect(0, 0, 
+                            this.$refs.discrepancyCanvas.width, 
+                            this.$refs.discrepancyCanvas.height);
+                    }
                 },
 
                 // Calculate bounding box when image loads
@@ -11699,45 +11739,52 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     console.log('📸 Discrepancy image loaded');
                     this.discrepancyImageLoaded = true;
                     
-                    console.log('🔍 Field data:', this.discrepancyFieldData);
-                    console.log('🔍 Bounding box:', this.discrepancyFieldData?.bounding_box);
-                    
-                    if (!this.discrepancyFieldData) {
-                        console.warn('⚠️ No field data available');
-                        return;
-                    }
-                    
-                    if (!this.discrepancyFieldData.bounding_box) {
-                        console.warn('⚠️ No bounding box in field data');
-                        console.log('Available field data keys:', Object.keys(this.discrepancyFieldData));
-                        return;
-                    }
-                    
                     this.$nextTick(() => {
+                        this.setupDiscrepancyCanvas();
+                        
+                        // If we have search results, highlight them
+                        if (this.discrepancySearchResults && this.discrepancySearchResults.length > 0) {
+                            console.log('🎨 Highlighting search results on discrepancy canvas');
+                            this.highlightDiscrepancySearchResults(this.discrepancySearchResults);
+                        } else if (this.discrepancyFieldData?.bounding_box) {
+                            // Fallback: draw bounding box from field data if available
+                            console.log('🎨 Drawing bounding box from field data');
+                            this.drawDiscrepancyBoundingBox(this.discrepancyFieldData.bounding_box, true); // Clear previous
+                        }
+                    });
+                },
+                
+                // Setup discrepancy canvas
+                setupDiscrepancyCanvas() {
                         const canvas = this.$refs.discrepancyCanvas;
                         const img = this.$refs.discrepancyDocImage;
                         
                         if (!canvas || !img) {
-                            console.error('❌ Could not find canvas or image ref');
-                            console.log('Canvas ref:', canvas);
-                            console.log('Image ref:', img);
+                        console.warn('⚠️ Canvas or image ref not available');
                             return;
                         }
-
-                        console.log('📐 Image natural size:', img.naturalWidth, 'x', img.naturalHeight);
-                        console.log('📐 Image client size:', img.clientWidth, 'x', img.clientHeight);
 
                         // Setup canvas to match image dimensions
                         canvas.width = img.clientWidth || img.offsetWidth;
                         canvas.height = img.clientHeight || img.offsetHeight;
                         
-                        console.log('📐 Canvas size set to:', canvas.width, 'x', canvas.height);
-                        
-                        const ctx = canvas.getContext('2d');
-                        
-                        let box = this.discrepancyFieldData.bounding_box;
-                        
-                        if (!Array.isArray(box)) {
+                    console.log('📐 Discrepancy canvas size set to:', canvas.width, 'x', canvas.height);
+                    
+                    // Store context for later use
+                    this.discrepancyCanvasContext = canvas.getContext('2d');
+                },
+                
+                // Draw bounding box on discrepancy canvas
+                drawDiscrepancyBoundingBox(box, clearPrevious = false) {
+                    const canvas = this.$refs.discrepancyCanvas;
+                    const img = this.$refs.discrepancyDocImage;
+                    
+                    if (!canvas || !img || !this.discrepancyCanvasContext) {
+                        console.warn('⚠️ Cannot draw bounding box: canvas/image/context not available');
+                        return;
+                    }
+                    
+                    if (!Array.isArray(box) || (box.length !== 4 && box.length !== 8)) {
                             console.error('❌ Invalid bounding box format');
                             return;
                         }
@@ -11753,17 +11800,14 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                             y1_inches = Math.min(...yCoords);
                             x2_inches = Math.max(...xCoords);
                             y2_inches = Math.max(...yCoords);
-                        } else if (box.length === 4) {
+                    } else {
                             // Rectangle format
                             [x1_inches, y1_inches, x2_inches, y2_inches] = box;
-                        } else {
-                            console.error('❌ Invalid bounding box format');
-                            return;
                         }
 
                         // Check if all zeros
                         if (x1_inches === 0 && y1_inches === 0 && x2_inches === 0 && y2_inches === 0) {
-                            console.error('❌ Bounding box is all zeros');
+                        console.warn('⚠️ Bounding box is all zeros');
                             return;
                         }
                         
@@ -11792,12 +11836,16 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         const scaledWidth = width * scaleX;
                         const scaledHeight = height * scaleY;
 
-                        // Draw yellow highlight
-                        ctx.fillStyle = 'rgba(255, 235, 59, 0.4)';
-                        ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                    // Only clear canvas if explicitly requested (for single box drawing)
+                    if (clearPrevious) {
+                        this.discrepancyCanvasContext.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+                    
+                    // Draw yellow highlight (accumulate multiple boxes)
+                    this.discrepancyCanvasContext.fillStyle = 'rgba(255, 235, 59, 0.4)';
+                    this.discrepancyCanvasContext.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
 
-                        console.log('✅ Drew bounding box highlight on canvas');
-                    });
+                    console.log(`✅ Drew bounding box highlight at (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) size ${scaledWidth.toFixed(1)}x${scaledHeight.toFixed(1)}`);
                 },
 
                 // Highlight LC value in SWIFT message
@@ -11827,26 +11875,33 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     return escapedMessage;
                 },
 
-                // Search coordinates for discrepancy preview
-                async searchDiscrepancyCoordinates(fieldName, fieldData) {
-                    console.log('🔍 Searching coordinates for discrepancy preview:', fieldName, fieldData.value);
+                // Search coordinates for discrepancy preview (integrated with working search functionality)
+                async searchDiscrepancyFieldCoordinates(fieldName, fieldValue, fieldData, result) {
+                    console.log('🔍 === DISCREPANCY PREVIEW COORDINATE SEARCH STARTED ===');
+                    console.log(`📝 Search parameters:`, { fieldName, fieldValue, fieldData });
                     
-                    if (!fieldData.value) {
-                        console.warn('No value to search');
+                    if (!fieldValue || !fieldValue.trim()) {
+                        console.warn('❌ No value to search for this field');
                         return;
                     }
 
-                    const page = fieldData.bounding_page + 1;
-                    const matchedDoc = this.results.find(doc => doc.pages?.includes(page));
+                    // Clear previous search results
+                    this.discrepancySearchResults = [];
+                    
+                    // Determine pages to search
+                    const page = (fieldData.bounding_page !== undefined && fieldData.bounding_page !== null) 
+                        ? fieldData.bounding_page + 1 
+                        : 1;
+                    const matchedDoc = result || this.results.find(doc => doc.pages?.includes(page));
                     const relatedPages = matchedDoc ? matchedDoc.pages : [page];
 
                     try {
                         const requestData = {
-                            field_value: fieldData.value.trim(),
-                            document_id: this.selectedResult?.fileName || 'current',
+                            field_value: fieldValue.trim(),
+                            document_id: result?.fileName || matchedDoc?.fileName || 'current',
                             search_mode: 'exact',
                             boundingpage: relatedPages,
-                            exact_text: fieldData.exact_text || '',
+                            exact_text: fieldData.exact_text || fieldValue,
                         };
 
                         console.log('📤 Sending coordinate search request:', requestData);
@@ -11857,30 +11912,365 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                             body: JSON.stringify(requestData)
                         });
 
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
                         const data = await response.json();
                         console.log('📥 Received coordinate search response:', data);
 
-                        if (data.success && data.matches && data.matches.length > 0) {
-                            const bestMatch = data.matches[0];
-                            console.log('✅ Found coordinates:', bestMatch);
+                        if (data.success && data.total_matches > 0) {
+                            console.log(`✅ Found ${data.total_matches} coordinate matches`);
+                            
+                            // Store all matches
+                            this.discrepancySearchResults = data.matches;
+                            
+                            // Select best match (same logic as main search)
+                            let bestMatch = data.best_match || data.matches[0];
+                            const searchLength = fieldValue.length;
+                            
+                            if (data.matches.length > 1 && searchLength >= 100) {
+                                // For long text, find largest bounding box
+                                let largestMatch = bestMatch;
+                                let largestArea = 0;
+                                
+                                data.matches.forEach((match) => {
+                                    const bbox = match.bounding_box;
+                                    let area = 0;
+                                    
+                                    if (bbox && bbox.length >= 4) {
+                                        if (bbox.length === 8) {
+                                            const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                                            const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                                            const width = Math.max(...x_coords) - Math.min(...x_coords);
+                                            const height = Math.max(...y_coords) - Math.min(...y_coords);
+                                            area = width * height;
+                                        } else {
+                                            const width = bbox[2] - bbox[0];
+                                            const height = bbox[3] - bbox[1];
+                                            area = width * height;
+                                        }
+                                    }
+                                    
+                                    if (area > largestArea) {
+                                        largestArea = area;
+                                        largestMatch = match;
+                                    }
+                                });
+                                
+                                bestMatch = largestMatch;
+                            }
+                            
+                            // Convert absolute page number to relative page index
+                            const absolutePage = bestMatch.bounding_page;
+                            let relativePageIndex = 0;
+                            
+                            // Method 1: Use the pages array if available (for grouped documents)
+                            if (result.pages && result.pages.length > 0) {
+                                relativePageIndex = result.pages.indexOf(absolutePage);
+                                if (relativePageIndex === -1) {
+                                    // Page not in pages array, use fallback
+                                    relativePageIndex = 0;
+                                    console.warn(`⚠️ Absolute page ${absolutePage} not found in pages array, using first page`);
+                                }
+                                console.log(`📚 Using pages array: absolute page ${absolutePage} = relative index ${relativePageIndex}`);
+                            } else {
+                                // Method 2: Direct conversion (assuming sequential pages starting from 1)
+                                relativePageIndex = absolutePage - 1;
+                                console.log(`📝 Using direct conversion: absolute page ${absolutePage} = relative index ${relativePageIndex}`);
+                            }
+                            
+                            // Ensure relative index is valid
+                            if (relativePageIndex < 0) relativePageIndex = 0;
+                            if (relativePageIndex >= (result.previewImages?.length || 0)) {
+                                relativePageIndex = (result.previewImages?.length || 1) - 1;
+                            }
 
                             // Update field data with found bounding box
                             this.discrepancyFieldData = {
                                 ...fieldData,
                                 bounding_box: bestMatch.bounding_box,
-                                bounding_page: bestMatch.bounding_page - 1
+                                bounding_page: relativePageIndex, // Store relative index
+                                absolute_page: absolutePage // Store absolute page for reference
                             };
-
-                            // Redraw the canvas with new bounding box
+                            
+                            // Update preview image to the correct page
+                            if (result.previewImages && result.previewImages.length > relativePageIndex && relativePageIndex >= 0) {
+                                const newPreviewImage = result.previewImages[relativePageIndex];
+                                
+                                // If the image is changing, reset the loaded state
+                                if (this.discrepancyPreviewImage !== newPreviewImage) {
+                                    this.discrepancyImageLoaded = false;
+                                    console.log(`📄 Updating preview image to relative page ${relativePageIndex} (absolute page ${absolutePage})`);
+                                }
+                                
+                                this.discrepancyPreviewImage = newPreviewImage;
+                            } else {
+                                console.warn(`⚠️ Cannot update preview image: relativePageIndex ${relativePageIndex} is out of range (0-${(result.previewImages?.length || 0) - 1})`);
+                            }
+                            
+                            // Wait for image to load, then highlight
                             this.$nextTick(() => {
-                                this.onDiscrepancyImageLoad();
+                                if (this.discrepancyImageLoaded) {
+                                    // Image already loaded, highlight immediately
+                                    this.highlightDiscrepancySearchResults(data.matches);
+                                } else {
+                                    // Image will trigger highlight when it loads via onDiscrepancyImageLoad
+                                    console.log('⏳ Waiting for image to load before highlighting');
+                                }
                             });
+                            
                         } else {
-                            console.warn('❌ No coordinates found for:', fieldData.value);
+                            console.warn('❌ No coordinates found for:', fieldValue);
+                            this.discrepancySearchResults = [];
                         }
                     } catch (error) {
-                        console.error('Error searching coordinates:', error);
+                        console.error('❌ Error searching coordinates:', error);
+                        this.discrepancySearchResults = [];
                     }
+                },
+                
+                // Highlight search results on discrepancy canvas
+                highlightDiscrepancySearchResults(matches) {
+                    console.log('🎨 === HIGHLIGHTING DISCREPANCY SEARCH RESULTS ===');
+                    console.log(`📦 Highlighting ${matches.length} matches`);
+                    
+                    if (!matches || matches.length === 0) {
+                        console.warn('⚠️ No matches to highlight');
+                        return;
+                    }
+                    
+                    const canvas = this.$refs.discrepancyCanvas;
+                    const img = this.$refs.discrepancyDocImage;
+                    
+                    if (!canvas || !img || !this.discrepancyCanvasContext) {
+                        console.warn('⚠️ Canvas/image/context not available, will retry after setup');
+                        this.$nextTick(() => {
+                            this.setupDiscrepancyCanvas();
+                            if (this.discrepancyCanvasContext) {
+                                this.highlightDiscrepancySearchResults(matches);
+                            }
+                        });
+                        return;
+                    }
+                    
+                    // Get the currently displayed page (absolute page number)
+                    const currentAbsolutePage = this.getCurrentDiscrepancyAbsolutePage();
+                    console.log(`📄 Current displayed absolute page: ${currentAbsolutePage}`);
+                    
+                    // Clear canvas first
+                    this.discrepancyCanvasContext.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Merge matches into blocks (same logic as main view)
+                    const blocks = this.mergeDiscrepancyMatches(matches);
+                    
+                    console.log(`✅ Created ${blocks.length} blocks from ${matches.length} matches`);
+                    
+                    // Only highlight blocks that are on the currently displayed page
+                    // Clear canvas ONCE at the beginning (not in drawDiscrepancyBoundingBox)
+                    let highlightedCount = 0;
+                    blocks.forEach((block, index) => {
+                        // block.bounding_page is absolute page number from search results
+                        if (block.bounding_page === currentAbsolutePage) {
+                            try {
+                                // Draw bounding box without clearing (accumulate all blocks)
+                                this.drawDiscrepancyBoundingBox(block.bounding_box, false);
+                                highlightedCount++;
+                                console.log(`✅ Highlighted block ${index + 1} on page ${block.bounding_page}`);
+                            } catch (error) {
+                                console.error(`Error highlighting block ${index + 1}:`, error);
+                            }
+                        } else {
+                            console.log(`⏭️ Skipping block ${index + 1} on page ${block.bounding_page} (not current page ${currentAbsolutePage})`);
+                        }
+                    });
+                    
+                    console.log(`✅ Highlighted ${highlightedCount} blocks on current page ${currentAbsolutePage}`);
+                },
+                
+                // Get the absolute page number of the currently displayed discrepancy preview image
+                getCurrentDiscrepancyAbsolutePage() {
+                    if (!this.selectedResult || !this.discrepancyPreviewImage) {
+                        return null;
+                    }
+                    
+                    // Find which preview image index we're currently showing
+                    const previewIndex = this.selectedResult.previewImages?.indexOf(this.discrepancyPreviewImage);
+                    
+                    if (previewIndex === -1 || previewIndex === undefined) {
+                        console.warn('⚠️ Could not find preview image index');
+                        return null;
+                    }
+                    
+                    // Convert relative index to absolute page number
+                    if (this.selectedResult.pages && this.selectedResult.pages.length > previewIndex) {
+                        const absolutePage = this.selectedResult.pages[previewIndex];
+                        console.log(`📄 Preview index ${previewIndex} = absolute page ${absolutePage}`);
+                        return absolutePage;
+                    } else {
+                        // Fallback: assume sequential pages starting from 1
+                        const absolutePage = previewIndex + 1;
+                        console.log(`📄 Preview index ${previewIndex} = absolute page ${absolutePage} (fallback)`);
+                        return absolutePage;
+                    }
+                },
+                
+                // Merge matches into blocks for discrepancy preview (using same logic as main view)
+                mergeDiscrepancyMatches(matches) {
+                    console.log('🔗 === MERGING DISCREPANCY MATCHES INTO CONTIGUOUS BLOCKS ===');
+                    console.log(`📦 Input: ${matches.length} individual matches`);
+                    
+                    if (!matches || matches.length === 0) {
+                        return [];
+                    }
+                    
+                    // Check if matches are already merged blocks from backend (8-coordinate format)
+                    const firstMatch = matches[0];
+                    if (firstMatch && firstMatch.bounding_box && firstMatch.bounding_box.length === 8) {
+                        console.log('✅ Matches are already merged blocks from backend (8-coordinate format)');
+                        console.log('📦 Converting to 4-coordinate format for display...');
+                        
+                        // Convert 8-coordinate to 4-coordinate format (min/max)
+                        return matches.map((match, index) => {
+                            const bbox = match.bounding_box;
+                            // 8-coordinate format: [x1, y1, x2, y2, x3, y3, x4, y4]
+                            // Extract min/max to get bounding rectangle
+                            const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                            const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                            
+                            const converted_bbox = [
+                                Math.min(...x_coords),  // x1 (left)
+                                Math.min(...y_coords),  // y1 (top)
+                                Math.max(...x_coords),  // x2 (right)
+                                Math.max(...y_coords)   // y2 (bottom)
+                            ];
+                            
+                            console.log(`   Block ${index + 1}: Page ${match.bounding_page}, converted bbox: [${converted_bbox.map(v => v.toFixed(2)).join(', ')}]`);
+                            
+                            return {
+                                bounding_page: match.bounding_page,
+                                bounding_box: converted_bbox,
+                                matched_texts: [match.matched_text],
+                                matches: [match],
+                                match_confidence: match.match_confidence,
+                                priority_score: match.priority_score
+                            };
+                        });
+                    }
+                    
+                    console.log('🔄 Matches are individual words, merging into blocks...');
+                    
+                    // Group matches by page first
+                    const matchesByPage = {};
+                    matches.forEach((match, index) => {
+                        const page = match.bounding_page;
+                        if (!matchesByPage[page]) {
+                            matchesByPage[page] = [];
+                        }
+                        matchesByPage[page].push({ ...match, original_index: index });
+                    });
+                    
+                    console.log(`📄 Matches grouped into ${Object.keys(matchesByPage).length} pages`);
+                    
+                    const blocks = [];
+                    
+                    // Process each page independently
+                    Object.keys(matchesByPage).forEach(page => {
+                        const pageMatches = matchesByPage[page];
+                        console.log(`📄 Processing page ${page} with ${pageMatches.length} matches`);
+                        
+                        // Sort matches by vertical position (y1), then horizontal (x1)
+                        pageMatches.sort((a, b) => {
+                            const ay1 = a.bounding_box[1];
+                            const by1 = b.bounding_box[1];
+                            const ax1 = a.bounding_box[0];
+                            const bx1 = b.bounding_box[0];
+                            
+                            // If on roughly the same line (within 10px tolerance)
+                            if (Math.abs(ay1 - by1) < 10) {
+                                return ax1 - bx1; // Sort by x position (left to right)
+                            }
+                            return ay1 - by1; // Sort by y position (top to bottom)
+                        });
+                        
+                        // Merge adjacent matches into blocks
+                        let currentBlock = null;
+                        
+                        pageMatches.forEach((match, idx) => {
+                            const [x1, y1, x2, y2] = match.bounding_box;
+                            
+                            if (!currentBlock) {
+                                // Start a new block
+                                currentBlock = {
+                                    bounding_page: match.bounding_page,
+                                    bounding_box: [x1, y1, x2, y2],
+                                    matched_texts: [match.matched_text],
+                                    matches: [match],
+                                    match_confidence: match.match_confidence,
+                                    priority_score: match.priority_score
+                                };
+                                console.log(`🆕 Starting new block at (${x1}, ${y1})`);
+                            } else {
+                                // Check if this match is adjacent to current block
+                                const [blockX1, blockY1, blockX2, blockY2] = currentBlock.bounding_box;
+                                
+                                // Calculate distances
+                                const verticalGap = Math.abs(y1 - blockY2);  // Gap from bottom of block to top of this match
+                                const horizontalGap = Math.abs(x1 - blockX2);  // Gap from right edge of block to left edge of this match
+                                
+                                // Check if on same line (y values close) or next line
+                                const onSameLine = Math.abs(y1 - blockY1) < 15;  // Within 15px vertically
+                                const onNextLine = y1 > blockY1 && verticalGap < 50;  // Below, within 50px gap
+                                
+                                // Check horizontal proximity (for same-line merging)
+                                const horizontallyAdjacent = horizontalGap < 100;  // Within 100px horizontally
+                                
+                                const shouldMerge = (onSameLine && horizontallyAdjacent) || onNextLine;
+                                
+                                console.log(`   Match at (${x1}, ${y1}): vGap=${verticalGap.toFixed(1)}, hGap=${horizontalGap.toFixed(1)}, sameLine=${onSameLine}, nextLine=${onNextLine}, merge=${shouldMerge}`);
+                                
+                                if (shouldMerge) {
+                                    // Merge this match into current block
+                                    currentBlock.bounding_box = [
+                                        Math.min(blockX1, x1),  // leftmost x
+                                        Math.min(blockY1, y1),  // topmost y
+                                        Math.max(blockX2, x2),  // rightmost x
+                                        Math.max(blockY2, y2)   // bottommost y
+                                    ];
+                                    currentBlock.matched_texts.push(match.matched_text);
+                                    currentBlock.matches.push(match);
+                                    console.log(`   ✅ Merged into block. New bbox: [${currentBlock.bounding_box.map(v => v.toFixed(2)).join(', ')}]`);
+                                } else {
+                                    // Save current block and start new one
+                                    blocks.push(currentBlock);
+                                    console.log(`   💾 Saved block with ${currentBlock.matches.length} matches`);
+                                    
+                                    currentBlock = {
+                                        bounding_page: match.bounding_page,
+                                        bounding_box: [x1, y1, x2, y2],
+                                        matched_texts: [match.matched_text],
+                                        matches: [match],
+                                        match_confidence: match.match_confidence,
+                                        priority_score: match.priority_score
+                                    };
+                                    console.log(`   🆕 Starting new block at (${x1}, ${y1})`);
+                                }
+                            }
+                        });
+                        
+                        // Save the last block for this page
+                        if (currentBlock) {
+                            blocks.push(currentBlock);
+                            console.log(`💾 Saved final block with ${currentBlock.matches.length} matches`);
+                        }
+                    });
+                    
+                    console.log(`✅ Created ${blocks.length} contiguous blocks from ${matches.length} matches`);
+                    blocks.forEach((block, idx) => {
+                        console.log(`   Block ${idx + 1}: Page ${block.bounding_page}, ${block.matches.length} matches, bbox: [${block.bounding_box.map(v => v.toFixed(1)).join(', ')}]`);
+                    });
+                    
+                    return blocks;
                 },
 
                 // Background method to parse required documents without blocking UI
