@@ -975,7 +975,7 @@
     {
       "id": "128",
       "name": "Product Identifier",
-      "description": "Reference number identifying a product",
+      "description": "Extract ONLY the product’s unique item code or SKU from the goods/line-item section; do NOT extract any shipping or document numbers.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
@@ -2730,7 +2730,7 @@
     {
       "id": "340",
       "name": "Transport Contract Document / Bill of Lading number",
-      "description": "Transport Contract Document / Bill of Lading number - Unique B/L reference number (e.g., \"MAEU123456789\", \"BL-2024-001234\"). Extract complete number with all prefixes, hyphens, and characters exactly as stated. Found in fields labeled \"B/L No.\", \"Bill of Lading No.\", \"BL Number\", typically in document header. Preserve exact format.",
+      "description": "Extract ONLY the transport document reference (e.g., BL/AWB/CMR number) from the shipping section; do NOT extract any product or item codes.",
       "mappingFormField": "",
       "mappingFormDescription": "",
       "dataCategoryId": "1",
