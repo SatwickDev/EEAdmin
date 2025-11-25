@@ -100,6 +100,9 @@ from app.utils.app_config import (
     OPENAI_MAX_TOKENS_COMPLIANCE
 )
 
+# Import DocumentClassifier to access prompt config
+from app.utils.document_classifier import DocumentClassifier
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,14 +112,23 @@ class LLMComplianceEngine:
     def __init__(self):
         """Initialize the LLM compliance engine with Azure OpenAI configuration"""
         self.setup_azure_openai()
+        # Create DocumentClassifier instance to access prompt config
+        self.document_classifier = DocumentClassifier()
     
     def setup_azure_openai(self):
-        """Configure Azure OpenAI credentials using same pattern as quality_analyzer"""
-        # Use the correct endpoint and API version that works
-        openai.api_type = "azure"
-        openai.api_base = "https://newfinai-app.openai.azure.com/"
-        openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
-        openai.api_version = "2024-08-01-preview"
+        """Configure Azure OpenAI credentials using same pattern as routes.py"""
+        # Use environment variables - matches working code in routes.py
+        azure_key = os.getenv('AZURE_OPENAI_API_KEY')
+        azure_base = os.getenv('AZURE_OPENAI_API_BASE')
+        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        
+        if azure_key and azure_base:
+            openai.api_type = "azure"
+            openai.api_key = azure_key
+            openai.api_base = azure_base
+            openai.api_version = azure_version
+        else:
+            logger.error("Azure OpenAI credentials not found in environment")
         
         self.deployment_name = deployment_name
         
@@ -163,24 +175,18 @@ class LLMComplianceEngine:
             logger.info(f"{'='*100}")
             logger.info("")
             
-            prompt = f"""Analyze the following compliance rules and classify each into ONE of these categories:
-
-1. **lc_comparison**: Rules that require comparing a document field value against Letter of Credit (LC) requirements
-   Examples: "must match LC", "consistent with LC", "as per LC terms"
-
-2. **cross_document**: Rules that require comparing values across different documents
-   Examples: "must match invoice", "consistent with packing list", "match across documents"
-
-NOTE: Only classify into lc_comparison or cross_document. Do NOT include validation rules.
-
-Rules to classify:
-{rules_text}
-
-Return ONLY a JSON object (no markdown, no explanation):
-{{
-  "lc_comparison": [list of rule codes],
-  "cross_document": [list of rule codes]
-}}"""
+            # Load discrepancy rules classify config from YAML
+            classify_config = self.document_classifier.prompt_config.get('discrepancy_rules', {}).get('classify_rules', {})
+            
+            model = classify_config.get('model', self.deployment_name)
+            temperature = classify_config.get('temperature', OPENAI_TEMPERATURE_COMPLIANCE)
+            max_tokens = classify_config.get('max_tokens', OPENAI_MAX_TOKENS_COMPLIANCE)
+            system_prompt = classify_config.get('system_prompt', 'You are a trade finance compliance expert.')
+            user_prompt_template = classify_config.get('user_prompt_template', '')
+            
+            prompt = user_prompt_template.format(
+                rules_text=rules_text
+            )
 
             logger.info("")
             logger.info(f"{'='*100}")
@@ -189,7 +195,7 @@ Return ONLY a JSON object (no markdown, no explanation):
             logger.info(f"🌐 Azure OpenAI Endpoint: {openai.api_base}")
             logger.info(f"🔑 API Key: {'*' * 20 if openai.api_key else 'NOT SET'}")
             logger.info(f"📦 API Version: {openai.api_version}")
-            logger.info(f"🚀 Deployment Name: {self.deployment_name}")
+            logger.info(f"🚀 Deployment Name: {model}")
             logger.info(f"{'='*100}")
             logger.info("")
             
@@ -198,24 +204,24 @@ Return ONLY a JSON object (no markdown, no explanation):
             logger.info("📝 COMPLIANCE ENGINE - PROMPT & API PARAMETERS")
             logger.info(f"{'='*100}")
             logger.info(f"📊 Prompt Length: {len(prompt)} characters")
-            logger.info(f"📋 System Message: You are a trade finance compliance expert. Classify rules accurately based on their purpose.")
+            logger.info(f"📋 System Message: {system_prompt}")
             logger.info(f"📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\n{prompt}")
             logger.info(f"")
             logger.info(f"🔧 API Call Parameters:")
-            logger.info(f"🔢 Temperature: {OPENAI_TEMPERATURE_COMPLIANCE}")
-            logger.info(f"🔢 Max Tokens: {OPENAI_MAX_TOKENS_COMPLIANCE}")
+            logger.info(f"🔢 Temperature: {temperature}")
+            logger.info(f"🔢 Max Tokens: {max_tokens}")
             logger.info(f"🚀 Sending request to Azure OpenAI...")
             logger.info(f"{'='*100}")
             logger.info("")
 
             response = openai.ChatCompletion.create(
-                engine=self.deployment_name,
+                engine=model,
                 messages=[
-                    {"role": "system", "content": "You are a trade finance compliance expert. Classify rules accurately based on their purpose."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=OPENAI_TEMPERATURE_COMPLIANCE,
-                max_tokens=OPENAI_MAX_TOKENS_COMPLIANCE
+                temperature=temperature,
+                max_tokens=max_tokens
             )
             
             # Extract and validate response content
@@ -407,48 +413,23 @@ Return ONLY a JSON object (no markdown, no explanation):
                 logger.info(f"{'='*100}")
                 logger.info("")
                 
-                prompt = f"""You are a trade finance compliance expert. Analyze the document fields against LC values based on the provided rules.
-
-**Document Type:** {doc_type}
-**Document Name:** {doc_name}
-
-**Document Fields (Extracted Entities):**
-{json.dumps(entities, indent=2)}
-
-**LC Context (All Available LC Fields):**
-{json.dumps(lc_context, indent=2)}
-
-**Applicable Rules ({len(applicable_rules)} rules):**
-{json.dumps(rules_summary, indent=2)}
-
-**Task:**
-1. Identify which document fields should be compared against LC values based on the rules
-2. For each relevant comparison, determine if the document value is semantically equivalent to the LC value
-3. Accept semantic equivalence (abbreviations, format variations, synonyms)
-4. Only flag as non-compliant if there's a genuine discrepancy
-
-**CRITICAL RULES:**
-- NEVER make assumptions about missing or empty values
-- If either documentValue or lcValue is empty, null, "N/A", "Not found", or missing, you MUST still include it in the comparison with "compliant": false
-- DO NOT substitute assumed values for missing data
-- Return actual extracted values only - if no value exists, use empty string "" or the exact text found
-
-**Return ONLY a JSON array:**
-[
-  {{
-    "field": "Document field name",
-    "documentValue": "Value from document (use empty string if not found - DO NOT ASSUME)",
-    "lcField": "Matching LC field name",
-    "lcValue": "Value from LC (use empty string if not found - DO NOT ASSUME)",
-    "ruleCode": "R-XXXX",
-    "ruleDescription": "Rule description",
-    "compliant": false if either value is missing/empty, otherwise true/false based on comparison,
-    "explanation": "Brief explanation of comparison result",
-    "severity": "high" if values are missing/empty, otherwise "low" or "high"
-  }}
-]
-
-**IMPORTANT:** Only include fields that SHOULD be compared per the rules. Return empty array [] if no comparisons are needed."""
+                # Load LC comparison config from YAML
+                lc_comp_config = self.document_classifier.prompt_config.get('discrepancy_rules', {}).get('lc_comparison', {})
+                
+                model = lc_comp_config.get('model', self.deployment_name)
+                temperature = lc_comp_config.get('temperature', OPENAI_TEMPERATURE_COMPLIANCE)
+                max_tokens = lc_comp_config.get('max_tokens', OPENAI_MAX_TOKENS_COMPLIANCE)
+                system_prompt = lc_comp_config.get('system_prompt', 'You are a trade finance compliance expert.')
+                user_prompt_template = lc_comp_config.get('user_prompt_template', '')
+                
+                prompt = user_prompt_template.format(
+                    doc_type=doc_type,
+                    doc_name=doc_name,
+                    entities=json.dumps(entities, indent=2),
+                    lc_context=json.dumps(lc_context, indent=2),
+                    rules_count=len(applicable_rules),
+                    rules_summary=json.dumps(rules_summary, indent=2)
+                )
 
                 logger.info("")
                 logger.info(f"{'='*100}")
@@ -458,20 +439,21 @@ Return ONLY a JSON object (no markdown, no explanation):
                 logger.info(f"📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\n{prompt}")
                 logger.info("")
                 logger.info(f"🔧 API Call Parameters:")
-                logger.info(f"🔢 Temperature: {OPENAI_TEMPERATURE_COMPLIANCE}")
-                logger.info(f"🔢 Max Tokens: {OPENAI_MAX_TOKENS_COMPLIANCE * 2}")
+                logger.info(f"🔢 Temperature: {temperature}")
+                logger.info(f"🔢 Max Tokens: {max_tokens}")
+                logger.info(f"🚀 Model: {model}")
                 logger.info(f"🚀 Sending request to Azure OpenAI...")
                 logger.info(f"{'='*100}")
                 logger.info("")
 
                 response = openai.ChatCompletion.create(
-                    engine=self.deployment_name,
+                    engine=model,
                     messages=[
-                        {"role": "system", "content": "You are a trade finance expert performing LC compliance checks. Be thorough and precise."},
+                        {"role": "system", "content": system_prompt},
                         {"role": "user", "content": prompt}
                     ],
-                    temperature=OPENAI_TEMPERATURE_COMPLIANCE,
-                    max_tokens=OPENAI_MAX_TOKENS_COMPLIANCE * 2  # More tokens for multiple comparisons
+                    temperature=temperature,
+                    max_tokens=max_tokens
                 )
                 
                 response_content = response.choices[0].message.content.strip()
@@ -686,37 +668,21 @@ Return ONLY a JSON object (no markdown, no explanation):
             logger.info(f"{'='*100}")
             logger.info("")
             
-            prompt = f"""You are a trade finance compliance expert. Analyze field consistency across multiple documents based on cross-document rules.
-
-**Documents ({len(doc_data)} total):**
-{json.dumps(doc_data, indent=2)}
-
-**Cross-Document Rules ({len(rules)} rules):**
-{json.dumps(rules_summary, indent=2)}
-
-**Task:**
-1. Identify which fields should be consistent across documents based on the rules
-2. Compare values across documents for semantic consistency
-3. Accept semantic equivalence (abbreviations, format variations, synonyms)
-4. Flag genuine inconsistencies where values have different meanings
-
-**Return ONLY a JSON array:**
-[
-  {{
-    "field": "Field name",
-    "document1Name": "First document name",
-    "document1Value": "Value in first document",
-    "document2Name": "Second document name",  
-    "document2Value": "Value in second document",
-    "ruleCode": "R-XXXX",
-    "ruleDescription": "Rule description",
-    "compliant": true or false,
-    "explanation": "Brief explanation",
-    "severity": "low" or "medium"
-  }}
-]
-
-**IMPORTANT:** Only include fields that SHOULD be compared per the rules. Return empty array [] if no cross-document comparisons are needed."""
+            # Load cross-document config from YAML
+            cross_doc_config = self.document_classifier.prompt_config.get('discrepancy_rules', {}).get('cross_document', {})
+            
+            model = cross_doc_config.get('model', self.deployment_name)
+            temperature = cross_doc_config.get('temperature', OPENAI_TEMPERATURE_COMPLIANCE)
+            max_tokens = cross_doc_config.get('max_tokens', OPENAI_MAX_TOKENS_COMPLIANCE * 2)
+            system_prompt = cross_doc_config.get('system_prompt', 'You are a trade finance expert checking cross-document consistency.')
+            user_prompt_template = cross_doc_config.get('user_prompt_template', '')
+            
+            prompt = user_prompt_template.format(
+                doc_count=len(doc_data),
+                doc_data=json.dumps(doc_data, indent=2),
+                rules_count=len(rules),
+                rules_summary=json.dumps(rules_summary, indent=2)
+            )
 
             logger.info("")
             logger.info(f"{'='*100}")
@@ -726,20 +692,21 @@ Return ONLY a JSON object (no markdown, no explanation):
             logger.info(f"📋 COMPLETE PROMPT (FULL - NO TRUNCATION):\n{prompt}")
             logger.info("")
             logger.info(f"🔧 API Call Parameters:")
-            logger.info(f"🔢 Temperature: {OPENAI_TEMPERATURE_COMPLIANCE}")
-            logger.info(f"🔢 Max Tokens: {OPENAI_MAX_TOKENS_COMPLIANCE * 2}")
+            logger.info(f"🔢 Temperature: {temperature}")
+            logger.info(f"🔢 Max Tokens: {max_tokens}")
+            logger.info(f"🚀 Model: {model}")
             logger.info(f"🚀 Sending request to Azure OpenAI...")
             logger.info(f"{'='*100}")
             logger.info("")
 
             response = openai.ChatCompletion.create(
-                engine=self.deployment_name,
+                engine=model,
                 messages=[
-                    {"role": "system", "content": "You are a trade finance expert checking cross-document consistency. Be thorough."},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=OPENAI_TEMPERATURE_COMPLIANCE,
-                max_tokens=OPENAI_MAX_TOKENS_COMPLIANCE * 2
+                temperature=temperature,
+                max_tokens=max_tokens
             )
             
             response_content = response.choices[0].message.content.strip()

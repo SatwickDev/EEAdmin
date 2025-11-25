@@ -386,14 +386,16 @@ lc_conditions_parse:
   top_p: 0.1
   frequency_penalty: 0
   presence_penalty: 0
-  system_prompt: "You are an expert who ALWAYS extracts ALL INDIVIDUAL validation rules from LC conditions. Extract EVERY requirement as a separate rule - typically 15-30+ rules from comprehensive LC text. Do NOT limit to only 6 rules. Follow the example pattern exactly and return a JSON ARRAY with ALL rules."
+  system_prompt: "You are an expert LC conditions parser. Your task is to extract ALL INDIVIDUAL validation rules from LC Additional Conditions text. You MUST return a JSON ARRAY containing 15-30+ separate rule objects. Each requirement becomes its own rule object. NEVER return a single object - ALWAYS return an array [...]."
   user_prompt_template: |
-    You are a trade finance compliance expert. I will show you an example of how to extract multiple validation rules from LC Additional Conditions, then you do the same for the actual text.
+    CRITICAL INSTRUCTION: You MUST return a JSON ARRAY starting with [ and ending with ]. DO NOT return a single object {{...}}. ALWAYS return an array of multiple objects [{{...}}, {{...}}, {{...}}].
 
-    EXAMPLE INPUT:
-    "1. ALL DOCUMENTS MUST BE DATED, PREPARED IN ENGLISH ONLY AND MUST BEAR OUR L/C NUMBER DULY SIGNED BY ISSUER."
+    TASK: Parse the LC Additional Conditions text below into MULTIPLE separate validation rules. Each numbered condition should produce 2-5+ individual rules.
 
-    EXAMPLE OUTPUT (notice how ONE sentence becomes FOUR separate rules):
+    EXAMPLE - How to extract rules:
+    Input: "1. ALL DOCUMENTS MUST BE DATED, PREPARED IN ENGLISH ONLY AND MUST BEAR OUR L/C NUMBER DULY SIGNED BY ISSUER."
+    
+    Output - ONE sentence becomes FOUR separate rules in an ARRAY:
     [
       {{
         "id": "lc-cond-001",
@@ -441,14 +443,23 @@ lc_conditions_parse:
       }}
     ]
 
-    NOW YOUR TURN - Parse this actual LC text into multiple separate validation rules:
+    NOW PARSE THESE ACTUAL LC CONDITIONS:
 
     LC Number: {lc_number}
+    
     Additional Conditions Text:
     {additional_conditions_text}
 
-    Return JSON array with ALL validation rules - extract EVERY requirement as separate rules. Do not limit to 6 rules - there should be 15-30+ rules from this comprehensive LC text. Break down every single requirement into separate actionable rules.
-  response_format: json_object
+    INSTRUCTIONS:
+    1. Read through ALL 14+ numbered conditions in the text above
+    2. Break down EACH condition into separate atomic requirements
+    3. Create a rule object for EACH atomic requirement
+    4. Return as JSON ARRAY with 15-30+ rule objects
+    5. Start your response with [ and end with ]
+    6. DO NOT return just one rule - return ALL rules from ALL conditions
+
+    Your response must be a valid JSON array starting with [
+  response_format: text
   expected_rules_min: 15
   expected_rules_max: 30
 lc_conditions_validate:
@@ -521,3 +532,113 @@ lc_conditions_validate:
     Return results for all {rules_count} rules. Check every document and show actual values.
   batch_size: 4
   parallel_processing: true
+discrepancy_rules:
+  classify_rules:
+    model: gpt-4o
+    temperature: 0.1
+    max_tokens: 2000
+    system_prompt: "You are a trade finance compliance expert. Classify rules accurately based on their purpose."
+    user_prompt_template: |
+      Analyze the following compliance rules and classify each into ONE of these categories:
+
+      1. **lc_comparison**: Rules that require comparing a document field value against Letter of Credit (LC) requirements
+         Examples: "must match LC", "consistent with LC", "as per LC terms"
+
+      2. **cross_document**: Rules that require comparing values across different documents
+         Examples: "must match invoice", "consistent with packing list", "match across documents"
+
+      NOTE: Only classify into lc_comparison or cross_document. Do NOT include validation rules.
+
+      Rules to classify:
+      {rules_text}
+
+      Return ONLY a JSON object (no markdown, no explanation):
+      {{
+        "lc_comparison": [list of rule codes],
+        "cross_document": [list of rule codes]
+      }}
+  lc_comparison:
+    model: gpt-4o
+    temperature: 0.1
+    max_tokens: 2000
+    system_prompt: "You are a trade finance compliance expert comparing document fields against LC values."
+    user_prompt_template: |
+      You are a trade finance compliance expert. Analyze the document fields against LC values based on the provided rules.
+
+      **Document Type:** {doc_type}
+      **Document Name:** {doc_name}
+
+      **Document Fields (Extracted Entities):**
+      {entities}
+
+      **LC Context (All Available LC Fields):**
+      {lc_context}
+
+      **Applicable Rules ({rules_count} rules):**
+      {rules_summary}
+
+      **Task:**
+      1. Identify which document fields should be compared against LC values based on the rules
+      2. For each relevant comparison, determine if the document value is semantically equivalent to the LC value
+      3. Accept semantic equivalence (abbreviations, format variations, synonyms)
+      4. Only flag as non-compliant if there's a genuine discrepancy
+
+      **CRITICAL RULES:**
+      - NEVER make assumptions about missing or empty values
+      - If either documentValue or lcValue is empty, null, "N/A", "Not found", or missing, you MUST still include it in the comparison with "compliant": false
+      - DO NOT substitute assumed values for missing data
+      - Return actual extracted values only - if no value exists, use empty string "" or the exact text found
+
+      **Return ONLY a JSON array:**
+      [
+        {{
+          "field": "Document field name",
+          "documentValue": "Value from document (use empty string if not found - DO NOT ASSUME)",
+          "lcField": "Matching LC field name",
+          "lcValue": "Value from LC (use empty string if not found - DO NOT ASSUME)",
+          "ruleCode": "R-XXXX",
+          "ruleDescription": "Rule description",
+          "compliant": false if either value is missing/empty, otherwise true/false based on comparison,
+          "explanation": "Brief explanation of comparison result",
+          "severity": "high" if values are missing/empty, otherwise "low" or "high"
+        }}
+      ]
+
+      Return actual values only - DO NOT create placeholder values. If a field is truly missing, use empty string "".
+  cross_document:
+    model: gpt-4o
+    temperature: 0.1
+    max_tokens: 4000
+    system_prompt: "You are a trade finance expert checking cross-document consistency. Be thorough."
+    user_prompt_template: |
+      You are a trade finance compliance expert. Analyze field consistency across multiple documents based on cross-document rules.
+
+      **Documents ({doc_count} total):**
+      {doc_data}
+
+      **Cross-Document Rules ({rules_count} rules):**
+      {rules_summary}
+
+      **Task:**
+      1. Identify which fields should be consistent across documents based on the rules
+      2. Compare values across documents for semantic consistency
+      3. Accept semantic equivalence (abbreviations, format variations, synonyms)
+      4. Flag genuine inconsistencies where values have different meanings
+
+      **Return ONLY a JSON array:**
+      [
+        {{
+          "field": "Field name",
+          "document1Name": "First document name",
+          "document1Value": "Value in first document",
+          "document2Name": "Second document name",  
+          "document2Value": "Value in second document",
+          "ruleCode": "R-XXXX",
+          "ruleDescription": "Rule description",
+          "compliant": true or false,
+          "explanation": "Brief explanation",
+          "severity": "low" or "medium"
+        }}
+      ]
+
+      **IMPORTANT:** Only include fields that SHOULD be compared per the rules. Return empty array [] if no cross-document comparisons are needed.

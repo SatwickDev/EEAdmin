@@ -6699,6 +6699,7 @@ Provide a structured summary with your findings.""",
             logger.info(f"{'='*100}")
             logger.info("")
             
+            # Don't use response_format to allow JSON arrays (not just objects)
             response = openai.ChatCompletion.create(
                 engine=model,
                 messages=[
@@ -6710,8 +6711,7 @@ Provide a structured summary with your findings.""",
                 seed=seed,
                 top_p=top_p,
                 frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-                response_format={"type": response_format_type}
+                presence_penalty=presence_penalty
             )
 
             logger.info("")
