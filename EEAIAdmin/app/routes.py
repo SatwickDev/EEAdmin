@@ -9680,12 +9680,15 @@ Return compliance status for each field.'''
     # ============================================
 
     def find_all_candidates_for_line(line_text: str, word_pool: List[Dict], 
-                                    fuzzy_threshold: float = 0.80,
+                                    fuzzy_threshold: float = 0.90,
                                     is_rotated: bool = False) -> List[Dict]:
         """
-        Find ALL possible word matches for a line_text in word_pool
+        Find ALL possible word matches for a line_text in word_pool using two-phase approach:
+        PHASE 1: Collect ALL candidate words for each token (fuzzy >= 0.90)
+        PHASE 2: Build ALL valid combinations on the reference line (Y for normal, X for rotated)
         Works for both normal and rotated pages (NO coordinate transformation!)
         """
+        import itertools
         
         tokens = line_text.split()
         if not tokens:
@@ -9693,118 +9696,91 @@ Return compliance status for each field.'''
         
         logger.debug(f"Finding candidates for: '{line_text}' ({len(tokens)} tokens, rotated={is_rotated})")
         
+        # PHASE 1: Collect ALL words matching each token (entire word_pool, not limited window)
+        token_candidates = {}
+        for token_idx, token in enumerate(tokens):
+            candidates_for_token = []
+            for word_idx, word in enumerate(word_pool):
+                if not word or not isinstance(word, dict):
+                    continue
+                    
+                word_text = word.get('text', '').strip()
+                if not word_text:
+                    continue
+                
+                similarity = fuzzy_match(token, word_text)
+                
+                if similarity >= fuzzy_threshold:
+                    candidates_for_token.append({
+                        'word': word,
+                        'word_idx': word_idx,
+                        'similarity': similarity
+                    })
+            
+            token_candidates[token_idx] = candidates_for_token
+            logger.debug(f"Token '{token}': {len(candidates_for_token)} candidates found")
+        
+        # Check if all tokens have at least one candidate
+        if any(len(candidates) == 0 for candidates in token_candidates.values()):
+            logger.info(f"Not all tokens have candidates for '{line_text}'")
+            return []
+        
+        # PHASE 2: Build ALL valid combinations on reference line
         candidates = []
+        tolerance = 0.2  # Stricter tolerance to filter unnecessary words
         
-        for start_idx in range(len(word_pool)):
-            matched_words = []
-            used_indices = set()
-            
-            for token in tokens:
-                best_match = None
-                best_similarity = 0
-                best_idx = -1
-                best_distance = float('inf')
-                
-                # Search forward from current position
-                for idx in range(start_idx, min(start_idx + 100, len(word_pool))):
-                    if idx in used_indices:
-                        continue
-                    
-                    word = word_pool[idx]
-                    if not word or not isinstance(word, dict):
-                        continue
-                        
-                    word_text = word.get('text', '').strip()
-                    if not word_text:
-                        continue
-                    
-                    similarity = fuzzy_match(token, word_text)
-                    
-                    if similarity >= fuzzy_threshold:
-                        # If we already have matched words, prefer words that are CLOSE to them
-                        if matched_words:
-                            # Calculate distance to last matched word
-                            last_bbox = matched_words[-1].get('bounding_box', [])
-                            curr_bbox = word.get('bounding_box', [])
-                            
-                            if last_bbox and curr_bbox and len(last_bbox) >= 8 and len(curr_bbox) >= 8:
-                                distance = calculate_distance(last_bbox, curr_bbox)
-                                
-                                # Prefer closer words, especially for punctuation
-                                if is_standalone_punctuation(word_text):
-                                    # For punctuation, strongly prefer close matches
-                                    if distance < 1.0 and (similarity > best_similarity or 
-                                                        (similarity == best_similarity and distance < best_distance)):
-                                        best_match = word
-                                        best_similarity = similarity
-                                        best_idx = idx
-                                        best_distance = distance
-                                else:
-                                    # For regular words, prefer high similarity, but consider distance
-                                    if similarity > best_similarity or (similarity == best_similarity and distance < best_distance):
-                                        best_match = word
-                                        best_similarity = similarity
-                                        best_idx = idx
-                                        best_distance = distance
-                            else:
-                                # No bbox info, use similarity only
-                                if similarity > best_similarity:
-                                    best_match = word
-                                    best_similarity = similarity
-                                    best_idx = idx
-                        else:
-                            # First word, use similarity only
-                            if similarity > best_similarity:
-                                best_match = word
-                                best_similarity = similarity
-                                best_idx = idx
-                
-                if best_match:
-                    matched_words.append(best_match)
-                    used_indices.add(best_idx)
-                else:
-                    break
-            
-            # Check if we matched all tokens
-            if len(matched_words) == len(tokens):
-                # Check if on same line (different for rotated vs normal)
-                y_tolerance = 0.3 if len(matched_words) == 1 else 0.2
-                x_tolerance = 0.3 if len(matched_words) == 1 else 0.2
-                
-                if is_rotated:
-                    on_same_line = are_words_on_same_line_rotated(matched_words, x_tolerance=x_tolerance)
-                else:
-                    on_same_line = are_words_on_same_line(matched_words, y_tolerance=y_tolerance)
-                
-                if on_same_line:
-                    # Sort based on page rotation - use smart sorting for punctuation
-                    matched_words_sorted = smart_sort_words(matched_words, line_text, is_rotated)
-                    
-                    # Build match info
-                    matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
-                    line_bbox = merge_bboxes([w['bounding_box'] for w in matched_words_sorted], padding=0.01)
-                    
-                    if line_bbox:
-                        avg_confidence = sum(w.get('confidence', 0) for w in matched_words_sorted) / len(matched_words_sorted)
-                        similarity = fuzzy_match(line_text, matched_text)
-                        
-                        candidate = {
-                            'matched_text': matched_text,
-                            'field_value': line_text,
-                            'bounding_box': line_bbox,
-                            'bounding_page': matched_words_sorted[0].get('bounding_page', 1),
-                            'match_confidence': similarity * 100,
-                            'coordinate_confidence': similarity * 100,
-                            'match_type': 'word_refined_rotated' if is_rotated else 'word_refined',
-                            'ocr_confidence': avg_confidence,
-                            'word_count': len(matched_words_sorted),
-                            'start_idx': start_idx,
-                            'words': matched_words_sorted
-                        }
-                        
-                        candidates.append(candidate)
+        # Get all possible combinations using itertools.product
+        candidate_lists = [token_candidates[i] for i in range(len(tokens))]
         
-        logger.info(f"Found {len(candidates)} candidates for '{line_text}'")
+        for combination in itertools.product(*candidate_lists):
+            # combination is a tuple of candidate dicts, one per token
+            matched_words = [cand['word'] for cand in combination]
+            matched_word_indices = [cand['word_idx'] for cand in combination]
+            
+            # Check for duplicate word usage across tokens
+            if len(set(matched_word_indices)) != len(matched_words):
+                continue  # Skip combinations that reuse the same word
+            
+            # PHASE 3: Check if words are on same line (reference line check)
+            on_same_line = False
+            
+            if is_rotated:
+                # For rotated pages: check X-coordinate (horizontal center)
+                on_same_line = are_words_on_same_line_rotated(matched_words, x_tolerance=tolerance)
+            else:
+                # For normal pages: check Y-coordinate (vertical center)
+                on_same_line = are_words_on_same_line(matched_words, y_tolerance=tolerance)
+            
+            if not on_same_line:
+                continue  # Skip this combination
+            
+            # PHASE 4: Sort and build candidate
+            matched_words_sorted = smart_sort_words(matched_words, line_text, is_rotated)
+            
+            # Build match info
+            matched_text = ' '.join([w.get('text', '') for w in matched_words_sorted])
+            line_bbox = merge_bboxes([w['bounding_box'] for w in matched_words_sorted], padding=0.01)
+            
+            if line_bbox:
+                avg_confidence = sum(w.get('confidence', 0) for w in matched_words_sorted) / len(matched_words_sorted)
+                similarity = fuzzy_match(line_text, matched_text)
+                
+                candidate = {
+                    'matched_text': matched_text,
+                    'field_value': line_text,
+                    'bounding_box': line_bbox,
+                    'bounding_page': matched_words_sorted[0].get('bounding_page', 1),
+                    'match_confidence': similarity * 100,
+                    'coordinate_confidence': similarity * 100,
+                    'match_type': 'word_refined_rotated' if is_rotated else 'word_refined',
+                    'ocr_confidence': avg_confidence,
+                    'word_count': len(matched_words_sorted),
+                    'words': matched_words_sorted
+                }
+                
+                candidates.append(candidate)
+        
+        logger.info(f"Found {len(candidates)} valid combinations for '{line_text}'")
         return candidates
 
 
@@ -9812,125 +9788,99 @@ Return compliance status for each field.'''
     # SPATIAL CLUSTERING - FIND BEST GROUP
     # ============================================
 
-    def find_best_spatial_cluster(expected_lines: List[str], word_pool: List[Dict],
-                              fuzzy_threshold: float = 0.80,
-                              is_rotated: bool = False) -> List[Dict]:
+    def find_best_spatial_cluster(expected_lines: List[str], word_pool: List[Dict], 
+                                fuzzy_threshold: float = 0.90,
+                                is_rotated: bool = False) -> List[Dict]:
         """
         Find the best spatial cluster of lines
         Works for both normal and rotated pages
         """
-       
+        
         logger.info(f"Finding best spatial cluster for {len(expected_lines)} lines (rotated={is_rotated})")
-       
+        
         # Find all candidates for each line
         all_candidates = {}
-       
+        
         for line_text in expected_lines:
             candidates = find_all_candidates_for_line(line_text, word_pool, fuzzy_threshold, is_rotated)
-           
+            
             if not candidates:
                 logger.warning(f"No candidates found for: '{line_text}'")
                 return []
-           
+            
             all_candidates[line_text] = candidates
             logger.info(f"  '{line_text}': {len(candidates)} candidates")
-       
+        
         # Try to find best combination
         best_cluster = None
         best_score = -1
-        best_total_distance = float('inf')
-       
+        
         first_line = expected_lines[0]
-       
-        for attempt_num, first_candidate in enumerate(all_candidates[first_line]):
+        
+        # Track used word indices across ALL lines to prevent reuse
+        global_used_words = set()
+        
+        for first_candidate in all_candidates[first_line]:
             cluster = [first_candidate]
             current_used_words = set()
-            cluster_total_distance = 0
-           
+            
             # Mark words from first candidate as used
             for word in first_candidate.get('words', []):
                 word_id = id(word)
                 current_used_words.add(word_id)
-           
-            for line_idx, line_text in enumerate(expected_lines[1:], start=2):
+            
+            for line_text in expected_lines[1:]:
                 candidates = all_candidates.get(line_text, [])
-               
+                
                 if not candidates:
                     break
-               
+                
                 # Find candidate closest to current cluster AND doesn't reuse words
                 best_candidate = None
                 best_distance = float('inf')
-               
-                for cand_idx, candidate in enumerate(candidates):
+                
+                for candidate in candidates:
                     # Check if this candidate reuses any words from previous lines
                     candidate_word_ids = set(id(w) for w in candidate.get('words', []))
-                   
+                    
                     if candidate_word_ids & current_used_words:
+                        # This candidate reuses words - skip it
                         continue
-                   
-                    # ✅ CRITICAL FIX: For multi-line text, use Y-distance primarily
-                    last_bbox = cluster[-1]['bounding_box']
-                    curr_bbox = candidate['bounding_box']
-                   
-                    last_y = (last_bbox[1] + last_bbox[3] + last_bbox[5] + last_bbox[7]) / 4
-                    curr_y = (curr_bbox[1] + curr_bbox[3] + curr_bbox[5] + curr_bbox[7]) / 4
-                   
-                    # Y-distance is primary factor for sequential lines
-                    distance_to_last = abs(curr_y - last_y)
-                   
-                    if distance_to_last < best_distance:
-                        best_distance = distance_to_last
+                    
+                    # Calculate distance
+                    distances = [calculate_distance(candidate['bounding_box'], item['bounding_box']) 
+                            for item in cluster]
+                    avg_distance = sum(distances) / len(distances)
+                    
+                    if avg_distance < best_distance:
+                        best_distance = avg_distance
                         best_candidate = candidate
-               
+                
                 if best_candidate:
                     cluster.append(best_candidate)
-                    cluster_total_distance += best_distance
-                   
                     # Mark words from this candidate as used
                     for word in best_candidate.get('words', []):
                         current_used_words.add(id(word))
                 else:
                     break
-           
+            
             # Check if cluster is complete
             if len(cluster) == len(expected_lines):
                 score = score_cluster(cluster, expected_lines)
-                avg_distance_per_line = cluster_total_distance / max(1, len(cluster) - 1)
-               
-                # Prioritize clusters with smaller total distance
-                is_better = False
-                if best_cluster is None:
-                    is_better = True
-                elif avg_distance_per_line < best_total_distance * 0.8:
-                    is_better = True
-                elif avg_distance_per_line < best_total_distance * 1.2 and score > best_score * 1.1:
-                    is_better = True
-               
-                if is_better:
+                
+                logger.debug(f"Cluster score: {score:.2f} (size: {len(cluster)})")
+                
+                if score > best_score:
                     best_score = score
                     best_cluster = cluster
-                    best_total_distance = avg_distance_per_line
-       
+        
         if best_cluster:
-            logger.info(f"✓ Found best cluster with score {best_score:.2f}, avg Y-distance {best_total_distance:.4f}")
-           
-            # Log final cluster details
-            for i, item in enumerate(best_cluster):
-                if i > 0:
-                    prev_y = (best_cluster[i-1]['bounding_box'][1] + best_cluster[i-1]['bounding_box'][5]) / 2
-                    curr_y = (item['bounding_box'][1] + item['bounding_box'][5]) / 2
-                    y_dist = abs(curr_y - prev_y)
-                    logger.info(f"  Line {i+1}: '{item.get('matched_text', '')}' at Y={curr_y:.4f} (Y-distance: {y_dist:.4f})")
-                else:
-                    curr_y = (item['bounding_box'][1] + item['bounding_box'][5]) / 2
-                    logger.info(f"  Line {i+1}: '{item.get('matched_text', '')}' at Y={curr_y:.4f}")
-           
+            logger.info(f"✓ Found best cluster with score {best_score:.2f}")
             return best_cluster
         else:
             logger.warning("No complete cluster found")
             return []
- 
+
 
     def score_cluster(cluster: List[Dict], expected_lines: List[str]) -> float:
         """Score a cluster based on spatial compactness, match quality, and completeness"""
@@ -9972,7 +9922,7 @@ Return compliance status for each field.'''
     # ============================================
 
     def fallback_rotated_page_search(expected_lines: List[str], word_pool: List[Dict],
-                                    fuzzy_threshold: float = 0.80) -> List[Dict]:
+                                    fuzzy_threshold: float = 0.90) -> List[Dict]:
         """
         Fallback for rotated pages: Use rotated page logic (NO coordinate transformation!)
         """
@@ -10146,9 +10096,9 @@ Return compliance status for each field.'''
             logger.error("No field_value!")
             return {'best_match': best_match, 'matches': matches if matches else []}
         
-        # Skip if TOTAL field_value length is too long (>200 chars)
+        # Skip if TOTAL field_value length is too long (>80 chars)
         if len(field_value) > 200:
-            logger.info(f"Field value too long ({len(field_value)} chars > 200) - skipping refinement")
+            logger.info(f"Field value too long ({len(field_value)} chars > 80) - skipping refinement")
             return {'best_match': best_match, 'matches': matches if matches else []}
         
         # Parse lines
@@ -10160,19 +10110,52 @@ Return compliance status for each field.'''
         
         logger.info(f"Processing {len(expected_lines)} lines")
         
-        # Get anchor page
+        # Get anchor page - search through ALL pages to find words matching any of the expected lines
         anchor_page = None
-        if best_match and isinstance(best_match, dict):
-            anchor_page = best_match.get('bounding_page', 1)
+        word_pool = None
         
-        # Filter to anchor page
-        if anchor_page:
+        # Try to find page with words matching expected lines
+        all_pages = set()
+        for word in word_ocr_data:
+            if word and isinstance(word, dict):
+                all_pages.add(word.get('bounding_page', 1))
+        
+        logger.info(f"Document has pages: {sorted(all_pages)}")
+        
+        # Try each page and find the one with best matches for our expected lines
+        best_page_score = -1
+        best_anchor_page = None
+        
+        for page_num in sorted(all_pages):
+            page_words = [w for w in word_ocr_data if w and isinstance(w, dict) and w.get('bounding_page') == page_num]
+            
+            # Score this page based on how many expected line tokens appear on it
+            page_score = 0
+            for line_text in expected_lines:
+                tokens = line_text.split()
+                for token in tokens:
+                    for word in page_words:
+                        if fuzzy_match(token, word.get('text', '')) >= 0.75:
+                            page_score += 1
+                            break
+            
+            logger.debug(f"Page {page_num}: score={page_score} ({len(page_words)} words)")
+            
+            if page_score > best_page_score:
+                best_page_score = page_score
+                best_anchor_page = page_num
+        
+        # Filter to best anchor page
+        if best_anchor_page:
+            anchor_page = best_anchor_page
             word_pool = [w for w in word_ocr_data if w and isinstance(w, dict) and w.get('bounding_page') == anchor_page]
-            logger.info(f"Using {len(word_pool)} words from page {anchor_page}")
+            logger.info(f"Using {len(word_pool)} words from page {anchor_page} (score={best_page_score})")
         else:
+            # Fallback: use all words
             word_pool = [w for w in word_ocr_data if w and isinstance(w, dict)]
             if word_pool:
                 anchor_page = word_pool[0].get('bounding_page', 1)
+                logger.info(f"Fallback: using all pages, first page is {anchor_page}")
         
         if not word_pool:
             logger.error("No valid words in word_pool!")
@@ -10183,7 +10166,7 @@ Return compliance status for each field.'''
         logger.info(f"Sorted {len(sorted_word_pool)} words in reading order")
         
         # PRIMARY: Normal spatial clustering
-        result_lines = find_best_spatial_cluster(expected_lines, sorted_word_pool, fuzzy_threshold=0.80, is_rotated=False)
+        result_lines = find_best_spatial_cluster(expected_lines, sorted_word_pool, fuzzy_threshold=0.90, is_rotated=False)
         
         # FALLBACK LOGIC
         if not result_lines:
@@ -20245,7 +20228,8 @@ Return compliance status for each field.'''
 
             # === RETURN FINAL RESULTS ===
             logger.info(f"✅ Stage 2 completed - Returning {len(results)} results")
-
+            # with open("wtesting.json", "w") as file:
+            #     json.dump(results, file, indent=4)
             return jsonify({
                 "success": True,
                 "results": results,

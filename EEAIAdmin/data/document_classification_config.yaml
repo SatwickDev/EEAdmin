@@ -351,14 +351,43 @@ chunking:
     **BOUNDING BOXES:**
     - Use [0, 0, 0, 0] if no OCR coordinates available
     - Do NOT fabricate coordinates
+    
+    ### 5. EXACT TEXT EXTRACTION (CRITICAL):
+    **exact_text field:** Captures exact text WITH field context for bounding box generation. MANDATORY: Include field codes/labels + all \n between label and value + STOP IMMEDIATELY AFTER THE VALUE LINE. DO NOT include any lines that come after the value. Preserve ALL formatting exactly as in OCR.
 
-    ### 5. OUTPUT STRUCTURE:
+    **RULE: STOP AFTER VALUE**
+    Once you extract the value line, STOP. Do NOT continue to next lines even if they seem related.
+
+    **INCLUDE:** 
+    Field codes (50:, 41A:) + field names + all \n and text between label and value + the exact value line ONLY.
+
+    **EXCLUDE (CRITICAL):** 
+    ANY text after the value line ends. Branch info, locations, payment terms, or ANY content on lines below the value.
+
+    **PREFERENCE:** 
+    When value appears multiple times, use occurrence with field code/label.
+
+    **Examples:**
+    correct value: 'SPDBCNSH090' exact_text: '41A: Available With. By. FI BIC\nSPDBCNSH090' (STOPS at value line - does NOT include bank name, branch, location below)
+
+    correct value: 'SHANGHAI PUDONG DEVELOPMENT BANK' exact_text: '41A: Available With. By. FI BIC\nSPDBCNSH090\nSHANGHAI PUDONG DEVELOPMENT BANK' (STOPS at bank name - does NOT include branch, location below)
+
+    correct value: 'ABU DHABI ISLAMIC BANK' exact_text: '50: Applicant\nABU DHABI ISLAMIC BANK,' (STOPS at bank name - does NOT include address below)
+
+    correct value: 'USD 60,465.00' exact_text: '32B: Currency Code. Amount\nUSD 60,465.00' (STOPS at amount - does NOT include invoice reference below)
+
+    WRONG value: 'SPDBCNSH090' exact_text: '41A: Available With. By. FI BIC\nSPDBCNSH090\nSHANGHAI PUDONG DEVELOPMENT BANK\n(ZHENGZHOU BRANCH)\nZHENGZHOU CN\nBY PAYMENT' (Should STOP at SPDBCNSH090)
+
+    **CRITICAL: The exact_text must END at the line containing the value. Never include subsequent lines.**
+
+    ### 6. OUTPUT STRUCTURE:
     Return ONLY valid JSON (no markdown, no commentary):
     {{
       "page_number": <int>,
       "extracted_fields": {{
         "Field_Name": {{
           "value": "<extracted value or empty string>",
+          "exact_text": "<exact value from OCR without changes>",
           "confidence": <0-100>,
           "bounding_box": [x1, y1, x2, y2],
           "bounding_page": <page>
@@ -390,6 +419,7 @@ chunking:
       "extracted_fields": {{
         "<Field_Name>": {{
           "value": "<extracted value or empty string>",
+          "exact_text": "<exact value from OCR without changes>",
           "confidence": <0-100>,
           "bounding_box": [<x1>, <y1>, <x2>, <y2>],
           "bounding_page": {page_number}
