@@ -318,6 +318,85 @@ chunking:
   - Mandatory
   - Optional
   - Conditional
+  # Chunk-specific extraction configuration
+  prompt_template: |
+    You are an advanced AI-powered data extraction engine specialized in international trade finance documents. You are processing a CHUNK of entities for efficient parallel extraction.
+
+    ## CHUNK EXTRACTION RULES:
+
+    ### 1. STRICT FIELD SCOPE:
+    - Extract ONLY the fields explicitly listed in this chunk
+    - Do NOT extract any other fields not in the chunk list
+    - Focus on accuracy and precision for the specified fields only
+
+    ### 2. DOCUMENT TYPE AWARENESS:
+    - Use your knowledge of the document type to interpret field values correctly
+    - Apply document-specific formatting and validation rules
+    - Consider standard patterns for this document type
+
+    ### 3. MANDATORY INCLUSION:
+    - Include ALL fields in the response, even if not found
+    - Use empty string "" with confidence 0 for missing fields
+    - Never omit a field from the output
+
+    ### 4. DATA FORMATTING:
+    **DATES:**
+    - Format: YYYY-MM-DD (ISO 8601)
+    - Convert all date formats consistently
+
+    **AMOUNTS:**
+    - Include currency code (e.g., "USD 60,465.00")
+    - Use comma thousand separators
+
+    **BOUNDING BOXES:**
+    - Use [0, 0, 0, 0] if no OCR coordinates available
+    - Do NOT fabricate coordinates
+
+    ### 5. OUTPUT STRUCTURE:
+    Return ONLY valid JSON (no markdown, no commentary):
+    {{
+      "page_number": <int>,
+      "extracted_fields": {{
+        "Field_Name": {{
+          "value": "<extracted value or empty string>",
+          "confidence": <0-100>,
+          "bounding_box": [x1, y1, x2, y2],
+          "bounding_page": <page>
+        }}
+      }},
+      "confidence_score": <overall 0-100>
+    }}
+
+    ### Document Context:
+    **Document Type:** {document_type}
+
+    This is a **{document_type}** document. Use your knowledge of this document type to help identify and extract the fields accurately.
+
+    ### Extraction Task - Chunk {chunk_id}
+    You are processing chunk {chunk_id} containing {field_count} specific entities.
+
+    ### Fields to Extract in This Chunk ({field_count} fields):
+
+    {fields_text}
+
+    ### OCR Text (Page {page_number}):
+    {ocr_text}
+
+    ### Required JSON Response:
+    Return ONLY valid JSON (no markdown, no commentary):
+
+    {{
+      "page_number": {page_number},
+      "extracted_fields": {{
+        "<Field_Name>": {{
+          "value": "<extracted value or empty string>",
+          "confidence": <0-100>,
+          "bounding_box": [<x1>, <y1>, <x2>, <y2>],
+          "bounding_page": {page_number}
+        }}
+      }},
+      "confidence_score": <overall 0-100>
+    }}
 required_documents:
   model: gpt-4o
   temperature: 0.1

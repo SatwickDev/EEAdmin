@@ -14639,7 +14639,7 @@ Return compliance status for each field.'''
         logger.info(f"📋 Field filtering: {len(extracted_fields)} → {len(filtered_fields)} fields (removed {len(extracted_fields) - len(filtered_fields)} empty optional fields)")
         return filtered_fields
 
-    def extract_entities_in_chunks(entity_info: Dict, ocr_text: str, model: str, page_number: int) -> List[Dict]:
+    def extract_entities_in_chunks(entity_info: Dict, ocr_text: str, model: str, page_number: int, document_type: str = "Unknown") -> List[Dict]:
         """
         Extract entities by dividing them into logical chunks for parallel processing.
         This ensures consistent results by processing specific entity groups in parallel.
@@ -14648,11 +14648,15 @@ Return compliance status for each field.'''
             entity_info: Dictionary with mandatory_fields, optional_fields, conditional_fields
             ocr_text: OCR text to extract from
             model: LLM model/engine to use
-            page_number: Page number for logging
-
+            page_number: Page number being processed
+            document_type: Type of document being processed (e.g., "Letter of Credit")
+        
         Returns:
-            List of extraction results from all chunks
+            List of extraction results from each chunk
         """
+        # DEBUG: Log the document_type parameter at function entry
+        logger.info(f"🔍 extract_entities_in_chunks CALLED with document_type='{document_type}'")
+        
         logger.info(f"🧩 Starting chunk-based entity extraction for page {page_number}")
 
         # Load chunking configuration from YAML
@@ -14766,7 +14770,8 @@ Return compliance status for each field.'''
                     field_definitions=field_definitions,
                     ocr_text=ocr_text,
                     page_number=page_number,
-                    chunk_id=chunk_id
+                    chunk_id=chunk_id,
+                    document_type=document_type
                 )
 
                 logger.info(f"📋 ENTITY EXTRACTION REQUEST (Chunk {chunk_id}) TO AZURE OPENAI:")
@@ -15132,7 +15137,8 @@ Return compliance status for each field.'''
                     entity_info=entity_info,
                     ocr_text=page_text,
                     model=model if model else deployment_name,
-                    page_number=page_number
+                    page_number=page_number,
+                    document_type=document_type
                 )
 
                 # Merge results from all chunks
@@ -18372,7 +18378,8 @@ Return compliance status for each field.'''
                         entity_info=entity_info,
                         ocr_text=group['text'],
                         model=extraction_model,
-                        page_number=group['pages'][0] if group['pages'] else 1
+                        page_number=group['pages'][0] if group['pages'] else 1,
+                        document_type=group['document_type']
                     )
                     
                     # Merge results from all chunks
@@ -20013,12 +20020,16 @@ Return compliance status for each field.'''
                         if entity_info and entity_info.get('mandatory_fields'):
                             logger.info(f"📋 Entity info loaded for {group['document_type']}: {len(entity_info['mandatory_fields'])} mandatory, {len(entity_info['optional_fields'])} optional")
                             
+                            # Log document type being passed
+                            logger.info(f"🔍 Passing document_type to extraction: '{group['document_type']}'")
+                            
                             # Use new chunk-based extraction instead of redundant parallel calls
                             extraction_results = extract_entities_in_chunks(
                                 entity_info=entity_info,
                                 ocr_text=group['text'],
                                 model=extraction_model,
-                                page_number=group['pages'][0]  # Use first page number
+                                page_number=group['pages'][0],  # Use first page number
+                                document_type=group['document_type']
                             )
                           
                             # Merge results from all chunks

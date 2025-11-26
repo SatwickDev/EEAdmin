@@ -1110,7 +1110,7 @@ Return ONLY valid JSON (no markdown, no commentary):
     def build_extraction_prompt_for_entities(self, field_list: List[str], 
                                             field_definitions: Dict[str, str],
                                             ocr_text: str, page_number: int, 
-                                            chunk_id: int) -> str:
+                                            chunk_id: int, document_type: str = "Unknown") -> str:
         """
         Build extraction prompt for a specific subset of entities (chunk-based extraction).
         
@@ -1120,6 +1120,7 @@ Return ONLY valid JSON (no markdown, no commentary):
             ocr_text: OCR text to extract from
             page_number: Page number for context
             chunk_id: Chunk identifier for logging
+            document_type: Type of document being processed (e.g., "Commercial Invoice")
             
         Returns:
             String prompt for LLM
@@ -1160,58 +1161,27 @@ Return ONLY valid JSON (no markdown, no commentary):
             )
             fields_text += f"- **{field_def}**\n"
 
-        # Build chunk-specific prompt
-        prompt = f"""
-{system_prompt}
-
-### Extraction Task - Chunk {chunk_id}
-You are processing a subset of entities for efficient parallel extraction.
-
-### Critical Instructions:
-1. Extract ONLY the fields listed below - do not extract any other fields
-2. Focus on accuracy and precision for these specific fields
-3. Use the field descriptions as your guide for identification
-4. Include ALL fields in response, even if empty (use "" with confidence 0)
-
-### Fields to Extract in This Chunk ({len(field_list)} fields):
-
-{fields_text}
-
-### Formatting Rules:
-1. **Dates**: Convert to YYYY-MM-DD format
-2. **Amounts**: Include currency code (e.g., "USD 60,465.00")
-3. **Bounding Boxes**: Use [0, 0, 0, 0] if no OCR coordinates available
-4. **Empty Fields**: Use empty string "" with confidence 0 if not found
-
-### OCR Text (Page {page_number}):
-{ocr_text[:16000]}
-
-### Required JSON Response:
-Return ONLY valid JSON (no markdown, no commentary):
-
-{{
-  "page_number": {page_number},
-  "chunk_id": {chunk_id},
-  "extracted_fields": {{
-    "<Field_Name>": {{
-      "value": "<extracted value or empty string>",
-      "exact_text": "<exact value from OCR without changes>",
-      "confidence": <0-100>,
-      "bounding_box": [<x1>, <y1>, <x2>, <y2>],
-      "bounding_page": {page_number}
-    }}
-  }},
-  "fields_processed": {len(field_list)},
-  "chunk_confidence": <overall 0-100>
-}}
-
-IMPORTANT: Extract ONLY the {len(field_list)} fields listed above.
-Do not include any other fields.
-"""
+        # Get chunking configuration and build prompt from template
+        chunk_config = self.prompt_config.get('chunking', {})
+        prompt_template = chunk_config.get('prompt_template', '')
+        
+        # Debug logging
+        logging.info(f"🔍 Document Type Parameter: '{document_type}'")
+        logging.info(f"🔍 Prompt Template Length: {len(prompt_template)} characters")
+        
+        # Build chunk-specific prompt from configuration
+        prompt = prompt_template.format(
+            document_type=document_type,
+            chunk_id=chunk_id,
+            field_count=len(field_list),
+            fields_text=fields_text,
+            page_number=page_number,
+            ocr_text=ocr_text[:16000]
+        )
         
         logging.info(
             f"✅ STEP 1 (Chunk {chunk_id}) COMPLETE: Prompt built from "
-            f"primary entity definitions"
+            f"configuration and primary entity definitions"
         )
         logging.info(f"📊 Prompt Length: {len(prompt)} characters")
         logging.info(f"📋 Fields Count: {len(field_list)}")
