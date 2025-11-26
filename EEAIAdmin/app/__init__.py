@@ -47,6 +47,51 @@ def create_app():
 
     app = Flask(__name__)
 
+    # Initialize per-process last-reload timestamp to the latest mtime
+    # found in the monitored folders so workers don't all reload on first change.
+    try:
+        import time as _time
+        def _max_mtime_for_folder(folder_path: str) -> float:
+            folder_path = os.path.abspath(folder_path)
+            max_m = 0.0
+            if os.path.exists(folder_path):
+                for root, _, files in os.walk(folder_path):
+                    for fn in files:
+                        try:
+                            full = os.path.join(root, fn)
+                            if os.path.isfile(full):
+                                m = os.path.getmtime(full)
+                                if m and m > max_m:
+                                    max_m = m
+                        except Exception:
+                            continue
+            return max_m
+
+        app_pkg_dir = os.path.dirname(os.path.abspath(__file__))
+        monitored = [
+            os.path.join(app_pkg_dir, '..', 'data'),  # repo-level data folder
+            os.path.join(app_pkg_dir, 'data'),         # app/data
+        ]
+        overall_max = 0.0
+        for d in monitored:
+            try:
+                overall_max = max(overall_max, _max_mtime_for_folder(d))
+                # also consider marker file if present
+                marker = os.path.join(d, '.last_reload')
+                if os.path.exists(marker):
+                    try:
+                        overall_max = max(overall_max, os.path.getmtime(marker))
+                    except Exception:
+                        pass
+            except Exception:
+                continue
+
+        # Fallback to current time if nothing found to avoid 0 values
+        app._last_json_reload = overall_max or _time.time()
+        logger.debug(f"Initialized app._last_json_reload = {app._last_json_reload}")
+    except Exception:
+        logger.debug('Could not initialize app._last_json_reload at startup')
+
     # Session configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24).hex())
     app.config['SESSION_COOKIE_HTTPONLY'] = True

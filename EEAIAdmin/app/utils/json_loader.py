@@ -72,6 +72,52 @@ def reload_json_and_xml_folder(folder_path: str):
     return reload_json_folder(folder_path)
 
 
+def reload_single_file(full_path: str, base_folder: str):
+    """
+    Load a single JSON/YAML/XML file and return a tuple `(key, content)`
+    where `key` matches the same normalized key used by
+    `reload_json_folder` (relative path without extension, forward slashes).
+    Returns `(None, None)` on error or if file type is unsupported.
+    """
+    try:
+        full_path = os.path.abspath(os.fspath(full_path))
+        base_folder = os.path.abspath(os.fspath(base_folder))
+    except Exception as e:
+        logger.exception(f"Invalid path types for reload_single_file: {e}")
+        return None, None
+
+    if not os.path.isfile(full_path):
+        logger.debug(f"reload_single_file: path not a file: {full_path}")
+        return None, None
+
+    rel = os.path.relpath(full_path, base_folder)
+    key = rel.replace("\\", "/")
+    key = os.path.splitext(key)[0]
+
+    filename = os.path.basename(full_path)
+    try:
+        if filename.endswith('.json'):
+            with open(full_path, 'r', encoding='utf-8') as f:
+                return key, json.load(f)
+
+        if filename.endswith(('.yaml', '.yml')):
+            with open(full_path, 'r', encoding='utf-8') as f:
+                return key, yaml.safe_load(f)
+
+        if filename.endswith('.xml'):
+            with open(full_path, 'r', encoding='utf-8') as xf:
+                xml_text = xf.read()
+            xml_root = ET.fromstring(xml_text)
+            return key, _etree_to_dict(xml_root)
+
+        # unsupported file type
+        logger.debug(f"reload_single_file: unsupported extension for {full_path}")
+        return None, None
+    except Exception as e:
+        logger.exception(f"Error loading single file {full_path}: {e}")
+        return None, None
+
+
 def _etree_to_dict(elem):
     """Convert an ElementTree element into a nested dict.
 
