@@ -24627,7 +24627,7 @@ def generate_mt700_message(lc_data):
         ":40A:IRREVOCABLE",  # Form of Documentary Credit
         # Place of Expiry (if present)
         (":31D:" + expiry_date + " " + lc_data.get('placeOfExpiry', '').upper()) if lc_data.get('placeOfExpiry') else (":31D:" + expiry_date + " " + lc_data.get('finalDestination', 'ANY BANK').upper()),
-        ":50:" + format_address_field(lc_data['applicant']),  # Applicant
+        ":50:" + format_address_field(lc_data['applicant']) + "\n"+ format_address_field(lc_data['applicantAddress']),  # Applicant
         ":59:" + format_address_field(lc_data['beneficiary']),  # Beneficiary
         # Beneficiary Account Number (if present)
         (":59A:" + lc_data['beneficiaryAccountNumber']) if lc_data.get('beneficiaryAccountNumber') else None,

@@ -6137,7 +6137,7 @@ button:focus {
                                     </div>
                                     
                                     <!-- Preview Eye Icon -->
-                                    <i @click="openDiscrepancyPreview(discrepancy)" 
+                                    <i @click="discrepancy.documentType === 'Cross-Document' ? openCrossDocumentPreview(discrepancy) : openDiscrepancyPreview(discrepancy)" 
                                        class="mdi mdi-eye-outline text-teal-600 cursor-pointer text-xl hover:text-teal-700 transition-colors"
                                        title="View side-by-side comparison"></i>
                                 </div>
@@ -6155,12 +6155,33 @@ button:focus {
                     <!-- Value Comparison with Accept/Reject -->
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                            <p class="text-[10px] text-gray-600 font-semibold mb-1 uppercase">Document Value</p>
+                            <p class="text-[10px] text-gray-600 font-semibold mb-1 uppercase">
+                                <span v-if="discrepancy.documentType === 'Cross-Document'">
+                                    <span v-if="discrepancy.documentName">{{ discrepancy.documentName }}</span>
+                                    <span v-else>Document 1</span> Value
+                                </span>
+                                <span v-else>Document Value</span>
+                            </p>
                             <p class="text-gray-900 font-mono text-xs">{{ discrepancy.documentValue }}</p>
                         </div>
-                        <div class="bg-green-50 rounded-lg p-3 border border-green-200">
-                            <p class="text-[10px] text-emerald-600 font-semibold mb-1 uppercase">LC Required Value</p>
-                            <p class="text-emerald-900 font-mono text-xs">{{ discrepancy.lcValue }}</p>
+                        <div :class="[
+                            'rounded-lg p-3 border',
+                            discrepancy.documentType === 'Cross-Document' ? 'bg-purple-50 border-purple-200' : 'bg-green-50 border-green-200'
+                        ]">
+                            <p :class="[
+                                'text-[10px] font-semibold mb-1 uppercase',
+                                discrepancy.documentType === 'Cross-Document' ? 'text-purple-600' : 'text-emerald-600'
+                            ]">
+                                <span v-if="discrepancy.documentType === 'Cross-Document'">
+                                    <span v-if="discrepancy.expectedSource">{{ discrepancy.expectedSource }}</span>
+                                    <span v-else>Document 2</span> Value
+                                </span>
+                                <span v-else>LC Required Value</span>
+                            </p>
+                            <p :class="[
+                                'font-mono text-xs',
+                                discrepancy.documentType === 'Cross-Document' ? 'text-purple-900' : 'text-emerald-900'
+                            ]">{{ discrepancy.expectedValue || discrepancy.lcValue }}</p>
                         </div>
                     </div>
 
@@ -6230,7 +6251,7 @@ button:focus {
                                 </div>
                                 
                                 <!-- Preview Eye Icon -->
-                                <i @click="openDiscrepancyPreview(discrepancy)" 
+                                <i @click="discrepancy.documentType === 'Cross-Document' ? openCrossDocumentPreview(discrepancy) : openDiscrepancyPreview(discrepancy)" 
                                    class="mdi mdi-eye-outline text-teal-600 cursor-pointer text-lg hover:text-teal-700 transition-colors"
                                    title="View comparison"></i>
                             </div>
@@ -6240,16 +6261,34 @@ button:focus {
                         <!-- Value Comparison (Compact) -->
                         <div class="flex items-center gap-2 flex-shrink-0">
                             <div class="text-center px-2">
-                                <p class="text-[9px] text-gray-500 font-semibold uppercase">Document</p>
+                                <p class="text-[9px] text-gray-500 font-semibold uppercase">
+                                    <span v-if="discrepancy.documentType === 'Cross-Document'">
+                                        <span v-if="discrepancy.documentName">{{ discrepancy.documentName }}</span>
+                                        <span v-else>Doc 1</span>
+                                    </span>
+                                    <span v-else>Document</span>
+                                </p>
                                 <p class="text-xs font-mono text-gray-900 truncate max-w-[80px]" :title="discrepancy.documentValue">
                                     {{ discrepancy.documentValue }}
                                 </p>
                             </div>
                             <i class="mdi mdi-arrow-right text-gray-400"></i>
                             <div class="text-center px-2">
-                                <p class="text-[9px] text-green-600 font-semibold uppercase">LC Required</p>
-                                <p class="text-xs font-mono text-green-700 truncate max-w-[80px]" :title="discrepancy.lcValue">
-                                    {{ discrepancy.lcValue }}
+                                <p :class="[
+                                    'text-[9px] font-semibold uppercase',
+                                    discrepancy.documentType === 'Cross-Document' ? 'text-purple-600' : 'text-green-600'
+                                ]">
+                                    <span v-if="discrepancy.documentType === 'Cross-Document'">
+                                        <span v-if="discrepancy.expectedSource">{{ discrepancy.expectedSource }}</span>
+                                        <span v-else>Doc 2</span>
+                                    </span>
+                                    <span v-else>LC Required</span>
+                                </p>
+                                <p :class="[
+                                    'text-xs font-mono truncate max-w-[80px]',
+                                    discrepancy.documentType === 'Cross-Document' ? 'text-purple-700' : 'text-green-700'
+                                ]" :title="discrepancy.expectedValue || discrepancy.lcValue">
+                                    {{ discrepancy.expectedValue || discrepancy.lcValue }}
                                 </p>
                             </div>
                         </div>
@@ -6281,86 +6320,180 @@ button:focus {
                 </div>
 
                 <!-- Discrepancy Cards - Table View -->
-                <div v-if="discrepanciesViewMode === 'table'" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table class="w-full">
-                        <thead class="bg-slate-50 border-b border-gray-200">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Entity Name</th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document Category</th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document Value</th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Master LC Value</th>
-                                <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Action Status</th>
-                                <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Preview</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(discrepancy, index) in getFilteredDiscrepancies()" :key="index"
-                                :class="[
-                                    'hover:bg-slate-50 transition-colors',
-                                    discrepancy.isCompliant ? 'bg-green-50/30' : 'bg-red-50/30'
-                                ]">
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-2">
-                                        <i :class="[
-                                            'text-lg',
-                                            discrepancy.isCompliant ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'
-                                        ]"></i>
-                                        <div>
-                                            <span class="font-semibold text-sm text-gray-900">{{ discrepancy.field }}</span>
-                                            <!-- Info Icon with Tooltip -->
-                                            <div class="relative group inline-block ml-1">
-                                                <i :class="[
-                                                    'mdi cursor-help text-sm',
-                                                    discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
-                                                ]"></i>
-                                                <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                                    <p :class="[
-                                                        'font-semibold mb-1',
-                                                        discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
-                                                    ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
-                                                    <p class="mb-2">{{ discrepancy.discrepancy }}</p>
-                                                    <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
-                                                        <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
-                                                        <p class="mb-1">{{ discrepancy.rule.description }}</p>
-                                                        <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                <div v-if="discrepanciesViewMode === 'table'" class="space-y-6">
+                    <!-- Regular Discrepancies (Non-Cross-Document) -->
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div class="bg-blue-50 px-4 py-2 border-b border-blue-200">
+                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider">Document vs LC Comparison</h3>
+                        </div>
+                        <table class="w-full">
+                            <thead class="bg-slate-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Entity Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document Category</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document Value</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Master LC Value</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Action Status</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Preview</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr v-for="(discrepancy, index) in getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document')" :key="'regular-' + index"
+                                    :class="[
+                                        'hover:bg-slate-50 transition-colors',
+                                        discrepancy.isCompliant ? 'bg-green-50/30' : 'bg-red-50/30'
+                                    ]">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <i :class="[
+                                                'text-lg',
+                                                discrepancy.isCompliant ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'
+                                            ]"></i>
+                                            <div>
+                                                <span class="font-semibold text-sm text-gray-900">{{ discrepancy.field }}</span>
+                                                <!-- Info Icon with Tooltip -->
+                                                <div class="relative group inline-block ml-1">
+                                                    <i :class="[
+                                                        'mdi cursor-help text-sm',
+                                                        discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
+                                                    ]"></i>
+                                                    <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                                        <p :class="[
+                                                            'font-semibold mb-1',
+                                                            discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
+                                                        ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
+                                                        <p class="mb-2">{{ discrepancy.discrepancy }}</p>
+                                                        <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
+                                                            <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
+                                                            <p class="mb-1">{{ discrepancy.rule.description }}</p>
+                                                            <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                                        </div>
+                                                        <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
                                                     </div>
-                                                    <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-xs text-gray-600">
-                                    {{ discrepancy.documentType }}
-                                </td>
-                                <td class="px-4 py-3 text-xs font-mono text-gray-900">
-                                    {{ discrepancy.documentValue }}
-                                </td>
-                                <td class="px-4 py-3 text-xs font-mono text-green-700">
-                                    {{ discrepancy.lcValue }}
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <select v-model="discrepancyActions[discrepancy.documentType + '|' + discrepancy.field]"
-                                            :class="[
-                                                'text-xs font-bold px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-colors focus:ring-2 focus:ring-offset-1',
-                                                !discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] || discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'awaiting' ? 'bg-amber-50 border-amber-300 text-amber-700 focus:ring-amber-500' : '',
-                                                discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'approved' ? 'bg-green-50 border-green-300 text-green-700 focus:ring-green-500' : '',
-                                                discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'dismiss' ? 'bg-red-50 border-red-300 text-red-700 focus:ring-red-500' : ''
-                                            ]">
-                                        <option value="awaiting">Awaiting Action</option>
-                                        <option value="approved">Approved</option>
-                                        <option value="dismiss">Dismiss</option>
-                                    </select>
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <button @click="openDiscrepancyPreview(discrepancy)" 
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-gray-600">
+                                        {{ discrepancy.documentType }}
+                                    </td>
+                                    <td class="px-4 py-3 text-xs font-mono text-gray-900">
+                                        {{ discrepancy.documentValue }}
+                                    </td>
+                                    <td class="px-4 py-3 text-xs font-mono text-green-700">
+                                        {{ discrepancy.lcValue }}
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <select v-model="discrepancyActions[discrepancy.documentType + '|' + discrepancy.field]"
+                                                :class="[
+                                                    'text-xs font-bold px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-colors focus:ring-2 focus:ring-offset-1',
+                                                    !discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] || discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'awaiting' ? 'bg-amber-50 border-amber-300 text-amber-700 focus:ring-amber-500' : '',
+                                                    discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'approved' ? 'bg-green-50 border-green-300 text-green-700 focus:ring-green-500' : '',
+                                                    discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'dismiss' ? 'bg-red-50 border-red-300 text-red-700 focus:ring-red-500' : ''
+                                                ]">
+                                            <option value="awaiting">Awaiting Action</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="dismiss">Dismiss</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                    <button @click="discrepancy.documentType === 'Cross-Document' ? openCrossDocumentPreview(discrepancy) : openDiscrepancyPreview(discrepancy)" 
                                             class="text-teal-600 hover:text-teal-700 transition-colors">
                                         <i class="mdi mdi-eye-outline text-xl"></i>
                                     </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Cross-Document Discrepancies -->
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div class="bg-purple-50 px-4 py-2 border-b border-purple-200">
+                            <h3 class="text-sm font-bold text-purple-800 uppercase tracking-wider">Cross-Document Comparison</h3>
+                        </div>
+                        <table class="w-full">
+                            <thead class="bg-slate-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Entity Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document Category</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document 1 Value</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document 2 Value</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Action Status</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-700 uppercase tracking-wider">Preview</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr v-for="(discrepancy, index) in getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document')" :key="'cross-' + index"
+                                    :class="[
+                                        'hover:bg-slate-50 transition-colors',
+                                        discrepancy.isCompliant ? 'bg-green-50/30' : 'bg-red-50/30'
+                                    ]">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-2">
+                                            <i :class="[
+                                                'text-lg',
+                                                discrepancy.isCompliant ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'
+                                            ]"></i>
+                                            <div>
+                                                <span class="font-semibold text-sm text-gray-900">{{ discrepancy.field }}</span>
+                                                <!-- Info Icon with Tooltip -->
+                                                <div class="relative group inline-block ml-1">
+                                                    <i :class="[
+                                                        'mdi cursor-help text-sm',
+                                                        discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
+                                                    ]"></i>
+                                                    <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                                        <p :class="[
+                                                            'font-semibold mb-1',
+                                                            discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
+                                                        ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
+                                                        <p class="mb-2">{{ discrepancy.discrepancy }}</p>
+                                                        <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
+                                                            <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
+                                                            <p class="mb-1">{{ discrepancy.rule.description }}</p>
+                                                            <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                                        </div>
+                                                        <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-gray-600">
+                                        {{ discrepancy.documentType }}
+                                    </td>
+                                    <td class="px-4 py-3 text-xs font-mono text-gray-900">
+                                        <div v-if="discrepancy.documentName" class="text-[10px] text-gray-500 mb-1">{{ discrepancy.documentName }}</div>
+                                        {{ discrepancy.documentValue }}
+                                    </td>
+                                    <td class="px-4 py-3 text-xs font-mono text-green-700">
+                                        <div v-if="discrepancy.expectedSource" class="text-[10px] text-gray-500 mb-1">{{ discrepancy.expectedSource }}</div>
+                                        {{ discrepancy.expectedValue || discrepancy.lcValue }}
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <select v-model="discrepancyActions[discrepancy.documentType + '|' + discrepancy.field]"
+                                                :class="[
+                                                    'text-xs font-bold px-3 py-1.5 rounded-lg border-2 cursor-pointer transition-colors focus:ring-2 focus:ring-offset-1',
+                                                    !discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] || discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'awaiting' ? 'bg-amber-50 border-amber-300 text-amber-700 focus:ring-amber-500' : '',
+                                                    discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'approved' ? 'bg-green-50 border-green-300 text-green-700 focus:ring-green-500' : '',
+                                                    discrepancyActions[discrepancy.documentType + '|' + discrepancy.field] === 'dismiss' ? 'bg-red-50 border-red-300 text-red-700 focus:ring-red-500' : ''
+                                                ]">
+                                            <option value="awaiting">Awaiting Action</option>
+                                            <option value="approved">Approved</option>
+                                            <option value="dismiss">Dismiss</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                    <button @click="discrepancy.documentType === 'Cross-Document' ? openCrossDocumentPreview(discrepancy) : openDiscrepancyPreview(discrepancy)" 
+                                            class="text-teal-600 hover:text-teal-700 transition-colors">
+                                        <i class="mdi mdi-eye-outline text-xl"></i>
+                                    </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- No Results Message for Filter -->
@@ -7839,9 +7972,13 @@ button:focus {
                 <div>
                     <h2 class="text-xl font-bold flex items-center gap-2 text-gray-900">
                         <i class="mdi mdi-compare text-2xl text-indigo-600"></i>
-                        Side-by-Side Comparison
+                        <span v-if="discrepancyPreviewType === 'cross_document'">Cross-Document Comparison</span>
+                        <span v-else>Side-by-Side Comparison</span>
                     </h2>
-                    <p class="text-gray-600 text-xs mt-1">Compare document value with LC required value</p>
+                    <p class="text-gray-600 text-xs mt-1">
+                        <span v-if="discrepancyPreviewType === 'cross_document'">Compare field values between two documents</span>
+                        <span v-else>Compare document value with LC required value</span>
+                    </p>
                 </div>
                 <button @click="closeDiscrepancyPreview" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition rounded-lg p-2">
                     <i class="mdi mdi-close text-xl"></i>
@@ -7850,19 +7987,46 @@ button:focus {
 
             <!-- Body - Side by Side View -->
             <div class="flex-1 flex overflow-hidden" style="min-height: 0;">
-                <!-- Left Side: Document Preview with Bounding Box -->
-                <div class="flex-1 flex flex-col border-r border-gray-200 bg-gray-50 overflow-hidden">
-                    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex-shrink-0">
-                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
-                            <i class="mdi mdi-file-document text-indigo-600"></i>
-                            Document Value
-                        </h3>
-                        <p class="text-xs text-gray-600 mt-1">{{ selectedDiscrepancyPreview.field }} in {{ selectedDiscrepancyPreview.documentType }}</p>
-                    </div>
+                <!-- Regular Discrepancy View (Document vs LC) -->
+                <template v-if="discrepancyPreviewType !== 'cross_document'">
+                    <!-- Left Side: Document Preview with Bounding Box -->
+                    <div class="flex-1 flex flex-col border-r border-gray-200 bg-gray-50 overflow-hidden">
+                        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex-shrink-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                        <i class="mdi mdi-file-document text-indigo-600"></i>
+                                        Document Value
+                                    </h3>
+                                    <p class="text-xs text-gray-600 mt-1">{{ selectedDiscrepancyPreview.field }} in {{ selectedDiscrepancyPreview.documentType }}</p>
+                                </div>
+                                <!-- Zoom Controls -->
+                                <div v-if="discrepancyPreviewImage" class="flex items-center gap-1.5 bg-gray-200 rounded-lg px-2 py-1">
+                                    <button @click="zoomDiscrepancyImage('out')" 
+                                            :disabled="discrepancyZoomLevel <= 0.5"
+                                            class="p-1.5 text-gray-700 hover:bg-gray-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <i class="mdi mdi-magnify-minus text-base"></i>
+                                    </button>
+                                    <span class="text-xs text-gray-700 font-medium min-w-[50px] text-center bg-white border border-gray-300 rounded px-2 py-1">
+                                        {{ Math.round(discrepancyZoomLevel * 100) }}%
+                                    </span>
+                                    <button @click="zoomDiscrepancyImage('in')" 
+                                            :disabled="discrepancyZoomLevel >= 3"
+                                            class="p-1.5 text-gray-700 hover:bg-gray-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <i class="mdi mdi-magnify-plus text-base"></i>
+                                    </button>
+                                    <button @click="resetDiscrepancyZoom" 
+                                            class="p-1.5 text-gray-700 hover:bg-gray-300 rounded transition-colors">
+                                        <i class="mdi mdi-fit-to-page-outline text-base"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     
-                    <div class="flex-1 overflow-auto p-4" style="min-height: 0;">
+                    <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel.prevent="handleDiscrepancyZoom">
                         <!-- Document Image with Canvas Overlay -->
-                        <div v-if="discrepancyPreviewImage" class="relative inline-block">
+                        <div v-if="discrepancyPreviewImage" class="relative inline-block" 
+                             :style="{ transform: `scale(${discrepancyZoomLevel})`, transformOrigin: 'top left' }">
                             <img :src="'data:image/png;base64,' + discrepancyPreviewImage" 
                                  :alt="'Document Preview'" 
                                  ref="discrepancyDocImage"
@@ -7872,7 +8036,12 @@ button:focus {
                             <!-- Canvas Overlay for Bounding Box -->
                             <canvas ref="discrepancyCanvas"
                                     class="absolute top-0 left-0 pointer-events-none"
-                                    style="width: 100%; height: 100%;">
+                                    :style="{ 
+                                        width: '100%', 
+                                        height: '100%',
+                                        transform: `scale(${discrepancyZoomLevel})`,
+                                        transformOrigin: 'top left'
+                                    }">
                             </canvas>
                         </div>
                         
@@ -7916,7 +8085,7 @@ button:focus {
                                 </span>
                             </div>
                             <div class="bg-gray-900 rounded-lg p-4 border-2 border-teal-400 overflow-x-auto shadow-inner">
-                                <pre class="text-xs font-mono text-green-400 whitespace-pre-wrap leading-relaxed" v-html="highlightSwiftMessage(lcContext.swiftMessage, selectedDiscrepancyPreview.lcValue)"></pre>
+                                <pre class="text-xs font-mono text-green-400 whitespace-pre-wrap leading-relaxed" v-html="highlightSwiftMessage(lcContext.swiftMessage, selectedDiscrepancyPreview.lcValue, selectedDiscrepancyPreview.field)"></pre>
                             </div>
                         </div>
 
@@ -7938,6 +8107,165 @@ button:focus {
                         </div>
                     </div>
                 </div>
+                </template>
+
+                <!-- Cross-Document Comparison View (Document vs Document) -->
+                <template v-if="discrepancyPreviewType === 'cross_document'">
+                    <!-- Left Side: Document 1 Preview with Bounding Box -->
+                    <div class="flex-1 flex flex-col border-r border-gray-200 bg-blue-50 overflow-hidden">
+                        <div class="bg-blue-100 px-4 py-3 border-b border-blue-200 flex-shrink-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                        <i class="mdi mdi-file-document text-blue-600"></i>
+                                        <span v-if="selectedDiscrepancyPreview.documentName">{{ selectedDiscrepancyPreview.documentName }}</span>
+                                        <span v-else>Document 1</span>
+                                    </h3>
+                                    <p class="text-xs text-gray-600 mt-1">{{ selectedDiscrepancyPreview.field }}</p>
+                                </div>
+                                <!-- Zoom Controls -->
+                                <div v-if="crossDocumentPreviewImage1" class="flex items-center gap-1.5 bg-blue-200 rounded-lg px-2 py-1">
+                                    <button @click="zoomCrossDocumentImage(1, 'out')" 
+                                            :disabled="crossDocumentZoomLevel1 <= 0.5"
+                                            class="p-1.5 text-gray-700 hover:bg-blue-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <i class="mdi mdi-magnify-minus text-base"></i>
+                                    </button>
+                                    <span class="text-xs text-gray-700 font-medium min-w-[50px] text-center bg-white border border-gray-300 rounded px-2 py-1">
+                                        {{ Math.round(crossDocumentZoomLevel1 * 100) }}%
+                                    </span>
+                                    <button @click="zoomCrossDocumentImage(1, 'in')" 
+                                            :disabled="crossDocumentZoomLevel1 >= 3"
+                                            class="p-1.5 text-gray-700 hover:bg-blue-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <i class="mdi mdi-magnify-plus text-base"></i>
+                                    </button>
+                                    <button @click="resetCrossDocumentZoom(1)" 
+                                            class="p-1.5 text-gray-700 hover:bg-blue-300 rounded transition-colors">
+                                        <i class="mdi mdi-fit-to-page-outline text-base"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel.prevent="handleCrossDocumentZoom(1, $event)">
+                            <!-- Document 1 Image with Canvas Overlay -->
+                            <div v-if="crossDocumentPreviewImage1" class="relative inline-block"
+                                 :style="{ transform: `scale(${crossDocumentZoomLevel1})`, transformOrigin: 'top left' }">
+                                <img :src="'data:image/png;base64,' + crossDocumentPreviewImage1" 
+                                     :alt="'Document 1 Preview'" 
+                                     ref="crossDocumentDocImage1"
+                                     @load="onCrossDocumentImage1Load"
+                                     class="max-w-full h-auto border border-blue-300 rounded-lg shadow-sm">
+                                
+                                <!-- Canvas Overlay for Bounding Box -->
+                                <canvas ref="crossDocumentCanvas1"
+                                        class="absolute top-0 left-0 pointer-events-none"
+                                        :style="{ 
+                                            width: '100%', 
+                                            height: '100%',
+                                            transform: `scale(${crossDocumentZoomLevel1})`,
+                                            transformOrigin: 'top left'
+                                        }">
+                                </canvas>
+                            </div>
+                            
+                            <!-- Value Display Box -->
+                            <div class="mt-4 bg-white rounded-lg p-4 border border-blue-300">
+                                <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Extracted Value:</p>
+                                <p class="text-gray-900 font-mono text-sm">{{ selectedDiscrepancyPreview.documentValue }}</p>
+                            </div>
+
+                            <!-- No Preview Message -->
+                            <div v-if="!crossDocumentPreviewImage1" class="flex items-center justify-center h-full">
+                                <div class="text-center">
+                                    <i class="mdi mdi-file-document-outline text-6xl text-gray-400 mb-2"></i>
+                                    <p class="text-gray-600 text-sm">No document preview available</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Document 2 Preview with Bounding Box -->
+                    <div class="flex-1 flex flex-col bg-purple-50 overflow-hidden">
+                        <div class="bg-purple-100 px-4 py-3 border-b border-purple-200 flex-shrink-0">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                        <i class="mdi mdi-file-document text-purple-600"></i>
+                                        <span v-if="selectedDiscrepancyPreview.expectedSource">{{ selectedDiscrepancyPreview.expectedSource }}</span>
+                                        <span v-else>Document 2</span>
+                                    </h3>
+                                    <p class="text-xs text-gray-600 mt-1">{{ selectedDiscrepancyPreview.field }}</p>
+                                </div>
+                                <!-- Zoom Controls -->
+                                <div v-if="crossDocumentPreviewImage2" class="flex items-center gap-1.5 bg-purple-200 rounded-lg px-2 py-1">
+                                    <button @click="zoomCrossDocumentImage(2, 'out')" 
+                                            :disabled="crossDocumentZoomLevel2 <= 0.5"
+                                            class="p-1.5 text-gray-700 hover:bg-purple-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <i class="mdi mdi-magnify-minus text-base"></i>
+                                    </button>
+                                    <span class="text-xs text-gray-700 font-medium min-w-[50px] text-center bg-white border border-gray-300 rounded px-2 py-1">
+                                        {{ Math.round(crossDocumentZoomLevel2 * 100) }}%
+                                    </span>
+                                    <button @click="zoomCrossDocumentImage(2, 'in')" 
+                                            :disabled="crossDocumentZoomLevel2 >= 3"
+                                            class="p-1.5 text-gray-700 hover:bg-purple-300 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <i class="mdi mdi-magnify-plus text-base"></i>
+                                    </button>
+                                    <button @click="resetCrossDocumentZoom(2)" 
+                                            class="p-1.5 text-gray-700 hover:bg-purple-300 rounded transition-colors">
+                                        <i class="mdi mdi-fit-to-page-outline text-base"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel.prevent="handleCrossDocumentZoom(2, $event)">
+                            <!-- Document 2 Image with Canvas Overlay -->
+                            <div v-if="crossDocumentPreviewImage2" class="relative inline-block"
+                                 :style="{ transform: `scale(${crossDocumentZoomLevel2})`, transformOrigin: 'top left' }">
+                                <img :src="'data:image/png;base64,' + crossDocumentPreviewImage2" 
+                                     :alt="'Document 2 Preview'" 
+                                     ref="crossDocumentDocImage2"
+                                     @load="onCrossDocumentImage2Load"
+                                     class="max-w-full h-auto border border-purple-300 rounded-lg shadow-sm">
+                                
+                                <!-- Canvas Overlay for Bounding Box -->
+                                <canvas ref="crossDocumentCanvas2"
+                                        class="absolute top-0 left-0 pointer-events-none"
+                                        :style="{ 
+                                            width: '100%', 
+                                            height: '100%',
+                                            transform: `scale(${crossDocumentZoomLevel2})`,
+                                            transformOrigin: 'top left'
+                                        }">
+                                </canvas>
+                            </div>
+                            
+                            <!-- Value Display Box -->
+                            <div class="mt-4 bg-white rounded-lg p-4 border border-purple-300">
+                                <p class="text-xs text-gray-600 font-semibold mb-2 uppercase">Extracted Value:</p>
+                                <p class="text-gray-900 font-mono text-sm">{{ selectedDiscrepancyPreview.expectedValue || selectedDiscrepancyPreview.lcValue }}</p>
+                            </div>
+
+                            <!-- No Preview Message -->
+                            <div v-if="!crossDocumentPreviewImage2" class="flex items-center justify-center h-full">
+                                <div class="text-center">
+                                    <i class="mdi mdi-file-document-outline text-6xl text-gray-400 mb-2"></i>
+                                    <p class="text-gray-600 text-sm">No document preview available</p>
+                                </div>
+                            </div>
+
+                            <!-- Discrepancy Details -->
+                            <div class="mt-4 bg-white rounded-lg p-4 border border-red-300">
+                                <p class="text-xs text-red-600 font-semibold mb-2 uppercase flex items-center gap-2">
+                                    <i class="mdi mdi-alert-circle"></i>
+                                    Comparison Result:
+                                </p>
+                                <p class="text-sm text-red-800">{{ selectedDiscrepancyPreview.discrepancy }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
 
             <!-- Footer -->
@@ -8098,10 +8426,26 @@ button:focus {
                     selectedDiscrepancyPreview: null, // Current discrepancy being previewed
                     discrepancyPreviewImage: null, // Base64 image for document preview
                     discrepancyImageLoaded: false, // Track if preview image is loaded
-                    discrepancyPreviewType: 'standard', // 'standard' or 'lc_conditions'
+                    discrepancyPreviewType: 'standard', // 'standard' or 'lc_conditions' or 'cross_document'
                     discrepancyFieldData: null, // Field data containing bounding box info
                     discrepancySearchResults: [], // Search results for discrepancy preview
                     discrepancyCanvasContext: null, // Canvas context for discrepancy preview
+                    discrepancyZoomLevel: 1, // Zoom level for regular discrepancy preview
+                    // Cross-document preview properties
+                    crossDocumentPreviewImage1: null, // Base64 image for first document in cross-document preview
+                    crossDocumentPreviewImage2: null, // Base64 image for second document in cross-document preview
+                    crossDocumentZoomLevel1: 1, // Zoom level for cross-document preview image 1
+                    crossDocumentZoomLevel2: 1, // Zoom level for cross-document preview image 2
+                    crossDocumentImage1Loaded: false, // Track if first document image is loaded
+                    crossDocumentImage2Loaded: false, // Track if second document image is loaded
+                    crossDocumentFieldData1: null, // Field data for first document
+                    crossDocumentFieldData2: null, // Field data for second document
+                    crossDocumentSearchResults1: [], // Search results for first document
+                    crossDocumentSearchResults2: [], // Search results for second document
+                    crossDocumentCanvasContext1: null, // Canvas context for first document
+                    crossDocumentCanvasContext2: null, // Canvas context for second document
+                    crossDocumentResult1: null, // Result object for first document
+                    crossDocumentResult2: null, // Result object for second document
                     requiredDocumentsCache: [], // Cache for required documents from LC context
                     loadingRequiredDocuments: false, // Loading state for required documents parsing
                     parsingRequiredDocuments: false, // Flag to prevent simultaneous parsing calls
@@ -10776,7 +11120,11 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                                         severity: result.severity,
                                         isCompliant: result.isCompliant,
                                         rule: result.rule,
-                                        hash: result.hash
+                                        hash: result.hash,
+                                        // Preserve cross-document specific fields
+                                        documentName: result.documentName || result.document_name || '',
+                                        expectedSource: result.expectedSource || result.expected_source || '',
+                                        expectedValue: result.expectedValue || result.expected_value || ''
                                     }));
 
                                     console.log(`✅ Discrepancy check complete. Found ${this.discrepancyResults.length} results`);
@@ -10819,22 +11167,15 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     if (!this.viewingDiscrepancy) return '';
                     
                     const lcValue = this.viewingDiscrepancy.lcValue || '';
+                    const fieldName = this.viewingDiscrepancy.field || '';
                     const swiftMessage = this.generateSwiftMessage(this.viewingDiscrepancy);
                     
                     if (!lcValue) {
                         return `<pre>${swiftMessage}</pre>`;
                     }
                     
-                    // Escape HTML and highlight all occurrences of lcValue
-                    let highlighted = swiftMessage
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;');
-                    
-                    const escapedValue = lcValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`(${escapedValue})`, 'gi');
-                    highlighted = highlighted.replace(regex, '<mark style="background-color: #fbbf24; font-weight: bold; padding: 2px 4px; border-radius: 2px;">$1</mark>');
-                    
-                    return `<pre>${highlighted}</pre>`;
+                    // Use the same highlightSwiftMessage function for consistency
+                    return `<pre>${this.highlightSwiftMessage(swiftMessage, lcValue, fieldName)}</pre>`;
                 },
 
                 generateSwiftMessage(discrepancy) {
@@ -11789,6 +12130,210 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     });
                 },
 
+                // Open Cross-Document Preview (for comparing two documents)
+                openCrossDocumentPreview(discrepancy) {
+                    console.log('🔍 ===== OPENING CROSS-DOCUMENT PREVIEW =====');
+                    console.log('Cross-document discrepancy data:', discrepancy);
+                    
+                    // Set viewing state
+                    this.viewingDiscrepancy = discrepancy;
+                    this.selectedDiscrepancyPreview = discrepancy;
+                    this.discrepancyPreviewType = 'cross_document';
+                    this.showDiscrepancyPreview = true;
+                    
+                    if (!this.results || this.results.length === 0) {
+                        console.error('❌ No results available');
+                        return;
+                    }
+
+                    const fieldName = discrepancy.field;
+                    const document1Name = discrepancy.documentName || '';
+                    const document2Name = discrepancy.expectedSource || '';
+                    const document1Value = discrepancy.documentValue;
+                    const document2Value = discrepancy.expectedValue || discrepancy.lcValue;
+                    
+                    console.log('🔍 Looking for documents:', document1Name, 'and', document2Name);
+                    
+                    // Find both documents
+                    let result1 = null;
+                    let result2 = null;
+                    
+                    // Try to find by document name first
+                    if (document1Name) {
+                        result1 = this.results.find(r => {
+                            const docType = typeof r.documentType === 'object' ? r.documentType.document_type : r.documentType;
+                            return docType === document1Name || r.name === document1Name || r.name?.includes(document1Name);
+                        });
+                    }
+                    
+                    if (document2Name) {
+                        result2 = this.results.find(r => {
+                            const docType = typeof r.documentType === 'object' ? r.documentType.document_type : r.documentType;
+                            return docType === document2Name || r.name === document2Name || r.name?.includes(document2Name);
+                        });
+                    }
+                    
+                    // If not found by name, try to find by documentType if it's not "Cross-Document"
+                    if (!result1 && discrepancy.documentType !== 'Cross-Document') {
+                        result1 = this.results.find(r => {
+                            const docType = typeof r.documentType === 'object' ? r.documentType.document_type : r.documentType;
+                            return docType === discrepancy.documentType;
+                        });
+                    }
+                    
+                    // If still not found, use first result that has the field value
+                    if (!result1) {
+                        result1 = this.results.find(r => {
+                            const fields = r.extractedFields || {};
+                            return Object.values(fields).some(field => 
+                                field && (field.value === document1Value || field.exact_text === document1Value)
+                            );
+                        });
+                    }
+                    
+                    if (!result2) {
+                        result2 = this.results.find(r => {
+                            if (r === result1) return false; // Don't use same document
+                            const fields = r.extractedFields || {};
+                            return Object.values(fields).some(field => 
+                                field && (field.value === document2Value || field.exact_text === document2Value)
+                            );
+                        });
+                    }
+                    
+                    if (!result1 || !result2) {
+                        console.error('❌ Could not find both documents for cross-document preview');
+                        console.log('Available results:', this.results.map(r => ({
+                            name: r.name,
+                            documentType: typeof r.documentType === 'object' ? r.documentType.document_type : r.documentType
+                        })));
+                        return;
+                    }
+
+                    console.log('✅ Found both documents:', result1.name, 'and', result2.name);
+                    
+                    // Store results
+                    this.crossDocumentResult1 = result1;
+                    this.crossDocumentResult2 = result2;
+                    
+                    // Find field data in both documents
+                    let fieldData1 = result1.extractedFields[fieldName];
+                    let fieldData2 = result2.extractedFields[fieldName];
+                    
+                    // Try case-insensitive matching
+                    if (!fieldData1) {
+                        const fieldNameLower = fieldName.toLowerCase().trim();
+                        const availableFields1 = Object.keys(result1.extractedFields || {});
+                        const caseInsensitiveMatch1 = availableFields1.find(f => 
+                            f.toLowerCase().trim() === fieldNameLower
+                        );
+                        if (caseInsensitiveMatch1) {
+                            fieldData1 = result1.extractedFields[caseInsensitiveMatch1];
+                        }
+                    }
+                    
+                    if (!fieldData2) {
+                        const fieldNameLower = fieldName.toLowerCase().trim();
+                        const availableFields2 = Object.keys(result2.extractedFields || {});
+                        const caseInsensitiveMatch2 = availableFields2.find(f => 
+                            f.toLowerCase().trim() === fieldNameLower
+                        );
+                        if (caseInsensitiveMatch2) {
+                            fieldData2 = result2.extractedFields[caseInsensitiveMatch2];
+                        }
+                    }
+                    
+                    // Create basic field data if not found
+                    if (!fieldData1) {
+                        fieldData1 = {
+                            value: document1Value,
+                            bounding_page: 0,
+                            bounding_box: null,
+                            exact_text: document1Value
+                        };
+                    }
+                    
+                    if (!fieldData2) {
+                        fieldData2 = {
+                            value: document2Value,
+                            bounding_page: 0,
+                            bounding_box: null,
+                            exact_text: document2Value
+                        };
+                    }
+                    
+                    // Store field data
+                    this.crossDocumentFieldData1 = fieldData1;
+                    this.crossDocumentFieldData2 = fieldData2;
+                    
+                    // Determine initial page indices
+                    let initialPageIndex1 = 0;
+                    let initialPageIndex2 = 0;
+                    
+                    if (fieldData1.bounding_page !== undefined && fieldData1.bounding_page !== null) {
+                        if (fieldData1.bounding_page < 100) {
+                            initialPageIndex1 = fieldData1.bounding_page;
+                        } else {
+                            if (result1.pages && result1.pages.length > 0) {
+                                initialPageIndex1 = result1.pages.indexOf(fieldData1.bounding_page);
+                                if (initialPageIndex1 === -1) initialPageIndex1 = 0;
+                            } else {
+                                initialPageIndex1 = fieldData1.bounding_page - 1;
+                            }
+                        }
+                    }
+                    
+                    if (fieldData2.bounding_page !== undefined && fieldData2.bounding_page !== null) {
+                        if (fieldData2.bounding_page < 100) {
+                            initialPageIndex2 = fieldData2.bounding_page;
+                        } else {
+                            if (result2.pages && result2.pages.length > 0) {
+                                initialPageIndex2 = result2.pages.indexOf(fieldData2.bounding_page);
+                                if (initialPageIndex2 === -1) initialPageIndex2 = 0;
+                            } else {
+                                initialPageIndex2 = fieldData2.bounding_page - 1;
+                            }
+                        }
+                    }
+                    
+                    // Load preview images
+                    if (result1.previewImages && result1.previewImages.length > 0) {
+                        const pageIndex1 = Math.max(0, Math.min(initialPageIndex1, result1.previewImages.length - 1));
+                        this.crossDocumentPreviewImage1 = result1.previewImages[pageIndex1];
+                        console.log(`📄 Loading preview image 1 for relative page ${pageIndex1}`);
+                    } else {
+                        console.warn('⚠️ No preview images available for document 1');
+                        this.crossDocumentPreviewImage1 = null;
+                    }
+                    
+                    if (result2.previewImages && result2.previewImages.length > 0) {
+                        const pageIndex2 = Math.max(0, Math.min(initialPageIndex2, result2.previewImages.length - 1));
+                        this.crossDocumentPreviewImage2 = result2.previewImages[pageIndex2];
+                        console.log(`📄 Loading preview image 2 for relative page ${pageIndex2}`);
+                    } else {
+                        console.warn('⚠️ No preview images available for document 2');
+                        this.crossDocumentPreviewImage2 = null;
+                    }
+                    
+                    // Reset image loaded states
+                    this.crossDocumentImage1Loaded = false;
+                    this.crossDocumentImage2Loaded = false;
+                    this.crossDocumentSearchResults1 = [];
+                    this.crossDocumentSearchResults2 = [];
+                    
+                    // Trigger search for coordinates after modal opens
+                    this.$nextTick(() => {
+                        if (fieldData1 && document1Value) {
+                            console.log('✅ Triggering coordinate search for document 1');
+                            this.searchCrossDocumentFieldCoordinates(fieldName, document1Value, fieldData1, result1, 1);
+                        }
+                        if (fieldData2 && document2Value) {
+                            console.log('✅ Triggering coordinate search for document 2');
+                            this.searchCrossDocumentFieldCoordinates(fieldName, document2Value, fieldData2, result2, 2);
+                        }
+                    });
+                },
+
                 // Close Discrepancy Preview Modal
                 closeDiscrepancyPreview() {
                     this.showDiscrepancyPreview = false;
@@ -11799,11 +12344,132 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     this.discrepancySearchResults = [];
                     this.viewingDiscrepancy = null; // Clear viewing discrepancy state to prevent affecting View Details modal
                     
+                    // Clear cross-document preview data
+                    this.crossDocumentPreviewImage1 = null;
+                    this.crossDocumentPreviewImage2 = null;
+                    this.crossDocumentImage1Loaded = false;
+                    this.crossDocumentImage2Loaded = false;
+                    this.crossDocumentFieldData1 = null;
+                    this.crossDocumentFieldData2 = null;
+                    this.crossDocumentSearchResults1 = [];
+                    this.crossDocumentSearchResults2 = [];
+                    this.crossDocumentResult1 = null;
+                    this.crossDocumentResult2 = null;
+                    
                     // Clear canvas
                     if (this.discrepancyCanvasContext && this.$refs.discrepancyCanvas) {
                         this.discrepancyCanvasContext.clearRect(0, 0, 
                             this.$refs.discrepancyCanvas.width, 
                             this.$refs.discrepancyCanvas.height);
+                    }
+                    
+                    // Clear cross-document canvases
+                    if (this.crossDocumentCanvasContext1 && this.$refs.crossDocumentCanvas1) {
+                        this.crossDocumentCanvasContext1.clearRect(0, 0, 
+                            this.$refs.crossDocumentCanvas1.width, 
+                            this.$refs.crossDocumentCanvas1.height);
+                    }
+                    if (this.crossDocumentCanvasContext2 && this.$refs.crossDocumentCanvas2) {
+                        this.crossDocumentCanvasContext2.clearRect(0, 0, 
+                            this.$refs.crossDocumentCanvas2.width, 
+                            this.$refs.crossDocumentCanvas2.height);
+                    }
+                    
+                    // Reset zoom levels
+                    this.discrepancyZoomLevel = 1;
+                    this.crossDocumentZoomLevel1 = 1;
+                    this.crossDocumentZoomLevel2 = 1;
+                },
+                
+                // Zoom functions for regular discrepancy preview
+                zoomDiscrepancyImage(direction) {
+                    if (direction === 'in' && this.discrepancyZoomLevel < 3) {
+                        this.discrepancyZoomLevel = Math.min(3, this.discrepancyZoomLevel + 0.25);
+                    } else if (direction === 'out' && this.discrepancyZoomLevel > 0.5) {
+                        this.discrepancyZoomLevel = Math.max(0.5, this.discrepancyZoomLevel - 0.25);
+                    }
+                    
+                    // Redraw canvas with new zoom level
+                    this.$nextTick(() => {
+                        if (this.discrepancySearchResults && this.discrepancySearchResults.length > 0) {
+                            this.highlightDiscrepancySearchResults(this.discrepancySearchResults);
+                        } else if (this.discrepancyFieldData?.bounding_box) {
+                            this.drawDiscrepancyBoundingBox(this.discrepancyFieldData.bounding_box, true);
+                        }
+                    });
+                },
+                
+                resetDiscrepancyZoom() {
+                    this.discrepancyZoomLevel = 1;
+                    
+                    // Redraw canvas
+                    this.$nextTick(() => {
+                        if (this.discrepancySearchResults && this.discrepancySearchResults.length > 0) {
+                            this.highlightDiscrepancySearchResults(this.discrepancySearchResults);
+                        } else if (this.discrepancyFieldData?.bounding_box) {
+                            this.drawDiscrepancyBoundingBox(this.discrepancyFieldData.bounding_box, true);
+                        }
+                    });
+                },
+                
+                handleDiscrepancyZoom(event) {
+                    if (event.ctrlKey || event.metaKey) {
+                        event.preventDefault();
+                        if (event.deltaY < 0) {
+                            this.zoomDiscrepancyImage('in');
+                        } else {
+                            this.zoomDiscrepancyImage('out');
+                        }
+                    }
+                },
+                
+                // Zoom functions for cross-document preview
+                zoomCrossDocumentImage(documentNumber, direction) {
+                    const zoomProperty = documentNumber === 1 ? 'crossDocumentZoomLevel1' : 'crossDocumentZoomLevel2';
+                    const searchResultsProperty = documentNumber === 1 ? 'crossDocumentSearchResults1' : 'crossDocumentSearchResults2';
+                    const fieldDataProperty = documentNumber === 1 ? 'crossDocumentFieldData1' : 'crossDocumentFieldData2';
+                    
+                    if (direction === 'in' && this[zoomProperty] < 3) {
+                        this[zoomProperty] = Math.min(3, this[zoomProperty] + 0.25);
+                    } else if (direction === 'out' && this[zoomProperty] > 0.5) {
+                        this[zoomProperty] = Math.max(0.5, this[zoomProperty] - 0.25);
+                    }
+                    
+                    // Redraw canvas with new zoom level
+                    this.$nextTick(() => {
+                        if (this[searchResultsProperty] && this[searchResultsProperty].length > 0) {
+                            this.highlightCrossDocumentSearchResults(this[searchResultsProperty], documentNumber);
+                        } else if (this[fieldDataProperty]?.bounding_box) {
+                            this.drawCrossDocumentBoundingBox(this[fieldDataProperty].bounding_box, documentNumber, true);
+                        }
+                    });
+                },
+                
+                resetCrossDocumentZoom(documentNumber) {
+                    const zoomProperty = documentNumber === 1 ? 'crossDocumentZoomLevel1' : 'crossDocumentZoomLevel2';
+                    const searchResultsProperty = documentNumber === 1 ? 'crossDocumentSearchResults1' : 'crossDocumentSearchResults2';
+                    const fieldDataProperty = documentNumber === 1 ? 'crossDocumentFieldData1' : 'crossDocumentFieldData2';
+                    
+                    this[zoomProperty] = 1;
+                    
+                    // Redraw canvas
+                    this.$nextTick(() => {
+                        if (this[searchResultsProperty] && this[searchResultsProperty].length > 0) {
+                            this.highlightCrossDocumentSearchResults(this[searchResultsProperty], documentNumber);
+                        } else if (this[fieldDataProperty]?.bounding_box) {
+                            this.drawCrossDocumentBoundingBox(this[fieldDataProperty].bounding_box, documentNumber, true);
+                        }
+                    });
+                },
+                
+                handleCrossDocumentZoom(documentNumber, event) {
+                    if (event.ctrlKey || event.metaKey) {
+                        event.preventDefault();
+                        if (event.deltaY < 0) {
+                            this.zoomCrossDocumentImage(documentNumber, 'in');
+                        } else {
+                            this.zoomCrossDocumentImage(documentNumber, 'out');
+                        }
                     }
                 },
 
@@ -11826,22 +12492,317 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         }
                     });
                 },
+
+                // Calculate bounding box when cross-document image 1 loads
+                onCrossDocumentImage1Load() {
+                    console.log('📸 Cross-document image 1 loaded');
+                    this.crossDocumentImage1Loaded = true;
+                    
+                    this.$nextTick(() => {
+                        this.setupCrossDocumentCanvas1();
+                        
+                        // If we have search results, highlight them
+                        if (this.crossDocumentSearchResults1 && this.crossDocumentSearchResults1.length > 0) {
+                            console.log('🎨 Highlighting search results on cross-document canvas 1');
+                            this.highlightCrossDocumentSearchResults(this.crossDocumentSearchResults1, 1);
+                        } else if (this.crossDocumentFieldData1?.bounding_box) {
+                            // Fallback: draw bounding box from field data if available
+                            console.log('🎨 Drawing bounding box from field data for document 1');
+                            this.drawCrossDocumentBoundingBox(this.crossDocumentFieldData1.bounding_box, 1, true);
+                        }
+                    });
+                },
+
+                // Calculate bounding box when cross-document image 2 loads
+                onCrossDocumentImage2Load() {
+                    console.log('📸 Cross-document image 2 loaded');
+                    this.crossDocumentImage2Loaded = true;
+                    
+                    this.$nextTick(() => {
+                        this.setupCrossDocumentCanvas2();
+                        
+                        // If we have search results, highlight them
+                        if (this.crossDocumentSearchResults2 && this.crossDocumentSearchResults2.length > 0) {
+                            console.log('🎨 Highlighting search results on cross-document canvas 2');
+                            this.highlightCrossDocumentSearchResults(this.crossDocumentSearchResults2, 2);
+                        } else if (this.crossDocumentFieldData2?.bounding_box) {
+                            // Fallback: draw bounding box from field data if available
+                            console.log('🎨 Drawing bounding box from field data for document 2');
+                            this.drawCrossDocumentBoundingBox(this.crossDocumentFieldData2.bounding_box, 2, true);
+                        }
+                    });
+                },
+
+                // Setup cross-document canvas 1
+                setupCrossDocumentCanvas1() {
+                    const canvas = this.$refs.crossDocumentCanvas1;
+                    const img = this.$refs.crossDocumentDocImage1;
+                    
+                    if (!canvas || !img) {
+                        console.warn('⚠️ Cross-document canvas 1 or image ref not available');
+                        setTimeout(() => {
+                            if (this.$refs.crossDocumentCanvas1 && this.$refs.crossDocumentDocImage1) {
+                                this.setupCrossDocumentCanvas1();
+                            }
+                        }, 100);
+                        return;
+                    }
+
+                    // Wait for image to have dimensions
+                    if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        console.log('⏳ Cross-document image 1 not fully loaded, waiting...');
+                        setTimeout(() => this.setupCrossDocumentCanvas1(), 100);
+                        return;
+                    }
+
+                    // Setup canvas to match displayed image dimensions
+                    canvas.width = img.clientWidth || img.offsetWidth;
+                    canvas.height = img.clientHeight || img.offsetHeight;
+                    
+                    console.log('📐 Cross-document canvas 1 size set to:', canvas.width, 'x', canvas.height);
+                    console.log('📐 Image 1 natural size:', img.naturalWidth, 'x', img.naturalHeight);
+                    
+                    this.crossDocumentCanvasContext1 = canvas.getContext('2d');
+                },
+
+                // Setup cross-document canvas 2
+                setupCrossDocumentCanvas2() {
+                    const canvas = this.$refs.crossDocumentCanvas2;
+                    const img = this.$refs.crossDocumentDocImage2;
+                    
+                    if (!canvas || !img) {
+                        console.warn('⚠️ Cross-document canvas 2 or image ref not available');
+                        setTimeout(() => {
+                            if (this.$refs.crossDocumentCanvas2 && this.$refs.crossDocumentDocImage2) {
+                                this.setupCrossDocumentCanvas2();
+                            }
+                        }, 100);
+                        return;
+                    }
+
+                    // Wait for image to have dimensions
+                    if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        console.log('⏳ Cross-document image 2 not fully loaded, waiting...');
+                        setTimeout(() => this.setupCrossDocumentCanvas2(), 100);
+                        return;
+                    }
+
+                    // Setup canvas to match displayed image dimensions
+                    canvas.width = img.clientWidth || img.offsetWidth;
+                    canvas.height = img.clientHeight || img.offsetHeight;
+                    
+                    console.log('📐 Cross-document canvas 2 size set to:', canvas.width, 'x', canvas.height);
+                    console.log('📐 Image 2 natural size:', img.naturalWidth, 'x', img.naturalHeight);
+                    
+                    this.crossDocumentCanvasContext2 = canvas.getContext('2d');
+                },
+
+                // Draw bounding box on cross-document canvas
+                drawCrossDocumentBoundingBox(box, documentNumber, clearPrevious = false) {
+                    const canvas = documentNumber === 1 ? this.$refs.crossDocumentCanvas1 : this.$refs.crossDocumentCanvas2;
+                    const img = documentNumber === 1 ? this.$refs.crossDocumentDocImage1 : this.$refs.crossDocumentDocImage2;
+                    const context = documentNumber === 1 ? this.crossDocumentCanvasContext1 : this.crossDocumentCanvasContext2;
+                    
+                    if (!canvas || !img || !context) {
+                        console.warn(`⚠️ Cannot draw bounding box for document ${documentNumber}: canvas/image/context not available`);
+                        return;
+                    }
+                    
+                    if (!Array.isArray(box) || (box.length !== 4 && box.length !== 8)) {
+                        console.error(`❌ Invalid bounding box format for document ${documentNumber}`);
+                        return;
+                    }
+
+                    if (clearPrevious) {
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+
+                    let x1_inches, y1_inches, x2_inches, y2_inches;
+                    
+                    // Handle different bounding box formats
+                    if (box.length === 8) {
+                        // Polygon format: convert to rectangle
+                        const xCoords = [box[0], box[2], box[4], box[6]];
+                        const yCoords = [box[1], box[3], box[5], box[7]];
+                        x1_inches = Math.min(...xCoords);
+                        y1_inches = Math.min(...yCoords);
+                        x2_inches = Math.max(...xCoords);
+                        y2_inches = Math.max(...yCoords);
+                    } else {
+                        // Rectangle format
+                        [x1_inches, y1_inches, x2_inches, y2_inches] = box;
+                    }
+
+                    // Check if all zeros
+                    if (x1_inches === 0 && y1_inches === 0 && x2_inches === 0 && y2_inches === 0) {
+                        console.warn(`⚠️ Bounding box is all zeros for document ${documentNumber}`);
+                        return;
+                    }
+                    
+                    // Check if valid
+                    if (x2_inches <= x1_inches || y2_inches <= y1_inches) {
+                        console.error(`❌ Invalid bounding box coordinates for document ${documentNumber}`);
+                        return;
+                    }
+
+                    // Convert from inches to pixels (assuming 72 DPI)
+                    const DPI = 72;
+                    const x1_pixels = x1_inches * DPI;
+                    const y1_pixels = y1_inches * DPI;
+                    const x2_pixels = x2_inches * DPI;
+                    const y2_pixels = y2_inches * DPI;
+
+                    const width = x2_pixels - x1_pixels;
+                    const height = y2_pixels - y1_pixels;
+
+                    // Get image dimensions
+                    const imgNaturalWidth = img.naturalWidth;
+                    const imgNaturalHeight = img.naturalHeight;
+                    const imgDisplayWidth = img.clientWidth || img.offsetWidth;
+                    const imgDisplayHeight = img.clientHeight || img.offsetHeight;
+
+                    // Scale coordinates to match displayed image size
+                    const scaleX = imgDisplayWidth / imgNaturalWidth;
+                    const scaleY = imgDisplayHeight / imgNaturalHeight;
+
+                    const scaledX = x1_pixels * scaleX;
+                    const scaledY = y1_pixels * scaleY;
+                    const scaledWidth = width * scaleX;
+                    const scaledHeight = height * scaleY;
+
+                    // Draw yellow highlight (same as regular discrepancy preview)
+                    context.fillStyle = 'rgba(255, 235, 59, 0.4)';
+                    context.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                    
+                    console.log(`✅ Drew bounding box for document ${documentNumber}: x=${scaledX.toFixed(2)}, y=${scaledY.toFixed(2)}, w=${scaledWidth.toFixed(2)}, h=${scaledHeight.toFixed(2)}`);
+                },
+
+                // Highlight search results on cross-document canvas
+                highlightCrossDocumentSearchResults(matches, documentNumber) {
+                    console.log(`🎨 === HIGHLIGHTING CROSS-DOCUMENT SEARCH RESULTS (Document ${documentNumber}) ===`);
+                    console.log(`📦 Highlighting ${matches.length} matches`);
+                    
+                    if (!matches || matches.length === 0) {
+                        console.warn(`⚠️ No matches to highlight for document ${documentNumber}`);
+                        return;
+                    }
+                    
+                    const canvas = documentNumber === 1 ? this.$refs.crossDocumentCanvas1 : this.$refs.crossDocumentCanvas2;
+                    const img = documentNumber === 1 ? this.$refs.crossDocumentDocImage1 : this.$refs.crossDocumentDocImage2;
+                    const context = documentNumber === 1 ? this.crossDocumentCanvasContext1 : this.crossDocumentCanvasContext2;
+                    const result = documentNumber === 1 ? this.crossDocumentResult1 : this.crossDocumentResult2;
+                    const previewImage = documentNumber === 1 ? this.crossDocumentPreviewImage1 : this.crossDocumentPreviewImage2;
+                    
+                    if (!canvas || !img || !context) {
+                        console.warn(`⚠️ Canvas/image/context not available for document ${documentNumber}, will retry after setup`);
+                        this.$nextTick(() => {
+                            if (documentNumber === 1) {
+                                this.setupCrossDocumentCanvas1();
+                            } else {
+                                this.setupCrossDocumentCanvas2();
+                            }
+                            if (context) {
+                                this.highlightCrossDocumentSearchResults(matches, documentNumber);
+                            }
+                        });
+                        return;
+                    }
+                    
+                    // Get the currently displayed page (absolute page number)
+                    const currentAbsolutePage = this.getCurrentCrossDocumentAbsolutePage(result, previewImage);
+                    console.log(`📄 Current displayed absolute page for document ${documentNumber}: ${currentAbsolutePage}`);
+                    console.log(`📄 Result pages array:`, result.pages);
+                    console.log(`📄 Preview image index:`, result.previewImages?.indexOf(previewImage));
+                    
+                    // Clear canvas first
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Merge matches into blocks
+                    const blocks = this.mergeDiscrepancyMatches(matches);
+                    
+                    console.log(`✅ Created ${blocks.length} blocks from ${matches.length} matches for document ${documentNumber}`);
+                    console.log(`📦 Blocks with pages:`, blocks.map(b => ({ page: b.bounding_page, bbox: b.bounding_box })));
+                    
+                    // Only highlight blocks that are on the currently displayed page
+                    let highlightedCount = 0;
+                    blocks.forEach((block, index) => {
+                        console.log(`🔍 Checking block ${index + 1}: page ${block.bounding_page} vs current ${currentAbsolutePage}`);
+                        if (block.bounding_page === currentAbsolutePage) {
+                            try {
+                                console.log(`✅ Drawing bounding box for block ${index + 1} on page ${block.bounding_page}`);
+                                this.drawCrossDocumentBoundingBox(block.bounding_box, documentNumber, false);
+                                highlightedCount++;
+                                console.log(`✅ Highlighted block ${index + 1} on page ${block.bounding_page} for document ${documentNumber}`);
+                            } catch (error) {
+                                console.error(`❌ Error highlighting block ${index + 1} for document ${documentNumber}:`, error);
+                            }
+                        } else {
+                            console.log(`⏭️ Skipping block ${index + 1} on page ${block.bounding_page} (not current page ${currentAbsolutePage}) for document ${documentNumber}`);
+                        }
+                    });
+                    
+                    if (highlightedCount === 0 && blocks.length > 0) {
+                        console.warn(`⚠️ No blocks highlighted! Current page: ${currentAbsolutePage}, Block pages: ${blocks.map(b => b.bounding_page).join(', ')}`);
+                        // Try to highlight the first block anyway if page matching fails
+                        console.log(`🔄 Attempting to highlight first block anyway...`);
+                        try {
+                            this.drawCrossDocumentBoundingBox(blocks[0].bounding_box, documentNumber, false);
+                            console.log(`✅ Highlighted first block as fallback`);
+                        } catch (error) {
+                            console.error(`❌ Error in fallback highlight:`, error);
+                        }
+                    }
+                    
+                    console.log(`✅ Highlighted ${highlightedCount} blocks on current page ${currentAbsolutePage} for document ${documentNumber}`);
+                },
+
+                // Get the absolute page number of the currently displayed cross-document preview image
+                getCurrentCrossDocumentAbsolutePage(result, previewImage) {
+                    if (!result || !previewImage) {
+                        return null;
+                    }
+                    
+                    const previewIndex = result.previewImages?.indexOf(previewImage);
+                    
+                    if (previewIndex === -1 || previewIndex === undefined) {
+                        console.warn('⚠️ Could not find preview image index');
+                        return null;
+                    }
+                    
+                    if (result.pages && result.pages.length > previewIndex) {
+                        const absolutePage = result.pages[previewIndex];
+                        return absolutePage;
+                    } else {
+                        const absolutePage = previewIndex + 1;
+                        return absolutePage;
+                    }
+                },
                 
                 // Setup discrepancy canvas
                 setupDiscrepancyCanvas() {
-                        const canvas = this.$refs.discrepancyCanvas;
-                        const img = this.$refs.discrepancyDocImage;
-                        
-                        if (!canvas || !img) {
+                    const canvas = this.$refs.discrepancyCanvas;
+                    const img = this.$refs.discrepancyDocImage;
+                    
+                    if (!canvas || !img) {
                         console.warn('⚠️ Canvas or image ref not available');
-                            return;
-                        }
+                        return;
+                    }
 
-                        // Setup canvas to match image dimensions
-                        canvas.width = img.clientWidth || img.offsetWidth;
-                        canvas.height = img.clientHeight || img.offsetHeight;
-                        
+                    // Wait for image to have dimensions
+                    if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        console.log('⏳ Image not fully loaded, waiting...');
+                        setTimeout(() => this.setupDiscrepancyCanvas(), 100);
+                        return;
+                    }
+
+                    // Setup canvas to match displayed image dimensions
+                    // The CSS transform will scale both image and canvas together
+                    canvas.width = img.clientWidth || img.offsetWidth;
+                    canvas.height = img.clientHeight || img.offsetHeight;
+                    
                     console.log('📐 Discrepancy canvas size set to:', canvas.width, 'x', canvas.height);
+                    console.log('📐 Image natural size:', img.naturalWidth, 'x', img.naturalHeight);
+                    console.log('📐 Image client size:', img.clientWidth, 'x', img.clientHeight);
                     
                     // Store context for later use
                     this.discrepancyCanvasContext = canvas.getContext('2d');
@@ -11922,7 +12883,7 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                 },
 
                 // Highlight LC value in SWIFT message
-                highlightSwiftMessage(swiftMessage, lcValue) {
+                highlightSwiftMessage(swiftMessage, lcValue, fieldName) {
                     if (!swiftMessage || !lcValue) {
                         return swiftMessage || '';
                     }
@@ -11935,17 +12896,176 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     };
                     
                     const escapedMessage = escapeHtml(swiftMessage);
-                    const escapedValue = escapeHtml(lcValue);
                     
-                    // Try to highlight first occurrence only
-                    const escapedPattern = escapedValue.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
-                    const firstMatchRegex = new RegExp(`(${escapedPattern})`, 'i');
+                    // Check if this is a date field (Issue Date, etc.)
+                    const isDateField = fieldName && (
+                        fieldName.toLowerCase().includes('issue date') ||
+                        fieldName.toLowerCase().includes('expiry date') ||
+                        fieldName.toLowerCase().includes('shipment date') ||
+                        fieldName.toLowerCase().includes('date')
+                    );
                     
-                    if (firstMatchRegex.test(escapedMessage)) {
-                        return escapedMessage.replace(firstMatchRegex, '<mark class=\"bg-yellow-400 text-gray-900 font-bold px-2 py-1 rounded shadow-sm border-2 border-yellow-500\">$1</mark>');
+                    // Check if this is an amount/numeric field
+                    const isAmountField = fieldName && (
+                        fieldName.toLowerCase().includes('amount') ||
+                        fieldName.toLowerCase().includes('goods value') ||
+                        fieldName.toLowerCase().includes('value') ||
+                        fieldName.toLowerCase().includes('price') ||
+                        fieldName.toLowerCase().includes('total')
+                    );
+                    
+                    // Prepare patterns to match - include original value and format conversions
+                    let patternsToMatch = [lcValue];
+                    
+                    if (isDateField) {
+                        // Convert YYYY-MM-DD to YYMMDD format (for SWIFT :31C:210429)
+                        const yyyyMMddRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+                        const match = lcValue.match(yyyyMMddRegex);
+                        if (match) {
+                            const year = match[1];
+                            const month = match[2];
+                            const day = match[3];
+                            // Convert to YYMMDD format
+                            const yyMMdd = year.substring(2) + month + day;
+                            patternsToMatch.push(yyMMdd);
+                        }
+                        
+                        // Convert YYMMDD to YYYY-MM-DD format (in case SWIFT has YYYY-MM-DD)
+                        const yyMMddRegex = /^(\d{2})(\d{2})(\d{2})$/;
+                        const match2 = lcValue.match(yyMMddRegex);
+                        if (match2) {
+                            const yy = match2[1];
+                            const mm = match2[2];
+                            const dd = match2[3];
+                            // Assume 20XX for years 00-99, adjust if needed
+                            const yyyy = parseInt(yy) < 50 ? '20' + yy : '19' + yy;
+                            const yyyyMMdd = yyyy + '-' + mm + '-' + dd;
+                            patternsToMatch.push(yyyyMMdd);
+                        }
                     }
                     
-                    return escapedMessage;
+                    if (isAmountField) {
+                        // Extract numeric part from lcValue (handle currency prefixes, spaces, etc.)
+                        // Match numbers with decimal part (e.g., 52954.30, 52954,30, 58946.83)
+                        const numericMatch = lcValue.match(/(\d+(?:[.,]\d{1,2})?)/);
+                        if (numericMatch) {
+                            let numericValue = numericMatch[1];
+                            
+                            // Handle thousands separators - if there are multiple separators,
+                            // the last one with 1-2 digits after is the decimal separator
+                            const partsByComma = numericValue.split(',');
+                            const partsByPeriod = numericValue.split('.');
+                            
+                            // Determine decimal separator
+                            let integerPart = '';
+                            let decimalPart = '';
+                            
+                            if (partsByComma.length > 1 && partsByPeriod.length > 1) {
+                                // Both separators present
+                                if (partsByComma[partsByComma.length - 1].length <= 2) {
+                                    // Comma is decimal separator
+                                    integerPart = partsByComma.slice(0, -1).join('').replace(/\./g, '');
+                                    decimalPart = partsByComma[partsByComma.length - 1];
+                                } else if (partsByPeriod[partsByPeriod.length - 1].length <= 2) {
+                                    // Period is decimal separator
+                                    integerPart = partsByPeriod.slice(0, -1).join('').replace(/,/g, '');
+                                    decimalPart = partsByPeriod[partsByPeriod.length - 1];
+                                } else {
+                                    // No decimal, just thousands separators
+                                    integerPart = numericValue.replace(/[,.]/g, '');
+                                }
+                            } else if (partsByComma.length > 1) {
+                                // Only comma
+                                if (partsByComma[partsByComma.length - 1].length <= 2) {
+                                    // Decimal separator
+                                    integerPart = partsByComma.slice(0, -1).join('');
+                                    decimalPart = partsByComma[partsByComma.length - 1];
+                                } else {
+                                    // Thousands separator
+                                    integerPart = numericValue.replace(/,/g, '');
+                                }
+                            } else if (partsByPeriod.length > 1) {
+                                // Only period
+                                if (partsByPeriod[partsByPeriod.length - 1].length <= 2) {
+                                    // Decimal separator
+                                    integerPart = partsByPeriod.slice(0, -1).join('');
+                                    decimalPart = partsByPeriod[partsByPeriod.length - 1];
+                                } else {
+                                    // Thousands separator
+                                    integerPart = numericValue.replace(/\./g, '');
+                                }
+                            } else {
+                                // No separators
+                                integerPart = numericValue;
+                            }
+                            
+                            // Generate patterns for SWIFT format (comma as decimal separator)
+                            if (decimalPart) {
+                                // SWIFT format: integerPart,decimalPart (e.g., 52954,30)
+                                const swiftFormat = integerPart + ',' + decimalPart;
+                                patternsToMatch.push(swiftFormat);
+                                
+                                // Also try period format (e.g., 52954.30)
+                                const periodFormat = integerPart + '.' + decimalPart;
+                                patternsToMatch.push(periodFormat);
+                            } else {
+                                // No decimal part
+                                patternsToMatch.push(integerPart);
+                            }
+                        }
+                    }
+                    
+                    // Try to highlight all patterns - handle line breaks in SWIFT message
+                    // Only highlight the FIRST occurrence to avoid multiple highlights
+                    let highlightedMessage = escapedMessage;
+                    let hasHighlighted = false;
+                    
+                    for (const pattern of patternsToMatch) {
+                        if (hasHighlighted) break; // Stop if we've already highlighted
+                        
+                        const escapedValue = escapeHtml(pattern);
+                        
+                        // For text fields (like beneficiary names), handle line breaks
+                        // Split pattern into words to handle cases where text is split across lines
+                        const patternWords = pattern.trim().split(/\s+/);
+                        
+                        if (patternWords.length > 1) {
+                            // Multi-word pattern: create regex that allows line breaks between words
+                            // Escape each word and join with flexible whitespace (spaces, newlines, tabs)
+                            const escapedWords = patternWords.map(word => {
+                                // Escape special regex characters
+                                return escapeHtml(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            });
+                            
+                            // Join words with regex that matches any whitespace including newlines
+                            // Use 'i' flag only (not 'g') to match only first occurrence
+                            const flexiblePattern = escapedWords.join('[\\s\\n\\r\\t]+');
+                            const flexibleRegex = new RegExp(`(${flexiblePattern})`, 'i');
+                            
+                            // Test against original escaped message
+                            if (flexibleRegex.test(escapedMessage)) {
+                                // Replace only the first match (no global flag)
+                                highlightedMessage = escapedMessage.replace(flexibleRegex, '<mark class=\"bg-yellow-400 text-gray-900 font-bold px-2 py-1 rounded shadow-sm border-2 border-yellow-500\">$1</mark>');
+                                hasHighlighted = true;
+                                break; // Highlight first match found
+                            }
+                        } else {
+                            // Single word or simple pattern: standard matching
+                            const escapedPattern = escapedValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            // Use 'i' flag only (not 'g') to match only first occurrence
+                            const firstMatchRegex = new RegExp(`(${escapedPattern})`, 'i');
+                            
+                            // Test against original escaped message
+                            if (firstMatchRegex.test(escapedMessage)) {
+                                // Replace only the first match
+                                highlightedMessage = escapedMessage.replace(firstMatchRegex, '<mark class=\"bg-yellow-400 text-gray-900 font-bold px-2 py-1 rounded shadow-sm border-2 border-yellow-500\">$1</mark>');
+                                hasHighlighted = true;
+                                break; // Highlight first match found
+                            }
+                        }
+                    }
+                    
+                    return highlightedMessage;
                 },
 
                 // Search coordinates for discrepancy preview (integrated with working search functionality)
@@ -12100,6 +13220,163 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     } catch (error) {
                         console.error('❌ Error searching coordinates:', error);
                         this.discrepancySearchResults = [];
+                    }
+                },
+
+                // Search coordinates for cross-document preview (documentNumber: 1 or 2)
+                async searchCrossDocumentFieldCoordinates(fieldName, fieldValue, fieldData, result, documentNumber) {
+                    console.log(`🔍 === CROSS-DOCUMENT PREVIEW COORDINATE SEARCH STARTED (Document ${documentNumber}) ===`);
+                    console.log(`📝 Search parameters:`, { fieldName, fieldValue, fieldData, documentNumber });
+                    
+                    if (!fieldValue || !fieldValue.trim()) {
+                        console.warn(`❌ No value to search for document ${documentNumber}`);
+                        return;
+                    }
+
+                    // Clear previous search results for this document
+                    if (documentNumber === 1) {
+                        this.crossDocumentSearchResults1 = [];
+                    } else {
+                        this.crossDocumentSearchResults2 = [];
+                    }
+                    
+                    // Determine pages to search
+                    const page = (fieldData.bounding_page !== undefined && fieldData.bounding_page !== null) 
+                        ? fieldData.bounding_page + 1 
+                        : 1;
+                    const matchedDoc = result || this.results.find(doc => doc.pages?.includes(page));
+                    const relatedPages = matchedDoc ? matchedDoc.pages : [page];
+
+                    try {
+                        const requestData = {
+                            field_value: fieldValue.trim(),
+                            document_id: result?.fileName || matchedDoc?.fileName || 'current',
+                            search_mode: 'exact',
+                            boundingpage: relatedPages,
+                            exact_text: fieldData.exact_text || fieldValue,
+                        };
+
+                        console.log(`📤 Sending coordinate search request for document ${documentNumber}:`, requestData);
+
+                        const response = await fetch('/api/search_field_coordinates', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(requestData)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        const data = await response.json();
+                        console.log(`📥 Received coordinate search response for document ${documentNumber}:`, data);
+
+                        if (data.success && data.total_matches > 0) {
+                            console.log(`✅ Found ${data.total_matches} coordinate matches for document ${documentNumber}`);
+                            
+                            // Store matches for this document
+                            const matches = data.matches;
+                            if (documentNumber === 1) {
+                                this.crossDocumentSearchResults1 = matches;
+                            } else {
+                                this.crossDocumentSearchResults2 = matches;
+                            }
+                            
+                            // Select best match
+                            let bestMatch = data.best_match || matches[0];
+                            const searchLength = fieldValue.length;
+                            
+                            if (matches.length > 1 && searchLength >= 100) {
+                                let largestMatch = bestMatch;
+                                let largestArea = 0;
+                                
+                                matches.forEach((match) => {
+                                    const bbox = match.bounding_box;
+                                    let area = 0;
+                                    
+                                    if (bbox && bbox.length >= 4) {
+                                        if (bbox.length === 8) {
+                                            const x_coords = [bbox[0], bbox[2], bbox[4], bbox[6]];
+                                            const y_coords = [bbox[1], bbox[3], bbox[5], bbox[7]];
+                                            const width = Math.max(...x_coords) - Math.min(...x_coords);
+                                            const height = Math.max(...y_coords) - Math.min(...y_coords);
+                                            area = width * height;
+                                        } else {
+                                            const width = bbox[2] - bbox[0];
+                                            const height = bbox[3] - bbox[1];
+                                            area = width * height;
+                                        }
+                                    }
+                                    
+                                    if (area > largestArea) {
+                                        largestArea = area;
+                                        largestMatch = match;
+                                    }
+                                });
+                                
+                                bestMatch = largestMatch;
+                            }
+                            
+                            // Convert absolute page number to relative page index
+                            const absolutePage = bestMatch.bounding_page;
+                            let relativePageIndex = 0;
+                            
+                            if (result.pages && result.pages.length > 0) {
+                                relativePageIndex = result.pages.indexOf(absolutePage);
+                                if (relativePageIndex === -1) {
+                                    relativePageIndex = 0;
+                                    console.warn(`⚠️ Absolute page ${absolutePage} not found in pages array for document ${documentNumber}, using first page`);
+                                }
+                            } else {
+                                relativePageIndex = absolutePage - 1;
+                                if (relativePageIndex < 0) relativePageIndex = 0;
+                            }
+                            
+                            // Update preview image if needed
+                            if (result.previewImages && result.previewImages.length > relativePageIndex) {
+                                const newPreviewImage = result.previewImages[relativePageIndex];
+                                
+                                if (documentNumber === 1) {
+                                    if (this.crossDocumentPreviewImage1 !== newPreviewImage) {
+                                        this.crossDocumentImage1Loaded = false;
+                                        console.log(`📄 Updating preview image 1 to relative page ${relativePageIndex} (absolute page ${absolutePage})`);
+                                    }
+                                    this.crossDocumentPreviewImage1 = newPreviewImage;
+                                } else {
+                                    if (this.crossDocumentPreviewImage2 !== newPreviewImage) {
+                                        this.crossDocumentImage2Loaded = false;
+                                        console.log(`📄 Updating preview image 2 to relative page ${relativePageIndex} (absolute page ${absolutePage})`);
+                                    }
+                                    this.crossDocumentPreviewImage2 = newPreviewImage;
+                                }
+                                
+                                // Wait for image to load, then highlight
+                                this.$nextTick(() => {
+                                    if ((documentNumber === 1 && this.crossDocumentImage1Loaded) || 
+                                        (documentNumber === 2 && this.crossDocumentImage2Loaded)) {
+                                        // Image already loaded, highlight immediately
+                                        this.highlightCrossDocumentSearchResults(matches, documentNumber);
+                                    } else {
+                                        console.log(`⏳ Waiting for document ${documentNumber} image to load before highlighting`);
+                                    }
+                                });
+                            }
+                            
+                        } else {
+                            console.warn(`❌ No coordinates found for document ${documentNumber}:`, fieldValue);
+                            if (documentNumber === 1) {
+                                this.crossDocumentSearchResults1 = [];
+                            } else {
+                                this.crossDocumentSearchResults2 = [];
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`❌ Error searching coordinates for document ${documentNumber}:`, error);
+                        if (documentNumber === 1) {
+                            this.crossDocumentSearchResults1 = [];
+                        } else {
+                            this.crossDocumentSearchResults2 = [];
+                        }
                     }
                 },
                 

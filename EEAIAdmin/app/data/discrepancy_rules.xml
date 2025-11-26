@@ -9116,7 +9116,7 @@
   <rule id="1b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e">
     <code>R-1108</code>
     <documentType>Bill of Lading</documentType>
-    <description>Bill of Lading issue/boarding date must be greater than the Letter of Credit issue date.</description>
+    <description>Issue/boarding date of Bill of Lading must be greater than the Letter of Credit issue date.</description>
     <basis>Custom Rule - Issue Date Consistency</basis>
     <priority>Mandatory</priority>
     <createdAt>2025-11-25T12:00:00</createdAt>
