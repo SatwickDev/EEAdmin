@@ -352,33 +352,146 @@ chunking:
     - Use [0, 0, 0, 0] if no OCR coordinates available
     - Do NOT fabricate coordinates
     
-    ### 5. EXACT TEXT EXTRACTION (CRITICAL):
-    **exact_text field:** Captures exact text WITH field context for bounding box generation. MANDATORY: Include field codes/labels + all \n between label and value + STOP IMMEDIATELY AFTER THE VALUE LINE. DO NOT include any lines that come after the value. Preserve ALL formatting exactly as in OCR.
+    ### 5. EXACT TEXT EXTRACTION (CRITICAL - HIGHEST PRIORITY):
 
-    **RULE: STOP AFTER VALUE**
-    Once you extract the value line, STOP. Do NOT continue to next lines even if they seem related.
+    **exact_text field:** Provides positioning context for bounding box generation. This field is CRITICAL for the entire system - incorrect extraction causes complete failure of bounding box highlighting.
 
-    **INCLUDE:** 
-    Field codes (50:, 41A:) + field names + all \n and text between label and value + the exact value line ONLY.
+    **CORE PRINCIPLE:** Extract text EXACTLY as it appears in OCR. Copy character-by-character including all spaces, punctuation, \n, and formatting quirks. Never clean or normalize.
 
-    **EXCLUDE (CRITICAL):** 
-    ANY text after the value line ends. Branch info, locations, payment terms, or ANY content on lines below the value.
+    **EXTRACTION PRIORITY:**
 
-    **PREFERENCE:** 
-    When value appears multiple times, use occurrence with field code/label.
+    **Priority 1 - SWIFT Field Codes (ALWAYS PREFER):**
+    If SWIFT field code exists (50:, 41A:, 32B:, 31D:, 59:, etc.), use it:
+    - Field code must be within 1-3 lines DIRECTLY before the value
+    - If other data exists between field code and value, do NOT use that field code
+    - Include field code + all \n and intermediate text (only if no other data) + value line
+    - STOP immediately after value line ends - never include next line even if duplicate or related
 
-    **Examples:**
-    correct value: 'SPDBCNSH090' exact_text: '41A: Available With. By. FI BIC\nSPDBCNSH090' (STOPS at value line - does NOT include bank name, branch, location below)
+    **Priority 2 - Document Field Labels (SECOND CHOICE - 95% SEMANTIC MATCH REQUIRED):**
+    If no SWIFT code, look for document field labels with 95-100% semantic confidence:
 
-    correct value: 'SHANGHAI PUDONG DEVELOPMENT BANK' exact_text: '41A: Available With. By. FI BIC\nSPDBCNSH090\nSHANGHAI PUDONG DEVELOPMENT BANK' (STOPS at bank name - does NOT include branch, location below)
+    HIGH CONFIDENCE MATCHES (USE THESE):
+    - For "Consignee/Buyer/Importer" → Accept: "Consignee:", "Buyer:", "Ship To:", "Importer:", "Sold To:"
+    - For "Invoice_Number" → Accept: "Invoice No:", "Invoice Number:", "Inv No:", "Invoice #:"
+    - For "Currency" → Accept: "Currency:", "CCY:", "Curr:"
+    - For "Number_of_Packages" → Accept: "No. of Packages:", "Packages:", "Pkg Qty:", "Total Packages:"
+    - For "Port_of_Discharge" → Accept: "Port of Discharge:", "Discharge Port:", "POD:"
 
-    correct value: 'ABU DHABI ISLAMIC BANK' exact_text: '50: Applicant\nABU DHABI ISLAMIC BANK,' (STOPS at bank name - does NOT include address below)
+    LOW CONFIDENCE MATCHES (REJECT THESE):
+    - Section headings like "Marks, numbers, number and kind of packages; description of goods" (NOT a field label for "Number_of_Packages")
+    - Generic words like "Payment", "Details", "Total", "Note", "Description", "Information"
+    - Vague partial matches like "Discharge" for "Port_of_Discharge" (too vague)
 
-    correct value: 'USD 60,465.00' exact_text: '32B: Currency Code. Amount\nUSD 60,465.00' (STOPS at amount - does NOT include invoice reference below)
+    CRITICAL RULES FOR FIELD LABELS:
+    - Field label MUST be within 1-2 lines DIRECTLY before value
+    - If 3+ lines of OTHER DATA exist between label and value, do NOT use that label
+    - Field labels appear BEFORE the value, NEVER after
+    - Ask: "If I see only this label, am I 95%+ sure it means THIS field?" If NO, reject it
+    - Section headings are NOT field labels
 
-    WRONG value: 'SPDBCNSH090' exact_text: '41A: Available With. By. FI BIC\nSPDBCNSH090\nSHANGHAI PUDONG DEVELOPMENT BANK\n(ZHENGZHOU BRANCH)\nZHENGZHOU CN\nBY PAYMENT' (Should STOP at SPDBCNSH090)
+    When valid field label found:
+    - Include field label + value line ONLY
+    - STOP immediately after value line
+    - Do NOT include blocks of multiple lines
 
-    **CRITICAL: The exact_text must END at the line containing the value. Never include subsequent lines.**
+    **Priority 3 - No Field Label Found:**
+    If NO SWIFT code AND NO high-confidence field label exists:
+    - Single-word values (EUR, USD, 5%, dates, codes):
+      - If on its own line OR directly next to a label → use label + value
+      - If buried in sentence with no label → extract ONLY the value word, no surrounding context
+    - Multi-word values (company names, addresses): Extract ONLY the value text exactly as it appears
+    - DO NOT force a field label if none exists
+    - DO NOT add surrounding words for context if value is in a sentence
+
+    **ABSOLUTE STOPPING RULE (NON-NEGOTIABLE):**
+    The exact_text MUST END exactly where the value line ends. Count carefully:
+    - Line N: Field code/label (if exists) - INCLUDE
+    - Line N+1 or N+2: Value line - INCLUDE and STOP HERE
+    - Line N+2 onwards: ANY text after value - EXCLUDE COMPLETELY
+
+    Do NOT continue to next line even if:
+    - Next line is duplicate of value
+    - Next line seems related (branch, location, additional info)
+    - Next line has similar data
+
+    STOP means STOP. No exceptions.
+
+    **FORMATTING PRESERVATION (NON-NEGOTIABLE):**
+    Preserve ALL formatting exactly as in OCR:
+    - Spaces: single, double, multiple, tabs - keep all
+    - Punctuation: commas, periods, semicolons, colons, dashes - keep all
+    - Line breaks: \n - keep all exactly as they appear
+    - Capitalization: keep exactly as found
+    - Leading/trailing whitespace: keep all
+
+    **SPECIAL CASES:**
+    - Multi-line values: If entire address/description IS the value, include all value lines with \n, then STOP
+    - Inferred/calculated values: If value doesn't exist in OCR (you calculated or guessed it), exact_text = ''
+    - Duplicate lines: If value appears on consecutive lines, include ONLY the first occurrence, STOP
+
+    **CRITICAL EXAMPLES:**
+
+    CORRECT - SWIFT code, stops at value:
+    OCR: "41A: Available With. By. FI BIC\nSPDBCNSH090\nSHANGHAI PUDONG DEVELOPMENT BANK\n(ZHENGZHOU BRANCH)"
+    Field: "Bank_BIC"
+    value: 'SPDBCNSH090'
+    exact_text: '41A: Available With. By. FI BIC\nSPDBCNSH090'
+
+    WRONG - Continuing past value:
+    OCR: "PORT OF DISCHARGE\nPLACE OF DELIVERY\nABU DHABI SEAPORT,\nABU DHABI SEAPORT,"
+    Field: "Port_of_Discharge"
+    value: 'ABU DHABI SEAPORT'
+    WRONG exact_text: 'PORT OF DISCHARGE\nPLACE OF DELIVERY\nABU DHABI SEAPORT,\nABU DHABI SEAPORT,'
+    CORRECT exact_text: 'PORT OF DISCHARGE\nABU DHABI SEAPORT,'
+    (Stops at first occurrence of value, does NOT include duplicate or "PLACE OF DELIVERY")
+
+    WRONG - Using section heading as field label:
+    OCR: "7. Marks, numbers, number and kind of packages; description of goods\nKANEMITE SC\nGREEN OASIS CO. LLC,\n3 PALLETS"
+    Field: "Number_of_Packages"
+    value: '3 PALLETS'
+    WRONG exact_text: '7. Marks, numbers, number and kind of packages; description of goods\nKANEMITE SC\nGREEN OASIS CO. LLC,\n3 PALLETS'
+    CORRECT exact_text: '3 PALLETS'
+    (Section heading is NOT a field label, other data between heading and value, so just extract value)
+
+    CORRECT - Single word with no field label:
+    OCR: "The amount is EUR total"
+    Field: "Currency"
+    value: 'EUR'
+    exact_text: 'EUR'
+    (Buried in sentence, no field label, just extract value word only)
+
+    CORRECT - Single word with field label:
+    OCR: "Currency: EUR"
+    Field: "Currency"
+    value: 'EUR'
+    exact_text: 'Currency: EUR'
+    (Field label directly before value, include both)
+
+    WRONG - Using invalid field label:
+    OCR: "Payment\nGREEN OASIS CO. LLC."
+    Field: "Consignee/Buyer"
+    value: 'GREEN OASIS CO LLC'
+    WRONG exact_text: 'Payment\nGREEN OASIS CO. LLC.'
+    CORRECT exact_text: 'GREEN OASIS CO. LLC.'
+    ("Payment" is NOT semantically related to Consignee/Buyer with 95% confidence, so just extract value)
+
+    **WARNING - SYSTEM FAILURE CONSEQUENCES:**
+    Incorrect exact_text extraction causes:
+    - Bounding box highlighting failures
+    - Wrong text regions highlighted in document
+    - Complete system malfunction
+    - User cannot locate extracted data in document
+
+    This field is the FOUNDATION of the entire bounding box system. Treat with maximum care and precision.
+
+    **FINAL CHECKLIST BEFORE OUTPUTTING:**
+    - Used SWIFT code if available and within 1-3 lines?
+    - Used field label ONLY if 95%+ semantic match AND within 1-2 lines?
+    - Rejected section headings and generic words as field labels?
+    - Stopped IMMEDIATELY after value line?
+    - Did NOT include duplicate lines or trailing text?
+    - Preserved exact formatting (spaces, \n, punctuation)?
+    - Set exact_text = '' for inferred/calculated values?
 
     ### 6. OUTPUT STRUCTURE:
     Return ONLY valid JSON (no markdown, no commentary):

@@ -9427,6 +9427,7 @@ Return compliance status for each field.'''
         x2, y2 = get_bbox_center(bbox2)
         return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
+    
 
     def are_words_on_same_line(words: List[Dict], y_tolerance: float = 0.2) -> bool:
         """Check if words are on same horizontal line (for normal pages)"""
@@ -9812,8 +9813,7 @@ Return compliance status for each field.'''
             logger.info(f"  '{line_text}': {len(candidates)} candidates")
         
         # Try to find best combination
-        best_cluster = None
-        best_score = -1
+        all_complete_clusters = []  # Store all complete clusters with their scores
         
         first_line = expected_lines[0]
         
@@ -9867,19 +9867,54 @@ Return compliance status for each field.'''
             # Check if cluster is complete
             if len(cluster) == len(expected_lines):
                 score = score_cluster(cluster, expected_lines)
-                
                 logger.debug(f"Cluster score: {score:.2f} (size: {len(cluster)})")
-                
-                if score > best_score:
-                    best_score = score
-                    best_cluster = cluster
+                all_complete_clusters.append({'cluster': cluster, 'score': score})
         
-        if best_cluster:
-            logger.info(f"✓ Found best cluster with score {best_score:.2f}")
-            return best_cluster
-        else:
+        # Select best cluster with reading order as tiebreaker
+        if not all_complete_clusters:
             logger.warning("No complete cluster found")
             return []
+        
+        # Filter clusters with score > 50%
+        good_clusters = [c for c in all_complete_clusters if c['score'] >= 50.0]
+        
+        if not good_clusters:
+            # If no clusters with score >= 50%, use the highest scored one
+            logger.info("No clusters with score >= 50%, using highest scored cluster")
+            best_cluster = max(all_complete_clusters, key=lambda x: x['score'])['cluster']
+        else:
+            # Among good clusters, apply reading order check on first 2 lines
+            def check_reading_order_first_two_lines(cluster):
+                """Check if first 2 lines follow correct reading order"""
+                if len(cluster) < 2:
+                    return True
+                
+                line1_bbox = cluster[0]['bounding_box']
+                line2_bbox = cluster[1]['bounding_box']
+                
+                # Get Y centers for normal pages, X centers for rotated pages
+                if is_rotated:
+                    line1_center = (line1_bbox[0] + line1_bbox[4]) / 2
+                    line2_center = (line2_bbox[0] + line2_bbox[4]) / 2
+                    correct_order = line2_center > line1_center  # Right of line1
+                else:
+                    line1_center = (line1_bbox[1] + line1_bbox[3] + line1_bbox[5] + line1_bbox[7]) / 4
+                    line2_center = (line2_bbox[1] + line2_bbox[3] + line2_bbox[5] + line2_bbox[7]) / 4
+                    correct_order = line2_center > line1_center  # Below line1
+                
+                return correct_order
+            
+            # Sort by: correct reading order (first 2 lines), then by score
+            good_clusters.sort(key=lambda x: (
+                not check_reading_order_first_two_lines(x['cluster']),  # False (correct) comes first
+                -x['score']  # Then highest score
+            ))
+            
+            best_cluster = good_clusters[0]['cluster']
+            best_score = good_clusters[0]['score']
+            logger.info(f"✓ Found best cluster with score {best_score:.2f}")
+        
+        return best_cluster
 
 
     def score_cluster(cluster: List[Dict], expected_lines: List[str]) -> float:
@@ -10097,7 +10132,7 @@ Return compliance status for each field.'''
             return {'best_match': best_match, 'matches': matches if matches else []}
         
         # Skip if TOTAL field_value length is too long (>80 chars)
-        if len(field_value) > 200:
+        if len(field_value) > 250:
             logger.info(f"Field value too long ({len(field_value)} chars > 80) - skipping refinement")
             return {'best_match': best_match, 'matches': matches if matches else []}
         
