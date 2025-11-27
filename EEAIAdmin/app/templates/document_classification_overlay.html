@@ -6937,6 +6937,19 @@ button:focus {
                                 </div>
 
                                 <!-- Loading Screen for Document Parsing -->
+                                <!-- Small inline loader right under header so users see immediate feedback on tab click -->
+                                <div v-if="loadingRequiredDocuments || parsingRequiredDocuments" class="text-center py-6">
+                                    <div class="max-w-sm mx-auto">
+                                        <div class="relative mb-4">
+                                            <div class="w-16 h-16 mx-auto relative">
+                                                <div class="absolute inset-0 border-4 border-emerald-200 rounded-full animate-spin border-t-emerald-600"></div>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Loading required documents Please wait</p>
+                                    </div>
+                                </div>
+
+                                <!-- Full loading screen (kept for compatibility) -->
                                 <div v-if="loadingRequiredDocuments || parsingRequiredDocuments" class="text-center py-16">
                                 <!-- Main Loading Container -->
                                 <div class="max-w-md mx-auto">
@@ -7385,8 +7398,8 @@ button:focus {
                                         </button>
                                     </div>
 
-                                    <!-- Information Banner -->
-                                    <div class="mt-6 bg-green-50 rounded-xl p-5 border border-green-200">
+                                    <!-- Information Banner: Only show in LC screen, not Register screen -->
+                                    <div v-if="!isFromDocumentRegister" class="mt-6 bg-green-50 rounded-xl p-5 border border-green-200">
                                         <div class="flex items-start gap-4">
                                             <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <i class="mdi mdi-information text-white text-xl"></i>
@@ -11363,7 +11376,6 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                     } catch (error) {
                         console.error('❌ Error parsing additional conditions:', error);
-                        this.showError('Error parsing LC additional conditions');
                     } finally {
                         this.loadingLCConditions = false;
                     }
