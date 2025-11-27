@@ -42,16 +42,7 @@
       "createdAt": "2024-10-14T10:00:00",
       "updatedAt": "2024-10-14T10:00:00"
     },
-    {
-      "id": "rule-0070",
-      "code": "R-0070",
-      "documentType": "Bill of Lading",
-      "description": "notify party must match LC or be allowed by LC terms",
-      "basis": "ISBP 821",
-      "priority": "Mandatory",
-      "createdAt": "2024-10-14T10:00:00",
-      "updatedAt": "2024-10-14T10:00:00"
-    },
+
     {
       "id": "rule-0071",
       "code": "R-0071",
@@ -321,16 +312,6 @@
       "priority": "Mandatory",
       "createdAt": "2025-10-14T20:23:58.709927",
       "updatedAt": "2025-10-14T20:23:58.709928"
-    },
-    {
-      "id": "9a09f1c3-b44f-43fe-bcb8-3fe6569342bd",
-      "code": "R-0026",
-      "documentType": "Bill of Lading",
-      "description": "notify party details must be complete and accurate",
-      "basis": "ISBP 821",
-      "priority": "Mandatory",
-      "createdAt": "2025-10-14T20:23:58.709937",
-      "updatedAt": "2025-10-14T20:23:58.709937"
     },
     {
       "id": "a5c7bd1d-e5fc-41d5-910a-6b0ead6a7b53",
@@ -8521,16 +8502,6 @@
       "priority": "Mandatory",
       "createdAt": "2025-10-14T20:28:27.202937",
       "updatedAt": "2025-10-14T20:28:27.202937"
-    },
-    {
-      "id": "d23b4421-9659-4aec-b2b2-2ebfebb8a645",
-      "code": "R-0852",
-      "documentType": "Bill of Lading",
-      "description": "notify party must match LC or be allowed by LC terms; additionally, 100%.",
-      "basis": "ISBP 821",
-      "priority": "Mandatory",
-      "createdAt": "2025-10-14T20:28:27.202983",
-      "updatedAt": "2025-10-14T20:28:27.202984"
     },
     {
       "id": "950f5b44-edd7-4280-b78e-69e1fcc997a1",

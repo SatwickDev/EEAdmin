@@ -24632,6 +24632,12 @@ def generate_mt700_message(lc_data):
         # Beneficiary Account Number (if present)
         (":59A:" + lc_data['beneficiaryAccountNumber']) if lc_data.get('beneficiaryAccountNumber') else None,
         ":32B:" + currency + amount,  # Currency Code, Amount
+        # Payment Terms (if present)
+        (":42C:BY PAYMENT" if lc_data.get('paymentTerms') == 'By Payment' else
+         ":42C:DEFERRED PAYMENT" if lc_data.get('paymentTerms') == 'deferred' else
+         ":42C:MIXED PAYMENT" if lc_data.get('paymentTerms') == 'mixedpayment' else
+         ":42C:BY ACCEPTANCE" if lc_data.get('paymentTerms') == 'acceptance' else
+         ":42C:BY NEGOTIATION" if lc_data.get('paymentTerms') == 'negotiation' else None),
         # Confirmation Party Details (if present)
         (":71D:" + lc_data['confirmationPartyDetails']) if lc_data.get('confirmationPartyDetails') else None,
     ]
@@ -24649,16 +24655,6 @@ def generate_mt700_message(lc_data):
     # Add tolerance percentage
     if lc_data.get('tolerancePercent'):
         swift_lines.append(":39A:" + str(lc_data['tolerancePercent']))
-
-    # Add payment terms
-    if lc_data.get('paymentTerms') == 'sight':
-        swift_lines.append(":42C:AT SIGHT")
-    elif lc_data.get('paymentTerms') == 'deferred':
-        swift_lines.append(":42C:DEFERRED PAYMENT")
-    elif lc_data.get('paymentTerms') == 'acceptance':
-        swift_lines.append(":42C:BY ACCEPTANCE")
-    elif lc_data.get('paymentTerms') == 'negotiation':
-        swift_lines.append(":42C:BY NEGOTIATION")
 
     # Add drawee - NEW
     if lc_data.get('drawee'):

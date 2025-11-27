@@ -9039,7 +9039,7 @@
 <rule id="b5eac23c-0bb4-4f81-8cf0-7d1d8f2c2a02">
     <code>R-1004</code>
     <documentType>Insurance Certificate</documentType>
-    <description>Insurance coverage provided does not comply fully with the terms and conditions specified in the Letter of Credit.</description>
+    <description>Compare LC insurance requirements (coverage amount, risks, insured party, currency, insurer, coverage period, claims location, and document date) against the Insurance Certificate, and report a discrepancy if any required value is missing or does not match.</description>
     <basis>UCP 600 Article 28(e)</basis>
     <priority>Mandatory</priority>
     <createdAt>2025-10-14T20:28:27.208532</createdAt>

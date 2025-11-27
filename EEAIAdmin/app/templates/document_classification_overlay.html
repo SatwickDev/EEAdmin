@@ -6092,11 +6092,21 @@ button:focus {
                 </div>
 
                 <!-- Discrepancy Cards - Tiles View -->
-                <div v-if="discrepanciesViewMode !== 'table' && discrepanciesViewMode === 'tiles'" class="space-y-3">
-                <div v-for="(discrepancy, index) in getFilteredDiscrepancies()" :key="index"
+                <div v-if="discrepanciesViewMode !== 'table' && discrepanciesViewMode === 'tiles'" class="space-y-6">
+                    <!-- Regular Discrepancies (Non-Cross-Document) - Document vs LC Comparison -->
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div @click="toggleDocumentVsLC()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Document vs LC Comparison</h3>
+                            <i :class="[
+                                'mdi text-slate-700 transition-transform duration-200',
+                                documentVsLCExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                            ]"></i>
+                        </div>
+                        <div v-show="documentVsLCExpanded" class="p-3 space-y-3">
+                            <div v-for="(discrepancy, index) in getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document')" :key="'regular-tiles-' + index"
                      :class="[
-                         'bg-white rounded-lg p-4 hover:shadow-md transition-shadow',
-                         discrepancy.isCompliant ? 'border border-green-200' : 'border border-red-200'
+                                 'bg-white rounded-lg p-4 hover:shadow-md transition-shadow border',
+                                 discrepancy.isCompliant ? 'border-green-200' : 'border-red-200'
                      ]">
                     <!-- Header -->
                     <div class="flex items-start justify-between mb-3">
@@ -6127,17 +6137,18 @@ button:focus {
                                                 discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
                                             ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
                                             <p class="mb-2">{{ discrepancy.discrepancy }}</p>
-                                            <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
-                                                <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
-                                                <p class="mb-1">{{ discrepancy.rule.description }}</p>
-                                                <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                            <div v-if="findDiscrepancyRule(discrepancy)" class="pt-2 border-t border-slate-600">
+                                                <p class="font-semibold text-teal-400 mb-1">Description</p>
+                                                <p class="mb-2">{{ findDiscrepancyRule(discrepancy).description }}</p>
+                                                <p class="font-semibold text-teal-400 mb-1">Basis</p>
+                                                <p class="text-slate-300">{{ findDiscrepancyRule(discrepancy).basis }}</p>
                                             </div>
                                             <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
                                         </div>
                                     </div>
                                     
                                     <!-- Preview Eye Icon -->
-                                    <i @click="discrepancy.documentType === 'Cross-Document' ? openCrossDocumentPreview(discrepancy) : openDiscrepancyPreview(discrepancy)" 
+                                            <i @click="openDiscrepancyPreview(discrepancy)" 
                                        class="mdi mdi-eye-outline text-teal-600 cursor-pointer text-xl hover:text-teal-700 transition-colors"
                                        title="View side-by-side comparison"></i>
                                 </div>
@@ -6155,62 +6166,158 @@ button:focus {
                     <!-- Value Comparison with Accept/Reject -->
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                            <p class="text-[10px] text-gray-600 font-semibold mb-1 uppercase">
-                                <span v-if="discrepancy.documentType === 'Cross-Document'">
-                                    <span v-if="discrepancy.documentName">{{ discrepancy.documentName }}</span>
-                                    <span v-else>Document 1</span> Value
-                                </span>
-                                <span v-else>Document Value</span>
-                            </p>
+                                    <p class="text-[10px] text-gray-600 font-semibold mb-1 uppercase">Document Value</p>
                             <p class="text-gray-900 font-mono text-xs">{{ discrepancy.documentValue }}</p>
                         </div>
+                                <div class="bg-green-50 border-green-200 rounded-lg p-3 border">
+                                    <p class="text-[10px] font-semibold mb-1 uppercase text-emerald-600">LC Required Value</p>
+                                    <p class="font-mono text-xs text-emerald-900">{{ discrepancy.lcValue }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Accept/Reject Actions -->
+                            <div v-if="!discrepancy.isCompliant" class="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                <input type="checkbox" 
+                                       :id="'accept-tiles-regular-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index"
+                                       v-model="acceptedDiscrepancies" 
+                                       :value="discrepancy.documentType + '|' + discrepancy.field"
+                                       class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
+                                <label :for="'accept-tiles-regular-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index" class="flex-1 text-xs text-gray-700 font-medium cursor-pointer select-none">
+                                    Accept this discrepancy
+                                </label>
+                                <span v-if="acceptedDiscrepancies.includes(discrepancy.documentType + '|' + discrepancy.field)" 
+                                      class="px-2 py-0.5 bg-teal-600 text-white rounded-full text-[10px] font-bold">
+                                    ✓ Accepted
+                                </span>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Cross-Document Discrepancies - Cross-Document Comparison -->
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div @click="toggleCrossDocument()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Cross-Document Comparison</h3>
+                            <i :class="[
+                                'mdi text-slate-700 transition-transform duration-200',
+                                crossDocumentExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                            ]"></i>
+                        </div>
+                        <div v-show="crossDocumentExpanded" class="p-3 space-y-3">
+                            <div v-for="(discrepancy, index) in getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document')" :key="'cross-tiles-' + index"
+                             :class="[
+                                 'bg-white rounded-lg p-4 hover:shadow-md transition-shadow border',
+                                 discrepancy.isCompliant ? 'border-green-200' : 'border-red-200'
+                             ]">
+                            <!-- Header -->
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center gap-2 flex-1">
                         <div :class="[
-                            'rounded-lg p-3 border',
-                            discrepancy.documentType === 'Cross-Document' ? 'bg-purple-50 border-purple-200' : 'bg-green-50 border-green-200'
-                        ]">
+                                        'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
+                                        discrepancy.isCompliant ? 'bg-green-100' : 'bg-red-100'
+                                    ]">
+                                        <i :class="[
+                                            'text-lg',
+                                            discrepancy.isCompliant ? 'mdi mdi-check-circle text-emerald-600' : 'mdi mdi-alert-circle text-red-600'
+                                        ]"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="font-bold text-gray-900 text-sm">{{ discrepancy.field }}</h4>
+                                            
+                                            <!-- Issue/Success Description Icon -->
+                                            <div class="relative group">
+                                                <i :class="[
+                                                    'mdi cursor-help text-lg',
+                                                    discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
+                                                ]"></i>
+                                                <!-- Tooltip with Issue Description -->
+                                                <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                             <p :class="[
-                                'text-[10px] font-semibold mb-1 uppercase',
-                                discrepancy.documentType === 'Cross-Document' ? 'text-purple-600' : 'text-emerald-600'
-                            ]">
-                                <span v-if="discrepancy.documentType === 'Cross-Document'">
+                                                        'font-semibold mb-1',
+                                                        discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
+                                                    ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
+                                                    <p class="mb-2">{{ discrepancy.discrepancy }}</p>
+                                                    <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
+                                                        <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
+                                                        <p class="mb-1">{{ discrepancy.rule.description }}</p>
+                                                        <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                                    </div>
+                                                    <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Preview Eye Icon -->
+                                            <i @click="openCrossDocumentPreview(discrepancy)" 
+                                               class="mdi mdi-eye-outline text-teal-600 cursor-pointer text-xl hover:text-teal-700 transition-colors"
+                                               title="View side-by-side comparison"></i>
+                                        </div>
+                                        <p class="text-[10px] text-gray-600">{{ discrepancy.documentType }}</p>
+                                    </div>
+                                </div>
+                                <span :class="[
+                                    'px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase flex-shrink-0',
+                                    discrepancy.isCompliant ? 'bg-green-600 text-white border border-green-300' : 'bg-red-600 text-white border border-red-300'
+                                ]">
+                                    {{ discrepancy.isCompliant ? 'ACCEPTED' : 'EXCEPTION' }}
+                                </span>
+                            </div>
+
+                            <!-- Value Comparison with Accept/Reject -->
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                    <p class="text-[10px] text-gray-600 font-semibold mb-1 uppercase">
+                                        <span v-if="discrepancy.documentName">{{ discrepancy.documentName }}</span>
+                                        <span v-else>Document 1</span> Value
+                                    </p>
+                                    <p class="text-gray-900 font-mono text-xs">{{ discrepancy.documentValue }}</p>
+                                </div>
+                                <div class="bg-purple-50 border-purple-200 rounded-lg p-3 border">
+                                    <p class="text-[10px] font-semibold mb-1 uppercase text-purple-600">
                                     <span v-if="discrepancy.expectedSource">{{ discrepancy.expectedSource }}</span>
                                     <span v-else>Document 2</span> Value
-                                </span>
-                                <span v-else>LC Required Value</span>
                             </p>
-                            <p :class="[
-                                'font-mono text-xs',
-                                discrepancy.documentType === 'Cross-Document' ? 'text-purple-900' : 'text-emerald-900'
-                            ]">{{ discrepancy.expectedValue || discrepancy.lcValue }}</p>
+                                    <p class="font-mono text-xs text-purple-900">{{ discrepancy.expectedValue || discrepancy.lcValue }}</p>
                         </div>
                     </div>
 
                     <!-- Accept/Reject Actions -->
                     <div v-if="!discrepancy.isCompliant" class="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                         <input type="checkbox" 
-                               :id="'accept-tiles-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index"
+                                       :id="'accept-tiles-cross-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index"
                                v-model="acceptedDiscrepancies" 
                                :value="discrepancy.documentType + '|' + discrepancy.field"
                                class="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
-                        <label :for="'accept-tiles-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index" class="flex-1 text-xs text-gray-700 font-medium cursor-pointer select-none">
+                                <label :for="'accept-tiles-cross-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index" class="flex-1 text-xs text-gray-700 font-medium cursor-pointer select-none">
                             Accept this discrepancy
                         </label>
                         <span v-if="acceptedDiscrepancies.includes(discrepancy.documentType + '|' + discrepancy.field)" 
                               class="px-2 py-0.5 bg-teal-600 text-white rounded-full text-[10px] font-bold">
                             ✓ Accepted
                         </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 </div>
 
                 <!-- Discrepancy Cards - List View -->
-                <div v-if="discrepanciesViewMode !== 'table' && discrepanciesViewMode === 'list'" class="space-y-2">
-                    <div v-for="(discrepancy, index) in getFilteredDiscrepancies()" :key="index"
+                <div v-if="discrepanciesViewMode !== 'table' && discrepanciesViewMode === 'list'" class="space-y-6">
+                    <!-- Regular Discrepancies (Non-Cross-Document) - Document vs LC Comparison -->
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div @click="toggleDocumentVsLC()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Document vs LC Comparison</h3>
+                            <i :class="[
+                                'mdi text-slate-700 transition-transform duration-200',
+                                documentVsLCExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                            ]"></i>
+                        </div>
+                        <div v-show="documentVsLCExpanded" class="p-3 space-y-2">
+                            <div v-for="(discrepancy, index) in getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document')" :key="'regular-list-' + index"
                          :class="[
-                             'bg-white rounded-lg p-3 hover:shadow-md transition-all border',
+                                 'bg-white rounded-lg p-3 hover:shadow-md transition-all border flex items-center gap-3',
                              discrepancy.isCompliant ? 'border-green-200 hover:border-green-300' : 'border-red-200 hover:border-red-300'
-                         ]"
-                         class="flex items-center gap-3">
+                             ]">
                         
                         <!-- Status Icon -->
                         <div :class="[
@@ -6241,17 +6348,124 @@ button:focus {
                                             discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
                                         ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
                                         <p class="text-[10px] mb-1">{{ discrepancy.discrepancy }}</p>
-                                        <div v-if="discrepancy.rule" class="pt-1.5 border-t border-slate-600">
-                                            <p class="font-semibold text-teal-400 text-[10px] mb-0.5">{{ discrepancy.rule.code }}</p>
-                                            <p class="text-[10px] mb-0.5">{{ discrepancy.rule.description }}</p>
-                                            <p class="text-slate-300 text-[10px]"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                        <div v-if="findDiscrepancyRule(discrepancy)" class="pt-1.5 border-t border-slate-600">
+                                            <p class="font-semibold text-teal-400 text-[10px] mb-0.5">Description</p>
+                                            <p class="text-[10px] mb-1">{{ findDiscrepancyRule(discrepancy).description }}</p>
+                                            <p class="font-semibold text-teal-400 text-[10px] mb-0.5">Basis</p>
+                                            <p class="text-slate-300 text-[10px]">{{ findDiscrepancyRule(discrepancy).basis }}</p>
                                         </div>
                                         <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
                                     </div>
                                 </div>
                                 
                                 <!-- Preview Eye Icon -->
-                                <i @click="discrepancy.documentType === 'Cross-Document' ? openCrossDocumentPreview(discrepancy) : openDiscrepancyPreview(discrepancy)" 
+                                    <i @click="openDiscrepancyPreview(discrepancy)" 
+                                       class="mdi mdi-eye-outline text-teal-600 cursor-pointer text-lg hover:text-teal-700 transition-colors"
+                                       title="View comparison"></i>
+                                </div>
+                                <p class="text-[10px] text-gray-600 truncate">{{ discrepancy.documentType }}</p>
+                            </div>
+
+                            <!-- Value Comparison (Compact) -->
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <div class="text-center px-2">
+                                    <p class="text-[9px] text-gray-500 font-semibold uppercase">Document</p>
+                                    <p class="text-xs font-mono text-gray-900 truncate max-w-[80px]" :title="discrepancy.documentValue">
+                                        {{ discrepancy.documentValue }}
+                                    </p>
+                                </div>
+                                <i class="mdi mdi-arrow-right text-gray-400"></i>
+                                <div class="text-center px-2">
+                                    <p class="text-[9px] font-semibold uppercase text-green-600">LC Required</p>
+                                    <p class="text-xs font-mono truncate max-w-[80px] text-green-700" :title="discrepancy.lcValue">
+                                        {{ discrepancy.lcValue }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Status Badge -->
+                            <span :class="[
+                                'px-2 py-1 rounded-full text-[9px] font-bold uppercase flex-shrink-0',
+                                discrepancy.isCompliant ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                            ]">
+                                {{ discrepancy.isCompliant ? 'OK' : 'ISSUE' }}
+                            </span>
+
+                            <!-- Accept Checkbox (if not compliant) -->
+                            <div v-if="!discrepancy.isCompliant" class="flex items-center gap-1.5 px-2 py-1.5 bg-slate-50 rounded-lg border border-slate-200 flex-shrink-0">
+                                <input type="checkbox" 
+                                       :id="'accept-list-regular-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index"
+                                       v-model="acceptedDiscrepancies" 
+                                       :value="discrepancy.documentType + '|' + discrepancy.field"
+                                       class="w-3.5 h-3.5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
+                                <label :for="'accept-list-regular-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index" class="text-[10px] text-gray-700 font-medium cursor-pointer whitespace-nowrap">
+                                    Accept
+                                </label>
+                                <span v-if="acceptedDiscrepancies.includes(discrepancy.documentType + '|' + discrepancy.field)" 
+                                      class="ml-1 text-teal-600 text-xs">
+                                    ✓
+                                </span>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Cross-Document Discrepancies - Cross-Document Comparison -->
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                        <div @click="toggleCrossDocument()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Cross-Document Comparison</h3>
+                            <i :class="[
+                                'mdi text-slate-700 transition-transform duration-200',
+                                crossDocumentExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                            ]"></i>
+                        </div>
+                        <div v-show="crossDocumentExpanded" class="p-3 space-y-2">
+                            <div v-for="(discrepancy, index) in getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document')" :key="'cross-list-' + index"
+                             :class="[
+                                 'bg-white rounded-lg p-3 hover:shadow-md transition-all border flex items-center gap-3',
+                                 discrepancy.isCompliant ? 'border-green-200 hover:border-green-300' : 'border-red-200 hover:border-red-300'
+                             ]">
+                            
+                            <!-- Status Icon -->
+                            <div :class="[
+                                'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
+                                discrepancy.isCompliant ? 'bg-green-100' : 'bg-red-100'
+                            ]">
+                                <i :class="[
+                                    'text-xl',
+                                    discrepancy.isCompliant ? 'mdi mdi-check-circle text-green-600' : 'mdi mdi-alert-circle text-red-600'
+                                ]"></i>
+                            </div>
+
+                            <!-- Field Info -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="font-bold text-sm text-gray-900 truncate">{{ discrepancy.field }}</h4>
+                                    
+                                    <!-- Issue/Success Description Icon -->
+                                    <div class="relative group">
+                                        <i :class="[
+                                            'mdi cursor-help text-base',
+                                            discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
+                                        ]"></i>
+                                        <!-- Tooltip with Issue Description -->
+                                        <div class="absolute left-0 bottom-full mb-2 w-72 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                            <p :class="[
+                                                'font-semibold text-[10px] mb-0.5',
+                                                discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
+                                            ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
+                                            <p class="text-[10px] mb-1">{{ discrepancy.discrepancy }}</p>
+                                            <div v-if="discrepancy.rule" class="pt-1.5 border-t border-slate-600">
+                                                <p class="font-semibold text-teal-400 text-[10px] mb-0.5">{{ discrepancy.rule.code }}</p>
+                                                <p class="text-[10px] mb-0.5">{{ discrepancy.rule.description }}</p>
+                                                <p class="text-slate-300 text-[10px]"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                            </div>
+                                            <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Preview Eye Icon -->
+                                    <i @click="openCrossDocumentPreview(discrepancy)" 
                                    class="mdi mdi-eye-outline text-teal-600 cursor-pointer text-lg hover:text-teal-700 transition-colors"
                                    title="View comparison"></i>
                             </div>
@@ -6262,11 +6476,8 @@ button:focus {
                         <div class="flex items-center gap-2 flex-shrink-0">
                             <div class="text-center px-2">
                                 <p class="text-[9px] text-gray-500 font-semibold uppercase">
-                                    <span v-if="discrepancy.documentType === 'Cross-Document'">
                                         <span v-if="discrepancy.documentName">{{ discrepancy.documentName }}</span>
                                         <span v-else>Doc 1</span>
-                                    </span>
-                                    <span v-else>Document</span>
                                 </p>
                                 <p class="text-xs font-mono text-gray-900 truncate max-w-[80px]" :title="discrepancy.documentValue">
                                     {{ discrepancy.documentValue }}
@@ -6274,20 +6485,11 @@ button:focus {
                             </div>
                             <i class="mdi mdi-arrow-right text-gray-400"></i>
                             <div class="text-center px-2">
-                                <p :class="[
-                                    'text-[9px] font-semibold uppercase',
-                                    discrepancy.documentType === 'Cross-Document' ? 'text-purple-600' : 'text-green-600'
-                                ]">
-                                    <span v-if="discrepancy.documentType === 'Cross-Document'">
+                                    <p class="text-[9px] font-semibold uppercase text-purple-600">
                                         <span v-if="discrepancy.expectedSource">{{ discrepancy.expectedSource }}</span>
                                         <span v-else>Doc 2</span>
-                                    </span>
-                                    <span v-else>LC Required</span>
                                 </p>
-                                <p :class="[
-                                    'text-xs font-mono truncate max-w-[80px]',
-                                    discrepancy.documentType === 'Cross-Document' ? 'text-purple-700' : 'text-green-700'
-                                ]" :title="discrepancy.expectedValue || discrepancy.lcValue">
+                                    <p class="text-xs font-mono truncate max-w-[80px] text-purple-700" :title="discrepancy.expectedValue || discrepancy.lcValue">
                                     {{ discrepancy.expectedValue || discrepancy.lcValue }}
                                 </p>
                             </div>
@@ -6304,17 +6506,19 @@ button:focus {
                         <!-- Accept Checkbox (if not compliant) -->
                         <div v-if="!discrepancy.isCompliant" class="flex items-center gap-1.5 px-2 py-1.5 bg-slate-50 rounded-lg border border-slate-200 flex-shrink-0">
                             <input type="checkbox" 
-                                   :id="'accept-list-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index"
+                                       :id="'accept-list-cross-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index"
                                    v-model="acceptedDiscrepancies" 
                                    :value="discrepancy.documentType + '|' + discrepancy.field"
                                    class="w-3.5 h-3.5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
-                            <label :for="'accept-list-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index" class="text-[10px] text-gray-700 font-medium cursor-pointer whitespace-nowrap">
+                                <label :for="'accept-list-cross-' + discrepancy.documentType + '-' + discrepancy.field + '-' + index" class="text-[10px] text-gray-700 font-medium cursor-pointer whitespace-nowrap">
                                 Accept
                             </label>
                             <span v-if="acceptedDiscrepancies.includes(discrepancy.documentType + '|' + discrepancy.field)" 
                                   class="ml-1 text-teal-600 text-xs">
                                 ✓
                             </span>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -6323,9 +6527,14 @@ button:focus {
                 <div v-if="discrepanciesViewMode === 'table'" class="space-y-6">
                     <!-- Regular Discrepancies (Non-Cross-Document) -->
                     <div v-if="getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                        <div class="bg-blue-50 px-4 py-2 border-b border-blue-200">
-                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider">Document vs LC Comparison</h3>
+                        <div @click="toggleDocumentVsLC()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Document vs LC Comparison</h3>
+                            <i :class="[
+                                'mdi text-slate-700 transition-transform duration-200',
+                                documentVsLCExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                            ]"></i>
                         </div>
+                        <div v-show="documentVsLCExpanded">
                         <table class="w-full">
                             <thead class="bg-slate-50 border-b border-gray-200">
                                 <tr>
@@ -6363,10 +6572,11 @@ button:focus {
                                                             discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
                                                         ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
                                                         <p class="mb-2">{{ discrepancy.discrepancy }}</p>
-                                                        <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
-                                                            <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
-                                                            <p class="mb-1">{{ discrepancy.rule.description }}</p>
-                                                            <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                                        <div v-if="findDiscrepancyRule(discrepancy)" class="pt-2 border-t border-slate-600">
+                                                            <p class="font-semibold text-teal-400 mb-1">Description</p>
+                                                            <p class="mb-2">{{ findDiscrepancyRule(discrepancy).description }}</p>
+                                                            <p class="font-semibold text-teal-400 mb-1">Basis</p>
+                                                            <p class="text-slate-300">{{ findDiscrepancyRule(discrepancy).basis }}</p>
                                                         </div>
                                                         <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
                                                     </div>
@@ -6405,13 +6615,19 @@ button:focus {
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                     </div>
 
                     <!-- Cross-Document Discrepancies -->
                     <div v-if="getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                        <div class="bg-purple-50 px-4 py-2 border-b border-purple-200">
-                            <h3 class="text-sm font-bold text-purple-800 uppercase tracking-wider">Cross-Document Comparison</h3>
+                        <div @click="toggleCrossDocument()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Cross-Document Comparison</h3>
+                            <i :class="[
+                                'mdi text-slate-700 transition-transform duration-200',
+                                crossDocumentExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
+                            ]"></i>
                         </div>
+                        <div v-show="crossDocumentExpanded">
                         <table class="w-full">
                             <thead class="bg-slate-50 border-b border-gray-200">
                                 <tr>
@@ -6449,10 +6665,11 @@ button:focus {
                                                             discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
                                                         ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
                                                         <p class="mb-2">{{ discrepancy.discrepancy }}</p>
-                                                        <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
-                                                            <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
-                                                            <p class="mb-1">{{ discrepancy.rule.description }}</p>
-                                                            <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                                        <div v-if="findDiscrepancyRule(discrepancy)" class="pt-2 border-t border-slate-600">
+                                                            <p class="font-semibold text-teal-400 mb-1">Description</p>
+                                                            <p class="mb-2">{{ findDiscrepancyRule(discrepancy).description }}</p>
+                                                            <p class="font-semibold text-teal-400 mb-1">Basis</p>
+                                                            <p class="text-slate-300">{{ findDiscrepancyRule(discrepancy).basis }}</p>
                                                         </div>
                                                         <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
                                                     </div>
@@ -6493,6 +6710,7 @@ button:focus {
                                 </tr>
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
 
@@ -6937,6 +7155,19 @@ button:focus {
                                 </div>
 
                                 <!-- Loading Screen for Document Parsing -->
+                                <!-- Small inline loader right under header so users see immediate feedback on tab click -->
+                                <div v-if="loadingRequiredDocuments || parsingRequiredDocuments" class="text-center py-6">
+                                    <div class="max-w-sm mx-auto">
+                                        <div class="relative mb-4">
+                                            <div class="w-16 h-16 mx-auto relative">
+                                                <div class="absolute inset-0 border-4 border-emerald-200 rounded-full animate-spin border-t-emerald-600"></div>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Loading required documents Please wait</p>
+                                    </div>
+                                </div>
+
+                                <!-- Full loading screen (kept for compatibility) -->
                                 <div v-if="loadingRequiredDocuments || parsingRequiredDocuments" class="text-center py-16">
                                 <!-- Main Loading Container -->
                                 <div class="max-w-md mx-auto">
@@ -7385,8 +7616,8 @@ button:focus {
                                         </button>
                                     </div>
 
-                                    <!-- Information Banner -->
-                                    <div class="mt-6 bg-green-50 rounded-xl p-5 border border-green-200">
+                                    <!-- Information Banner: Only show in LC screen, not Register screen -->
+                                    <div v-if="!isFromDocumentRegister" class="mt-6 bg-green-50 rounded-xl p-5 border border-green-200">
                                         <div class="flex items-start gap-4">
                                             <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <i class="mdi mdi-information text-white text-xl"></i>
@@ -8023,7 +8254,7 @@ button:focus {
                             </div>
                         </div>
                     
-                    <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel.prevent="handleDiscrepancyZoom">
+                    <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel="handleDiscrepancyZoom">
                         <!-- Document Image with Canvas Overlay -->
                         <div v-if="discrepancyPreviewImage" class="relative inline-block" 
                              :style="{ transform: `scale(${discrepancyZoomLevel})`, transformOrigin: 'top left' }">
@@ -8038,9 +8269,7 @@ button:focus {
                                     class="absolute top-0 left-0 pointer-events-none"
                                     :style="{ 
                                         width: '100%', 
-                                        height: '100%',
-                                        transform: `scale(${discrepancyZoomLevel})`,
-                                        transformOrigin: 'top left'
+                                        height: '100%'
                                     }">
                             </canvas>
                         </div>
@@ -8146,7 +8375,7 @@ button:focus {
                             </div>
                         </div>
                         
-                        <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel.prevent="handleCrossDocumentZoom(1, $event)">
+                        <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel="handleCrossDocumentZoom(1, $event)">
                             <!-- Document 1 Image with Canvas Overlay -->
                             <div v-if="crossDocumentPreviewImage1" class="relative inline-block"
                                  :style="{ transform: `scale(${crossDocumentZoomLevel1})`, transformOrigin: 'top left' }">
@@ -8161,9 +8390,7 @@ button:focus {
                                         class="absolute top-0 left-0 pointer-events-none"
                                         :style="{ 
                                             width: '100%', 
-                                            height: '100%',
-                                            transform: `scale(${crossDocumentZoomLevel1})`,
-                                            transformOrigin: 'top left'
+                                            height: '100%'
                                         }">
                                 </canvas>
                             </div>
@@ -8219,7 +8446,7 @@ button:focus {
                             </div>
                         </div>
                         
-                        <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel.prevent="handleCrossDocumentZoom(2, $event)">
+                        <div class="flex-1 overflow-auto p-4" style="min-height: 0;" @wheel="handleCrossDocumentZoom(2, $event)">
                             <!-- Document 2 Image with Canvas Overlay -->
                             <div v-if="crossDocumentPreviewImage2" class="relative inline-block"
                                  :style="{ transform: `scale(${crossDocumentZoomLevel2})`, transformOrigin: 'top left' }">
@@ -8234,9 +8461,7 @@ button:focus {
                                         class="absolute top-0 left-0 pointer-events-none"
                                         :style="{ 
                                             width: '100%', 
-                                            height: '100%',
-                                            transform: `scale(${crossDocumentZoomLevel2})`,
-                                            transformOrigin: 'top left'
+                                            height: '100%'
                                         }">
                                 </canvas>
                             </div>
@@ -8461,7 +8686,10 @@ button:focus {
                     documentsFilter: 'all', // Filter for required documents ('all', 'uploaded', 'pending')
                     missingValuesViewMode: 'table', // View mode for missing values tab ('table', 'list', or 'tiles')
                     fieldValidationViewMode: 'table', // View mode for field validations tab ('table', 'list', or 'tiles')
-                    discrepanciesViewMode: 'table' // View mode for discrepancies section ('table', 'list', or 'tiles')
+                    discrepanciesViewMode: 'table', // View mode for discrepancies section ('table', 'list', or 'tiles')
+                    documentVsLCExpanded: false, // Toggle state for Document vs LC Comparison section
+                    crossDocumentExpanded: false, // Toggle state for Cross-Document Comparison section
+                    discrepancyRules: [] // Loaded discrepancy rules from JSON file
                 }
             },
             computed: {
@@ -8524,6 +8752,18 @@ button:focus {
                 }
             },
             methods: {
+                /**
+                 * Toggle Document vs LC Comparison section
+                 */
+                toggleDocumentVsLC() {
+                    this.documentVsLCExpanded = !this.documentVsLCExpanded;
+                },
+                /**
+                 * Toggle Cross-Document Comparison section
+                 */
+                toggleCrossDocument() {
+                    this.crossDocumentExpanded = !this.crossDocumentExpanded;
+                },
                             /**
  * Match required documents with grouped documents
  */
@@ -10928,6 +11168,70 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     return { uploaded, pending, total, percentage, totalMatchedSections };
                 },
 
+                // Load all discrepancy rules from discrepancy_rules.json
+                async loadDiscrepancyRules() {
+                    try {
+                        console.log('📥 Loading discrepancy rules...');
+                        const response = await fetch('/data/discrepancy_rules.json');
+                        if (!response.ok) {
+                            console.error('❌ Failed to fetch discrepancy rules:', response.status, response.statusText);
+                            throw new Error(`Failed to load discrepancy rules: ${response.status}`);
+                        }
+                        const data = await response.json();
+                        this.discrepancyRules = data.rules || [];
+                        console.log(`✅ Loaded ${this.discrepancyRules.length} discrepancy rules`);
+                    } catch (error) {
+                        console.error('❌ Error loading discrepancy rules:', error);
+                        this.discrepancyRules = [];
+                    }
+                },
+                
+                // Find matching rule for a discrepancy based on field name and document type
+                findDiscrepancyRule(discrepancy) {
+                    if (!discrepancy || !this.discrepancyRules || this.discrepancyRules.length === 0) {
+                        return null;
+                    }
+                    
+                    // If discrepancy already has a rule, return it
+                    if (discrepancy.rule && discrepancy.rule.code && discrepancy.rule.description) {
+                        return discrepancy.rule;
+                    }
+                    
+                    // Try to find a rule that matches the field name and document type
+                    const fieldName = (discrepancy.field || '').toLowerCase();
+                    const documentType = (discrepancy.documentType || '').toLowerCase();
+                    
+                    // Normalize field name for matching (remove common words)
+                    const fieldNameNormalized = fieldName
+                        .replace(/\b(issue|date|place|of|the|a|an|in|on|at|for|with|from|to)\b/g, '')
+                        .trim();
+                    
+                    // First, try to find rules matching document type
+                    const documentTypeRules = this.discrepancyRules.filter(rule => {
+                        const ruleDocType = (rule.documentType || '').toLowerCase();
+                        return ruleDocType === documentType;
+                    });
+                    
+                    if (documentTypeRules.length === 0) {
+                        return null;
+                    }
+                    
+                    // Try to match by field name in description
+                    let matchedRule = documentTypeRules.find(rule => {
+                        const ruleDesc = (rule.description || '').toLowerCase();
+                        // Check if description contains key words from field name
+                        const fieldWords = fieldNameNormalized.split(/\s+/).filter(w => w.length > 2);
+                        return fieldWords.some(word => ruleDesc.includes(word));
+                    });
+                    
+                    // If no match, return the first rule for this document type
+                    if (!matchedRule && documentTypeRules.length > 0) {
+                        matchedRule = documentTypeRules[0];
+                    }
+                    
+                    return matchedRule || null;
+                },
+                
                 // Load cross-verification rules from discrepancy_rules.json
                 async loadCrossVerificationRules() {
                     try {
@@ -11363,7 +11667,6 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                     } catch (error) {
                         console.error('❌ Error parsing additional conditions:', error);
-                        this.showError('Error parsing LC additional conditions');
                     } finally {
                         this.loadingLCConditions = false;
                     }
@@ -12389,8 +12692,9 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         this.discrepancyZoomLevel = Math.max(0.5, this.discrepancyZoomLevel - 0.25);
                     }
                     
-                    // Redraw canvas with new zoom level
+                    // Re-setup canvas with new zoom level and redraw
                     this.$nextTick(() => {
+                        this.setupDiscrepancyCanvas();
                         if (this.discrepancySearchResults && this.discrepancySearchResults.length > 0) {
                             this.highlightDiscrepancySearchResults(this.discrepancySearchResults);
                         } else if (this.discrepancyFieldData?.bounding_box) {
@@ -12402,8 +12706,9 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                 resetDiscrepancyZoom() {
                     this.discrepancyZoomLevel = 1;
                     
-                    // Redraw canvas
+                    // Re-setup canvas and redraw
                     this.$nextTick(() => {
+                        this.setupDiscrepancyCanvas();
                         if (this.discrepancySearchResults && this.discrepancySearchResults.length > 0) {
                             this.highlightDiscrepancySearchResults(this.discrepancySearchResults);
                         } else if (this.discrepancyFieldData?.bounding_box) {
@@ -12435,8 +12740,13 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         this[zoomProperty] = Math.max(0.5, this[zoomProperty] - 0.25);
                     }
                     
-                    // Redraw canvas with new zoom level
+                    // Re-setup canvas with new zoom level and redraw
                     this.$nextTick(() => {
+                        if (documentNumber === 1) {
+                            this.setupCrossDocumentCanvas1();
+                        } else {
+                            this.setupCrossDocumentCanvas2();
+                        }
                         if (this[searchResultsProperty] && this[searchResultsProperty].length > 0) {
                             this.highlightCrossDocumentSearchResults(this[searchResultsProperty], documentNumber);
                         } else if (this[fieldDataProperty]?.bounding_box) {
@@ -12452,8 +12762,13 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     
                     this[zoomProperty] = 1;
                     
-                    // Redraw canvas
+                    // Re-setup canvas and redraw
                     this.$nextTick(() => {
+                        if (documentNumber === 1) {
+                            this.setupCrossDocumentCanvas1();
+                        } else {
+                            this.setupCrossDocumentCanvas2();
+                        }
                         if (this[searchResultsProperty] && this[searchResultsProperty].length > 0) {
                             this.highlightCrossDocumentSearchResults(this[searchResultsProperty], documentNumber);
                         } else if (this[fieldDataProperty]?.bounding_box) {
@@ -12555,9 +12870,15 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         return;
                     }
 
-                    // Setup canvas to match displayed image dimensions
-                    canvas.width = img.clientWidth || img.offsetWidth;
-                    canvas.height = img.clientHeight || img.offsetHeight;
+                    // Setup canvas to match natural image dimensions
+                    // Canvas internal dimensions should match natural image size
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    
+                    // Canvas CSS size should match natural image size (not scaled)
+                    // The parent div's CSS transform will scale both image and canvas together
+                    canvas.style.width = img.naturalWidth + 'px';
+                    canvas.style.height = img.naturalHeight + 'px';
                     
                     console.log('📐 Cross-document canvas 1 size set to:', canvas.width, 'x', canvas.height);
                     console.log('📐 Image 1 natural size:', img.naturalWidth, 'x', img.naturalHeight);
@@ -12587,9 +12908,15 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         return;
                     }
 
-                    // Setup canvas to match displayed image dimensions
-                    canvas.width = img.clientWidth || img.offsetWidth;
-                    canvas.height = img.clientHeight || img.offsetHeight;
+                    // Setup canvas to match natural image dimensions
+                    // Canvas internal dimensions should match natural image size
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    
+                    // Canvas CSS size should match natural image size (not scaled)
+                    // The parent div's CSS transform will scale both image and canvas together
+                    canvas.style.width = img.naturalWidth + 'px';
+                    canvas.style.height = img.naturalHeight + 'px';
                     
                     console.log('📐 Cross-document canvas 2 size set to:', canvas.width, 'x', canvas.height);
                     console.log('📐 Image 2 natural size:', img.naturalWidth, 'x', img.naturalHeight);
@@ -12795,14 +13122,18 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         return;
                     }
 
-                    // Setup canvas to match displayed image dimensions
-                    // The CSS transform will scale both image and canvas together
-                    canvas.width = img.clientWidth || img.offsetWidth;
-                    canvas.height = img.clientHeight || img.offsetHeight;
+                    // Setup canvas to match natural image dimensions
+                    // Canvas internal dimensions should match natural image size
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    
+                    // Canvas CSS size should match natural image size (not scaled)
+                    // The parent div's CSS transform will scale both image and canvas together
+                    canvas.style.width = img.naturalWidth + 'px';
+                    canvas.style.height = img.naturalHeight + 'px';
                     
                     console.log('📐 Discrepancy canvas size set to:', canvas.width, 'x', canvas.height);
                     console.log('📐 Image natural size:', img.naturalWidth, 'x', img.naturalHeight);
-                    console.log('📐 Image client size:', img.clientWidth, 'x', img.clientHeight);
                     
                     // Store context for later use
                     this.discrepancyCanvasContext = canvas.getContext('2d');
@@ -16228,6 +16559,7 @@ splitCurrencyAndAmount(combinedValue) {
                 document.addEventListener('click', this.closeDropdownOnClickOutside);
                 this.fetchCurrentUser();
                 this.fetchTradeDocuments();
+                this.loadDiscrepancyRules(); // Load discrepancy rules on mount
                 
                 // Check if we're in an iframe and being called from QR scanner
                 if (window.parent !== window) {
