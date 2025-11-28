@@ -2955,20 +2955,6 @@
       "fieldType": "mandatory"
     },
     {
-      "id": "212",
-      "documentId": "Cargo_Insurance_Document",
-      "documentName": "Cargo Insurance Document",
-      "documentCategoryId": "2",
-      "documentCategoryName": "Transport Processes",
-      "entityId": "389",
-      "entityName": "Place or departure",
-      "mappingFormField": "",
-      "mappingFormDescription": "",
-      "dataCategoryId": "4",
-      "dataCategoryValue": "Locations",
-      "fieldType": "mandatory"
-    },
-    {
       "id": "213",
       "documentId": "Cargo_Insurance_Document",
       "documentName": "Cargo Insurance Document",

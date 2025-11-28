@@ -376,6 +376,7 @@ chunking:
     - For "Currency" → Accept: "Currency:", "CCY:", "Curr:"
     - For "Number_of_Packages" → Accept: "No. of Packages:", "Packages:", "Pkg Qty:", "Total Packages:"
     - For "Port_of_Discharge" → Accept: "Port of Discharge:", "Discharge Port:", "POD:"
+    -For "Origin country" -> Accept : "Country of Orgin "
 
     LOW CONFIDENCE MATCHES (REJECT THESE):
     - Section headings like "Marks, numbers, number and kind of packages; description of goods" (NOT a field label for "Number_of_Packages")
