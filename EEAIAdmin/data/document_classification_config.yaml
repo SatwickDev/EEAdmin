@@ -474,6 +474,12 @@ chunking:
     WRONG exact_text: 'Payment\nGREEN OASIS CO. LLC.'
     CORRECT exact_text: 'GREEN OASIS CO. LLC.'
     ("Payment" is NOT semantically related to Consignee/Buyer with 95% confidence, so just extract value)
+    
+    **SINGLE LINE EXTRACTION FOR VALUES IN PARAGRAPHS:**
+    If value appears within a multi-line paragraph or statement:
+    - Identify the SPECIFIC LINE where the value appears
+    - Extract ONLY that line (plus field label line if directly before it)
+    - DO NOT extract the entire paragraph
 
     **WARNING - SYSTEM FAILURE CONSEQUENCES:**
     Incorrect exact_text extraction causes:

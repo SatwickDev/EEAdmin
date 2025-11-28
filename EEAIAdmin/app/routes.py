@@ -9918,12 +9918,15 @@ Return compliance status for each field.'''
 
 
     def score_cluster(cluster: List[Dict], expected_lines: List[str]) -> float:
-        """Score a cluster based on spatial compactness, match quality, and completeness"""
+        """Score a cluster based on spatial compactness, match quality, and completeness
+        
+        KEY: Strongly prefer TIGHTLY PACKED clusters with minimal bounding box area
+        """
         
         if not cluster:
             return 0
         
-        # Spatial compactness score
+        # Spatial compactness score - CRITICAL FACTOR
         all_bboxes = [item['bounding_box'] for item in cluster]
         merged = merge_bboxes(all_bboxes, padding=0)
         
@@ -9934,7 +9937,14 @@ Return compliance status for each field.'''
         height = max(merged[5], merged[7]) - min(merged[1], merged[3])
         area = width * height
         
-        compactness_score = max(0, 100 - (area * 10))
+        # TIGHTER IS BETTER: inverse relationship for area penalty
+        # Small area (e.g., 1.0) = ~50 points
+        # Medium area (e.g., 5.0) = ~17 points  
+        # Large area (e.g., 10+) = ~9 points
+        # This STRONGLY favors compact clusters
+        compactness_score = 100 / (1 + area)
+        
+        logger.debug(f"🎯 Cluster scoring: area={area:.2f}, compactness={compactness_score:.1f}")
         
         # Match quality score
         avg_confidence = sum(item['match_confidence'] for item in cluster) / len(cluster)
@@ -9942,12 +9952,15 @@ Return compliance status for each field.'''
         # Completeness score
         completeness_score = (len(cluster) / len(expected_lines)) * 100
         
-        # Combined score
+        # Combined score - COMPACTNESS IS NOW 70% WEIGHT (was 50%)
+        # This makes tightly packed boxes strongly preferred over loose ones
         total_score = (
-            compactness_score * 0.5 +
-            avg_confidence * 0.3 +
-            completeness_score * 0.2
+            compactness_score * 0.7 +    # INCREASED from 0.5 - spatial compactness is primary
+            avg_confidence * 0.2 +        # DECREASED from 0.3
+            completeness_score * 0.1      # DECREASED from 0.2
         )
+        
+        logger.debug(f"  → Final score: {compactness_score:.1f}*0.7 + {avg_confidence:.1f}*0.2 + {completeness_score:.1f}*0.1 = {total_score:.1f}")
         
         return total_score
 
@@ -10108,11 +10121,93 @@ Return compliance status for each field.'''
     # MAIN REFINER
     # ============================================
 
+    # ============================================
+    # SMART LINE SPLITTER FOR LONG LINES
+    # ============================================
+
+    def split_long_line_smart(line_text: str, max_tokens: int = 8, max_chars: int = 100) -> List[str]:
+        """
+        Split long individual lines intelligently to prevent exponential combinations.
+        
+        Strategy:
+        - If line has >= max_tokens OR >= max_chars: split it
+        - Find split point near middle (by character count)
+        - Prefer LONGEST words at split point (longer words = fewer candidates in pool)
+        - Recursively split if parts are still too long
+        
+        Args:
+            line_text: Single line to potentially split (no newlines)
+            max_tokens: Split if line has more tokens than this
+            max_chars: Split if line has more characters than this
+            
+        Returns:
+            List of lines (may be 1 if no split needed, or 2+ if split)
+        """
+        tokens = line_text.split()
+        
+        # Check if split is needed
+        if len(tokens) < max_tokens and len(line_text) < max_chars:
+            logger.debug(f"✂️  split_long_line_smart: NO SPLIT NEEDED ({len(tokens)} tokens < {max_tokens}, {len(line_text)} chars < {max_chars})")
+            return [line_text]  # No split needed
+        
+        logger.info(f"✂️  split_long_line_smart: SPLITTING '{line_text[:70]}...' ({len(tokens)} tokens, {len(line_text)} chars)")
+        
+        # Find optimal split point by character position
+        mid_char = len(line_text) // 2
+        char_pos = 0
+        best_split_idx = 0
+        best_token_length = 0
+        
+        logger.debug(f"✂️  Looking for split point near mid_char={mid_char}")
+        
+        for idx, token in enumerate(tokens):
+            char_pos += len(token) + 1  # +1 for space
+            
+            # Check if this token is near mid point (±20 chars tolerance)
+            distance_to_mid = abs(char_pos - mid_char)
+            
+            if distance_to_mid <= 20:
+                # Prefer LONGEST tokens (they have fewer candidates in pool)
+                token_clean = token.strip('.,!?;:')
+                token_length = len(token_clean)
+                
+                if token_length > best_token_length:
+                    best_split_idx = idx + 1
+                    best_token_length = token_length
+                    logger.debug(f"✂️  Found good split point at token {idx}: '{token}' ({token_length} chars, distance={distance_to_mid})")
+        
+        # If no good split found, use mid point
+        if best_split_idx == 0:
+            best_split_idx = len(tokens) // 2
+            logger.debug(f"✂️  No good split near middle, using mid point: token {best_split_idx}")
+        
+        part1 = ' '.join(tokens[:best_split_idx])
+        part2 = ' '.join(tokens[best_split_idx:])
+        
+        logger.info(f"✂️  Split result: Part1({len(part1.split())} tokens) + Part2({len(part2.split())} tokens)")
+        logger.debug(f"✂️    Part1: '{part1[:60]}...'")
+        logger.debug(f"✂️    Part2: '{part2[:60]}...'")
+        
+        result = [part1, part2]
+        
+        # Recursively split if part2 is still too long
+        if len(part2.split()) >= max_tokens or len(part2) >= max_chars:
+            logger.info(f"✂️  Part2 still too long ({len(part2.split())} tokens >= {max_tokens} OR {len(part2)} chars >= {max_chars}), recursively splitting...")
+            result = result[:-1] + split_long_line_smart(part2, max_tokens, max_chars)
+        
+        logger.info(f"✂️  Final result: {len(result)} parts")
+        return result
+
     def refine_coordinate_response(field_value: str, matches: List[Dict], 
                                 best_match: Optional[Dict], 
-                                word_ocr_data: List[Dict]) -> Dict:
+                                word_ocr_data: List[Dict],
+                                bounding_page_list: List[int] = None) -> Dict:
         """
         Main refiner function with spatial clustering + rotated page support
+        
+        Args:
+            bounding_page_list: List of pages to try as fallbacks (e.g., [3, 4])
+                                Will try anchor page first, then others in list order
         """
         
         logger.info("=" * 60)
@@ -10136,14 +10231,57 @@ Return compliance status for each field.'''
             logger.info(f"Field value too long ({len(field_value)} chars > 80) - skipping refinement")
             return {'best_match': best_match, 'matches': matches if matches else []}
         
-        # Parse lines
+        # Parse lines from field_value (split by \n)
         expected_lines = [line.strip() for line in field_value.split('\n') if line.strip()]
+        
+        # SMART HEURISTIC: For long multi-line fields, skip refinement
+        # Long fields (200+ chars) with few lines (3 or less) are already correctly 
+        # grouped by search phase into encompassing bbox - refinement just breaks them apart
+        if len(field_value) >= 200 and len(expected_lines) <= 3:
+            logger.info(f"⏭️  SKIPPING REFINER: Long multi-line field detected")
+            logger.info(f"   Length: {len(field_value)} chars >= 200, Lines: {len(expected_lines)} <= 3")
+            logger.info(f"   Search phase already has correct encompassing bbox - returning as-is")
+            return {'best_match': best_match, 'matches': matches if matches else []}
         
         if not expected_lines:
             logger.error("No expected lines after parsing!")
             return {'best_match': best_match, 'matches': matches if matches else []}
         
-        logger.info(f"Processing {len(expected_lines)} lines")
+        # SMART SPLITTING: Split long individual lines to avoid exponential combinations
+        logger.info(f"🔍 SMART SPLIT START: Processing {len(expected_lines)} lines, checking for long lines to split...")
+        split_lines = []
+        line_split_map = {}  # Track which split lines came from which original line
+        
+        for line_idx, line in enumerate(expected_lines):
+            token_count = len(line.split())
+            char_count = len(line)
+            needs_split = token_count >= 8 or char_count >= 100
+            
+            logger.info(f"🔍 Line {line_idx + 1}: {token_count} tokens, {char_count} chars - NEEDS_SPLIT={needs_split}")
+            
+            if needs_split:
+                logger.info(f"✂️  SPLITTING Line {line_idx + 1}: '{line[:70]}...'")
+                try:
+                    split_parts = split_long_line_smart(line, max_tokens=8, max_chars=100)
+                    logger.info(f"✂️  Split result: {len(split_parts)} parts")
+                    
+                    for part_idx, part in enumerate(split_parts):
+                        split_lines.append(part)
+                        line_split_map[len(split_lines) - 1] = (line_idx, part_idx, len(split_parts))
+                        logger.info(f"    ✂️  Part {part_idx + 1}/{len(split_parts)}: '{part[:60]}...'")
+                except Exception as e:
+                    logger.error(f"❌ Error splitting line {line_idx + 1}: {str(e)}")
+                    split_lines.append(line)
+                    line_split_map[len(split_lines) - 1] = (line_idx, 0, 1)
+            else:
+                logger.info(f"✅ Line {line_idx + 1} is short enough, keeping as-is")
+                split_lines.append(line)
+                line_split_map[len(split_lines) - 1] = (line_idx, 0, 1)
+        
+        logger.info(f"🔍 SMART SPLIT DONE: After splitting: {len(split_lines)} lines (from {len(expected_lines)} original lines)")
+        expected_lines = split_lines
+        
+        logger.info(f"🔍 Now processing {len(expected_lines)} lines")
         
         # Get anchor page - search through ALL pages to find words matching any of the expected lines
         anchor_page = None
@@ -10200,12 +10338,35 @@ Return compliance status for each field.'''
         sorted_word_pool = sort_words_reading_order(word_pool)
         logger.info(f"Sorted {len(sorted_word_pool)} words in reading order")
         
-        # PRIMARY: Normal spatial clustering
+        # PRIMARY: Normal spatial clustering on anchor page
         result_lines = find_best_spatial_cluster(expected_lines, sorted_word_pool, fuzzy_threshold=0.90, is_rotated=False)
         
-        # FALLBACK LOGIC
+        # FALLBACK LOGIC - Try other pages from bounding_page_list
+        if not result_lines and bounding_page_list:
+            logger.warning(f"❌ Spatial clustering on page {anchor_page} failed")
+            logger.info(f"Trying fallback pages from bounding_page_list: {bounding_page_list}")
+            
+            # Get list of pages to try (all pages in bounding_page_list except anchor_page)
+            fallback_pages = [p for p in bounding_page_list if p != anchor_page]
+            logger.info(f"Fallback pages to try (in order): {fallback_pages}")
+            
+            for fallback_page in fallback_pages:
+                logger.info(f"  FALLBACK: Trying page {fallback_page}...")
+                fallback_word_pool = [w for w in word_ocr_data if w and isinstance(w, dict) and w.get('bounding_page') == fallback_page]
+                
+                if fallback_word_pool:
+                    fallback_sorted = sort_words_reading_order(fallback_word_pool)
+                    result_lines = find_best_spatial_cluster(expected_lines, fallback_sorted, fuzzy_threshold=0.90, is_rotated=False)
+                    
+                    if result_lines:
+                        logger.info(f"  ✓ Found cluster on page {fallback_page}!")
+                        break
+                else:
+                    logger.info(f"  No words found on page {fallback_page}")
+        
+        # If still no results, try other fallback strategies
         if not result_lines:
-            logger.warning("❌ Spatial clustering failed - trying fallback strategies")
+            logger.warning("❌ All bounding_page fallbacks failed - trying other strategies")
             
             # Fallback 1: Rotated page search
             logger.info("Trying rotated page fallback...")
@@ -10275,8 +10436,13 @@ Return compliance status for each field.'''
     # WRAPPER FOR API RESPONSE
     # ============================================
 
-    def process_coordinate_response(response_data: Dict, word_ocr_data: List[Dict]) -> Dict:
-        """Process full API response"""
+    def process_coordinate_response(response_data: Dict, word_ocr_data: List[Dict], 
+                                   bounding_page_list: List[int] = None) -> Dict:
+        """Process full API response
+        
+        Args:
+            bounding_page_list: List of pages for intelligent fallback (e.g., [3, 4])
+        """
         
         if not response_data.get('success'):
             return response_data
@@ -10289,7 +10455,7 @@ Return compliance status for each field.'''
             return response_data
         
         try:
-            refined = refine_coordinate_response(field_value, matches, best_match, word_ocr_data)
+            refined = refine_coordinate_response(field_value, matches, best_match, word_ocr_data, bounding_page_list)
             
             response_data['best_match'] = refined['best_match']
             response_data['matches'] = refined['matches']
@@ -10470,7 +10636,8 @@ Return compliance status for each field.'''
                     except Exception as e:
                         logger.error(f"Load recent words error: {e}")
             
-
+            with open("wtestworddata.json", "w") as file:
+                json.dump(word_ocr_data, file, indent=4)
              # ✅ Apply page filtering for word_data (just like OCR)
             if current_page and word_ocr_data:
                 original_word_count = len(word_ocr_data)
@@ -10496,8 +10663,9 @@ Return compliance status for each field.'''
             logger.error(f"word_ocr_data length: {len(word_ocr_data)}")
             logger.error(f"word_ocr_data sample: {word_ocr_data[:2] if word_ocr_data else 'EMPTY'}")
             logger.error(f"best_match: {best_match}")
+            logger.error(f"bounding_page_list for fallback: {current_page}")
 
-            refined_response = process_coordinate_response(response, word_ocr_data)
+            refined_response = process_coordinate_response(response, word_ocr_data, current_page)
 
             # logger.error(f"=== AFTER REFINE ===")
             # logger.error(f"refined best_match type: {refined_response['best_match'].get('match_type')}")
