@@ -120,19 +120,39 @@ def reload_all_jsons() -> bool:
             last_reload = 0
 
         # If last reload was very recent, skip reloading to avoid thrashing
-        if last_reload and (time.time() - last_reload) < _RELOAD_DEBOUNCE_SECONDS:
-            logger.debug('Skipping reload_all_jsons: debounced (recent reload)')
+        now = time.time()
+        if last_reload and (now - last_reload) < _RELOAD_DEBOUNCE_SECONDS:
+            logger.debug(f'⏱️ Skipping reload_all_jsons: debounced ({now - last_reload:.2f}s < {_RELOAD_DEBOUNCE_SECONDS}s)')
             return False
 
-        # Check marker file mtime — if marker exists and is not newer than last_reload, skip
-        marker = os.path.join(data_folder, '.last_reload')
+        # Check if ANY file in the data folder has changed since last_reload
+        # This is a real check—regardless of marker mtime
+        any_file_changed = False
         try:
-            marker_mtime = os.path.getmtime(marker)
-        except Exception:
-            marker_mtime = None
+            if not json_data_cache:  # First load, no real timestamp yet
+                any_file_changed = True
+            elif last_reload > 0:
+                # Check actual file mtimes
+                for root, _, files in os.walk(data_folder):
+                    for filename in files:
+                        if not filename.endswith(('.json', '.yaml', '.yml', '.xml')):
+                            continue
+                        full_path = os.path.join(root, filename)
+                        try:
+                            mtime = os.path.getmtime(full_path)
+                            if mtime > last_reload:
+                                logger.debug(f"📝 File changed: {filename} (mtime={mtime}, last_reload={last_reload})")
+                                any_file_changed = True
+                                break
+                        except Exception:
+                            continue
+                    if any_file_changed:
+                        break
+        except Exception as e:
+            logger.debug(f"Error checking file mtimes: {e}")
 
-        if marker_mtime and last_reload and marker_mtime <= last_reload:
-            logger.debug('Skipping reload_all_jsons: marker mtime <= last reload')
+        if not any_file_changed:
+            logger.debug('✅ No files changed since last reload')
             return False
 
         # Acquire process-wide lock so only one thread performs the reload at a time
@@ -214,7 +234,7 @@ def reload_all_jsons() -> bool:
                 logger.exception(f"Failed to update json_data_cache in-place: {e}")
                 return False
 
-            logger.info(f"✅ JSON folder reloaded successfully from {data_folder}; {len(new_data)} entries updated")
+            logger.info(f"✅ JSON folder reloaded successfully from {data_folder}; {len(new_data)} entries updated. Cache keys: {list(json_data_cache.keys())[:10]}...")
 
             # Touch a marker file so other processes can detect the reload
             _touch_reload_marker(data_folder)
@@ -284,19 +304,39 @@ def reload_app_data(folder_path: str = None):
         except Exception:
             last_reload = 0
 
-        if last_reload and (time.time() - last_reload) < _RELOAD_DEBOUNCE_SECONDS:
-            logger.debug('Skipping reload_app_data: debounced (recent reload)')
+        now = time.time()
+        if last_reload and (now - last_reload) < _RELOAD_DEBOUNCE_SECONDS:
+            logger.debug(f'⏱️ Skipping reload_app_data: debounced ({now - last_reload:.2f}s < {_RELOAD_DEBOUNCE_SECONDS}s)')
             return False
 
-        # Check marker file
-        marker = os.path.join(folder_path, '.last_reload')
+        # Check if ANY file in the app data folder has changed since last_reload
+        any_file_changed = False
         try:
-            marker_mtime = os.path.getmtime(marker)
-        except Exception:
-            marker_mtime = None
+            app_data_cache = getattr(app_pkg, 'app_data_cache', {})
+            if not app_data_cache:  # First load
+                any_file_changed = True
+            elif last_reload > 0:
+                # Check actual file mtimes
+                for root, _, files in os.walk(folder_path):
+                    for filename in files:
+                        if not filename.endswith(('.json', '.yaml', '.yml', '.xml')):
+                            continue
+                        full_path = os.path.join(root, filename)
+                        try:
+                            mtime = os.path.getmtime(full_path)
+                            if mtime > last_reload:
+                                logger.debug(f"📝 App data file changed: {filename} (mtime={mtime}, last_reload={last_reload})")
+                                any_file_changed = True
+                                break
+                        except Exception:
+                            continue
+                    if any_file_changed:
+                        break
+        except Exception as e:
+            logger.debug(f"Error checking app data file mtimes: {e}")
 
-        if marker_mtime and last_reload and marker_mtime <= last_reload:
-            logger.debug('Skipping reload_app_data: marker mtime <= last reload')
+        if not any_file_changed:
+            logger.debug('✅ No app data files changed since last reload')
             return False
 
         # Acquire lock before performing reload
@@ -388,7 +428,7 @@ def reload_app_data(folder_path: str = None):
             else:
                 logger.info(f"✅ Reloaded {reloaded} DocumentClassifier instance(s) after app data reload")
 
-            logger.info(f"✅ App data reloaded successfully from {folder_path}")
+            logger.info(f"✅ App data reloaded successfully from {folder_path}; {len(new_data)} entries updated. Cache keys: {list(app_pkg.app_data_cache.keys())[:10]}...")
             return True
         finally:
             try:
