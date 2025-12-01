@@ -6131,7 +6131,7 @@ button:focus {
                                             discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
                                         ]"></i>
                                         <!-- Tooltip with Issue Description -->
-                                        <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                        <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
                                             <p :class="[
                                                 'font-semibold mb-1',
                                                 discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
@@ -6232,7 +6232,7 @@ button:focus {
                                                     discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
                                                 ]"></i>
                                                 <!-- Tooltip with Issue Description -->
-                                                <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                                <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
                             <p :class="[
                                                         'font-semibold mb-1',
                                                         discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
@@ -6342,7 +6342,7 @@ button:focus {
                                         discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
                                     ]"></i>
                                     <!-- Tooltip with Issue Description -->
-                                    <div class="absolute left-0 bottom-full mb-2 w-72 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <div class="absolute left-0 bottom-full mb-2 w-72 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
                                         <p :class="[
                                             'font-semibold text-[10px] mb-0.5',
                                             discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
@@ -6449,7 +6449,7 @@ button:focus {
                                             discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
                                         ]"></i>
                                         <!-- Tooltip with Issue Description -->
-                                        <div class="absolute left-0 bottom-full mb-2 w-72 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                        <div class="absolute left-0 bottom-full mb-2 w-72 bg-slate-800 text-white text-xs rounded-lg p-2.5 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[9999]">
                                             <p :class="[
                                                 'font-semibold text-[10px] mb-0.5',
                                                 discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
@@ -6526,7 +6526,7 @@ button:focus {
                 <!-- Discrepancy Cards - Table View -->
                 <div v-if="discrepanciesViewMode === 'table'" class="space-y-6">
                     <!-- Regular Discrepancies (Non-Cross-Document) -->
-                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType !== 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200" style="overflow: visible;">
                         <div @click="toggleDocumentVsLC()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
                             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Document vs LC Comparison</h3>
                             <i :class="[
@@ -6534,9 +6534,9 @@ button:focus {
                                 documentVsLCExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
                             ]"></i>
                         </div>
-                        <div v-show="documentVsLCExpanded">
+                        <div v-show="documentVsLCExpanded" class="overflow-visible" style="overflow: visible;">
                         <table class="w-full">
-                            <thead class="bg-slate-50 border-b border-gray-200">
+                            <thead class="bg-slate-50 border-b border-gray-200 relative" style="z-index: 1;">
                                 <tr>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Entity Name</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document Category</th>
@@ -6552,7 +6552,7 @@ button:focus {
                                         'hover:bg-slate-50 transition-colors',
                                         discrepancy.isCompliant ? 'bg-green-50/30' : 'bg-red-50/30'
                                     ]">
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3" style="position: relative; overflow: visible;">
                                         <div class="flex items-center gap-2">
                                             <i :class="[
                                                 'text-lg',
@@ -6561,12 +6561,12 @@ button:focus {
                                             <div>
                                                 <span class="font-semibold text-sm text-gray-900">{{ discrepancy.field }}</span>
                                                 <!-- Info Icon with Tooltip -->
-                                                <div class="relative group inline-block ml-1">
+                                                <div class="relative group inline-block ml-1" style="z-index: 100; position: relative;">
                                                     <i :class="[
                                                         'mdi cursor-help text-sm',
                                                         discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
                                                     ]"></i>
-                                                    <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                                    <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200" style="z-index: 10000;">
                                                         <p :class="[
                                                             'font-semibold mb-1',
                                                             discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
@@ -6619,7 +6619,7 @@ button:focus {
                     </div>
 
                     <!-- Cross-Document Discrepancies -->
-                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div v-if="getFilteredDiscrepancies().filter(d => d.documentType === 'Cross-Document').length > 0" class="bg-white rounded-lg border border-gray-200" style="overflow: visible;">
                         <div @click="toggleCrossDocument()" class="bg-slate-100 px-4 py-2 border-b border-gray-200 cursor-pointer hover:bg-slate-200 transition-colors flex items-center justify-between">
                             <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Cross-Document Comparison</h3>
                             <i :class="[
@@ -6627,9 +6627,9 @@ button:focus {
                                 crossDocumentExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'
                             ]"></i>
                         </div>
-                        <div v-show="crossDocumentExpanded">
+                        <div v-show="crossDocumentExpanded" class="overflow-visible" style="overflow: visible;">
                         <table class="w-full">
-                            <thead class="bg-slate-50 border-b border-gray-200">
+                            <thead class="bg-slate-50 border-b border-gray-200 relative" style="z-index: 1;">
                                 <tr>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Entity Name</th>
                                     <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Document Category</th>
@@ -6645,7 +6645,7 @@ button:focus {
                                         'hover:bg-slate-50 transition-colors',
                                         discrepancy.isCompliant ? 'bg-green-50/30' : 'bg-red-50/30'
                                     ]">
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3" style="position: relative; overflow: visible;">
                                         <div class="flex items-center gap-2">
                                             <i :class="[
                                                 'text-lg',
@@ -6654,12 +6654,12 @@ button:focus {
                                             <div>
                                                 <span class="font-semibold text-sm text-gray-900">{{ discrepancy.field }}</span>
                                                 <!-- Info Icon with Tooltip -->
-                                                <div class="relative group inline-block ml-1">
+                                                <div class="relative group inline-block ml-1" style="z-index: 100; position: relative;">
                                                     <i :class="[
                                                         'mdi cursor-help text-sm',
                                                         discrepancy.isCompliant ? 'mdi-information-outline text-green-600' : 'mdi-alert-outline text-red-600'
                                                     ]"></i>
-                                                    <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                                    <div class="absolute left-0 bottom-full mb-2 w-80 bg-slate-800 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200" style="z-index: 10000;">
                                                         <p :class="[
                                                             'font-semibold mb-1',
                                                             discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
@@ -9608,6 +9608,12 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
 
                             console.log('✅ Final extraction results:', this.results);
 
+                            // 🔍 IMMEDIATELY call document comparison API (no delay)
+                            if (this.isFromDocumentRegister && this.lcContext) {
+                                console.log('🔄 Comparing uploaded documents against LC requirements...');
+                                this.compareUploadedDocuments();
+                            }
+
                             // Trigger discrepancy check if from document register
                             if (this.isFromDocumentRegister && this.lcContext) {
                                 console.log('⏳ Waiting 30 seconds before compliance check to avoid rate limits...');
@@ -11457,6 +11463,100 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         console.error('❌ Error starting LLM discrepancy check:', error);
                         this.showError('Failed to start discrepancy analysis: ' + error.message);
                         this.loadingDiscrepancies = false;
+                    }
+                },
+
+                // Compare uploaded documents against required documents
+                async compareUploadedDocuments() {
+                    if (!this.isFromDocumentRegister || !this.lcContext) {
+                        console.log('⚠️ Not from document register or no LC context available');
+                        return null;
+                    }
+
+                    if (!this.results || this.results.length === 0) {
+                        console.log('⚠️ No document results available for comparison');
+                        return null;
+                    }
+
+                    try {
+                        console.log('🔍 Comparing uploaded documents against required documents...');
+
+                        // Get required documents
+                        const requiredDocs = this.getAllRequiredDocuments();
+                        if (!requiredDocs || requiredDocs.length === 0) {
+                            console.log('⚠️ No required documents found');
+                            return null;
+                        }
+
+                        // Prepare uploaded documents data
+                        const uploadedDocs = this.results.map(result => ({
+                            documentType: result.documentType || result.classification?.document_type || 'Unknown',
+                            fileName: result.fileName || 'Unknown',
+                            classification: {
+                                category: result.classification?.category || '',
+                                sub_type: result.classification?.sub_type || ''
+                            }
+                        }));
+
+                        console.log('📋 Required documents:', requiredDocs.length);
+                        console.log('📤 Uploaded documents:', uploadedDocs.length);
+
+                        // Call the compare-documents API endpoint
+                        const response = await fetch('/api/compare-documents', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                required_documents: requiredDocs,
+                                uploaded_documents: uploadedDocs
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const result = await response.json();
+
+                        if (!result.success) {
+                            throw new Error(result.error || 'Unknown error from comparison API');
+                        }
+
+                        console.log('✅ Document comparison complete:');
+                        console.log(`   📋 Total required: ${result.summary.total_required}`);
+                        console.log(`   ✅ Matched: ${result.summary.matched}`);
+                        console.log(`   ❌ Missing: ${result.summary.missing}`);
+                        console.log(`   ⚠️ Extra: ${result.summary.extra}`);
+                        console.log(`   📈 Completeness: ${result.summary.completeness}%`);
+                        console.log(`   📊 Status: ${result.summary.status}`);
+
+                        // Store the comparison result
+                        this.documentComparison = result;
+
+                        // Show user feedback
+                        if (result.summary.missing > 0) {
+                            const missingNames = result.comparison.missing
+                                .map(m => m.document.name)
+                                .join(', ');
+                            console.warn(`⚠️ Missing documents: ${missingNames}`);
+                            
+                            // Show in UI if you have a notification system
+                            if (this.showWarning) {
+                                this.showWarning(`Missing documents: ${missingNames}`);
+                            }
+                        }
+
+                        if (result.summary.status === 'complete') {
+                            console.log('✅ All required documents have been uploaded!');
+                            if (this.showSuccess) {
+                                this.showSuccess('All required documents uploaded successfully!');
+                            }
+                        }
+
+                        return result;
+
+                    } catch (error) {
+                        console.error('❌ Error comparing documents:', error);
+                        return null;
                     }
                 },
 
