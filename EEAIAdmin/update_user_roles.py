@@ -5,7 +5,10 @@ Run this once to migrate existing users to the new role-based system.
 """
 
 import os
-from pymongo import MongoClient
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from app.utils.mongodb_manager import get_mongo_client, get_database
 from datetime import datetime
 import logging
 
@@ -13,22 +16,25 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# MongoDB connection
-MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
-DB_NAME = os.environ.get('DB_NAME', 'trade_finance_db')
-
 def update_user_roles():
     """Update all existing users without a role to have 'user' role."""
     try:
         # Connect to MongoDB
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            logger.error("Could not connect to MongoDB")
+            return
+        
+        db = get_database(client)
+        if db is None:
+            logger.error("Could not get database")
+            return
+        
         users_collection = db.users
         
         # Find all users without a role field
         users_without_role = users_collection.find({'role': {'$exists': False}})
-        
-        update_count = 0
+                update_count = 0
         for user in users_without_role:
             # Update user with default 'user' role
             result = users_collection.update_one(

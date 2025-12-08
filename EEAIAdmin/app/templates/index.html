@@ -477,11 +477,18 @@
       <v-row justify="center" align="center" class="fill-height">
         <v-col cols="12" sm="8" md="6" lg="4">
           <v-card class="login-card" elevation="8">
+            <!-- Updated by: Ilyas - FIN001 | Date: November 22, 2025 -->
+            <!-- Changed: Made logo display conditional based on show_logo config variable -->
             <v-card-title class="text-center pa-6">
               <div class="logo-section">
-                <!-- Finstack Logo -->
-                <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 120px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;">
-                <h2 class="text-h4 font-weight-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">Finstack</h2>
+                {% if show_logo %}
+                <!-- Logo -->
+                <img src="{{ url_for('static', filename='img/' + logo_filename) }}" alt="{{ brand_title }} Logo" style="width: 120px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;">
+                {% endif %}
+                <!-- Ilyas - FIN001 | Date: November 22, 2025 | Purpose: Control brand title text visibility with SHOW_FINSTACK_LOGO configuration -->
+                {% if show_logo %}
+                <h2 class="text-h4 font-weight-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">{{ brand_title }}</h2>
+                {% endif %}
                 <p class="text-subtitle-1" style="color: #475569; font-weight: 500;">Enterprise Financial Platform</p>
               </div>
             </v-card-title>
@@ -541,12 +548,21 @@
       <v-row justify="center" align="center" class="fill-height">
         <v-col cols="12" sm="8" md="6" lg="4">
           <v-card class="login-card" elevation="8">
+            <!-- Updated by: Ilyas - FIN001 | Date: November 22, 2025 -->
+            <!-- Changed: Made logo display conditional on registration form -->
             <v-card-title class="text-center pa-6">
               <div class="logo-section">
-                <!-- Finstack Logo -->
-                <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 120px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;">
+                {% if show_logo %}
+                <!-- Logo -->
+                <img src="{{ url_for('static', filename='img/' + logo_filename) }}" alt="{{ brand_title }} Logo" style="width: 120px; height: auto; margin-bottom: 16px; display: block; margin-left: auto; margin-right: auto;">
+                {% endif %}
                 <h2 class="text-h4 font-weight-bold" style="color: #0F172A; font-family: 'Poppins', sans-serif;">Create Account</h2>
-                <p class="text-subtitle-1" style="color: #475569; font-weight: 500;">Join Finstack Enterprise</p>
+                <!-- Ilyas - FIN001 | Date: November 22, 2025 | Purpose: Control brand text in registration subtitle with SHOW_FINSTACK_LOGO configuration -->
+                {% if show_logo %}
+                <p class="text-subtitle-1" style="color: #475569; font-weight: 500;">Join {{ brand_title }} Enterprise</p>
+                {% else %}
+                <p class="text-subtitle-1" style="color: #475569; font-weight: 500;">Join Enterprise</p>
+                {% endif %}
               </div>
             </v-card-title>
             <v-card-text class="pa-6">
@@ -635,14 +651,19 @@
         <div class="floating-header-content">
           <!-- Brand Section -->
           <div class="brand-section">
+            {% if show_logo %}
             <div class="logo-container">
               <div class="modern-logo">
-                <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 40px; height: auto; display: block;">
+                <img src="{{ url_for('static', filename='img/' + logo_filename) }}" alt="{{ brand_title }} Logo" style="width: 40px; height: auto; display: block;">
                 <div class="status-pulse"></div>
               </div>
             </div>
+            {% endif %}
             <div class="brand-info">
-              <h1 class="brand-title">Finstack</h1>
+              <!-- Control brand title text visibility with SHOW_FINSTACK_LOGO configuration -->
+              {% if show_logo %}
+              <h1 class="brand-title">{{ brand_title }}</h1>
+              {% endif %}
               <p class="brand-subtitle">Enterprise Financial Intelligence Platform</p>
             </div>
           </div>
@@ -658,10 +679,13 @@
               <span>AI Document Scrutiny</span>
             </a>
 
+            {% if enable_admin_config %}
+            <!-- Made Admin Configuration link conditional based on ENABLE_ADMIN_CONFIG -->
             <a href="/document_entity_maintenance" class="nav-pill">
               <i class="mdi mdi-cog-outline"></i>
               <span>Admin Configuration</span>
             </a>
+            {% endif %}
           </nav>
 
           <!-- Actions -->

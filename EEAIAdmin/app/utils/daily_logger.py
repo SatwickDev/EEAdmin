@@ -106,8 +106,57 @@ def setup_application_logging():
     root_logger.addHandler(daily_logger.handler)
     root_logger.setLevel(logging.INFO)
     
+    # Suppress console output for Flask/Werkzeug loggers
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.handlers.clear()
+    werkzeug_logger.addHandler(daily_logger.handler)
+    werkzeug_logger.setLevel(logging.WARNING)  # Only warnings and above
+    
+    # Suppress console output for Flask logger
+    flask_logger = logging.getLogger('flask')
+    flask_logger.handlers.clear()
+    flask_logger.addHandler(daily_logger.handler)
+    
+    # Suppress console output for all app.backend loggers (including Bounding_Boxes)
+    backend_logger = logging.getLogger('app.backend')
+    backend_logger.handlers.clear()
+    backend_logger.addHandler(daily_logger.handler)
+    backend_logger.propagate = False  # Don't propagate to root to avoid duplicate logs
+    
+    # Suppress console output for app.routes
+    routes_logger = logging.getLogger('app.routes')
+    routes_logger.handlers.clear()
+    routes_logger.addHandler(daily_logger.handler)
+    routes_logger.propagate = False
+    
     app_logger.info("=== Application Logging Initialized ===")
     return app_logger
+
+
+def suppress_console_logging():
+    """
+    Suppress all console logging - redirect everything to file only.
+    Call this after Flask app creation to ensure all handlers are redirected.
+    """
+    # Remove StreamHandlers from all loggers
+    for name in list(logging.Logger.manager.loggerDict.keys()):
+        logger = logging.getLogger(name)
+        # Remove any StreamHandler (console handler)
+        handlers_to_remove = [h for h in logger.handlers if isinstance(h, logging.StreamHandler) 
+                              and not isinstance(h, logging.FileHandler)]
+        for handler in handlers_to_remove:
+            logger.removeHandler(handler)
+        
+        # Ensure file handler is present
+        if daily_logger.handler not in logger.handlers and logger.handlers:
+            pass  # Keep existing file handlers if any
+    
+    # Also clean root logger
+    root_logger = logging.getLogger()
+    handlers_to_remove = [h for h in root_logger.handlers if isinstance(h, logging.StreamHandler) 
+                          and not isinstance(h, logging.FileHandler)]
+    for handler in handlers_to_remove:
+        root_logger.removeHandler(handler)
 
 
 def log_info(message, **kwargs):

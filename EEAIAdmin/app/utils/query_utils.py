@@ -2469,10 +2469,13 @@ def analyze_unified_compliance_fast(fields, document_type=None):
     RULE-BASED COMPLIANCE VALIDATION: Uses document-specific discrepancy rules 
     from discrepancy_rules.json to perform comprehensive compliance analysis.
     
+    Loads prompts and settings from document_classification_config.yaml.
+    
     NEW APPROACH:
     - Single unified compliance check (no separate UCP600/SWIFT)
     - Uses actual discrepancy rules from rules file
     - Document-type specific rule application
+    - Prompts loaded from YAML config for easy customization
     - Returns unified compliance result and empty UCP600/SWIFT for backward compatibility
     
     Args:
@@ -2486,10 +2489,36 @@ def analyze_unified_compliance_fast(fields, document_type=None):
     import json
     import openai
     import time
+    import yaml
     
     start_time = time.time()
     
     try:
+        # Load compliance config from YAML
+        config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'document_classification_config.yaml')
+        compliance_config = {}
+        
+        if os.path.exists(config_path):
+            with open(config_path, 'r', encoding='utf-8') as f:
+                full_config = yaml.safe_load(f)
+                compliance_config = full_config.get('compliance', {})
+                logger.info(f"SUCCESS: Loaded compliance config from YAML")
+        else:
+            logger.warning(f"WARNING: Config file not found at {config_path}, using defaults")
+        
+        # Extract config values with defaults
+        model = compliance_config.get('model', deployment_name)
+        temperature = compliance_config.get('temperature', 0.1)
+        system_prompt_from_config = compliance_config.get('system_prompt', '')
+        check_mandatory = compliance_config.get('check_mandatory_fields', True)
+        check_conditional = compliance_config.get('check_conditional_fields', True)
+        check_data_quality = compliance_config.get('check_data_quality', True)
+        check_format = compliance_config.get('check_format_validity', True)
+        severity_levels = compliance_config.get('severity_levels', ['critical', 'warning', 'info'])
+        
+        logger.info(f"CONFIG: Using model={model}, temperature={temperature}")
+        logger.info(f"CONFIG: check_mandatory={check_mandatory}, check_data_quality={check_data_quality}")
+        
         # Load document-specific rules
         if document_type:
             document_rules = load_discrepancy_rules_for_document(document_type)
@@ -2510,8 +2539,24 @@ def analyze_unified_compliance_fast(fields, document_type=None):
         else:
             rules_context = "\n\nUsing standard trade finance compliance guidelines."
         
-        # UNIFIED COMPLIANCE PROMPT - stores result in global variable for route access
-        unified_prompt = f"""You are a trade finance compliance expert. Analyze these {len(field_entries)} fields for compliance violations based on the specific rules provided.
+        # Build validation instructions based on config flags
+        validation_instructions = []
+        if check_mandatory:
+            validation_instructions.append("- Check ALL mandatory fields are present and complete")
+        if check_conditional:
+            validation_instructions.append("- Verify conditional fields based on document context")
+        if check_data_quality:
+            validation_instructions.append("- Assess data quality (dates in YYYY-MM-DD, amounts with currency)")
+        if check_format:
+            validation_instructions.append("- Validate format consistency (reference numbers, names/addresses)")
+        
+        validation_text = "\n".join(validation_instructions) if validation_instructions else "- Perform standard compliance checks"
+        
+        # Build severity mapping from config
+        severity_map = f"Use severity levels: {', '.join(severity_levels)}" if severity_levels else "Use 'high', 'medium', 'low' severity levels"
+        
+        # UNIFIED COMPLIANCE PROMPT - using config-based system prompt
+        unified_prompt = f"""Analyze these {len(field_entries)} fields for compliance violations based on the specific rules provided.
 
 DOCUMENT TYPE: {document_type or 'Unknown'}
 
@@ -2519,31 +2564,36 @@ EXTRACTED FIELDS:
 {json.dumps(field_entries, separators=(',', ':'))}
 {rules_context}
 
+VALIDATION CHECKS TO PERFORM:
+{validation_text}
+
 INSTRUCTIONS:
 1. Check each field against the applicable rules above
 2. Identify any compliance violations or discrepancies
 3. Reference specific rule codes and bases when violations are found
-4. Use "high" severity for mandatory rule violations, "medium" for operational issues, "low" for minor discrepancies
+4. {severity_map}
 5. Provide a single unified compliance result
 6. For each field, if it matches any rule from the rules list above, always include the "rule_code" from that rule, even if compliant.
 
-
 Return JSON only:
 {{"results":[{{"field":"<field_name>","value":"<field_value>",
-"compliance":true/false,"severity":"high/medium/low",
+"compliance":true/false,"severity":"critical/warning/info",
 "reason":"Detailed explanation with specific rule reference if violated",
 "rule_code":"<rule_code_if_violated>"}}]}}"""
 
         logger.info(f"UNIFIED COMPLIANCE: Analyzing {len(field_entries)} fields with {len(document_rules)} rules for {document_type}")
         
-        # AI call for unified compliance analysis
+        # Use system prompt from config if available, otherwise use default
+        effective_system_prompt = system_prompt_from_config if system_prompt_from_config else "You are an expert trade finance compliance analyst. Focus on identifying actual discrepancies against the provided rules."
+        
+        # AI call for unified compliance analysis - using config values
         response = openai.ChatCompletion.create(
-            engine=deployment_name,
+            engine=model if model else deployment_name,
             messages=[
-                {"role": "system", "content": "You are an expert trade finance compliance analyst. Focus on identifying actual discrepancies against the provided rules."},
+                {"role": "system", "content": effective_system_prompt},
                 {"role": "user", "content": unified_prompt}
             ],
-            temperature=0.1,
+            temperature=temperature,
             max_tokens=2000,
             top_p=0.9
         )
@@ -2625,6 +2675,7 @@ Return JSON only:
 # - analyze_ucp_compliance_chromaRAG() - REMOVED
 # - analyze_swift_compliance_chromaRAG() - REMOVED
 # All compliance now uses document-specific rules from discrepancy_rules.json
+# Discrepancy analysis (separate) uses document-specific rules from discrepancy_rules.json/xml
 
 def update_ucp_compliance_reason_in_chromadb_direct(chunk, reason):
     """Update a UCP600 chunk in ChromaDB with a new reason, using consistent embedding."""

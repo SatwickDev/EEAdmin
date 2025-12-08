@@ -7,13 +7,16 @@ No frontend or route changes required - database operations only
 import os
 import sys
 from datetime import datetime
-from pymongo import MongoClient
 from werkzeug.security import generate_password_hash
 import getpass
+import logging
 
-# MongoDB connection
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-DB_NAME = os.getenv('DB_NAME', 'trade_finance_db')
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+from app.utils.mongodb_manager import get_mongo_client, get_database
+
+logger = logging.getLogger(__name__)
 
 # Extended role definitions
 ROLES = {
@@ -82,8 +85,16 @@ ROLES = {
 def create_roles_collection():
     """Create roles collection with predefined roles"""
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            print("✗ Failed to connect to MongoDB")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            print("✗ Failed to get database")
+            return False
+            
         roles_collection = db.roles
         
         print("\n=== Creating Roles Collection ===")
@@ -118,14 +129,22 @@ def create_roles_collection():
         print(f"✗ Error creating roles: {str(e)}")
         return False
     finally:
-        if 'client' in locals():
+        if client:
             client.close()
 
 def add_admin_user():
     """Add a new admin user interactively"""
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            print("✗ Failed to connect to MongoDB")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            print("✗ Failed to get database")
+            return False
+            
         users_collection = db.users
         
         print("\n=== Add New Admin User ===")
@@ -201,8 +220,16 @@ def add_admin_user():
 def bulk_add_admins():
     """Add multiple admin users from predefined list"""
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            print("✗ Failed to connect to MongoDB")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            print("✗ Failed to get database")
+            return False
+            
         users_collection = db.users
         
         print("\n=== Bulk Add Admin Users ===")
@@ -285,8 +312,16 @@ def bulk_add_admins():
 def update_existing_users_permissions():
     """Update all existing users with their role permissions"""
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            print("✗ Failed to connect to MongoDB")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            print("✗ Failed to get database")
+            return False
+            
         users_collection = db.users
         
         print("\n=== Updating Existing Users with Permissions ===")

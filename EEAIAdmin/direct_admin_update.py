@@ -4,19 +4,31 @@ Direct MongoDB update to create admin user
 Works even if Flask server is not accessible
 """
 
-from pymongo import MongoClient
-from werkzeug.security import generate_password_hash
 import sys
+import os
 
-# MongoDB connection
-MONGO_URI = 'mongodb://localhost:27017/'
-DB_NAME = 'trade_finance_db'
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+from werkzeug.security import generate_password_hash
+from app.utils.mongodb_manager import get_mongo_client, get_database
+import logging
+
+logger = logging.getLogger(__name__)
 
 def update_user_to_admin(email):
     """Update existing user to admin role"""
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            logger.error("Failed to connect to MongoDB - client is None")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            logger.error("Failed to get database")
+            return False
+            
         users = db.users
         
         # Update user role
@@ -46,13 +58,22 @@ def update_user_to_admin(email):
         print(f"✗ Error: {str(e)}")
         return False
     finally:
-        client.close()
+        if client:
+            client.close()
 
 def create_admin_user():
     """Create a new admin user"""
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            print("✗ Failed to connect to MongoDB")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            print("✗ Failed to get database")
+            return False
+            
         users = db.users
         
         # Check if admin already exists
@@ -90,7 +111,8 @@ def create_admin_user():
         print(f"✗ Error: {str(e)}")
         return False
     finally:
-        client.close()
+        if client:
+            client.close()
 
 if __name__ == "__main__":
     print("=== Direct Admin Setup ===")

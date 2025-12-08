@@ -39,7 +39,7 @@ class EnhancedInconsistencyAnalyzer:
     
     def __init__(self, config_path: str = None):
         """Initialize the enhanced analyzer with configuration"""
-        self.config_path = config_path or "app/data/inconsistency_analysis_config.json"
+        self.config_path = config_path or "data/inconsistency_analysis_config.json"
         self.config = self._load_config()
         self.field_mappings = self.config.get('field_mappings', [])
         self.inconsistency_types = self.config.get('inconsistency_types', {})

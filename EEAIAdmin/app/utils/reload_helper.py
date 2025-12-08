@@ -34,7 +34,7 @@ def _touch_reload_marker(data_folder: str) -> None:
 
 
 def _reload_document_classifier_instances() -> Optional[int]:
-    """If `app.utils.document_classifier` is loaded, call its
+    """If `app.backend.Smart_Document_Capture.Document_Classification.document_classifier` is loaded, call its
     `reload_all_document_classifier_instances()` helper on the existing
     module object (so live instances registered in the old module are
     updated). Returns the number of reloaded instances, or None if the
@@ -44,7 +44,7 @@ def _reload_document_classifier_instances() -> Optional[int]:
         import importlib
         import sys
 
-        mod_name = 'app.utils.document_classifier'
+        mod_name = 'app.backend.Smart_Document_Capture.Document_Classification.document_classifier'
         existing_mod = sys.modules.get(mod_name)
 
         if existing_mod and hasattr(existing_mod, 'reload_all_document_classifier_instances'):
@@ -91,7 +91,7 @@ def _reload_document_classifier_instances() -> Optional[int]:
 
 def reload_all_jsons() -> bool:
     """
-    Reload JSON/YAML/XML files in the `app/data` folder and update the
+    Reload JSON/YAML/XML files in the root `data` folder and update the
     global `app.json_data_cache` in-place so other modules holding
     references see changes immediately.
     """
@@ -263,178 +263,4 @@ def reload_all_jsons() -> bool:
         return False
 
 
-def reload_app_data(folder_path: str = None):
-    """
-    Reload JSON, YAML and XML files from the `app/data` folder and update `app.app_data_cache`.
 
-    If `folder_path` is provided it will be used; otherwise defaults to the repository `app/data` directory.
-    """
-    try:
-        import importlib
-
-        if not folder_path:
-            # prefer the app package data directory when no path provided
-            app_pkg = importlib.import_module('app')
-            app_pkg_dir = os.path.dirname(os.path.abspath(app_pkg.__file__))
-            folder_path = os.path.join(app_pkg_dir, 'data')
-        folder_path = os.path.abspath(folder_path)
-
-        # Validate folder_path type early to provide clearer errors
-        if not isinstance(folder_path, (str, bytes, os.PathLike)):
-            try:
-                from xml.etree.ElementTree import Element
-                if isinstance(folder_path, Element):
-                    logger.error("Provided folder_path is an XML Element object — expected a filesystem path string.")
-                else:
-                    logger.error(f"Provided folder_path has unexpected type: {type(folder_path)} — expected str or PathLike.")
-            except Exception:
-                logger.error(f"Provided folder_path has unexpected type: {type(folder_path)} — expected str or PathLike.")
-            return False
-
-        logger.info(f"✅ App data folder path:: {folder_path}")
-
-        # Import or create the global app_data_cache on the app package
-        app_pkg = importlib.import_module('app')
-        if not hasattr(app_pkg, 'app_data_cache'):
-            logger.info("Creating `app_data_cache` on app module")
-            setattr(app_pkg, 'app_data_cache', {})
-
-        try:
-            last_reload = getattr(app_pkg, '_last_json_reload', 0)
-        except Exception:
-            last_reload = 0
-
-        now = time.time()
-        if last_reload and (now - last_reload) < _RELOAD_DEBOUNCE_SECONDS:
-            logger.debug(f'⏱️ Skipping reload_app_data: debounced ({now - last_reload:.2f}s < {_RELOAD_DEBOUNCE_SECONDS}s)')
-            return False
-
-        # Check if ANY file in the app data folder has changed since last_reload
-        any_file_changed = False
-        try:
-            app_data_cache = getattr(app_pkg, 'app_data_cache', {})
-            if not app_data_cache:  # First load
-                any_file_changed = True
-            elif last_reload > 0:
-                # Check actual file mtimes
-                for root, _, files in os.walk(folder_path):
-                    for filename in files:
-                        if not filename.endswith(('.json', '.yaml', '.yml', '.xml')):
-                            continue
-                        full_path = os.path.join(root, filename)
-                        try:
-                            mtime = os.path.getmtime(full_path)
-                            if mtime > last_reload:
-                                logger.debug(f"📝 App data file changed: {filename} (mtime={mtime}, last_reload={last_reload})")
-                                any_file_changed = True
-                                break
-                        except Exception:
-                            continue
-                    if any_file_changed:
-                        break
-        except Exception as e:
-            logger.debug(f"Error checking app data file mtimes: {e}")
-
-        if not any_file_changed:
-            logger.debug('✅ No app data files changed since last reload')
-            return False
-
-        # Acquire lock before performing reload
-        acquired = _reload_lock.acquire(timeout=10)
-        if not acquired:
-            logger.warning('Another thread/process is performing reload_app_data; skipping')
-            return False
-
-        try:
-            perform_full_reload = not bool(getattr(app_pkg, 'app_data_cache', {}))
-
-            if perform_full_reload:
-                new_data = reload_json_and_xml_folder(folder_path)
-            else:
-                changed_files = []
-                for root, _, files in os.walk(folder_path):
-                    for filename in files:
-                        if not filename.endswith(('.json', '.yaml', '.yml', '.xml')):
-                            continue
-                        full_path = os.path.join(root, filename)
-                        try:
-                            mtime = os.path.getmtime(full_path)
-                        except Exception:
-                            continue
-                        if mtime and (not last_reload or mtime > last_reload):
-                            changed_files.append(full_path)
-
-                if not changed_files:
-                    logger.debug('No changed files detected for reload_app_data')
-                    return False
-
-                # Reload changed files
-                for fp in changed_files:
-                    key, content = reload_single_file(fp, folder_path)
-                    if key is None:
-                        continue
-                    try:
-                        app_pkg.app_data_cache[key] = content
-                    except Exception:
-                        logger.exception(f'Failed to update app_data_cache for {key}')
-
-                # Remove stale keys
-                current_keys = set()
-                for root, _, files in os.walk(folder_path):
-                    for filename in files:
-                        if not filename.endswith(('.json', '.yaml', '.yml', '.xml')):
-                            continue
-                        rel = os.path.relpath(os.path.join(root, filename), folder_path)
-                        k = os.path.splitext(rel.replace('\\', '/'))[0]
-                        current_keys.add(k)
-
-                keys_to_delete = [k for k in app_pkg.app_data_cache.keys() if k not in current_keys and not k.startswith('_')]
-                for k in keys_to_delete:
-                    try:
-                        del app_pkg.app_data_cache[k]
-                    except Exception:
-                        logger.debug(f'Failed to delete stale key from app_data_cache: {k}')
-
-                new_data = dict(app_pkg.app_data_cache)
-
-            if not isinstance(new_data, dict):
-                logger.error(f"reload_json_and_xml_folder returned unexpected type: {type(new_data)}")
-                return False
-
-            # Replace contents of cache in-place so references remain valid
-            app_pkg.app_data_cache.clear()
-            try:
-                app_pkg.app_data_cache.update(new_data)
-                try:
-                    app_pkg.app_data_cache['_last_reloaded'] = datetime.utcnow().isoformat() + 'Z'
-                except Exception:
-                    pass
-            except Exception as e:
-                logger.exception(f"Failed to update app_data_cache with new data: {e}")
-                return False
-
-            # Touch marker and reload any live DocumentClassifier instances
-            _touch_reload_marker(folder_path)
-
-            # Record last reload time on app package
-            try:
-                app_pkg._last_json_reload = time.time()
-            except Exception:
-                logger.debug('Could not set app_pkg._last_json_reload after app data reload')
-
-            reloaded = _reload_document_classifier_instances()
-            if reloaded is None:
-                logger.debug("No DocumentClassifier helper available to reload instances")
-            else:
-                logger.info(f"✅ Reloaded {reloaded} DocumentClassifier instance(s) after app data reload")
-
-            logger.info(f"✅ App data reloaded successfully from {folder_path}; {len(new_data)} entries updated. Cache keys: {list(app_pkg.app_data_cache.keys())[:10]}...")
-            return True
-        finally:
-            try:
-                _reload_lock.release()
-            except Exception:
-                pass
-    except Exception as e:
-        logger.exception(f"⚠️ Failed to reload app data: {e}")
-        return False

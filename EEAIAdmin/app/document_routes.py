@@ -16,8 +16,8 @@ import base64
 import logging
 
 # Import AI processing utilities
-from app.utils.document_classifier import DocumentClassifier
-from app.utils.coordinate_mapper import FieldCoordinateMapper
+from app.backend.Smart_Document_Capture.Document_Classification import DocumentClassifier
+from app.backend.Smart_Document_Capture.Bounding_Boxes import FieldCoordinateMapper
 
 # Configure logger
 logger = logging.getLogger(__name__)

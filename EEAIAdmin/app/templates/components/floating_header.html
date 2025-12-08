@@ -6,14 +6,19 @@
     <div class="floating-header-content">
         <!-- Brand Section -->
         <div class="brand-section">
+            {% if show_logo %}
             <div class="logo-container">
                 <div class="modern-logo">
-                    <img src="{{ url_for('static', filename='img/finstack.png') }}" alt="Finstack Logo" style="width: 40px; height: auto; display: block;">
+                    <img src="{{ url_for('static', filename='img/' + logo_filename) }}" alt="{{ brand_title }} Logo" style="width: 40px; height: auto; display: block;">
                     <div class="status-pulse"></div>
                 </div>
             </div>
+            {% endif %}
             <div class="brand-info">
-                <h1 class="brand-title">Finstack</h1>
+                <!-- Control brand title text visibility with SHOW_FINSTACK_LOGO configuration -->
+                {% if show_logo %}
+                <h1 class="brand-title">{{ brand_title }}</h1>
+                {% endif %}
                 <p class="brand-subtitle">Enterprise Financial Intelligence Platform</p>
             </div>
         </div>
@@ -29,10 +34,13 @@
                 <span>AI Document Scrutiny</span>
             </a>
 
+            {% if enable_admin_config %}
+            <!-- Made Admin Configuration link conditional based on ENABLE_ADMIN_CONFIG -->
             <a href="/document_entity_maintenance" class="nav-pill" data-page="ai-Admin">
                 <i class="mdi mdi-cog-outline"></i>
                 <span>Admin Configuration</span>
             </a>
+            {% endif %}
         </nav>
 
         <!-- Actions -->

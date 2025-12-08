@@ -8,6 +8,10 @@ from app.utils.app_config import embedding_model
 client = chromadb.HttpClient(host="localhost", port=8000)
 collection_clause_tag = client.get_or_create_collection("clause_tag")
 
+def get_clause_tag_collection():
+    """Return the clause_tag collection"""
+    return collection_clause_tag
+
 def get_embedding(text):
     res = openai.Embedding.create(input=[text], engine=embedding_model)
     return res["data"][0]["embedding"]

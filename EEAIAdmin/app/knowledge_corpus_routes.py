@@ -171,16 +171,17 @@ def extract_pdf_pages(file_path):
 def generate_synopsis_with_ai(text, file_name):
     """Generate document synopsis using AI"""
     try:
-        # Configure OpenAI for Azure
-        azure_key = os.getenv('AZURE_OPENAI_API_KEY')
-        azure_base = os.getenv('AZURE_OPENAI_API_BASE')
-        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        # Configure OpenAI for Azure using api_config_manager
+        from app.utils.api_config_manager import configure_azure_openai, is_azure_openai_enabled
         
-        if azure_key and azure_base:
-            openai.api_type = "azure"
-            openai.api_key = azure_key
-            openai.api_base = azure_base
-            openai.api_version = azure_version
+        if not is_azure_openai_enabled():
+            logger.error("Azure OpenAI is disabled")
+            return None
+        
+        success, deployment_name, error_msg = configure_azure_openai(openai)
+        if not success:
+            logger.error(f"Failed to configure Azure OpenAI: {error_msg}")
+            return None
         
         prompt = f"""
 Analyze this document and create a comprehensive synopsis.
@@ -253,21 +254,20 @@ Provide a JSON response with:
 def generate_questions_for_page(page_text, page_number, num_questions=4):
     """Generate questions for a page"""
     try:
-        # Configure OpenAI for Azure
-        azure_key = os.getenv('AZURE_OPENAI_API_KEY')
-        azure_base = os.getenv('AZURE_OPENAI_API_BASE')
-        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2024-08-01-preview')
+        # Configure OpenAI for Azure using api_config_manager
+        from app.utils.api_config_manager import configure_azure_openai, is_azure_openai_enabled, get_azure_api_base
         
-        if azure_key and azure_base:
-            openai.api_type = "azure"
-            openai.api_key = azure_key
-            openai.api_base = azure_base
-            openai.api_version = azure_version
-            
-            logger.info(f"OpenAI configured - Base: {azure_base}, Version: {azure_version}, Deployment: {deployment_name}")
-            logger.info(f"API Key starts with: {azure_key[:10]}...")
-        else:
-            logger.error(f"Azure OpenAI config missing - Key: {bool(azure_key)}, Base: {azure_base}")
+        if not is_azure_openai_enabled():
+            logger.error("Azure OpenAI is disabled")
+            return []
+        
+        success, deployment_name, error_msg = configure_azure_openai(openai)
+        if not success:
+            logger.error(f"Failed to configure Azure OpenAI: {error_msg}")
+            return []
+        
+        azure_base = get_azure_api_base()
+        logger.info(f"OpenAI configured - Base: {azure_base}, Deployment: {deployment_name}")
         
         prompt = f"""
 Based on this page content, generate {num_questions} relevant questions that users might ask.
@@ -326,16 +326,17 @@ Return JSON array:
 def generate_question_variants(question, num_variants=10):
     """Generate paraphrase variants for a question"""
     try:
-        # Configure OpenAI for Azure
-        azure_key = os.getenv('AZURE_OPENAI_API_KEY')
-        azure_base = os.getenv('AZURE_OPENAI_API_BASE')
-        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        # Configure OpenAI for Azure using api_config_manager
+        from app.utils.api_config_manager import configure_azure_openai, is_azure_openai_enabled
         
-        if azure_key and azure_base:
-            openai.api_type = "azure"
-            openai.api_key = azure_key
-            openai.api_base = azure_base
-            openai.api_version = azure_version
+        if not is_azure_openai_enabled():
+            logger.error("Azure OpenAI is disabled")
+            return []
+        
+        success, deployment_name, error_msg = configure_azure_openai(openai)
+        if not success:
+            logger.error(f"Failed to configure Azure OpenAI: {error_msg}")
+            return []
         
         prompt = f"""
 Generate {num_variants} natural paraphrase variants of this question:
@@ -399,16 +400,17 @@ Return JSON array:
 def generate_answer_for_question(question, page_text, document_text=None):
     """Generate answer for a question"""
     try:
-        # Configure OpenAI for Azure
-        azure_key = os.getenv('AZURE_OPENAI_API_KEY')
-        azure_base = os.getenv('AZURE_OPENAI_API_BASE')
-        azure_version = os.getenv('AZURE_OPENAI_VERSION', '2023-12-01-preview')
+        # Configure OpenAI for Azure using api_config_manager
+        from app.utils.api_config_manager import configure_azure_openai, is_azure_openai_enabled
         
-        if azure_key and azure_base:
-            openai.api_type = "azure"
-            openai.api_key = azure_key
-            openai.api_base = azure_base
-            openai.api_version = azure_version
+        if not is_azure_openai_enabled():
+            logger.error("Azure OpenAI is disabled")
+            return None
+        
+        success, deployment_name, error_msg = configure_azure_openai(openai)
+        if not success:
+            logger.error(f"Failed to configure Azure OpenAI: {error_msg}")
+            return None
         
         context = page_text
         if document_text:

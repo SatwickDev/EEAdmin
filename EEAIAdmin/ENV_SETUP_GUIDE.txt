@@ -1,0 +1,67 @@
+# Environment Variables Setup Guide
+
+## Quick Start
+
+1. **Copy the example file:**
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. **Edit `.env` with your actual values:**
+   - Update `CHROMA_MODE` based on your deployment needs
+   - Set `MONGO_URI` to your MongoDB connection string
+   - Add your Azure OpenAI credentials
+   - Update other configuration as needed
+
+3. **Uncomment the dotenv code in `run.py`:**
+   ```python
+   # Change this:
+   # from dotenv import load_dotenv
+   # load_dotenv()
+   
+   # To this:
+   from dotenv import load_dotenv
+   load_dotenv()
+   ```
+
+4. **Run your app:**
+   ```powershell
+   python run.py
+   ```
+
+## ChromaDB Configuration Options
+
+### Option 1: Disable ChromaDB (Default - Safest for banks)
+```ini
+CHROMA_MODE=disabled
+```
+
+### Option 2: Enable for All Customers
+```ini
+CHROMA_MODE=enabled
+CHROMA_HOST=localhost
+CHROMA_PORT=8000
+```
+
+### Option 3: Enable for Specific Customers (Allowlist)
+```ini
+CHROMA_MODE=allowlist
+CHROMA_CUSTOMERS=bank1,bank2,bank3
+CHROMA_HOST=localhost
+CHROMA_PORT=8000
+```
+
+## Security Notes
+
+- **Never commit `.env` to version control** (it's already in `.gitignore`)
+- `.env.example` is safe to commit (contains no secrets)
+- For production, use environment variables from your deployment platform instead of `.env`
+
+## Precedence
+
+When using `.env` file:
+1. **Actual environment variables** (highest priority)
+2. **`.env` file values**
+3. **Application defaults** (lowest priority)
+
+This means you can override `.env` values by setting environment variables directly.

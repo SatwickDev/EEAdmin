@@ -1,6 +1,10 @@
 import sys
 import os
 
+# Load environment variables from .env file (optional - uncomment to use)
+# from dotenv import load_dotenv
+# load_dotenv()  # Load .env before anything else
+
 # Fix Unicode encoding issues when running as Windows service
 if sys.platform == 'win32':
     # Force UTF-8 encoding for the environment
@@ -42,47 +46,62 @@ if __name__ == "__main__":
     
     app, socketio = create_app()
 
-    # Check if SSL certificates exist
-    ssl_cert = os.path.join('ssl', 'cert.pem')
-    ssl_key = os.path.join('ssl', 'key.pem')
+    # Get configuration from environment variables
+    ssl_enabled = os.environ.get('SSL_ENABLED', 'true').lower() in ('true', '1', 'yes')
+    ssl_cert_path = os.environ.get('SSL_CERT_PATH', os.path.join('ssl', 'cert.pem'))
+    ssl_key_path = os.environ.get('SSL_KEY_PATH', os.path.join('ssl', 'key.pem'))
+    
+    # Server configuration
+    server_host = os.environ.get('SERVER_HOST', '0.0.0.0')
+    https_port = int(os.environ.get('HTTPS_PORT', '443'))
+    http_port = int(os.environ.get('HTTP_PORT', '80'))
+    debug_mode = os.environ.get('DEBUG_MODE', 'true').lower() in ('true', '1', 'yes')
+    allow_unsafe_werkzeug = os.environ.get('ALLOW_UNSAFE_WERKZEUG', 'true').lower() in ('true', '1', 'yes')
 
     local_ip = get_local_ip()
 
-    if os.path.exists(ssl_cert) and os.path.exists(ssl_key):
+    # Check if SSL should be enabled and certificates exist
+    if ssl_enabled and os.path.exists(ssl_cert_path) and os.path.exists(ssl_key_path):
         # HTTPS with SSL certificates
         log_system("SSL_ENABLED",
                    message="SSL certificates found, starting HTTPS server",
-                   port=443, cert_path=ssl_cert, key_path=ssl_key)
+                   port=https_port, cert_path=ssl_cert_path, key_path=ssl_key_path)
         print("[SSL] SSL certificates found. Starting HTTPS server...")
-        print("[WEB] Access at: https://localhost:443")
-        print(f"[WEB] Or from network: https://{local_ip}:443")
+        print(f"[WEB] Access at: https://localhost:{https_port}")
+        print(f"[WEB] Or from network: https://{local_ip}:{https_port}")
         print("[WARN] If security warning appears, click 'Advanced' -> 'Proceed'")
         print("")
 
         socketio.run(
             app,
-            host="0.0.0.0",  # Bind to all network interfaces
-            port=443,  # Standard HTTPS port
-            debug=True,
-            allow_unsafe_werkzeug=True,
-            ssl_context=(ssl_cert, ssl_key)
+            host=server_host,
+            port=https_port,
+            debug=debug_mode,
+            allow_unsafe_werkzeug=allow_unsafe_werkzeug,
+            ssl_context=(ssl_cert_path, ssl_key_path)
         )
     else:
         # HTTP without SSL
-        log_system("SSL_DISABLED",
-                   message="SSL certificates not found, using HTTP",
-                   port=80, cert_path=ssl_cert, key_path=ssl_key)
-
-        print("[WARN] SSL certificates not found. Running on HTTP...")
+        if ssl_enabled:
+            log_system("SSL_MISCONFIGURED",
+                       message="SSL enabled but certificates not found, falling back to HTTP",
+                       port=http_port, cert_path=ssl_cert_path, key_path=ssl_key_path)
+            print("[WARN] SSL enabled but certificates not found. Falling back to HTTP...")
+        else:
+            log_system("SSL_DISABLED",
+                       message="SSL disabled, using HTTP",
+                       port=http_port)
+            print("[INFO] SSL disabled. Running on HTTP...")
+        
         print("[INFO] To enable HTTPS and camera, run: python generate_cert.py")
-        print("[WEB] Access at: http://localhost:80")
-        print(f"[WEB] Or from network: http://{local_ip}:80")
+        print(f"[WEB] Access at: http://localhost:{http_port}")
+        print(f"[WEB] Or from network: http://{local_ip}:{http_port}")
         print("")
 
         socketio.run(
             app,
-            host="0.0.0.0",
-            port=80,  # Standard HTTP port
-            debug=True,
-            allow_unsafe_werkzeug=True
+            host=server_host,
+            port=http_port,
+            debug=debug_mode,
+            allow_unsafe_werkzeug=allow_unsafe_werkzeug
         )

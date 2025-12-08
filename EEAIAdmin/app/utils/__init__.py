@@ -23,7 +23,6 @@ from .query_utils import (
 
 # File utilities
 from .file_utils import (
-    extract_text_from_file,
     save_uploaded_file,
     load_faiss_index,
     retrieve_relevant_chunks,
@@ -45,13 +44,6 @@ from .api_utils import (
     handle_api_request
 )
 
-# Compliance utilities
-from .compliance_utils import (
-    check_compliance,
-    sanitize_user_input,
-    apply_additional_compliance_checks,
-)
-
 # GPT-based utilities
 from .gpt_utils import (
     generate_llm_insights as gpt_generate_llm_insights,  # Avoid conflict with query_utils
@@ -61,15 +53,6 @@ from .gpt_utils import (
     generate_response,
     classify_document_gpt
 )
-
-# Conversation management
-from .conversation import (
-    conversation_lock,
-    conversation_history,
-)
-
-# rag ucp600
-
 
 # Application configuration
 from .app_config import (

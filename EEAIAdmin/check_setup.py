@@ -32,13 +32,23 @@ def check_server():
 def check_mongodb():
     """Check if MongoDB is accessible"""
     try:
-        from pymongo import MongoClient
-        client = MongoClient('mongodb://localhost:27017/', serverSelectionTimeoutMS=2000)
+        import sys
+        import os
+        sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+        
+        from app.utils.mongodb_manager import get_mongo_client
+        
+        client = get_mongo_client(timeout_ms=2000)
+        if client is None:
+            print("✗ MongoDB is NOT accessible (MONGO_MODE may be disabled)")
+            return False
+            
+        # Test the connection
         client.server_info()
         print("✓ MongoDB is running")
         return True
-    except:
-        print("✗ MongoDB is NOT accessible")
+    except Exception as e:
+        print(f"✗ MongoDB is NOT accessible: {str(e)}")
         print("  Make sure MongoDB is installed and running")
         return False
 

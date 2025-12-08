@@ -10,6 +10,7 @@ from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
 from pymongo import MongoClient
 import re
+from app.utils import mongodb_manager
 
 logger = logging.getLogger(__name__)
 
@@ -195,13 +196,14 @@ class DatabaseConfigQueryExecutor:
             db_name = self.config.get('connection', {}).get('database', 'eeai_db')
             collection_name = base_table.get('collection', base_table.get('id'))
             
-            # Connect to MongoDB
+            # Connect to MongoDB using environment configuration
             if connection_string:
                 client = MongoClient(connection_string)
             else:
-                # Use default connection
-                MONGO_URI = "mongodb://localhost:27017/"
-                client = MongoClient(MONGO_URI)
+                # Use mongodb_manager for environment-aware connection
+                client = mongodb_manager.get_mongo_client()
+                if client is None:
+                    raise Exception("MongoDB is not available or disabled")
             
             db = client[db_name]
             collection = db[collection_name]

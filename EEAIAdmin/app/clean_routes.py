@@ -6,20 +6,30 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 import logging
 from bson import ObjectId
-from pymongo import MongoClient
+
+from app.utils.mongodb_manager import get_mongo_client, get_database
 
 logger = logging.getLogger(__name__)
 
 # Create Blueprint
 clean_routes_bp = Blueprint('clean_routes', __name__)
 
-# MongoDB setup - matching the main routes.py configuration
-MONGO_URI = "mongodb://localhost:27017/"
-DATABASE_NAME = "finai_chatbot"
-client = MongoClient(MONGO_URI, connectTimeoutMS=5000, serverSelectionTimeoutMS=5000)
-db = client[DATABASE_NAME]
-conversation_collection = db.conversation_history
-sessions_collection = db.sessions
+# MongoDB setup - using centralized manager
+client = get_mongo_client()
+if client is None:
+    logger.error("Failed to initialize MongoDB client for clean_routes")
+    db = None
+    conversation_collection = None
+    sessions_collection = None
+else:
+    db = get_database(client)
+    if db is None:
+        logger.error("Failed to get database for clean_routes")
+        conversation_collection = None
+        sessions_collection = None
+    else:
+        conversation_collection = db.conversation_history
+        sessions_collection = db.sessions
 
 
 class SessionManager:

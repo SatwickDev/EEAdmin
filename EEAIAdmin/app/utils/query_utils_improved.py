@@ -9,6 +9,8 @@ import re
 from app.utils.file_utils import get_embedding_azureRAG
 from app.utils.app_config import deployment_name
 import openai
+from app.utils.chroma_manager import get_chroma_client_for_customer, get_request_customer_id
+from flask import request as _flask_request
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +22,8 @@ def get_cached_embedding(query: str):
 
 class QueryProcessor:
     """Improved query processor with better separation of concerns"""
-    
-    def __init__(self, user_manual_collection):
-        self.user_manual_collection = user_manual_collection
+
+    def __init__(self):
         self.intent_cache = {}  # Cache intent classifications
         
     def process_user_query(self, user_query: str, user_id: str, 
@@ -112,8 +113,21 @@ class QueryProcessor:
         try:
             # Use cached embedding
             query_embedding = get_cached_embedding(user_query.strip())
-            
-            results = self.user_manual_collection.query(
+
+            # Acquire per-customer chroma collection at runtime
+            try:
+                customer_id = get_request_customer_id(_flask_request)
+            except Exception:
+                customer_id = None
+
+            from app import db as app_db
+            chroma_client = get_chroma_client_for_customer(customer_id, app_db)
+            if not chroma_client:
+                logger.debug("Chroma client not available for manual context retrieval")
+                return ""
+
+            collection = chroma_client.get_or_create_collection("user_manual")
+            results = collection.query(
                 query_embeddings=[query_embedding],
                 n_results=3,
                 where={"user_id": user_id}

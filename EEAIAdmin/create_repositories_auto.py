@@ -6,12 +6,15 @@ Automatically create default repositories for EEAI system
 import os
 import sys
 from datetime import datetime
-from pymongo import MongoClient
 from bson import ObjectId
+import logging
 
-# MongoDB connection
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-DB_NAME = os.getenv('DB_NAME', 'trade_finance_db')
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+from app.utils.mongodb_manager import get_mongo_client, get_database
+
+logger = logging.getLogger(__name__)
 
 # Default repositories
 DEFAULT_REPOSITORIES = [
@@ -123,12 +126,20 @@ def create_repositories():
     """Create default repositories in MongoDB"""
     try:
         # Connect to MongoDB
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            print("✗ Failed to connect to MongoDB")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            print("✗ Failed to get database")
+            return False
+            
         repositories_collection = db.repositories
         
         print("\n=== Creating Default Repositories ===")
-        print(f"Connected to database: {DB_NAME}")
+        print(f"Connected to database: {db.name}")
         
         # Check if repositories already exist
         existing_count = repositories_collection.count_documents({})
@@ -167,14 +178,22 @@ def create_repositories():
         print(f"\n✗ Error creating repositories: {str(e)}")
         return False
     finally:
-        if 'client' in locals():
+        if client:
             client.close()
 
 def verify_repositories():
     """Verify repositories were created correctly"""
     try:
-        client = MongoClient(MONGO_URI)
-        db = client[DB_NAME]
+        client = get_mongo_client()
+        if client is None:
+            print("✗ Failed to connect to MongoDB")
+            return False
+        
+        db = get_database(client, 'trade_finance_db')
+        if db is None:
+            print("✗ Failed to get database")
+            return False
+            
         repositories_collection = db.repositories
         
         print("\n=== Verifying Repositories ===")

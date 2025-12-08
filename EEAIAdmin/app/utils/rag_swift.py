@@ -8,6 +8,10 @@ from app.utils.app_config import embedding_model
 client = chromadb.HttpClient(host="localhost", port=8000)
 collection_swift_rules = client.get_or_create_collection("swift_rules")
 
+def get_swift_rules_collection():
+    """Return the swift_rules collection"""
+    return collection_swift_rules
+
 def get_embedding(text):
     res = openai.Embedding.create(input=[text], engine=embedding_model)
     return res["data"][0]["embedding"]

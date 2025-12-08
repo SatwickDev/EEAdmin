@@ -9,10 +9,10 @@ from flask_socketio import SocketIO
 from app.routes import setup_auth_routes
 from app.utils.app_config import load_dotenv, engine
 from app.utils.common import load_schema
-from app.utils.websocket_handler import init_websocket_handler
+from app.backend.WebSocket_And_ProgressUpdater import init_websocket_handler
 
 # Initialize daily logging system
-from app.utils.daily_logger import setup_application_logging
+from app.utils.daily_logger import setup_application_logging, suppress_console_logging
 
 # Load environment variables
 load_dotenv()
@@ -70,7 +70,6 @@ def create_app():
         app_pkg_dir = os.path.dirname(os.path.abspath(__file__))
         monitored = [
             os.path.join(app_pkg_dir, '..', 'data'),  # repo-level data folder
-            os.path.join(app_pkg_dir, 'data'),         # app/data
         ]
         overall_max = 0.0
         for d in monitored:
@@ -138,10 +137,9 @@ def create_app():
                 last_reload = getattr(current_app, '_last_json_reload', 0)
                 # Only reload if more than 2 seconds have passed since last reload
                 if now - last_reload > 2:
-                    # Check if any file in data or app/data has changed since last reload
+                    # Check if any file in root data folder has changed since last reload
                     data_dirs = [
-                        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data'),
-                        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+                        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
                     ]
                     changed = False
                     for folder in data_dirs:
@@ -156,9 +154,8 @@ def create_app():
                             break
                     if changed:
                         try:
-                            from app.utils.reload_helper import reload_all_jsons, reload_app_data
+                            from app.utils.reload_helper import reload_all_jsons
                             reload_all_jsons()
-                            reload_app_data()
                             logger.info("✅ Auto JSON reload triggered after data change in monitored folders")
                             current_app._last_json_reload = now
                             g.data_modified = False
@@ -170,12 +167,12 @@ def create_app():
 
     @app.before_request
     def _check_reload_marker():
-        """Per-worker marker check: if `app/data/.last_reload` mtime is newer than the
+        """Per-worker marker check: if `data/.last_reload` mtime is newer than the
         in-process marker, call the reload helpers so workers stay in sync.
         """
         try:
             import os
-            marker = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', '.last_reload')
+            marker = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', '.last_reload')
             try:
                 mtime = os.path.getmtime(marker)
             except Exception:
@@ -184,9 +181,8 @@ def create_app():
             last = getattr(current_app, '_last_reload_mtime', None)
             if mtime and (last is None or mtime > last):
                 try:
-                    from app.utils.reload_helper import reload_all_jsons, reload_app_data
+                    from app.utils.reload_helper import reload_all_jsons
                     reload_all_jsons()
-                    reload_app_data()
                     current_app._last_reload_mtime = mtime
                     logger.info('✅ Per-worker reload applied from marker')
                 except Exception:
@@ -239,6 +235,9 @@ def create_app():
 
     # Store socketio instance in app config for later use
     app.config['SOCKETIO'] = socketio
+
+    # Suppress all console logging - redirect everything to file only
+    suppress_console_logging()
 
     logger.info("Flask application initialized successfully.")
     log_system("APP_CREATION_COMPLETE",

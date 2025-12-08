@@ -6238,10 +6238,15 @@ button:focus {
                                                         discrepancy.isCompliant ? 'text-green-400' : 'text-red-400'
                                                     ]">{{ discrepancy.isCompliant ? 'Compliance Status' : 'Discrepancy Details' }}</p>
                                                     <p class="mb-2">{{ discrepancy.discrepancy }}</p>
-                                                    <div v-if="discrepancy.rule" class="pt-2 border-t border-slate-600">
-                                                        <p class="font-semibold text-teal-400 mb-1">{{ discrepancy.rule.code }}</p>
-                                                        <p class="mb-1">{{ discrepancy.rule.description }}</p>
-                                                        <p class="text-slate-300"><span class="font-semibold">Basis:</span> {{ discrepancy.rule.basis }}</p>
+                                                    <div v-if="findDiscrepancyRule(discrepancy)" class="pt-2 border-t border-slate-600">
+                                                        <template v-if="findDiscrepancyRule(discrepancy).description">
+                                                            <p class="font-semibold text-teal-400 mb-1">Description</p>
+                                                            <p class="mb-2">{{ findDiscrepancyRule(discrepancy).description }}</p>
+                                                        </template>
+                                                        <template v-if="findDiscrepancyRule(discrepancy).basis">
+                                                            <p class="font-semibold text-teal-400 mb-1">Basis</p>
+                                                            <p class="text-slate-300">{{ findDiscrepancyRule(discrepancy).basis }}</p>
+                                                        </template>
                                                     </div>
                                                     <div class="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 transform rotate-45"></div>
                                                 </div>
@@ -7692,45 +7697,45 @@ button:focus {
         <div v-if="showFieldDetailsModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] p-4" @click.self="showFieldDetailsModal = false">
             <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in">
                 <!-- Modal Header -->
-                <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-5 flex-shrink-0">
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="flex items-center gap-3 min-w-0 flex-1">
-                            <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-                                <i class="mdi mdi-information text-white text-2xl"></i>
+                <div class="bg-gradient-to-r from-teal-600 to-teal-500 text-white px-5 py-4 flex-shrink-0">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div class="w-9 h-9 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+                                <i class="mdi mdi-information text-white text-lg"></i>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <h3 class="text-xl font-bold truncate">Field Compliance Details</h3>
-                                <p class="text-indigo-100 text-sm mt-0.5">Complete analysis and recommendations</p>
+                                <h3 class="text-base font-bold truncate">Field Compliance Details</h3>
+                                <p class="text-teal-100 text-xs mt-0.5">Complete analysis and recommendations</p>
                             </div>
                         </div>
                         <button @click="showFieldDetailsModal = false"
-                                class="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center transition-all duration-200 hover:rotate-90 flex-shrink-0">
-                            <i class="mdi mdi-close text-white text-xl"></i>
+                                class="w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center transition-all duration-200 hover:rotate-90 flex-shrink-0">
+                            <i class="mdi mdi-close text-white text-base"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- Modal Body -->
-                <div v-if="selectedComplianceField" class="flex-1 overflow-y-auto p-6">
+                <div v-if="selectedComplianceField" class="flex-1 overflow-y-auto p-4">
                     <!-- Status Banner -->
-                    <div :class="selectedComplianceField.status === 'compliant' ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200'"
-                         class="border-2 rounded-xl p-5 mb-6">
-                        <div class="flex items-center gap-4 flex-wrap">
+                    <div :class="selectedComplianceField.status === 'compliant' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'"
+                         class="border rounded-lg p-3.5 mb-4">
+                        <div class="flex items-center gap-3 flex-wrap">
                             <div :class="selectedComplianceField.status === 'compliant' ? 'bg-green-500' : 'bg-red-500'"
-                                 class="w-14 h-14 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                                 class="w-10 h-10 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
                                 <i :class="selectedComplianceField.status === 'compliant' ? 'mdi-check-circle' : 'mdi-alert-circle'"
-                                   class="mdi text-white text-3xl"></i>
+                                   class="mdi text-white text-xl"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h4 class="text-xl font-bold text-gray-900 mb-1 truncate">{% raw %}{{ selectedComplianceField.field_name }}{% endraw %}</h4>
+                                <h4 class="text-sm font-bold text-gray-900 mb-0.5 truncate">{% raw %}{{ selectedComplianceField.field_name }}{% endraw %}</h4>
                                 <p :class="selectedComplianceField.status === 'compliant' ? 'text-green-700' : 'text-red-700'"
-                                   class="font-semibold text-base">
+                                   class="font-semibold text-xs">
                                     {% raw %}{{ selectedComplianceField.status === 'compliant' ? 'Compliance Met' : 'Compliance Issue Detected' }}{% endraw %}
                                 </p>
                             </div>
                             <div class="flex-shrink-0">
-                                <span :class="selectedComplianceField.priority === 'Mandatory' ? 'bg-red-100 text-red-700 border-red-300' : 'bg-blue-100 text-blue-700 border-blue-300'"
-                                      class="inline-block px-3 py-1.5 rounded-lg font-bold text-xs border-2 whitespace-nowrap">
+                                <span :class="selectedComplianceField.priority === 'Mandatory' ? 'bg-red-100 text-red-700 border-red-300' : 'bg-teal-100 text-teal-700 border-teal-300'"
+                                      class="inline-block px-2 py-1 rounded-md font-semibold text-xs border whitespace-nowrap">
                                     {% raw %}{{ selectedComplianceField.priority }}{% endraw %}
                                 </span>
                             </div>
@@ -7738,64 +7743,64 @@ button:focus {
                     </div>
 
                     <!-- Field Information Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                         <!-- Field Value -->
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="mdi mdi-text-box text-indigo-600 text-lg"></i>
-                                <h5 class="font-bold text-gray-900 text-sm">Field Value</h5>
+                        <div class="bg-teal-50 rounded-lg p-3 border border-teal-200">
+                            <div class="flex items-center gap-1.5 mb-1.5">
+                                <i class="mdi mdi-text-box text-teal-600 text-sm"></i>
+                                <h5 class="font-bold text-gray-900 text-xs">Field Value</h5>
                             </div>
-                            <p class="text-gray-700 font-medium text-sm break-words">
+                            <p class="text-gray-700 font-medium text-xs break-words">
                                 {% raw %}{{ selectedComplianceField.field_value || 'No value detected' }}{% endraw %}
                             </p>
                         </div>
 
-                        <!-- Rule Cocde de -->
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="mdi mdi-tag text-purple-600 text-lg"></i>
-                                <h5 class="font-bold text-gray-900 text-sm">Rule Code</h5>
+                        <!-- Rule Code -->
+                        <div class="bg-teal-50 rounded-lg p-3 border border-teal-200">
+                            <div class="flex items-center gap-1.5 mb-1.5">
+                                <i class="mdi mdi-tag text-teal-600 text-sm"></i>
+                                <h5 class="font-bold text-gray-900 text-xs">Rule Code</h5>
                             </div>
-                            <p class="text-gray-700 font-mono font-semibold text-sm break-words">
+                            <p class="text-gray-700 font-mono font-semibold text-xs break-words">
                                 {% raw %}{{ selectedComplianceField.rule_code || 'N/A' }}{% endraw %}
                             </p>
                         </div>
                     </div>
 
                     <!-- Compliance Reason -->
-                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200 mb-5">
-                        <div class="flex items-center gap-2 mb-2">
-                            <i class="mdi mdi-message-text text-indigo-600 text-lg"></i>
-                            <h5 class="font-bold text-gray-900 text-base">Compliance Analysis</h5>
+                    <div class="bg-teal-50 rounded-lg p-3 border border-teal-200 mb-4">
+                        <div class="flex items-center gap-1.5 mb-1.5">
+                            <i class="mdi mdi-message-text text-teal-600 text-sm"></i>
+                            <h5 class="font-bold text-gray-900 text-xs">Compliance Analysis</h5>
                         </div>
-                        <p class="text-gray-700 leading-relaxed text-sm">
+                        <p class="text-gray-700 leading-relaxed text-xs">
                             {% raw %}{{ selectedComplianceField.reason }}{% endraw %}
                         </p>
                     </div>
 
                     <!-- Additional Details -->
-                    <div class="space-y-3">
+                    <div class="space-y-2.5">
                         <!-- Basis -->
-                        <div class="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200">
-                            <div class="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <i class="mdi mdi-gavel text-indigo-600 text-lg"></i>
+                        <div class="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-teal-200">
+                            <div class="w-7 h-7 bg-teal-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                <i class="mdi mdi-gavel text-teal-600 text-sm"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h6 class="font-bold text-gray-900 mb-1 text-sm">Legal/Regulatory Basis</h6>
-                                <p class="text-gray-700 text-sm break-words">{% raw %}{{ selectedComplianceField.basis || 'Standard Practice' }}{% endraw %}</p>
+                                <h6 class="font-bold text-gray-900 mb-0.5 text-xs">Legal/Regulatory Basis</h6>
+                                <p class="text-gray-700 text-xs break-words">{% raw %}{{ selectedComplianceField.basis || 'Standard Practice' }}{% endraw %}</p>
                             </div>
                         </div>
 
                         <!-- Severity -->
-                        <div v-if="selectedComplianceField.severity" class="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200">
-                            <div :class="selectedComplianceField.severity === 'high' ? 'bg-red-100' : selectedComplianceField.severity === 'medium' ? 'bg-amber-100' : 'bg-gray-100'"
-                                 class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <i class="mdi mdi-alert text-lg"
-                                   :class="selectedComplianceField.severity === 'high' ? 'text-red-600' : selectedComplianceField.severity === 'medium' ? 'text-amber-600' : 'text-gray-600'"></i>
+                        <div v-if="selectedComplianceField.severity" class="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-teal-200">
+                            <div :class="selectedComplianceField.severity === 'high' ? 'bg-red-100' : selectedComplianceField.severity === 'medium' ? 'bg-amber-100' : 'bg-teal-100'"
+                                 class="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0">
+                                <i class="mdi mdi-alert text-sm"
+                                   :class="selectedComplianceField.severity === 'high' ? 'text-red-600' : selectedComplianceField.severity === 'medium' ? 'text-amber-600' : 'text-teal-600'"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h6 class="font-bold text-gray-900 mb-1 text-sm">Severity Level</h6>
-                                <p class="text-gray-700 capitalize text-sm">
+                                <h6 class="font-bold text-gray-900 mb-0.5 text-xs">Severity Level</h6>
+                                <p class="text-gray-700 capitalize text-xs">
                                     <span :class="selectedComplianceField.severity === 'high' ? 'text-red-700 font-bold' : selectedComplianceField.severity === 'medium' ? 'text-amber-700 font-semibold' : 'text-gray-700'">
                                         {% raw %}{{ selectedComplianceField.severity }}{% endraw %}
                                     </span>
@@ -7804,34 +7809,34 @@ button:focus {
                         </div>
 
                         <!-- Suggestion -->
-                        <div v-if="selectedComplianceField.suggestion" class="flex items-start gap-3 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                            <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <i class="mdi mdi-lightbulb text-green-600 text-lg"></i>
+                        <div v-if="selectedComplianceField.suggestion" class="flex items-start gap-2.5 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div class="w-7 h-7 bg-green-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                <i class="mdi mdi-lightbulb text-green-600 text-sm"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h6 class="font-bold text-gray-900 mb-1 text-sm">Recommendation</h6>
-                                <p class="text-gray-700 text-sm break-words">{% raw %}{{ selectedComplianceField.suggestion }}{% endraw %}</p>
+                                <h6 class="font-bold text-gray-900 mb-0.5 text-xs">Recommendation</h6>
+                                <p class="text-gray-700 text-xs break-words">{% raw %}{{ selectedComplianceField.suggestion }}{% endraw %}</p>
                             </div>
                         </div>
 
                         <!-- Category -->
-                        <div v-if="selectedComplianceField.category" class="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-200">
-                            <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <i class="mdi mdi-shape text-purple-600 text-lg"></i>
+                        <div v-if="selectedComplianceField.category" class="flex items-start gap-2.5 p-3 bg-white rounded-lg border border-teal-200">
+                            <div class="w-7 h-7 bg-teal-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                <i class="mdi mdi-shape text-teal-600 text-sm"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h6 class="font-bold text-gray-900 mb-1 text-sm">Category</h6>
-                                <p class="text-gray-700 capitalize text-sm break-words">{% raw %}{{ selectedComplianceField.category }}{% endraw %}</p>
+                                <h6 class="font-bold text-gray-900 mb-0.5 text-xs">Category</h6>
+                                <p class="text-gray-700 capitalize text-xs break-words">{% raw %}{{ selectedComplianceField.category }}{% endraw %}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="border-t border-gray-200 bg-gray-50 px-6 py-3.5 flex-shrink-0">
+                <div class="border-t border-teal-200 bg-teal-50 px-5 py-3 flex-shrink-0">
                     <div class="flex justify-end">
                         <button @click="showFieldDetailsModal = false"
-                                class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-all shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-300 text-sm">
+                                class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg text-xs">
                             Close
                         </button>
                     </div>
@@ -8972,7 +8977,7 @@ async waitForRequiredDocumentsParsing() {
                       this.$forceUpdate();
                     }
                   },
-				     getFilteredDiscrepancies() {
+				getFilteredDiscrepancies() {
 					const allDiscrepancies = this.getDiscrepancies();
                    
                     console.log('🔍 getFilteredDiscrepancies called');
@@ -11203,6 +11208,43 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         return discrepancy.rule;
                     }
                     
+                    // For cross-document discrepancies, check if ruleCode/ruleDescription exist directly
+                    if (discrepancy.documentType === 'Cross-Document') {
+                        if (discrepancy.ruleCode || discrepancy.ruleDescription) {
+                            // Try to find rule by code first
+                            if (discrepancy.ruleCode) {
+                                const ruleByCode = this.discrepancyRules.find(rule => 
+                                    rule.code && rule.code.toLowerCase() === discrepancy.ruleCode.toLowerCase()
+                                );
+                                if (ruleByCode) {
+                                    return ruleByCode;
+                                }
+                            }
+                            // If not found by code, create a rule object from discrepancy properties
+                            if (discrepancy.ruleDescription) {
+                                return {
+                                    code: discrepancy.ruleCode || 'N/A',
+                                    description: discrepancy.ruleDescription,
+                                    basis: discrepancy.ruleBasis || discrepancy.basis || 'Trade Finance Standards'
+                                };
+                            }
+                        }
+                        // For cross-document, search across all rules by field name
+                        const fieldName = (discrepancy.field || '').toLowerCase();
+                        const fieldNameNormalized = fieldName
+                            .replace(/\b(issue|date|place|of|the|a|an|in|on|at|for|with|from|to)\b/g, '')
+                            .trim();
+                        
+                        // Search across all rules for cross-document cases
+                        const fieldWords = fieldNameNormalized.split(/\s+/).filter(w => w.length > 2);
+                        let matchedRule = this.discrepancyRules.find(rule => {
+                            const ruleDesc = (rule.description || '').toLowerCase();
+                            return fieldWords.some(word => ruleDesc.includes(word));
+                        });
+                        
+                        return matchedRule || null;
+                    }
+                    
                     // Try to find a rule that matches the field name and document type
                     const fieldName = (discrepancy.field || '').toLowerCase();
                     const documentType = (discrepancy.documentType || '').toLowerCase();
@@ -13082,26 +13124,16 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     const width = x2_pixels - x1_pixels;
                     const height = y2_pixels - y1_pixels;
 
-                    // Get image dimensions
-                    const imgNaturalWidth = img.naturalWidth;
-                    const imgNaturalHeight = img.naturalHeight;
-                    const imgDisplayWidth = img.clientWidth || img.offsetWidth;
-                    const imgDisplayHeight = img.clientHeight || img.offsetHeight;
-
-                    // Scale coordinates to match displayed image size
-                    const scaleX = imgDisplayWidth / imgNaturalWidth;
-                    const scaleY = imgDisplayHeight / imgNaturalHeight;
-
-                    const scaledX = x1_pixels * scaleX;
-                    const scaledY = y1_pixels * scaleY;
-                    const scaledWidth = width * scaleX;
-                    const scaledHeight = height * scaleY;
-
+                    // Canvas is now sized to match natural image dimensions
+                    // Both canvas and image are scaled together by CSS transform (zoom)
+                    // So coordinates in pixels can be drawn directly without additional scaling
+                    // The coordinates are already in the same space as the canvas (natural image space)
+                    
                     // Draw yellow highlight (same as regular discrepancy preview)
                     context.fillStyle = 'rgba(255, 235, 59, 0.4)';
-                    context.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                    context.fillRect(x1_pixels, y1_pixels, width, height);
                     
-                    console.log(`✅ Drew bounding box for document ${documentNumber}: x=${scaledX.toFixed(2)}, y=${scaledY.toFixed(2)}, w=${scaledWidth.toFixed(2)}, h=${scaledHeight.toFixed(2)}`);
+                    console.log(`✅ Drew bounding box for document ${documentNumber}: x=${x1_pixels.toFixed(2)}, y=${y1_pixels.toFixed(2)}, w=${width.toFixed(2)}, h=${height.toFixed(2)}`);
                 },
 
                 // Highlight search results on cross-document canvas
@@ -13292,15 +13324,10 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                         const width = x2_pixels - x1_pixels;
                         const height = y2_pixels - y1_pixels;
 
-                        // Scale to canvas dimensions
-                        const scaleX = (img.clientWidth || img.offsetWidth) / img.naturalWidth;
-                        const scaleY = (img.clientHeight || img.offsetHeight) / img.naturalHeight;
-
-                        const scaledX = x1_pixels * scaleX;
-                        const scaledY = y1_pixels * scaleY;
-                        const scaledWidth = width * scaleX;
-                        const scaledHeight = height * scaleY;
-
+                        // Canvas is sized to match natural image dimensions
+                        // Both canvas and image are scaled together by CSS transform (zoom)
+                        // So coordinates in pixels can be drawn directly without additional scaling
+                        
                     // Only clear canvas if explicitly requested (for single box drawing)
                     if (clearPrevious) {
                         this.discrepancyCanvasContext.clearRect(0, 0, canvas.width, canvas.height);
@@ -13308,9 +13335,9 @@ console.log("Modal chosen:", this.isFromDocumentRegister && this.lcContext ? "RE
                     
                     // Draw yellow highlight (accumulate multiple boxes)
                     this.discrepancyCanvasContext.fillStyle = 'rgba(255, 235, 59, 0.4)';
-                    this.discrepancyCanvasContext.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                    this.discrepancyCanvasContext.fillRect(x1_pixels, y1_pixels, width, height);
 
-                    console.log(`✅ Drew bounding box highlight at (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) size ${scaledWidth.toFixed(1)}x${scaledHeight.toFixed(1)}`);
+                    console.log(`✅ Drew bounding box highlight at (${x1_pixels.toFixed(1)}, ${y1_pixels.toFixed(1)}) size ${width.toFixed(1)}x${height.toFixed(1)}`);
                 },
 
                 // Highlight LC value in SWIFT message
@@ -15831,9 +15858,21 @@ splitCurrencyAndAmount(combinedValue) {
                     const canvas = this.$refs.drawingCanvas;
                     const img = this.$refs.documentImage;
 
-                    // Use the actual rendered dimensions of the image
-                    canvas.width = img.clientWidth || img.offsetWidth;
-                    canvas.height = img.clientHeight || img.offsetHeight;
+                    // Wait for image to load
+                    if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        setTimeout(() => this.setupCanvas(), 100);
+                        return;
+                    }
+
+                    // Setup canvas to match natural image dimensions
+                    // Canvas internal dimensions should match natural image size
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    
+                    // Canvas CSS size should match natural image size (not scaled)
+                    // The parent div's CSS transform will scale both image and canvas together
+                    canvas.style.width = img.naturalWidth + 'px';
+                    canvas.style.height = img.naturalHeight + 'px';
 
                     this.drawingContext = canvas.getContext('2d');
                     this.drawingContext.lineWidth = 2;
@@ -15900,21 +15939,16 @@ splitCurrencyAndAmount(combinedValue) {
                     const width = x2 - x1;
                     const height = y2 - y1;
 
-                    // Scale to canvas dimensions - use clientWidth/clientHeight for rendered size
-                    const scaleX = (img.clientWidth || img.offsetWidth) / img.naturalWidth;
-                    const scaleY = (img.clientHeight || img.offsetHeight) / img.naturalHeight;
+                    // Canvas is sized to match natural image dimensions
+                    // Both canvas and image are scaled together by CSS transform (zoom)
+                    // So coordinates in pixels can be drawn directly without additional scaling
 
                     // Draw highlight only (no border box)
                     ctx.fillStyle = 'rgba(255, 235, 59, 0.4)';  // Rich yellow highlight
 
-                    const scaledX = x1 * scaleX;
-                    const scaledY = y1 * scaleY;
-                    const scaledWidth = width * scaleX;
-                    const scaledHeight = height * scaleY;
+                    ctx.fillRect(x1, y1, width, height);
 
-                    ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
-
-                    console.log(`🎨 Drew highlight at (${scaledX.toFixed(1)}, ${scaledY.toFixed(1)}) size ${scaledWidth.toFixed(1)}x${scaledHeight.toFixed(1)}`);
+                    console.log(`🎨 Drew highlight at (${x1.toFixed(1)}, ${y1.toFixed(1)}) size ${width.toFixed(1)}x${height.toFixed(1)}`);
                 },
                 
                 startDrawing(event) {
